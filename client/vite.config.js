@@ -14,6 +14,12 @@ export default defineConfig({
   },
   preview: {
     port: process.env.PORT || 8080,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    strictPort: true,
+    allowedHosts: [
+      'mailgen-production.up.railway.app',
+      '.railway.app',
+      'localhost'
+    ]
   }
 })
