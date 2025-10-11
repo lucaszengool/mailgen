@@ -1,0 +1,32 @@
+# Minimal SearXNG configuration with JSON enabled
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "en"
+  formats:
+    - html
+    - json
+    - csv
+    - rss
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  limiter: false
+  public_instance: false
+
+ui:
+  default_locale: "en"
+  theme_args:
+    simple_style: "auto"
+
+outgoing:
+  request_timeout: 3.0
+  max_request_timeout: 6.0
+
+# DOI resolver settings
+default_doi_resolver: "oadoi.org"
+
+doi_resolvers:
+  oadoi.org: 'https://oadoi.org/'
+  doi.org: 'https://doi.org/'

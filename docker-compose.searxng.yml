@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  searxng:
+    container_name: searxng
+    image: docker.io/searxng/searxng:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+      - SEARXNG_SECRET_KEY=ad2dba6794f775bf4e00732df20d65d5da22bdc2f0a83af7c15c8beb33e10f25
+    networks:
+      - searxng
+
+  # Optional: Filtron for rate limiting and filtering
+  filtron:
+    container_name: filtron
+    image: dalf/filtron:latest
+    restart: unless-stopped
+    ports:
+      - "4040:4040"
+    command: -listen 0.0.0.0:4040 -api 0.0.0.0:4041 -target searxng:8080
+    volumes:
+      - ./filtron/rules.json:/etc/filtron/rules.json:ro
+    networks:
+      - searxng
+    depends_on:
+      - searxng
+
+  # Optional: Morty for proxying result links
+  morty:
+    container_name: morty
+    image: dalf/morty:latest
+    restart: unless-stopped
+    ports:
+      - "3030:3030"
+    command: -listen 0.0.0.0:3030 -timeout 6 -ipv6
+    environment:
+      - MORTY_KEY=please_change_this_morty_key
+    networks:
+      - searxng
+
+networks:
+  searxng:
+    driver: bridge

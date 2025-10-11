@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto-Save Simulation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; margin: 10px 0; padding: 15px; }
+        .email-card { border: 1px solid #ddd; margin: 5px; padding: 10px; background: #f9f9f9; }
+        .log { background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; }
+        button { margin: 5px; padding: 10px; }
+        .current { background: #e7f3ff; }
+        .saved { background: #e7ffe7; }
+    </style>
+</head>
+<body>
+    <h1>Auto-Save Test Simulation</h1>
+
+    <div class="test-section">
+        <h2>Available Emails</h2>
+        <div id="emailsList"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Current Email Editor</h2>
+        <div>
+            <strong>Current Email Index:</strong> <span id="currentIndex">0</span><br>
+            <strong>Auto-Save Key:</strong> <span id="autoSaveKey">-</span><br>
+            <strong>Subject:</strong> <input type="text" id="subject" placeholder="Email subject"><br>
+            <strong>Components:</strong> <span id="componentCount">0</span>
+            <button onclick="addComponent()">Add Component</button><br>
+            <strong>Content:</strong> <textarea id="content" rows="3" cols="50"></textarea><br>
+            <button onclick="saveChanges()">Save Changes</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Actions</h2>
+        <button onclick="switchToEmail(0)">Switch to Email 1</button>
+        <button onclick="switchToEmail(1)">Switch to Email 2</button>
+        <button onclick="switchToEmail(2)">Switch to Email 3</button>
+        <button onclick="simulatePageNavigation()">Navigate Away & Back</button>
+        <button onclick="clearAllAutoSave()">Clear All Auto-Save</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Auto-Save Status</h2>
+        <div id="autoSaveStatus"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Log</h2>
+        <div id="debugLog" class="log"></div>
+    </div>
+
+    <script>
+        // Simulate the exact data structure from the real app
+        const availableEmails = [
+            {
+                to: 'ftc@uidaho.edu',
+                subject: 'Uidaho - Strategic Collaboration',
+                body: '<h1>Original Email 1 Content</h1>',
+                id: 'email1'
+            },
+            {
+                to: 'dclevenger@atsautomation.com',
+                subject: 'Atsautomation - Partnership',
+                body: '<h1>Original Email 2 Content</h1>',
+                id: 'email2'
+            },
+            {
+                to: 'editor@foodtech.com',
+                subject: 'Foodtech - Collaboration',
+                body: '<h1>Original Email 3 Content</h1>',
+                id: 'email3'
+            }
+        ];
+
+        let currentEmailIndex = 0;
+        let emailComponents = [];
+        let emailData = null; // This simulates emailData being null in real app
+
+        function log(message) {
+            const debugLog = document.getElementById('debugLog');
+            debugLog.innerHTML += new Date().toISOString() + ': ' + message + '\n';
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(message);
+        }
+
+        // Simulate the exact auto-save key function from the real app
+        function getAutoSaveKey() {
+            const currentEmail = emailData || (availableEmails && availableEmails[currentEmailIndex]);
+
+            log('🔑 Getting auto-save key:');
+            log('🔑 emailData: ' + (emailData ? 'EXISTS' : 'NULL'));
+            log('🔑 currentEmailIndex: ' + currentEmailIndex);
+            log('🔑 availableEmails length: ' + (availableEmails?.length || 0));
+            log('🔑 currentEmail: ' + (currentEmail ? 'EXISTS' : 'NULL'));
+            log('🔑 currentEmail.to: ' + (currentEmail?.to || 'undefined'));
+
+            if (currentEmail?.to) {
+                const key = `email_editor_autosave_email_${currentEmail.to.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                log('🔑 ✅ Using email-based key: ' + key);
+                return key;
+            }
+
+            log('🔑 ❌ FALLING BACK TO DEFAULT KEY');
+            return 'email_editor_autosave_default';
+        }
+
+        function updateUI() {
+            const currentEmail = availableEmails[currentEmailIndex];
+
+            // Update current email display
+            document.getElementById('currentIndex').textContent = currentEmailIndex;
+            document.getElementById('autoSaveKey').textContent = getAutoSaveKey();
+
+            // Load auto-save for current email
+            loadAutoSaveForCurrentEmail();
+
+            // Update emails list
+            const emailsList = document.getElementById('emailsList');
+            emailsList.innerHTML = '';
+            availableEmails.forEach((email, index) => {
+                const div = document.createElement('div');
+                div.className = 'email-card' + (index === currentEmailIndex ? ' current' : '');
+                div.innerHTML = `
+                    <strong>Email ${index + 1}:</strong> ${email.to}<br>
+                    <small>Subject: ${email.subject}</small><br>
+                    <button onclick="switchToEmail(${index})">Switch to This</button>
+                `;
+                emailsList.appendChild(div);
+            });
+
+            updateAutoSaveStatus();
+        }
+
+        function loadAutoSaveForCurrentEmail() {
+            const autoSaveKey = getAutoSaveKey();
+            const savedData = localStorage.getItem(autoSaveKey);
+
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    document.getElementById('subject').value = parsed.subject || '';
+                    document.getElementById('content').value = parsed.content || '';
+                    emailComponents = parsed.components || [];
+                    document.getElementById('componentCount').textContent = emailComponents.length;
+                    log('✅ Loaded auto-save: ' + parsed.subject + ' (' + emailComponents.length + ' components)');
+                } catch (e) {
+                    log('❌ Failed to parse auto-save');
+                }
+            } else {
+                // Load original email data
+                const currentEmail = availableEmails[currentEmailIndex];
+                document.getElementById('subject').value = currentEmail.subject;
+                document.getElementById('content').value = currentEmail.body;
+                emailComponents = [];
+                document.getElementById('componentCount').textContent = 0;
+                log('📧 Loaded original email data');
+            }
+        }
+
+        function saveChanges() {
+            const autoSaveKey = getAutoSaveKey();
+            const autoSaveData = {
+                subject: document.getElementById('subject').value,
+                content: document.getElementById('content').value,
+                components: emailComponents,
+                timestamp: new Date().toISOString()
+            };
+
+            localStorage.setItem(autoSaveKey, JSON.stringify(autoSaveData));
+            log('💾 Saved to: ' + autoSaveKey);
+            updateAutoSaveStatus();
+        }
+
+        function addComponent() {
+            emailComponents.push({
+                type: 'component',
+                id: 'comp_' + Date.now(),
+                content: 'New component for email ' + (currentEmailIndex + 1)
+            });
+            document.getElementById('componentCount').textContent = emailComponents.length;
+            log('➕ Added component (total: ' + emailComponents.length + ')');
+            saveChanges(); // Auto-save when adding component
+        }
+
+        function switchToEmail(index) {
+            log('\n🔄 SWITCHING TO EMAIL ' + (index + 1));
+
+            // Save current email before switching
+            saveChanges();
+
+            // Switch to new email
+            currentEmailIndex = index;
+            updateUI();
+        }
+
+        function simulatePageNavigation() {
+            log('\n🔄 SIMULATING PAGE NAVIGATION...');
+            // Save current state
+            saveChanges();
+
+            // Clear current state (simulate page reload)
+            document.getElementById('subject').value = '';
+            document.getElementById('content').value = '';
+            emailComponents = [];
+
+            // Simulate returning to page
+            setTimeout(() => {
+                log('🔄 RETURNING TO PAGE...');
+                updateUI();
+            }, 1000);
+        }
+
+        function updateAutoSaveStatus() {
+            const statusDiv = document.getElementById('autoSaveStatus');
+            const keys = Object.keys(localStorage).filter(k => k.includes('email_editor_autosave'));
+
+            let html = '<h3>Saved Auto-Save Data:</h3>';
+            if (keys.length === 0) {
+                html += '<p>No auto-save data found</p>';
+            } else {
+                keys.forEach(key => {
+                    const data = localStorage.getItem(key);
+                    try {
+                        const parsed = JSON.parse(data);
+                        html += `<div class="saved">
+                            <strong>${key}:</strong><br>
+                            Subject: ${parsed.subject}<br>
+                            Components: ${parsed.components?.length || 0}<br>
+                            Content: ${(parsed.content || '').substring(0, 50)}...<br>
+                            <small>Saved: ${parsed.timestamp}</small>
+                        </div>`;
+                    } catch (e) {
+                        html += `<div>❌ Invalid data in ${key}</div>`;
+                    }
+                });
+            }
+            statusDiv.innerHTML = html;
+        }
+
+        function clearAllAutoSave() {
+            Object.keys(localStorage).filter(k => k.includes('email_editor_autosave')).forEach(k => {
+                localStorage.removeItem(k);
+            });
+            log('🗑️ Cleared all auto-save data');
+            updateUI();
+        }
+
+        // Initialize
+        log('🚀 STARTING AUTO-SAVE TEST');
+        updateUI();
+
+        // Auto-save on input changes
+        document.getElementById('subject').addEventListener('input', saveChanges);
+        document.getElementById('content').addEventListener('input', saveChanges);
+    </script>
+</body>
+</html>

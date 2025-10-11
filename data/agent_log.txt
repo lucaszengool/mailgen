@@ -1,0 +1,151 @@
+[2025-08-13T13:47:09.251Z] 🚀 PERSISTENT AI AGENT STARTING
+[2025-08-13T13:47:09.254Z] 🎯 Target Website: https://petpoofficial.org
+[2025-08-13T13:47:09.254Z] 📋 Goal: promote custom pet portrait services
+[2025-08-13T13:47:09.254Z] ============================================================
+[2025-08-13T13:47:09.255Z] 
+📌 PERFORMING INITIAL ANALYSIS
+[2025-08-13T13:47:09.255Z] 🔍 Deep website analysis: https://petpoofficial.org
+[2025-08-13T13:47:09.355Z] 📁 Data directory created
+[2025-08-13T13:47:09.356Z] 📚 Creating new knowledge base
+[2025-08-13T13:47:09.361Z] 💾 Knowledge base saved
+[2025-08-13T13:48:11.879Z] ⚠️ AI analysis failed, using enhanced defaults
+[2025-08-13T13:48:11.880Z] ✅ Business Analysis Complete:
+[2025-08-13T13:48:11.880Z]    Company: petpoofficial
+[2025-08-13T13:48:11.880Z]    Industry: Business Services
+[2025-08-13T13:48:11.880Z]    Products: Products, Services
+[2025-08-13T13:48:11.883Z] 💾 Knowledge base saved
+[2025-08-13T13:48:11.883Z] 
+🔄 STARTING CONTINUOUS OPERATION
+[2025-08-13T13:48:11.883Z] ✅ Continuous operation timers started
+[2025-08-13T13:48:11.884Z] 📊 Prospect search: every 60 minutes
+[2025-08-13T13:48:11.884Z] 📧 Email cycles: every 30 minutes
+[2025-08-13T13:58:11.886Z] 💾 Knowledge base saved
+[2025-08-13T14:08:11.885Z] 💾 Knowledge base saved
+[2025-08-13T14:18:11.885Z] 
+📧 EMAIL SENDING CYCLE
+[2025-08-13T14:18:11.886Z] 📭 No prospects ready for email
+[2025-08-13T14:18:11.887Z] 💾 Knowledge base saved
+[2025-08-13T14:28:11.888Z] 💾 Knowledge base saved
+[2025-08-13T14:38:11.888Z] 💾 Knowledge base saved
+[2025-08-13T14:48:11.886Z] 
+🔍 FINDING NEW PROSPECTS
+[2025-08-13T14:48:11.892Z] 
+📧 EMAIL SENDING CYCLE
+[2025-08-13T14:48:11.892Z] 📭 No prospects ready for email
+[2025-08-13T14:48:11.893Z] 💾 Knowledge base saved
+[2025-08-13T14:48:41.893Z]    🔎 Searching: "Business Services companies contact"
+[2025-08-13T14:49:08.566Z]    ✅ New qualified prospect: Business Services & Regulation (Score: 60)
+[2025-08-13T14:49:33.569Z]    ✅ New qualified prospect: Businesses Home (Score: 60)
+[2025-08-13T14:49:58.573Z]    ✅ New qualified prospect: Business Services (Score: 60)
+[2025-08-13T14:50:23.576Z]    ✅ New qualified prospect: Businesses (Score: 60)
+[2025-08-13T14:50:48.582Z]    ✅ New qualified prospect: Search for Louisiana Business Filings (Score: 60)
+[2025-08-13T14:50:48.583Z]    🔎 Searching: "Products customers email"
+[2025-08-13T14:51:15.482Z]    ✅ New qualified prospect: How to email customers from a particular product (Score: 60)
+[2025-08-13T14:51:40.484Z]    ✅ New qualified prospect: Consumer Product Safety Commission (Score: 60)
+[2025-08-13T14:52:05.490Z]    ✅ New qualified prospect: Send email and manage customer profiles based on their specific ... (Score: 60)
+[2025-08-13T14:52:30.492Z]    ✅ New qualified prospect: What is the easiest way to email every customer who has ordered a ... (Score: 60)
+[2025-08-13T14:52:55.495Z]    ✅ New qualified prospect: How to send an email to customers who bought a specific product ... (Score: 60)
+[2025-08-13T14:52:55.495Z]    🔎 Searching: "promote custom pet portrait services Business Services"
+[2025-08-13T14:53:25.412Z]    ✅ New qualified prospect: Question to custom pet portrait artists : r/artbusiness (Score: 60)
+[2025-08-13T14:53:50.413Z]    ✅ New qualified prospect: Custom Pet Portraits (Score: 60)
+[2025-08-13T14:54:15.415Z]    ✅ New qualified prospect: CALLING ALL LOCAL PET CREATIVES & SERVICE PROVIDERS ... (Score: 60)
+[2025-08-13T14:54:40.416Z]    ✅ New qualified prospect: Looking for experience/advice about selling prints of your photos ... (Score: 60)
+[2025-08-13T14:55:05.419Z]    ✅ New qualified prospect: Custom Animal Shirts Embroidery Service (Score: 60)
+[2025-08-13T14:55:05.423Z] 💾 Knowledge base saved
+[2025-08-13T14:55:05.423Z] 📊 Total prospects in knowledge base: 15
+[2025-08-13T14:58:11.899Z] 💾 Knowledge base saved
+[2025-08-13T15:08:11.894Z] 💾 Knowledge base saved
+[2025-08-13T15:18:11.893Z] 
+📧 EMAIL SENDING CYCLE
+[2025-08-13T15:18:11.896Z]    📧 Generating email for Business Services & Regulation...
+[2025-08-13T15:18:11.894Z] 📮 Sending emails to 3 prospects
+[2025-08-13T15:18:11.901Z] 💾 Knowledge base saved
+[2025-08-13T15:18:51.898Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T15:18:59.505Z]    ✅ Email sent: <27400d49-bd53-e865-4d91-e361b21b8fb8@gmail.com> (Score: 70%)
+[2025-08-13T15:19:04.506Z]    📧 Generating email for Businesses Home...
+[2025-08-13T15:19:44.508Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T15:19:49.221Z]    ✅ Email sent: <a84f2e48-d233-9da2-45b2-3182c3257127@gmail.com> (Score: 70%)
+[2025-08-13T15:19:54.222Z]    📧 Generating email for Business Services...
+[2025-08-13T15:20:34.226Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T15:20:45.329Z]    ✅ Email sent: <40aea128-9903-0499-8338-abd82e3dc41c@gmail.com> (Score: 70%)
+[2025-08-13T15:20:50.331Z] 💾 Knowledge base saved
+[2025-08-13T15:28:11.901Z] 💾 Knowledge base saved
+[2025-08-13T15:38:11.905Z] 💾 Knowledge base saved
+[2025-08-13T15:48:11.886Z] 
+🔍 FINDING NEW PROSPECTS
+[2025-08-13T15:48:11.892Z] 
+📧 EMAIL SENDING CYCLE
+[2025-08-13T15:48:11.894Z] 📮 Sending emails to 3 prospects
+[2025-08-13T15:48:11.895Z]    📧 Generating email for Businesses...
+[2025-08-13T15:48:11.901Z] 💾 Knowledge base saved
+[2025-08-13T15:48:41.892Z]    🔎 Searching: "Business Services companies contact"
+[2025-08-13T15:48:43.604Z]    🔎 Searching: "Products customers email"
+[2025-08-13T15:48:44.140Z]    🔎 Searching: "promote custom pet portrait services Business Services"
+[2025-08-13T15:48:44.942Z] 💾 Knowledge base saved
+[2025-08-13T15:48:44.943Z] 📊 Total prospects in knowledge base: 15
+[2025-08-13T15:48:51.899Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T15:48:58.044Z]    ✅ Email sent: <3250b678-2318-a4a0-2d39-4bfef6f245eb@gmail.com> (Score: 70%)
+[2025-08-13T15:49:03.045Z]    📧 Generating email for Search for Louisiana Business Filings...
+[2025-08-13T15:49:43.060Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T15:49:48.513Z]    ✅ Email sent: <a8e3c21e-58de-6bfe-a240-04b37f9ecf85@gmail.com> (Score: 70%)
+[2025-08-13T15:49:53.518Z]    📧 Generating email for How to email customers from a particular product...
+[2025-08-13T15:50:33.532Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T15:50:42.316Z]    ✅ Email sent: <a1e9f339-fe1b-a477-86e2-f5937c76866b@gmail.com> (Score: 70%)
+[2025-08-13T15:50:47.332Z] 💾 Knowledge base saved
+[2025-08-13T15:58:11.900Z] 💾 Knowledge base saved
+[2025-08-13T16:08:11.901Z] 💾 Knowledge base saved
+[2025-08-13T16:18:11.893Z] 
+📧 EMAIL SENDING CYCLE
+[2025-08-13T16:18:11.893Z] 📮 Sending emails to 3 prospects
+[2025-08-13T16:18:11.894Z]    📧 Generating email for Consumer Product Safety Commission...
+[2025-08-13T16:18:11.902Z] 💾 Knowledge base saved
+[2025-08-13T16:18:51.898Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T16:18:58.949Z]    ✅ Email sent: <b9c6de0a-95d6-56be-26bb-ed3923a91b2b@gmail.com> (Score: 70%)
+[2025-08-13T16:19:03.950Z]    📧 Generating email for Send email and manage customer profiles based on their specific ......
+[2025-08-13T16:19:43.954Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T16:19:49.219Z]    ✅ Email sent: <c95dd22a-5285-5952-02e0-3d06541edcaa@gmail.com> (Score: 70%)
+[2025-08-13T16:19:54.221Z]    📧 Generating email for What is the easiest way to email every customer who has ordered a ......
+[2025-08-13T16:20:34.223Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T16:20:40.586Z]    ✅ Email sent: <063124eb-c8a3-390c-c214-ed958c6ac73e@gmail.com> (Score: 70%)
+[2025-08-13T16:20:45.591Z] 💾 Knowledge base saved
+[2025-08-13T16:28:11.901Z] 💾 Knowledge base saved
+[2025-08-13T16:38:11.901Z] 💾 Knowledge base saved
+[2025-08-13T16:48:11.886Z] 
+🔍 FINDING NEW PROSPECTS
+[2025-08-13T16:48:11.893Z] 
+📧 EMAIL SENDING CYCLE
+[2025-08-13T16:48:11.893Z] 📮 Sending emails to 3 prospects
+[2025-08-13T16:48:11.893Z]    📧 Generating email for How to send an email to customers who bought a specific product ......
+[2025-08-13T16:48:11.901Z] 💾 Knowledge base saved
+[2025-08-13T16:48:41.888Z]    🔎 Searching: "Business Services companies contact"
+[2025-08-13T16:48:43.483Z]    🔎 Searching: "Products customers email"
+[2025-08-13T16:48:43.971Z]    🔎 Searching: "promote custom pet portrait services Business Services"
+[2025-08-13T16:48:44.574Z] 💾 Knowledge base saved
+[2025-08-13T16:48:44.574Z] 📊 Total prospects in knowledge base: 15
+[2025-08-13T16:48:51.896Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T16:48:57.967Z]    ✅ Email sent: <def3b6e1-0337-a3f6-f387-e13fd7d45863@gmail.com> (Score: 70%)
+[2025-08-13T16:49:02.968Z]    📧 Generating email for Question to custom pet portrait artists : r/artbusiness...
+[2025-08-13T16:49:42.972Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T16:49:53.201Z]    ✅ Email sent: <29058396-d472-72e0-d8e8-7238c08a2ed5@gmail.com> (Score: 70%)
+[2025-08-13T16:49:58.201Z]    📧 Generating email for Custom Pet Portraits...
+[2025-08-13T16:50:38.217Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T16:50:48.175Z]    ✅ Email sent: <89486a19-4f1a-0663-a7ae-3d81ec021f16@gmail.com> (Score: 70%)
+[2025-08-13T16:50:53.179Z] 💾 Knowledge base saved
+[2025-08-13T16:58:11.902Z] 💾 Knowledge base saved
+[2025-08-13T17:08:11.903Z] 💾 Knowledge base saved
+[2025-08-13T17:18:11.893Z] 
+📧 EMAIL SENDING CYCLE
+[2025-08-13T17:18:11.893Z] 📮 Sending emails to 3 prospects
+[2025-08-13T17:18:11.893Z]    📧 Generating email for CALLING ALL LOCAL PET CREATIVES & SERVICE PROVIDERS ......
+[2025-08-13T17:18:11.904Z] 💾 Knowledge base saved
+[2025-08-13T17:18:51.896Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T17:18:56.493Z]    ✅ Email sent: <601fd37a-0824-d6f5-6df9-14a70cd7fd77@gmail.com> (Score: 70%)
+[2025-08-13T17:19:01.492Z]    📧 Generating email for Looking for experience/advice about selling prints of your photos ......
+[2025-08-13T17:19:41.494Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T17:19:46.771Z]    ✅ Email sent: <4849092f-1b82-d012-6561-8b8ca4e58461@gmail.com> (Score: 70%)
+[2025-08-13T17:19:51.772Z]    📧 Generating email for Custom Animal Shirts Embroidery Service...
+[2025-08-13T17:20:31.774Z]    ⚠️ AI email generation failed, using enhanced template
+[2025-08-13T17:20:35.979Z]    ✅ Email sent: <00217efe-c101-d153-cd0c-0faa2f82cbb3@gmail.com> (Score: 70%)
+[2025-08-13T17:20:40.982Z] 💾 Knowledge base saved
+[2025-08-13T17:28:11.904Z] 💾 Knowledge base saved
+[2025-08-13T17:38:11.906Z] 💾 Knowledge base saved

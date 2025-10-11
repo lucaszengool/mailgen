@@ -1,0 +1,157 @@
+# SearXNG Configuration for Email Search Engine
+# This configuration is optimized for finding business emails
+
+general:
+  debug: false
+  instance_name: "Email Search Engine"
+  contact_url: false
+  enable_metrics: true
+
+search:
+  # Enable JSON format for API usage
+  formats:
+    - html
+    - json
+    - csv
+    - rss
+  
+  default_lang: "en"
+  ban_time_on_fail: 5
+  max_ban_time_on_fail: 120
+  autocomplete: "google"
+  
+  # Optimize for email searches
+  safe_search: 0
+  default_locale: ""
+  
+engines:
+  # Google - Primary search engine
+  - name: google
+    engine: google
+    shortcut: go
+    use_mobile_ui: false
+    timeout: 10.0
+    
+  # Bing - Good for business searches
+  - name: bing
+    engine: bing
+    shortcut: bi
+    timeout: 10.0
+    
+  # DuckDuckGo - Privacy-focused
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    timeout: 10.0
+    
+  # Startpage - Google results with privacy
+  - name: startpage
+    engine: startpage
+    shortcut: sp
+    timeout: 10.0
+    
+  # Qwant - European search engine
+  - name: qwant
+    engine: qwant
+    shortcut: qw
+    timeout: 10.0
+    
+  # Yahoo - Sometimes finds different results
+  - name: yahoo
+    engine: yahoo
+    shortcut: yh
+    timeout: 10.0
+    
+  # GitHub - For developer emails
+  - name: github
+    engine: github
+    shortcut: gh
+    timeout: 10.0
+    
+  # LinkedIn profiles (through Google)
+  - name: google linkedin
+    engine: google
+    shortcut: li
+    search_url: 'https://www.google.com/search?q=site:linkedin.com+{query}'
+    timeout: 10.0
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "ultrasecretkey_please_change_in_production"
+  base_url: "http://localhost:8080/"
+  image_proxy: false
+  http_protocol_version: "1.1"
+  method: "POST"
+  
+ui:
+  static_path: ""
+  templates_path: ""
+  default_theme: "simple"
+  default_locale: "en"
+  theme_args:
+    simple_style: "dark"
+    
+redis:
+  url: false
+
+outgoing:
+  # Requests configuration
+  request_timeout: 10.0
+  max_request_timeout: 15.0
+  useragent_suffix: "EmailSearchBot/1.0"
+  pool_connections: 100
+  pool_maxsize: 20
+  enable_http2: true
+  
+  # Proxies for anonymity (optional)
+  # proxies:
+  #   http:
+  #     - http://proxy1:8080
+  #     - http://proxy2:8080
+  #   https:
+  #     - http://proxy1:8080
+  #     - http://proxy2:8080
+  
+  # Using Tor for anonymity (optional)
+  # using_tor_proxy: true
+  # extra_proxy_timeout: 10
+  
+categories_as_tabs:
+  general:
+  images:
+  videos:
+  news:
+  map:
+  music:
+  it:
+  science:
+  files:
+  social_media:
+
+enabled_plugins:
+  - 'Hash plugin'
+  - 'Search on category select'
+  - 'Self Information'
+  - 'Tracker URL remover'
+  - 'Open Access DOI rewrite'
+  
+# Enable HTTP for local services (if needed)
+enable_http: true
+
+# Result limits
+result_limit: 50
+results_on_new_tab: false
+
+# Privacy settings
+privacy:
+  autocomplete_min: 4
+  query_in_title: false
+
+# Checker settings for monitoring engine health
+checker:
+  off_when_debug: true
+  
+# Limiter settings for rate limiting
+limiter:
+  botdetection.ip_limit.link_token: false

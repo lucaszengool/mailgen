@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Email Editor - CRM Style</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .editor-container {
+            display: flex;
+            height: 100vh;
+            background: white;
+        }
+        
+        /* Left Sidebar - Component Library */
+        .component-library {
+            width: 280px;
+            background: #2c3e50;
+            color: white;
+            border-right: 1px solid #34495e;
+            overflow-y: auto;
+        }
+        
+        .library-header {
+            padding: 20px;
+            background: #34495e;
+            border-bottom: 1px solid #4a5f7a;
+        }
+        
+        .library-header h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #ecf0f1;
+        }
+        
+        .library-header p {
+            font-size: 13px;
+            color: #bdc3c7;
+            line-height: 1.4;
+        }
+        
+        .component-group {
+            margin: 15px 0;
+        }
+        
+        .component-group h3 {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .component-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+        }
+        
+        .component-item:hover {
+            background: #34495e;
+            border-left-color: #3498db;
+            transform: translateX(2px);
+        }
+        
+        .component-icon {
+            font-size: 18px;
+            margin-right: 12px;
+            width: 20px;
+        }
+        
+        .component-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Main Editor Area */
+        .editor-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .editor-toolbar {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .toolbar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .toolbar-subtitle {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-left: 10px;
+        }
+        
+        .toolbar-right {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        /* Email Canvas */
+        .editor-canvas {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .email-preview {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: 600px;
+            position: relative;
+        }
+        
+        .email-preview-header {
+            background: linear-gradient(135deg, #3498db 0%, #8e44ad 100%);
+            padding: 25px;
+            text-align: center;
+            color: white;
+        }
+        
+        .email-subject {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .email-meta {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .email-body {
+            padding: 40px 30px;
+        }
+        
+        .drop-zone {
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: #7f8c8d;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.05);
+            color: #3498db;
+        }
+        
+        .drop-zone-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* Right Properties Panel */
+        .properties-panel {
+            width: 320px;
+            background: white;
+            border-left: 1px solid #e9ecef;
+            overflow-y: auto;
+        }
+        
+        .panel-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .panel-subtitle {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        
+        .property-group {
+            padding: 20px;
+            border-bottom: 1px solid #f1f2f6;
+        }
+        
+        .property-group h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .property-field {
+            margin-bottom: 15px;
+        }
+        
+        .property-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #34495e;
+            margin-bottom: 6px;
+            display: block;
+        }
+        
+        .property-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .property-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .property-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        /* Component Styles */
+        .email-component {
+            position: relative;
+            margin: 10px 0;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            border-radius: 8px;
+        }
+        
+        .email-component:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+        }
+        
+        .email-component.selected {
+            border-color: #27ae60;
+            box-shadow: 0 2px 12px rgba(39, 174, 96, 0.2);
+        }
+        
+        .component-controls {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            display: none;
+            gap: 5px;
+        }
+        
+        .email-component:hover .component-controls,
+        .email-component.selected .component-controls {
+            display: flex;
+        }
+        
+        .control-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .control-btn.edit {
+            background: #f39c12;
+        }
+        
+        .control-btn.duplicate {
+            background: #3498db;
+        }
+        
+        /* Learning Panel */
+        .learning-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .learning-indicator.show {
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .component-library { width: 250px; }
+            .properties-panel { width: 280px; }
+        }
+        
+        @media (max-width: 768px) {
+            .component-library { 
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s;
+            }
+            
+            .component-library.open {
+                left: 0;
+            }
+            
+            .properties-panel { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Component Library -->
+        <div class="component-library">
+            <div class="library-header">
+                <h2>📧 Email Components</h2>
+                <p>Drag components to build your professional email</p>
+            </div>
+            
+            <div class="component-group">
+                <h3>Structure</h3>
+                <div class="component-item" draggable="true" data-component="header">
+                    <span class="component-icon">📰</span>
+                    <span class="component-name">Header Section</span>
+                </div>
+                <div class="component-item" draggable="true" data-component="hero">
+                    <span class="component-icon">🖼️</span>
+                    <span class="component-name">Hero Banner</span>
+                </div>
+                <div class="component-item" draggable="true" data-component="textBlock">
+                    <span class="component-icon">📝</span>
+                    <span class="component-name">Text Block</span>
+                </div>
+                <div class="component-item" draggable="true" data-component="divider">
+                    <span class="component-icon">➖</span>
+                    <span class="component-name">Divider</span>
+                </div>
+            </div>
+            
+            <div class="component-group">
+                <h3>Interactive</h3>
+                <div class="component-item" draggable="true" data-component="button">
+                    <span class="component-icon">🔘</span>
+                    <span class="component-name">CTA Button</span>
+                </div>
+                <div class="component-item" draggable="true" data-component="socialLinks">
+                    <span class="component-icon">🔗</span>
+                    <span class="component-name">Social Links</span>
+                </div>
+                <div class="component-item" draggable="true" data-component="video">
+                    <span class="component-icon">🎥</span>
+                    <span class="component-name">Video Embed</span>
+                </div>
+            </div>
+            
+            <div class="component-group">
+                <h3>Content</h3>
+                <div class="component-item" draggable="true" data-component="features">
+                    <span class="component-icon">⭐</span>
+                    <span class="component-name">Features Grid</span>
+                </div>
+                <div class="component-item" draggable="true" data-component="testimonial">
+                    <span class="component-icon">💬</span>
+                    <span class="component-name">Testimonial</span>
+                </div>
+                <div class="component-item" draggable="true" data-component="metrics">
+                    <span class="component-icon">📊</span>
+                    <span class="component-name">Metrics/Stats</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Editor -->
+        <div class="editor-main">
+            <div class="editor-toolbar">
+                <div class="toolbar-left">
+                    <div class="toolbar-title">📧 Professional Email Editor</div>
+                    <div class="toolbar-subtitle">Campaign: <span id="campaign-id">Loading...</span></div>
+                </div>
+                <div class="toolbar-right">
+                    <button class="btn btn-secondary" onclick="previewEmail()">
+                        👁️ Preview
+                    </button>
+                    <button class="btn btn-primary" onclick="saveEmail()">
+                        💾 Save Draft
+                    </button>
+                    <button class="btn btn-success" onclick="sendEmail()">
+                        🚀 Send Email
+                    </button>
+                </div>
+            </div>
+            
+            <div class="editor-canvas">
+                <div class="email-preview" id="email-preview">
+                    <div class="email-preview-header">
+                        <div class="email-subject" id="email-subject" contenteditable="true">
+                            Partnership Opportunity - FruitAI
+                        </div>
+                        <div class="email-meta">
+                            From: <span id="sender-name">Test User</span> &lt;<span id="sender-email">test@gmail.com</span>&gt;
+                        </div>
+                    </div>
+                    
+                    <div class="email-body" id="email-body">
+                        <div class="drop-zone" id="drop-zone">
+                            <div class="drop-zone-icon">📧</div>
+                            <h3>Start Building Your Email</h3>
+                            <p>Drag components from the left panel to create your professional email</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Properties Panel -->
+        <div class="properties-panel">
+            <div class="panel-header">
+                <div class="panel-title">✨ Properties</div>
+                <div class="panel-subtitle">Customize selected component</div>
+            </div>
+            
+            <div id="properties-content">
+                <div class="property-group">
+                    <h4>📧 Email Settings</h4>
+                    <div class="property-field">
+                        <label class="property-label">Subject Line</label>
+                        <input type="text" class="property-input" id="subject-input" placeholder="Enter email subject">
+                    </div>
+                    <div class="property-field">
+                        <label class="property-label">Preheader Text</label>
+                        <input type="text" class="property-input" placeholder="Preview text...">
+                    </div>
+                </div>
+                
+                <div class="property-group">
+                    <h4>🎨 Design</h4>
+                    <div class="property-field">
+                        <label class="property-label">Color Theme</label>
+                        <select class="property-input">
+                            <option>Professional Blue</option>
+                            <option>Modern Purple</option>
+                            <option>Clean Gray</option>
+                            <option>Vibrant Orange</option>
+                        </select>
+                    </div>
+                    <div class="property-field">
+                        <label class="property-label">Font Family</label>
+                        <select class="property-input">
+                            <option>Segoe UI</option>
+                            <option>Arial</option>
+                            <option>Helvetica</option>
+                            <option>Georgia</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="property-group">
+                    <h4>🧠 AI Learning</h4>
+                    <div class="property-field">
+                        <label class="property-label">Template Preference</label>
+                        <select class="property-input" id="template-preference">
+                            <option>Auto-Detect</option>
+                            <option>Professional</option>
+                            <option>Casual</option>
+                            <option>Technical</option>
+                        </select>
+                    </div>
+                    <div class="property-field">
+                        <label class="property-label">Learning Notes</label>
+                        <textarea class="property-input property-textarea" placeholder="Notes for AI to learn from..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Learning Indicator -->
+    <div class="learning-indicator" id="learning-indicator">
+        🧠 AI Learning from your changes...
+    </div>
+    
+    <script>
+        // Professional Email Editor JavaScript
+        class EmailEditor {
+            constructor() {
+                this.components = [];
+                this.selectedComponent = null;
+                this.isLearning = false;
+                this.campaignId = null;
+                
+                this.initializeEditor();
+                this.loadEmailData();
+            }
+            
+            initializeEditor() {
+                // Setup drag and drop
+                this.setupDragAndDrop();
+                
+                // Setup event listeners
+                document.getElementById('subject-input').addEventListener('input', (e) => {
+                    document.getElementById('email-subject').textContent = e.target.value;
+                    this.trackChange('subject', e.target.value);
+                });
+                
+                // Auto-save every 30 seconds
+                setInterval(() => this.autoSave(), 30000);
+            }
+            
+            setupDragAndDrop() {
+                const componentItems = document.querySelectorAll('.component-item');
+                const dropZone = document.getElementById('drop-zone');
+                const emailBody = document.getElementById('email-body');
+                
+                componentItems.forEach(item => {
+                    item.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('component-type', e.target.dataset.component);
+                    });
+                });
+                
+                [dropZone, emailBody].forEach(zone => {
+                    zone.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        zone.classList.add('drag-over');
+                    });
+                    
+                    zone.addEventListener('dragleave', () => {
+                        zone.classList.remove('drag-over');
+                    });
+                    
+                    zone.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const componentType = e.dataTransfer.getData('component-type');
+                        this.addComponent(componentType);
+                        zone.classList.remove('drag-over');
+                    });
+                });
+            }
+            
+            async loadEmailData() {
+                // Get campaign ID from URL or API
+                const urlParams = new URLSearchParams(window.location.search);
+                this.campaignId = urlParams.get('campaignId') || 'demo';
+                const prospectId = urlParams.get('prospectId') || null;
+                document.getElementById('campaign-id').textContent = this.campaignId;
+
+                console.log('🔥🔥🔥 CLEARING ALL CACHES AND STORAGE');
+                // CLEAR ALL STORAGE MECHANISMS
+                try {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                } catch (e) {
+                    console.log('Storage clear error:', e);
+                }
+
+                try {
+                    // ONLY CHECK FOR PENDING EMAILS - NO CACHING, NO STORAGE
+                    const pendingResponse = await fetch('/api/email-editor/pending-approval', {
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        }
+                    });
+
+                    if (pendingResponse.ok) {
+                        const pendingData = await pendingResponse.json();
+                        if (pendingData.success && pendingData.hasPending && pendingData.email) {
+                            console.log('🎯🎯🎯 FORCING EXACT CAMPAIGN HTML DISPLAY');
+                            this.forceDisplayExactHTML(pendingData.email);
+                            return; // EXIT - DON'T LOAD ANYTHING ELSE
+                        }
+                    }
+
+                    // Load email components from API
+                    const response = await fetch('/api/email-editor/components');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        console.log('📧 Loaded', data.components.length, 'email components');
+                        this.availableComponents = data.components;
+                    }
+
+                    // Try to load existing campaign emails - with retry logic
+                    let attempts = 0;
+                    const maxAttempts = 5;
+                    
+                    const loadEmails = async () => {
+                        attempts++;
+                        console.log(`📧 Attempt ${attempts}/${maxAttempts} to load campaign emails...`);
+                        
+                        const workflowResponse = await fetch('/api/workflow/results');
+                        if (workflowResponse.ok) {
+                            const workflowData = await workflowResponse.json();
+                            if (workflowData.success && workflowData.data.emailCampaign) {
+                                const campaignEmails = workflowData.data.emailCampaign.emails || workflowData.data.emailCampaign.emailsSent || [];
+                                console.log('📧 Found', campaignEmails.length, 'campaign emails');
+                                
+                                if (campaignEmails.length > 0) {
+                                    // Use currentEmailIndex from workflow data, or fall back to first email
+                                    let emailIndex = 0;
+                                    if (workflowData.data.currentEmailIndex !== undefined &&
+                                        workflowData.data.currentEmailIndex < campaignEmails.length) {
+                                        emailIndex = workflowData.data.currentEmailIndex;
+                                        console.log(`📧 Using workflow's currentEmailIndex: ${emailIndex}`);
+                                    }
+
+                                    let emailToEdit = campaignEmails[emailIndex];
+
+                                    // If prospectId is specified, find that specific email (overrides index)
+                                    if (prospectId) {
+                                        const specificEmail = campaignEmails.find(email => email.to === prospectId);
+                                        if (specificEmail) {
+                                            emailToEdit = specificEmail;
+                                            console.log(`📧 Using prospectId override: ${prospectId}`);
+                                        }
+                                    }
+                                    
+                                    console.log('📧 Loading email for editing:', emailToEdit.to);
+                                    this.loadExistingEmail(emailToEdit);
+                                    return true; // Success
+                                } else if (attempts < maxAttempts) {
+                                    // Retry after 2 seconds if no emails found
+                                    console.log('📧 No emails found, retrying in 2 seconds...');
+                                    setTimeout(loadEmails, 2000);
+                                }
+                            } else if (attempts < maxAttempts) {
+                                // Retry if no campaign data
+                                console.log('📧 No campaign data found, retrying in 2 seconds...');
+                                setTimeout(loadEmails, 2000);
+                            }
+                        }
+                        return false; // Failed
+                    };
+                    
+                    await loadEmails();
+                    
+                } catch (error) {
+                    console.error('Failed to load email data:', error);
+                }
+            }
+
+            forceDisplayExactHTML(emailData) {
+                console.log('🔥🔥🔥 FORCING EXACT HTML - NO CACHING, NO STORAGE');
+                console.log('   - Incoming HTML/body length:', emailData.html?.length || emailData.body?.length || 0);
+
+                // CLEAR EVERYTHING FIRST
+                const emailBody = document.getElementById('email-body');
+                const dropZone = document.getElementById('drop-zone');
+                const emailPreview = document.getElementById('email-preview');
+
+                // DESTROY ALL EXISTING CONTENT
+                if (emailBody) emailBody.innerHTML = '';
+                if (dropZone) {
+                    dropZone.style.display = 'none';
+                    dropZone.innerHTML = '';
+                }
+
+                // Clear any stored components
+                this.components = [];
+                this.pendingApprovalEmails = [];
+
+                // Update subject if exists
+                if (emailData.subject) {
+                    const subjectEl = document.getElementById('email-subject');
+                    const subjectInput = document.getElementById('subject-input');
+                    if (subjectEl) subjectEl.textContent = emailData.subject;
+                    if (subjectInput) subjectInput.value = emailData.subject;
+                }
+
+                // Update sender info
+                if (emailData.sender_name) {
+                    const senderName = document.getElementById('sender-name');
+                    if (senderName) senderName.textContent = emailData.sender_name;
+                }
+                if (emailData.sender_email) {
+                    const senderEmail = document.getElementById('sender-email');
+                    if (senderEmail) senderEmail.textContent = emailData.sender_email;
+                }
+
+                // GET THE EXACT HTML CONTENT - NO MODIFICATIONS
+                const htmlContent = emailData.html || emailData.body;
+
+                if (!htmlContent) {
+                    console.error('❌ NO HTML CONTENT FOUND!');
+                    return;
+                }
+
+                console.log('📋 RAW HTML PREVIEW:', htmlContent.substring(0, 200) + '...');
+
+                // CREATE IFRAME AND DISPLAY EXACT HTML
+                const iframe = document.createElement('iframe');
+                iframe.id = 'email-campaign-exact-display';
+                iframe.style.cssText = `
+                    width: 100%;
+                    min-height: 900px;
+                    border: none;
+                    border-radius: 8px;
+                    background: white;
+                    display: block;
+                `;
+
+                emailBody.appendChild(iframe);
+
+                // Write EXACT HTML to iframe
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(htmlContent);
+                iframeDoc.close();
+
+                // Auto-resize after content loads
+                setTimeout(() => {
+                    try {
+                        const height = iframeDoc.body.scrollHeight;
+                        iframe.style.height = (height + 100) + 'px';
+                    } catch (e) {
+                        console.log('Resize error:', e);
+                    }
+                }, 200);
+
+                console.log('✅✅✅ EXACT HTML FORCED - IDENTICAL TO CAMPAIGN PAGE');
+            }
+
+            loadPendingEmailHTML(pendingEmail) {
+                // JUST REDIRECT TO FORCE DISPLAY
+                console.log('🔥 REDIRECTING TO forceDisplayExactHTML');
+                this.forceDisplayExactHTML(pendingEmail);
+            }
+
+            loadExistingEmail(email) {
+                // FORCE EXACT DISPLAY - NO CACHING
+                console.log('🔥 BYPASSING ALL CACHES - FORCING EXACT HTML');
+                this.forceDisplayExactHTML(email);
+            }
+
+            replaceTemplateVariables(content, email) {
+                if (!content || typeof content !== 'string') return content;
+                
+                const variables = {
+                    '{{companyName}}': email.recipient_company || email.company || 'Your Company',
+                    '{{recipientName}}': email.recipient_name || email.name || 'there',
+                    '{{senderName}}': email.sender_name || 'AI Marketing',
+                    '{{websiteUrl}}': email.website_url || 'https://example.com',
+                    '{{campaignId}}': email.campaign_id || 'default'
+                };
+                
+                let processedContent = content;
+                Object.entries(variables).forEach(([placeholder, value]) => {
+                    const regex = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g');
+                    processedContent = processedContent.replace(regex, value);
+                });
+                
+                return processedContent;
+            }
+            
+            async addComponent(componentType) {
+                try {
+                    const response = await fetch('/api/email-editor/add-component', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            componentId: componentType,
+                            position: this.components.length
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        this.renderComponent(componentType, result.component);
+                        this.trackChange('add_component', componentType);
+                    }
+                } catch (error) {
+                    console.error('Failed to add component:', error);
+                }
+            }
+            
+            renderComponent(type, data) {
+                const emailBody = document.getElementById('email-body');
+                const dropZone = document.getElementById('drop-zone');
+                
+                // Hide drop zone if first component
+                if (this.components.length === 0) {
+                    dropZone.style.display = 'none';
+                }
+                
+                const componentHtml = this.generateComponentHtml(type, data);
+                const wrapper = document.createElement('div');
+                wrapper.className = 'email-component';
+                wrapper.innerHTML = componentHtml + this.getComponentControls();
+                wrapper.onclick = () => this.selectComponent(wrapper);
+                
+                emailBody.appendChild(wrapper);
+                this.components.push({ type, data, element: wrapper });
+            }
+            
+            generateComponentHtml(type, data) {
+                const templates = {
+                    header: `
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white; border-radius: 8px; margin: 10px 0;">
+                            <h2 style="margin: 0; font-size: 24px;">Your Company</h2>
+                            <p style="margin: 8px 0 0 0; opacity: 0.9;">Professional Email Header</p>
+                        </div>
+                    `,
+                    textBlock: `
+                        <div style="padding: 20px 0;">
+                            <p style="font-size: 16px; line-height: 1.6; color: #333; margin: 0;">
+                                This is a text block. Click to edit and customize your message. You can add multiple paragraphs and format them as needed.
+                            </p>
+                        </div>
+                    `,
+                    button: `
+                        <div style="text-align: center; padding: 20px 0;">
+                            <a href="#" style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #3498db 0%, #8b5cf6 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                                Click Here
+                            </a>
+                        </div>
+                    `,
+                    features: `
+                        <div style="padding: 30px 0;">
+                            <h3 style="text-align: center; margin-bottom: 25px; color: #2c3e50;">Key Features</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                                <div style="text-align: center; padding: 20px;">
+                                    <div style="font-size: 32px; margin-bottom: 10px;">✅</div>
+                                    <h4 style="margin: 0 0 8px 0; color: #34495e;">Feature 1</h4>
+                                    <p style="margin: 0; color: #7f8c8d; font-size: 14px;">Description here</p>
+                                </div>
+                                <div style="text-align: center; padding: 20px;">
+                                    <div style="font-size: 32px; margin-bottom: 10px;">⚡</div>
+                                    <h4 style="margin: 0 0 8px 0; color: #34495e;">Feature 2</h4>
+                                    <p style="margin: 0; color: #7f8c8d; font-size: 14px;">Description here</p>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                };
+                
+                return templates[type] || '<p>Component not found</p>';
+            }
+            
+            getComponentControls() {
+                return `
+                    <div class="component-controls">
+                        <button class="control-btn edit" title="Edit" onclick="event.stopPropagation(); editComponent(this)">✏️</button>
+                        <button class="control-btn duplicate" title="Duplicate" onclick="event.stopPropagation(); duplicateComponent(this)">📋</button>
+                        <button class="control-btn" title="Delete" onclick="event.stopPropagation(); deleteComponent(this)">🗑️</button>
+                    </div>
+                `;
+            }
+            
+            selectComponent(element) {
+                // Remove previous selection
+                document.querySelectorAll('.email-component.selected').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                element.classList.add('selected');
+                this.selectedComponent = element;
+                this.updatePropertiesPanel(element);
+            }
+            
+            updatePropertiesPanel(element) {
+                // Update properties panel based on selected component
+                // This would show component-specific editing options
+            }
+            
+            trackChange(type, value) {
+                if (!this.isLearning) {
+                    this.isLearning = true;
+                    this.showLearningIndicator();
+                    
+                    // Send learning data to backend
+                    setTimeout(() => {
+                        fetch('/api/email-editor/save', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                campaignId: this.campaignId,
+                                changeType: type,
+                                changeValue: value,
+                                timestamp: new Date().toISOString()
+                            })
+                        });
+                    }, 1000);
+                }
+            }
+            
+            showLearningIndicator() {
+                const indicator = document.getElementById('learning-indicator');
+                indicator.classList.add('show');
+                
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                    this.isLearning = false;
+                }, 3000);
+            }
+            
+            async autoSave() {
+                if (this.components.length > 0) {
+                    const emailStructure = {
+                        subject: document.getElementById('email-subject').textContent,
+                        components: this.components.map(comp => ({
+                            type: comp.type,
+                            data: comp.data
+                        }))
+                    };
+                    
+                    try {
+                        await fetch('/api/email-editor/save', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                campaignId: this.campaignId,
+                                emailStructure: emailStructure,
+                                autoSave: true
+                            })
+                        });
+                        
+                        console.log('💾 Auto-saved email');
+                    } catch (error) {
+                        console.error('Auto-save failed:', error);
+                    }
+                }
+            }
+        }
+        
+        // Global functions
+        function editComponent(button) {
+            alert('Edit component functionality - would open detailed editor');
+        }
+        
+        function duplicateComponent(button) {
+            alert('Duplicate component - would create copy');
+        }
+        
+        function deleteComponent(button) {
+            const component = button.closest('.email-component');
+            component.remove();
+            editor.trackChange('delete_component', 'removed');
+        }
+        
+        function previewEmail() {
+            window.open('/api/email-editor/preview', '_blank');
+        }
+        
+        async function saveEmail() {
+            await editor.autoSave();
+            alert('✅ Email saved successfully!');
+        }
+        
+        async function sendEmail() {
+            if (confirm('🚀 Send this email to all prospects in the campaign?')) {
+                try {
+                    const response = await fetch('/api/email-editor/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            campaignId: editor.campaignId,
+                            approved: true
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        alert('🎉 Email sent successfully!');
+                        window.close();
+                    }
+                } catch (error) {
+                    alert('❌ Failed to send email');
+                }
+            }
+        }
+        
+        // Initialize editor
+        const editor = new EmailEditor();
+        
+        console.log('📧 Professional Email Editor initialized');
+    </script>
+</body>
+</html>

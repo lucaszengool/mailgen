@@ -1,0 +1,19 @@
+{
+  "to": "info@insitro.com",
+  "subject": "AI Partnership Opportunity - Daphne Koller CEO",
+  "sourceAnalysis": {
+    "companyName": "TechCrunch",
+    "industry": "media technology",
+    "mainProducts": ["Tech journalism", "Startup coverage", "Event hosting"],
+    "valueProposition": "Leading technology media platform connecting startups and investors"
+  },
+  "targetProspect": {
+    "name": "Daphne Koller",
+    "company": "insitro",
+    "jobTitle": "CEO and Founder",
+    "industry": "biotechnology AI",
+    "email": "info@insitro.com",
+    "businessType": "AI-driven drug discovery"
+  },
+  "campaignObjective": "media partnership for startup coverage"
+}

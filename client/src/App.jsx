@@ -1,0 +1,310 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import Layout from './components/Layout';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import Campaigns from './pages/Campaigns';
+import Contacts from './pages/Contacts';
+import Prospects from './pages/ProspectsClean';
+import Analytics from './pages/Analytics';
+import EmailMonitoring from './pages/EmailMonitoring';
+import Settings from './pages/Settings';
+import EmailComposer from './pages/EmailComposer';
+import ProfessionalEmailEditorPage from './pages/ProfessionalEmailEditor';
+import ProfessionalEmailEditor from './components/ProfessionalEmailEditor';
+import WebsiteAnalyzer from './pages/WebsiteAnalyzer';
+import ChineseMarketSearch from './pages/ChineseMarketSearch';
+import LangGraphAgent from './pages/LangGraphAgent';
+import HeadAIStyleStartPage from './components/HeadAIStyleStartPage';
+import AgentSetupWizard from './components/AgentSetupWizard';
+import CampaignSetupWizard from './components/CampaignSetupWizard';
+import WebsiteAnalysisReview from './components/WebsiteAnalysisReview';
+import EmailMonitoringDashboard from './components/EmailMonitoringDashboard';
+import WorkflowDashboard from './components/WorkflowDashboard';
+import EnhancedWorkflowDashboard from './components/EnhancedWorkflowDashboard';
+import ComprehensiveDashboard from './components/ComprehensiveDashboard';
+import RealTimeWorkflowDashboard from './components/RealTimeWorkflowDashboard';
+import GitHubStyleWorkflowDashboard from './components/GitHubStyleWorkflowDashboard';
+import SimpleWorkflowDashboard from './components/SimpleWorkflowDashboard';
+import WorkflowStyleDashboard from './components/WorkflowStyleDashboard';
+import ClientDetailView from './components/ClientDetailView';
+import AgentControlPanel from './components/AgentControlPanel';
+import EmailDashboard from './components/EmailDashboard';
+import WorkflowPanel from './components/WorkflowPanel';
+
+function App() {
+  const [isSetupComplete, setIsSetupComplete] = useState(false);
+  const [agentConfig, setAgentConfig] = useState(null);
+  const [currentView, setCurrentView] = useState('setup');
+  const [selectedClient, setSelectedClient] = useState(null);
+
+  // Debug current view state
+  // console.log('🔍 App.jsx render - Current state:', { currentView, isSetupComplete });
+
+  useEffect(() => {
+    console.log('App mounted, checking setup status...');
+    checkSetupStatus();
+  }, []);
+
+  const checkSetupStatus = async () => {
+    try {
+      console.log('Fetching config from API...');
+      const response = await fetch('/api/agent/config');
+      console.log('Response status:', response.status);
+      if (response.ok) {
+        const config = await response.json();
+        console.log('Config received:', config);
+        if (config && config.targetWebsite) {
+          console.log('Setup is complete, switching to dashboard');
+          setAgentConfig(config);
+          setIsSetupComplete(true);
+          setCurrentView('dashboard');
+        } else {
+          console.log('Config missing targetWebsite');
+        }
+      } else {
+        console.log('Response not ok:', response.status);
+      }
+    } catch (error) {
+      console.log('Error fetching config:', error);
+    }
+  };
+
+  const handleSetupComplete = (config) => {
+    console.log('🔄 App.jsx - Setup completed, navigating to:', config.nextStep || 'dashboard');
+    
+    setAgentConfig(config);
+    if (config.nextStep === 'website-analysis') {
+      // Show website analysis review page
+      setCurrentView('website-analysis');
+    } else {
+      setIsSetupComplete(true);
+      setCurrentView('dashboard');
+    }
+  };
+
+  const handleClientClick = (client) => {
+    setSelectedClient(client);
+    setCurrentView('client-detail');
+  };
+
+  const handleBackToDashboard = () => {
+    setSelectedClient(null);
+    setCurrentView('dashboard');
+  };
+
+  const handleAnalysisConfirm = (analysisData) => {
+    // Update agent config with analysis data and launch dashboard
+    const updatedConfig = { ...agentConfig, analysisData };
+    setAgentConfig(updatedConfig);
+    setIsSetupComplete(true);
+    setCurrentView('dashboard');
+  };
+
+  const handleBackToSetup = () => {
+    setCurrentView('setup');
+  };
+
+  const handleReset = async () => {
+    console.log('🔄 App.jsx - handleReset called');
+    
+    try {
+      // Clear server-side configuration first
+      const response = await fetch('/api/agent/reset', { 
+        method: 'POST'
+      });
+      const result = await response.json();
+      console.log('🔄 Server config cleared:', result.success, result.message);
+    } catch (error) {
+      console.log('⚠️ Could not clear server config:', error.message);
+    }
+    
+    // Clear all client-side configuration and reset to setup wizard
+    setAgentConfig(null);
+    setIsSetupComplete(false);
+    setCurrentView('setup');
+    setSelectedClient(null);
+    
+    // Clear localStorage
+    localStorage.removeItem('agentConfig');
+    
+    console.log('🔄 App.jsx - State reset complete:', {
+      agentConfig: null,
+      isSetupComplete: false,
+      currentView: 'setup',
+      selectedClient: null
+    });
+    
+    // Force page reload to reset to initial setup
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 100);
+  };
+
+  // Show setup wizard if setup is not complete AND not in website-analysis view
+  if (!isSetupComplete && currentView !== 'website-analysis') {
+    return (
+      <Router>
+        <div className="App bg-white min-h-screen">
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#fff',
+                color: '#374151',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                border: '1px solid #e5e7eb'
+              },
+              success: {
+                iconTheme: {
+                  primary: '#22c55e',
+                  secondary: '#fff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
+          <Routes>
+            <Route path="/" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} />
+            <Route path="/setup" element={<CampaignSetupWizard onComplete={handleSetupComplete} />} />
+            <Route path="/smtp-setup" element={<AgentSetupWizard onComplete={handleSetupComplete} />} />
+          </Routes>
+        </div>
+      </Router>
+    );
+  }
+
+  // Show integrated email monitoring system
+  if (currentView === 'dashboard') {
+    return (
+      <div className="App bg-black min-h-screen">
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#111827',
+              color: '#F9FAFB',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+              border: '1px solid #374151'
+            }
+          }}
+        />
+        <SimpleWorkflowDashboard 
+          agentConfig={agentConfig}
+          onReset={handleReset}
+        />
+      </div>
+    );
+  }
+
+  // Show website analysis review page
+  if (currentView === 'website-analysis') {
+    return (
+      <div className="App bg-white min-h-screen">
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#fff',
+              color: '#374151',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e5e7eb'
+            }
+          }}
+        />
+        <WebsiteAnalysisReview
+          targetWebsite={agentConfig?.targetWebsite}
+          campaignGoal={agentConfig?.campaignGoal}
+          businessType={agentConfig?.businessType}
+          onConfirm={handleAnalysisConfirm}
+          onBack={handleBackToSetup}
+        />
+      </div>
+    );
+  }
+
+  // Show client detail view
+  if (currentView === 'client-detail' && selectedClient) {
+    return (
+      <div className="App bg-white min-h-screen">
+        <Toaster position="top-right" />
+        <ClientDetailView 
+          client={selectedClient}
+          onBack={handleBackToDashboard}
+          onUpdateClient={(updatedClient) => {
+            setSelectedClient(updatedClient);
+            // Update the client in the main list as well
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Fallback to original routing system
+  return (
+    <Router>
+      <div className="App bg-white min-h-screen">
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#fff',
+              color: '#374151',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e5e7eb'
+            },
+            success: {
+              iconTheme: {
+                primary: '#22c55e',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
+
+        <Routes>
+          <Route path="/start" element={<HeadAIStyleStartPage />} />
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="home" element={<Home />} />
+            <Route path="workflow" element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="campaigns" element={<Campaigns />} />
+            <Route path="contacts" element={<Contacts />} />
+            <Route path="prospects" element={<Prospects />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="monitoring" element={<EmailMonitoring />} />
+            <Route path="email-marketing" element={<EmailDashboard />} />
+            <Route path="editor" element={<ProfessionalEmailEditorPage />} />
+            <Route path="research" element={<WebsiteAnalyzer />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="compose" element={<EmailComposer />} />
+            <Route path="professional-email-editor" element={<ProfessionalEmailEditorPage />} />
+            <Route path="email-editor" element={<ProfessionalEmailEditorPage />} />
+            <Route path="website-analyzer" element={<WebsiteAnalyzer />} />
+            <Route path="chinese-market" element={<ChineseMarketSearch />} />
+            <Route path="langgraph-agent" element={<LangGraphAgent />} />
+          </Route>
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+export default App

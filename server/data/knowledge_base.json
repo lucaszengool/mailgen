@@ -1,0 +1,1510 @@
+{
+  "http://fruitai.org": {
+    "createdAt": "2025-08-15T19:31:58.608Z",
+    "researchHistory": [
+      {
+        "timestamp": "2025-08-15T19:31:58.607Z",
+        "website": "http://fruitai.org",
+        "competitors": {
+          "totalFound": 0,
+          "analyzed": [],
+          "summary": "暂时跳过竞争对手分析"
+        },
+        "marketTrends": {
+          "emergingKeywords": [
+            "人工智能宠物护理",
+            "智能宠物用品",
+            "可持续宠物产品",
+            "宠物健康科技",
+            "个性化宠物服务"
+          ],
+          "growthAreas": [
+            {
+              "area": "宠物科技",
+              "growth": "+45%",
+              "period": "年同比"
+            },
+            {
+              "area": "高端宠物食品",
+              "growth": "+32%",
+              "period": "年同比"
+            },
+            {
+              "area": "宠物保险",
+              "growth": "+28%",
+              "period": "年同比"
+            }
+          ],
+          "seasonalTrends": {
+            "spring": [
+              "宠物护理产品",
+              "户外宠物用品"
+            ],
+            "summer": [
+              "防蚤虫产品",
+              "宠物降温用品"
+            ],
+            "fall": [
+              "宠物保健品",
+              "室内娱乐用品"
+            ],
+            "winter": [
+              "宠物保暖用品",
+              "室内训练产品"
+            ]
+          },
+          "consumerBehavior": {
+            "onlinePurchaseRate": "78%",
+            "mobileShoppingRate": "65%",
+            "subscriptionModelAdoption": "42%",
+            "sustainabilityImportance": "71%"
+          }
+        },
+        "targetAudience": {
+          "demographics": {
+            "ageGroups": [
+              {
+                "range": "25-34",
+                "percentage": 35
+              },
+              {
+                "range": "35-44",
+                "percentage": 28
+              },
+              {
+                "range": "45-54",
+                "percentage": 22
+              },
+              {
+                "range": "18-24",
+                "percentage": 10
+              },
+              {
+                "range": "55+",
+                "percentage": 5
+              }
+            ],
+            "income": [
+              {
+                "range": "50k-75k",
+                "percentage": 32
+              },
+              {
+                "range": "75k-100k",
+                "percentage": 28
+              },
+              {
+                "range": "100k+",
+                "percentage": 25
+              },
+              {
+                "range": "30k-50k",
+                "percentage": 15
+              }
+            ],
+            "location": [
+              "城市",
+              "郊区",
+              "小城镇"
+            ]
+          },
+          "psychographics": {
+            "values": [
+              "宠物健康",
+              "便利性",
+              "质量",
+              "可持续性"
+            ],
+            "painPoints": [
+              "寻找可靠的宠物产品",
+              "价格透明度",
+              "产品安全性",
+              "快速配送"
+            ],
+            "preferredChannels": [
+              {
+                "channel": "社交媒体",
+                "engagement": "85%"
+              },
+              {
+                "channel": "邮件营销",
+                "engagement": "45%"
+              },
+              {
+                "channel": "搜索引擎",
+                "engagement": "78%"
+              },
+              {
+                "channel": "口碑推荐",
+                "engagement": "92%"
+              }
+            ]
+          },
+          "buyingJourney": {
+            "awareness": [
+              "社交媒体广告",
+              "朋友推荐",
+              "搜索引擎"
+            ],
+            "consideration": [
+              "产品评价",
+              "价格比较",
+              "品牌信誉"
+            ],
+            "decision": [
+              "优惠活动",
+              "免费试用",
+              "退款保证"
+            ],
+            "retention": [
+              "产品质量",
+              "客户服务",
+              "持续价值"
+            ]
+          }
+        },
+        "industryInsights": {
+          "marketSize": {
+            "global": "$261B",
+            "growth": "+6.1% CAGR",
+            "forecast2025": "$295B"
+          },
+          "keyDrivers": [
+            "宠物人性化趋势",
+            "可支配收入增加",
+            "健康意识提升",
+            "科技产品采用"
+          ],
+          "challenges": [
+            "供应链成本上升",
+            "监管要求增加",
+            "市场竞争激烈",
+            "消费者期望提高"
+          ],
+          "opportunities": [
+            "AI和物联网集成",
+            "个性化产品定制",
+            "订阅模式创新",
+            "可持续产品开发"
+          ],
+          "regulations": [
+            "产品安全标准",
+            "标签要求",
+            "进口限制",
+            "环保合规"
+          ]
+        },
+        "pricingStrategy": {
+          "competitorPricing": [
+            {
+              "competitor": "Competitor A",
+              "avgPrice": "$45",
+              "strategy": "高端定位"
+            },
+            {
+              "competitor": "Competitor B",
+              "avgPrice": "$32",
+              "strategy": "中端市场"
+            },
+            {
+              "competitor": "Competitor C",
+              "avgPrice": "$28",
+              "strategy": "价格竞争"
+            }
+          ],
+          "priceRange": {
+            "premium": "$50+",
+            "midRange": "$25-50",
+            "budget": "<$25"
+          },
+          "pricingSuggestions": [
+            "建议定价: $35-40",
+            "价值主张: 质量与价格的平衡",
+            "促销策略: 首次购买折扣",
+            "捆绑销售: 增加平均订单价值"
+          ],
+          "elasticity": {
+            "highSensitivity": [
+              "预算型消费者",
+              "价格敏感产品"
+            ],
+            "lowSensitivity": [
+              "高收入群体",
+              "独特产品"
+            ]
+          }
+        },
+        "contentOpportunities": {
+          "popularTopics": [
+            {
+              "topic": "宠物健康指南",
+              "searchVolume": 45000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物训练技巧",
+              "searchVolume": 38000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物营养建议",
+              "searchVolume": 32000,
+              "difficulty": "高"
+            },
+            {
+              "topic": "宠物用品评测",
+              "searchVolume": 28000,
+              "difficulty": "低"
+            }
+          ],
+          "contentGaps": [
+            "针对特定品种的护理指南",
+            "季节性宠物护理建议",
+            "宠物行为问题解决方案",
+            "预算友好的宠物护理"
+          ],
+          "contentFormats": [
+            {
+              "format": "视频教程",
+              "engagement": "89%"
+            },
+            {
+              "format": "图文指南",
+              "engagement": "65%"
+            },
+            {
+              "format": "互动工具",
+              "engagement": "73%"
+            },
+            {
+              "format": "用户故事",
+              "engagement": "81%"
+            }
+          ],
+          "seoOpportunities": [
+            {
+              "keyword": "最佳宠物清洁产品",
+              "volume": 12000,
+              "competition": "中"
+            },
+            {
+              "keyword": "天然宠物护理",
+              "volume": 8500,
+              "competition": "低"
+            },
+            {
+              "keyword": "宠物异味清除",
+              "volume": 15000,
+              "competition": "高"
+            }
+          ]
+        }
+      }
+    ],
+    "lastUpdated": "2025-08-15T19:31:58.608Z"
+  },
+  "https://headai.io": {
+    "createdAt": "2025-08-16T14:11:29.185Z",
+    "researchHistory": [
+      {
+        "timestamp": "2025-08-16T14:11:29.184Z",
+        "website": "https://headai.io",
+        "competitors": {
+          "totalFound": 0,
+          "analyzed": [],
+          "summary": "暂时跳过竞争对手分析"
+        },
+        "marketTrends": {
+          "emergingKeywords": [
+            "人工智能宠物护理",
+            "智能宠物用品",
+            "可持续宠物产品",
+            "宠物健康科技",
+            "个性化宠物服务"
+          ],
+          "growthAreas": [
+            {
+              "area": "宠物科技",
+              "growth": "+45%",
+              "period": "年同比"
+            },
+            {
+              "area": "高端宠物食品",
+              "growth": "+32%",
+              "period": "年同比"
+            },
+            {
+              "area": "宠物保险",
+              "growth": "+28%",
+              "period": "年同比"
+            }
+          ],
+          "seasonalTrends": {
+            "spring": [
+              "宠物护理产品",
+              "户外宠物用品"
+            ],
+            "summer": [
+              "防蚤虫产品",
+              "宠物降温用品"
+            ],
+            "fall": [
+              "宠物保健品",
+              "室内娱乐用品"
+            ],
+            "winter": [
+              "宠物保暖用品",
+              "室内训练产品"
+            ]
+          },
+          "consumerBehavior": {
+            "onlinePurchaseRate": "78%",
+            "mobileShoppingRate": "65%",
+            "subscriptionModelAdoption": "42%",
+            "sustainabilityImportance": "71%"
+          }
+        },
+        "targetAudience": {
+          "demographics": {
+            "ageGroups": [
+              {
+                "range": "25-34",
+                "percentage": 35
+              },
+              {
+                "range": "35-44",
+                "percentage": 28
+              },
+              {
+                "range": "45-54",
+                "percentage": 22
+              },
+              {
+                "range": "18-24",
+                "percentage": 10
+              },
+              {
+                "range": "55+",
+                "percentage": 5
+              }
+            ],
+            "income": [
+              {
+                "range": "50k-75k",
+                "percentage": 32
+              },
+              {
+                "range": "75k-100k",
+                "percentage": 28
+              },
+              {
+                "range": "100k+",
+                "percentage": 25
+              },
+              {
+                "range": "30k-50k",
+                "percentage": 15
+              }
+            ],
+            "location": [
+              "城市",
+              "郊区",
+              "小城镇"
+            ]
+          },
+          "psychographics": {
+            "values": [
+              "宠物健康",
+              "便利性",
+              "质量",
+              "可持续性"
+            ],
+            "painPoints": [
+              "寻找可靠的宠物产品",
+              "价格透明度",
+              "产品安全性",
+              "快速配送"
+            ],
+            "preferredChannels": [
+              {
+                "channel": "社交媒体",
+                "engagement": "85%"
+              },
+              {
+                "channel": "邮件营销",
+                "engagement": "45%"
+              },
+              {
+                "channel": "搜索引擎",
+                "engagement": "78%"
+              },
+              {
+                "channel": "口碑推荐",
+                "engagement": "92%"
+              }
+            ]
+          },
+          "buyingJourney": {
+            "awareness": [
+              "社交媒体广告",
+              "朋友推荐",
+              "搜索引擎"
+            ],
+            "consideration": [
+              "产品评价",
+              "价格比较",
+              "品牌信誉"
+            ],
+            "decision": [
+              "优惠活动",
+              "免费试用",
+              "退款保证"
+            ],
+            "retention": [
+              "产品质量",
+              "客户服务",
+              "持续价值"
+            ]
+          }
+        },
+        "industryInsights": {
+          "marketSize": {
+            "global": "$261B",
+            "growth": "+6.1% CAGR",
+            "forecast2025": "$295B"
+          },
+          "keyDrivers": [
+            "宠物人性化趋势",
+            "可支配收入增加",
+            "健康意识提升",
+            "科技产品采用"
+          ],
+          "challenges": [
+            "供应链成本上升",
+            "监管要求增加",
+            "市场竞争激烈",
+            "消费者期望提高"
+          ],
+          "opportunities": [
+            "AI和物联网集成",
+            "个性化产品定制",
+            "订阅模式创新",
+            "可持续产品开发"
+          ],
+          "regulations": [
+            "产品安全标准",
+            "标签要求",
+            "进口限制",
+            "环保合规"
+          ]
+        },
+        "pricingStrategy": {
+          "competitorPricing": [
+            {
+              "competitor": "Competitor A",
+              "avgPrice": "$45",
+              "strategy": "高端定位"
+            },
+            {
+              "competitor": "Competitor B",
+              "avgPrice": "$32",
+              "strategy": "中端市场"
+            },
+            {
+              "competitor": "Competitor C",
+              "avgPrice": "$28",
+              "strategy": "价格竞争"
+            }
+          ],
+          "priceRange": {
+            "premium": "$50+",
+            "midRange": "$25-50",
+            "budget": "<$25"
+          },
+          "pricingSuggestions": [
+            "建议定价: $35-40",
+            "价值主张: 质量与价格的平衡",
+            "促销策略: 首次购买折扣",
+            "捆绑销售: 增加平均订单价值"
+          ],
+          "elasticity": {
+            "highSensitivity": [
+              "预算型消费者",
+              "价格敏感产品"
+            ],
+            "lowSensitivity": [
+              "高收入群体",
+              "独特产品"
+            ]
+          }
+        },
+        "contentOpportunities": {
+          "popularTopics": [
+            {
+              "topic": "宠物健康指南",
+              "searchVolume": 45000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物训练技巧",
+              "searchVolume": 38000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物营养建议",
+              "searchVolume": 32000,
+              "difficulty": "高"
+            },
+            {
+              "topic": "宠物用品评测",
+              "searchVolume": 28000,
+              "difficulty": "低"
+            }
+          ],
+          "contentGaps": [
+            "针对特定品种的护理指南",
+            "季节性宠物护理建议",
+            "宠物行为问题解决方案",
+            "预算友好的宠物护理"
+          ],
+          "contentFormats": [
+            {
+              "format": "视频教程",
+              "engagement": "89%"
+            },
+            {
+              "format": "图文指南",
+              "engagement": "65%"
+            },
+            {
+              "format": "互动工具",
+              "engagement": "73%"
+            },
+            {
+              "format": "用户故事",
+              "engagement": "81%"
+            }
+          ],
+          "seoOpportunities": [
+            {
+              "keyword": "最佳宠物清洁产品",
+              "volume": 12000,
+              "competition": "中"
+            },
+            {
+              "keyword": "天然宠物护理",
+              "volume": 8500,
+              "competition": "低"
+            },
+            {
+              "keyword": "宠物异味清除",
+              "volume": 15000,
+              "competition": "高"
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2025-08-18T14:45:16.488Z",
+        "website": "https://headai.io",
+        "competitors": {
+          "totalFound": 0,
+          "analyzed": [],
+          "summary": "暂时跳过竞争对手分析"
+        },
+        "marketTrends": {
+          "emergingKeywords": [
+            "人工智能宠物护理",
+            "智能宠物用品",
+            "可持续宠物产品",
+            "宠物健康科技",
+            "个性化宠物服务"
+          ],
+          "growthAreas": [
+            {
+              "area": "宠物科技",
+              "growth": "+45%",
+              "period": "年同比"
+            },
+            {
+              "area": "高端宠物食品",
+              "growth": "+32%",
+              "period": "年同比"
+            },
+            {
+              "area": "宠物保险",
+              "growth": "+28%",
+              "period": "年同比"
+            }
+          ],
+          "seasonalTrends": {
+            "spring": [
+              "宠物护理产品",
+              "户外宠物用品"
+            ],
+            "summer": [
+              "防蚤虫产品",
+              "宠物降温用品"
+            ],
+            "fall": [
+              "宠物保健品",
+              "室内娱乐用品"
+            ],
+            "winter": [
+              "宠物保暖用品",
+              "室内训练产品"
+            ]
+          },
+          "consumerBehavior": {
+            "onlinePurchaseRate": "78%",
+            "mobileShoppingRate": "65%",
+            "subscriptionModelAdoption": "42%",
+            "sustainabilityImportance": "71%"
+          }
+        },
+        "targetAudience": {
+          "demographics": {
+            "ageGroups": [
+              {
+                "range": "25-34",
+                "percentage": 35
+              },
+              {
+                "range": "35-44",
+                "percentage": 28
+              },
+              {
+                "range": "45-54",
+                "percentage": 22
+              },
+              {
+                "range": "18-24",
+                "percentage": 10
+              },
+              {
+                "range": "55+",
+                "percentage": 5
+              }
+            ],
+            "income": [
+              {
+                "range": "50k-75k",
+                "percentage": 32
+              },
+              {
+                "range": "75k-100k",
+                "percentage": 28
+              },
+              {
+                "range": "100k+",
+                "percentage": 25
+              },
+              {
+                "range": "30k-50k",
+                "percentage": 15
+              }
+            ],
+            "location": [
+              "城市",
+              "郊区",
+              "小城镇"
+            ]
+          },
+          "psychographics": {
+            "values": [
+              "宠物健康",
+              "便利性",
+              "质量",
+              "可持续性"
+            ],
+            "painPoints": [
+              "寻找可靠的宠物产品",
+              "价格透明度",
+              "产品安全性",
+              "快速配送"
+            ],
+            "preferredChannels": [
+              {
+                "channel": "社交媒体",
+                "engagement": "85%"
+              },
+              {
+                "channel": "邮件营销",
+                "engagement": "45%"
+              },
+              {
+                "channel": "搜索引擎",
+                "engagement": "78%"
+              },
+              {
+                "channel": "口碑推荐",
+                "engagement": "92%"
+              }
+            ]
+          },
+          "buyingJourney": {
+            "awareness": [
+              "社交媒体广告",
+              "朋友推荐",
+              "搜索引擎"
+            ],
+            "consideration": [
+              "产品评价",
+              "价格比较",
+              "品牌信誉"
+            ],
+            "decision": [
+              "优惠活动",
+              "免费试用",
+              "退款保证"
+            ],
+            "retention": [
+              "产品质量",
+              "客户服务",
+              "持续价值"
+            ]
+          }
+        },
+        "industryInsights": {
+          "marketSize": {
+            "global": "$261B",
+            "growth": "+6.1% CAGR",
+            "forecast2025": "$295B"
+          },
+          "keyDrivers": [
+            "宠物人性化趋势",
+            "可支配收入增加",
+            "健康意识提升",
+            "科技产品采用"
+          ],
+          "challenges": [
+            "供应链成本上升",
+            "监管要求增加",
+            "市场竞争激烈",
+            "消费者期望提高"
+          ],
+          "opportunities": [
+            "AI和物联网集成",
+            "个性化产品定制",
+            "订阅模式创新",
+            "可持续产品开发"
+          ],
+          "regulations": [
+            "产品安全标准",
+            "标签要求",
+            "进口限制",
+            "环保合规"
+          ]
+        },
+        "pricingStrategy": {
+          "competitorPricing": [
+            {
+              "competitor": "Competitor A",
+              "avgPrice": "$45",
+              "strategy": "高端定位"
+            },
+            {
+              "competitor": "Competitor B",
+              "avgPrice": "$32",
+              "strategy": "中端市场"
+            },
+            {
+              "competitor": "Competitor C",
+              "avgPrice": "$28",
+              "strategy": "价格竞争"
+            }
+          ],
+          "priceRange": {
+            "premium": "$50+",
+            "midRange": "$25-50",
+            "budget": "<$25"
+          },
+          "pricingSuggestions": [
+            "建议定价: $35-40",
+            "价值主张: 质量与价格的平衡",
+            "促销策略: 首次购买折扣",
+            "捆绑销售: 增加平均订单价值"
+          ],
+          "elasticity": {
+            "highSensitivity": [
+              "预算型消费者",
+              "价格敏感产品"
+            ],
+            "lowSensitivity": [
+              "高收入群体",
+              "独特产品"
+            ]
+          }
+        },
+        "contentOpportunities": {
+          "popularTopics": [
+            {
+              "topic": "宠物健康指南",
+              "searchVolume": 45000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物训练技巧",
+              "searchVolume": 38000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物营养建议",
+              "searchVolume": 32000,
+              "difficulty": "高"
+            },
+            {
+              "topic": "宠物用品评测",
+              "searchVolume": 28000,
+              "difficulty": "低"
+            }
+          ],
+          "contentGaps": [
+            "针对特定品种的护理指南",
+            "季节性宠物护理建议",
+            "宠物行为问题解决方案",
+            "预算友好的宠物护理"
+          ],
+          "contentFormats": [
+            {
+              "format": "视频教程",
+              "engagement": "89%"
+            },
+            {
+              "format": "图文指南",
+              "engagement": "65%"
+            },
+            {
+              "format": "互动工具",
+              "engagement": "73%"
+            },
+            {
+              "format": "用户故事",
+              "engagement": "81%"
+            }
+          ],
+          "seoOpportunities": [
+            {
+              "keyword": "最佳宠物清洁产品",
+              "volume": 12000,
+              "competition": "中"
+            },
+            {
+              "keyword": "天然宠物护理",
+              "volume": 8500,
+              "competition": "低"
+            },
+            {
+              "keyword": "宠物异味清除",
+              "volume": 15000,
+              "competition": "高"
+            }
+          ]
+        }
+      }
+    ],
+    "lastUpdated": "2025-08-18T14:45:16.488Z"
+  },
+  "https://stripe.com": {
+    "createdAt": "2025-08-18T08:34:59.682Z",
+    "researchHistory": [
+      {
+        "timestamp": "2025-08-18T08:34:59.682Z",
+        "website": "https://stripe.com",
+        "competitors": {
+          "totalFound": 0,
+          "analyzed": [],
+          "summary": "暂时跳过竞争对手分析"
+        },
+        "marketTrends": {
+          "emergingKeywords": [
+            "人工智能宠物护理",
+            "智能宠物用品",
+            "可持续宠物产品",
+            "宠物健康科技",
+            "个性化宠物服务"
+          ],
+          "growthAreas": [
+            {
+              "area": "宠物科技",
+              "growth": "+45%",
+              "period": "年同比"
+            },
+            {
+              "area": "高端宠物食品",
+              "growth": "+32%",
+              "period": "年同比"
+            },
+            {
+              "area": "宠物保险",
+              "growth": "+28%",
+              "period": "年同比"
+            }
+          ],
+          "seasonalTrends": {
+            "spring": [
+              "宠物护理产品",
+              "户外宠物用品"
+            ],
+            "summer": [
+              "防蚤虫产品",
+              "宠物降温用品"
+            ],
+            "fall": [
+              "宠物保健品",
+              "室内娱乐用品"
+            ],
+            "winter": [
+              "宠物保暖用品",
+              "室内训练产品"
+            ]
+          },
+          "consumerBehavior": {
+            "onlinePurchaseRate": "78%",
+            "mobileShoppingRate": "65%",
+            "subscriptionModelAdoption": "42%",
+            "sustainabilityImportance": "71%"
+          }
+        },
+        "targetAudience": {
+          "demographics": {
+            "ageGroups": [
+              {
+                "range": "25-34",
+                "percentage": 35
+              },
+              {
+                "range": "35-44",
+                "percentage": 28
+              },
+              {
+                "range": "45-54",
+                "percentage": 22
+              },
+              {
+                "range": "18-24",
+                "percentage": 10
+              },
+              {
+                "range": "55+",
+                "percentage": 5
+              }
+            ],
+            "income": [
+              {
+                "range": "50k-75k",
+                "percentage": 32
+              },
+              {
+                "range": "75k-100k",
+                "percentage": 28
+              },
+              {
+                "range": "100k+",
+                "percentage": 25
+              },
+              {
+                "range": "30k-50k",
+                "percentage": 15
+              }
+            ],
+            "location": [
+              "城市",
+              "郊区",
+              "小城镇"
+            ]
+          },
+          "psychographics": {
+            "values": [
+              "宠物健康",
+              "便利性",
+              "质量",
+              "可持续性"
+            ],
+            "painPoints": [
+              "寻找可靠的宠物产品",
+              "价格透明度",
+              "产品安全性",
+              "快速配送"
+            ],
+            "preferredChannels": [
+              {
+                "channel": "社交媒体",
+                "engagement": "85%"
+              },
+              {
+                "channel": "邮件营销",
+                "engagement": "45%"
+              },
+              {
+                "channel": "搜索引擎",
+                "engagement": "78%"
+              },
+              {
+                "channel": "口碑推荐",
+                "engagement": "92%"
+              }
+            ]
+          },
+          "buyingJourney": {
+            "awareness": [
+              "社交媒体广告",
+              "朋友推荐",
+              "搜索引擎"
+            ],
+            "consideration": [
+              "产品评价",
+              "价格比较",
+              "品牌信誉"
+            ],
+            "decision": [
+              "优惠活动",
+              "免费试用",
+              "退款保证"
+            ],
+            "retention": [
+              "产品质量",
+              "客户服务",
+              "持续价值"
+            ]
+          }
+        },
+        "industryInsights": {
+          "marketSize": {
+            "global": "$261B",
+            "growth": "+6.1% CAGR",
+            "forecast2025": "$295B"
+          },
+          "keyDrivers": [
+            "宠物人性化趋势",
+            "可支配收入增加",
+            "健康意识提升",
+            "科技产品采用"
+          ],
+          "challenges": [
+            "供应链成本上升",
+            "监管要求增加",
+            "市场竞争激烈",
+            "消费者期望提高"
+          ],
+          "opportunities": [
+            "AI和物联网集成",
+            "个性化产品定制",
+            "订阅模式创新",
+            "可持续产品开发"
+          ],
+          "regulations": [
+            "产品安全标准",
+            "标签要求",
+            "进口限制",
+            "环保合规"
+          ]
+        },
+        "pricingStrategy": {
+          "competitorPricing": [
+            {
+              "competitor": "Competitor A",
+              "avgPrice": "$45",
+              "strategy": "高端定位"
+            },
+            {
+              "competitor": "Competitor B",
+              "avgPrice": "$32",
+              "strategy": "中端市场"
+            },
+            {
+              "competitor": "Competitor C",
+              "avgPrice": "$28",
+              "strategy": "价格竞争"
+            }
+          ],
+          "priceRange": {
+            "premium": "$50+",
+            "midRange": "$25-50",
+            "budget": "<$25"
+          },
+          "pricingSuggestions": [
+            "建议定价: $35-40",
+            "价值主张: 质量与价格的平衡",
+            "促销策略: 首次购买折扣",
+            "捆绑销售: 增加平均订单价值"
+          ],
+          "elasticity": {
+            "highSensitivity": [
+              "预算型消费者",
+              "价格敏感产品"
+            ],
+            "lowSensitivity": [
+              "高收入群体",
+              "独特产品"
+            ]
+          }
+        },
+        "contentOpportunities": {
+          "popularTopics": [
+            {
+              "topic": "宠物健康指南",
+              "searchVolume": 45000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物训练技巧",
+              "searchVolume": 38000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物营养建议",
+              "searchVolume": 32000,
+              "difficulty": "高"
+            },
+            {
+              "topic": "宠物用品评测",
+              "searchVolume": 28000,
+              "difficulty": "低"
+            }
+          ],
+          "contentGaps": [
+            "针对特定品种的护理指南",
+            "季节性宠物护理建议",
+            "宠物行为问题解决方案",
+            "预算友好的宠物护理"
+          ],
+          "contentFormats": [
+            {
+              "format": "视频教程",
+              "engagement": "89%"
+            },
+            {
+              "format": "图文指南",
+              "engagement": "65%"
+            },
+            {
+              "format": "互动工具",
+              "engagement": "73%"
+            },
+            {
+              "format": "用户故事",
+              "engagement": "81%"
+            }
+          ],
+          "seoOpportunities": [
+            {
+              "keyword": "最佳宠物清洁产品",
+              "volume": 12000,
+              "competition": "中"
+            },
+            {
+              "keyword": "天然宠物护理",
+              "volume": 8500,
+              "competition": "低"
+            },
+            {
+              "keyword": "宠物异味清除",
+              "volume": 15000,
+              "competition": "高"
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2025-08-18T13:59:42.671Z",
+        "website": "https://stripe.com",
+        "competitors": {
+          "totalFound": 0,
+          "analyzed": [],
+          "summary": "暂时跳过竞争对手分析"
+        },
+        "marketTrends": {
+          "emergingKeywords": [
+            "人工智能宠物护理",
+            "智能宠物用品",
+            "可持续宠物产品",
+            "宠物健康科技",
+            "个性化宠物服务"
+          ],
+          "growthAreas": [
+            {
+              "area": "宠物科技",
+              "growth": "+45%",
+              "period": "年同比"
+            },
+            {
+              "area": "高端宠物食品",
+              "growth": "+32%",
+              "period": "年同比"
+            },
+            {
+              "area": "宠物保险",
+              "growth": "+28%",
+              "period": "年同比"
+            }
+          ],
+          "seasonalTrends": {
+            "spring": [
+              "宠物护理产品",
+              "户外宠物用品"
+            ],
+            "summer": [
+              "防蚤虫产品",
+              "宠物降温用品"
+            ],
+            "fall": [
+              "宠物保健品",
+              "室内娱乐用品"
+            ],
+            "winter": [
+              "宠物保暖用品",
+              "室内训练产品"
+            ]
+          },
+          "consumerBehavior": {
+            "onlinePurchaseRate": "78%",
+            "mobileShoppingRate": "65%",
+            "subscriptionModelAdoption": "42%",
+            "sustainabilityImportance": "71%"
+          }
+        },
+        "targetAudience": {
+          "demographics": {
+            "ageGroups": [
+              {
+                "range": "25-34",
+                "percentage": 35
+              },
+              {
+                "range": "35-44",
+                "percentage": 28
+              },
+              {
+                "range": "45-54",
+                "percentage": 22
+              },
+              {
+                "range": "18-24",
+                "percentage": 10
+              },
+              {
+                "range": "55+",
+                "percentage": 5
+              }
+            ],
+            "income": [
+              {
+                "range": "50k-75k",
+                "percentage": 32
+              },
+              {
+                "range": "75k-100k",
+                "percentage": 28
+              },
+              {
+                "range": "100k+",
+                "percentage": 25
+              },
+              {
+                "range": "30k-50k",
+                "percentage": 15
+              }
+            ],
+            "location": [
+              "城市",
+              "郊区",
+              "小城镇"
+            ]
+          },
+          "psychographics": {
+            "values": [
+              "宠物健康",
+              "便利性",
+              "质量",
+              "可持续性"
+            ],
+            "painPoints": [
+              "寻找可靠的宠物产品",
+              "价格透明度",
+              "产品安全性",
+              "快速配送"
+            ],
+            "preferredChannels": [
+              {
+                "channel": "社交媒体",
+                "engagement": "85%"
+              },
+              {
+                "channel": "邮件营销",
+                "engagement": "45%"
+              },
+              {
+                "channel": "搜索引擎",
+                "engagement": "78%"
+              },
+              {
+                "channel": "口碑推荐",
+                "engagement": "92%"
+              }
+            ]
+          },
+          "buyingJourney": {
+            "awareness": [
+              "社交媒体广告",
+              "朋友推荐",
+              "搜索引擎"
+            ],
+            "consideration": [
+              "产品评价",
+              "价格比较",
+              "品牌信誉"
+            ],
+            "decision": [
+              "优惠活动",
+              "免费试用",
+              "退款保证"
+            ],
+            "retention": [
+              "产品质量",
+              "客户服务",
+              "持续价值"
+            ]
+          }
+        },
+        "industryInsights": {
+          "marketSize": {
+            "global": "$261B",
+            "growth": "+6.1% CAGR",
+            "forecast2025": "$295B"
+          },
+          "keyDrivers": [
+            "宠物人性化趋势",
+            "可支配收入增加",
+            "健康意识提升",
+            "科技产品采用"
+          ],
+          "challenges": [
+            "供应链成本上升",
+            "监管要求增加",
+            "市场竞争激烈",
+            "消费者期望提高"
+          ],
+          "opportunities": [
+            "AI和物联网集成",
+            "个性化产品定制",
+            "订阅模式创新",
+            "可持续产品开发"
+          ],
+          "regulations": [
+            "产品安全标准",
+            "标签要求",
+            "进口限制",
+            "环保合规"
+          ]
+        },
+        "pricingStrategy": {
+          "competitorPricing": [
+            {
+              "competitor": "Competitor A",
+              "avgPrice": "$45",
+              "strategy": "高端定位"
+            },
+            {
+              "competitor": "Competitor B",
+              "avgPrice": "$32",
+              "strategy": "中端市场"
+            },
+            {
+              "competitor": "Competitor C",
+              "avgPrice": "$28",
+              "strategy": "价格竞争"
+            }
+          ],
+          "priceRange": {
+            "premium": "$50+",
+            "midRange": "$25-50",
+            "budget": "<$25"
+          },
+          "pricingSuggestions": [
+            "建议定价: $35-40",
+            "价值主张: 质量与价格的平衡",
+            "促销策略: 首次购买折扣",
+            "捆绑销售: 增加平均订单价值"
+          ],
+          "elasticity": {
+            "highSensitivity": [
+              "预算型消费者",
+              "价格敏感产品"
+            ],
+            "lowSensitivity": [
+              "高收入群体",
+              "独特产品"
+            ]
+          }
+        },
+        "contentOpportunities": {
+          "popularTopics": [
+            {
+              "topic": "宠物健康指南",
+              "searchVolume": 45000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物训练技巧",
+              "searchVolume": 38000,
+              "difficulty": "中"
+            },
+            {
+              "topic": "宠物营养建议",
+              "searchVolume": 32000,
+              "difficulty": "高"
+            },
+            {
+              "topic": "宠物用品评测",
+              "searchVolume": 28000,
+              "difficulty": "低"
+            }
+          ],
+          "contentGaps": [
+            "针对特定品种的护理指南",
+            "季节性宠物护理建议",
+            "宠物行为问题解决方案",
+            "预算友好的宠物护理"
+          ],
+          "contentFormats": [
+            {
+              "format": "视频教程",
+              "engagement": "89%"
+            },
+            {
+              "format": "图文指南",
+              "engagement": "65%"
+            },
+            {
+              "format": "互动工具",
+              "engagement": "73%"
+            },
+            {
+              "format": "用户故事",
+              "engagement": "81%"
+            }
+          ],
+          "seoOpportunities": [
+            {
+              "keyword": "最佳宠物清洁产品",
+              "volume": 12000,
+              "competition": "中"
+            },
+            {
+              "keyword": "天然宠物护理",
+              "volume": 8500,
+              "competition": "低"
+            },
+            {
+              "keyword": "宠物异味清除",
+              "volume": 15000,
+              "competition": "高"
+            }
+          ]
+        }
+      }
+    ],
+    "lastUpdated": "2025-08-18T13:59:42.671Z"
+  }
+}

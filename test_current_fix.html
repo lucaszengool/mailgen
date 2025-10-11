@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Current Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Current Fix Test</h1>
+    <div id="results">Loading...</div>
+    
+    <script>
+        // Test the exact same logic as the frontend
+        const replaceTemplateVariables = (content, email) => {
+            if (!content || typeof content !== 'string') return content
+            
+            const variables = {
+                '{{companyName}}': email.recipient_company || 'Your Company',
+                '{{recipientName}}': email.recipient_name || 'there',
+                '{{senderName}}': email.sender_name || 'AI Marketing',
+                '{{websiteUrl}}': email.website_url || 'https://example.com',
+                '{{campaignId}}': email.campaign_id || 'default'
+            }
+            
+            let processedContent = content
+            Object.entries(variables).forEach(([placeholder, value]) => {
+                const regex = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g')
+                processedContent = processedContent.replace(regex, value)
+            })
+            
+            return processedContent
+        }
+        
+        async function testFix() {
+            try {
+                const response = await fetch('/api/workflow/results');
+                const data = await response.json();
+                
+                const campaignEmails = data.data?.emailCampaign?.emails || [];
+                
+                if (campaignEmails.length === 0) {
+                    document.getElementById('results').innerHTML = 
+                        '<div class="error">❌ No emails found - inject test emails first</div>';
+                    return;
+                }
+                
+                let html = '<h2>🔧 Testing Data Processing (Same as Frontend)</h2>';
+                
+                // Process emails exactly like the frontend does now
+                const processedEmails = campaignEmails.map(email => {
+                    // First create the email object with all data
+                    const emailData = {
+                        id: email.id || `email_${Date.now()}_${Math.random()}`,
+                        to: email.to,
+                        subject: email.subject,
+                        status: email.status || 'sent',
+                        template_used: email.template_used || 'partnership_outreach',
+                        body: email.body || email.content || '',
+                        recipient_name: email.recipient_name || email.name || 'Unknown',
+                        recipient_company: email.recipient_company || email.company || 'Unknown Company',
+                        campaign_id: email.campaign_id || 'default',
+                        // Store raw data for template replacement
+                        _raw_subject: email.subject,
+                        _raw_body: email.body || email.content || ''
+                    }
+                    
+                    // Then replace template variables in the processed data
+                    emailData.subject = replaceTemplateVariables(emailData._raw_subject || '', emailData)
+                    emailData.body = replaceTemplateVariables(emailData._raw_body || '', emailData)
+                    
+                    return emailData
+                });
+                
+                processedEmails.forEach((email, i) => {
+                    const originalSubject = email._raw_subject;
+                    const processedSubject = email.subject;
+                    const hasTemplateVars = originalSubject.includes('{{');
+                    const wasReplaced = originalSubject !== processedSubject;
+                    const success = hasTemplateVars && wasReplaced && !processedSubject.includes('{{');
+                    
+                    html += `
+                        <div class="test ${success ? 'success' : 'error'}">
+                            <h3>📧 Email ${i+1}: ${email.to}</h3>
+                            <p><strong>Original Subject:</strong> ${originalSubject}</p>
+                            <p><strong>Processed Subject:</strong> ${processedSubject}</p>
+                            <p><strong>Company:</strong> ${email.recipient_company}</p>
+                            <p><strong>Name:</strong> ${email.recipient_name}</p>
+                            <p><strong>Template Variables Replaced:</strong> ${success ? '✅ YES' : '❌ NO'}</p>
+                        </div>
+                    `;
+                });
+                
+                const allWorking = processedEmails.every(email => {
+                    return email._raw_subject !== email.subject && !email.subject.includes('{{');
+                });
+                
+                html += `
+                    <div class="test ${allWorking ? 'success' : 'error'}">
+                        <h2>${allWorking ? '✅ ALL FIXES WORKING!' : '❌ FIXES NOT WORKING'}</h2>
+                        <p>Template variables should be replaced in frontend with current build</p>
+                    </div>
+                `;
+                
+                document.getElementById('results').innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('results').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        testFix();
+    </script>
+</body>
+</html>

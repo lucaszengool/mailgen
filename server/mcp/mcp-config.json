@@ -1,0 +1,57 @@
+{
+  "mcpServers": {
+    "multi-source-email-aggregator": {
+      "command": "node",
+      "args": ["server/mcp/MultiSourceEmailAggregatorMCP.js"],
+      "description": "Multi-source email aggregation without API keys",
+      "capabilities": [
+        "email_discovery",
+        "multi_source_aggregation", 
+        "github_integration",
+        "domain_intelligence",
+        "whois_analysis",
+        "social_media_search",
+        "web_scraping"
+      ],
+      "sources": [
+        {
+          "name": "github",
+          "description": "GitHub user profiles and commit history",
+          "apiRequired": false,
+          "rateLimit": "60 requests/hour (unauthenticated)"
+        },
+        {
+          "name": "domain_intel", 
+          "description": "DNS analysis and domain pattern recognition",
+          "apiRequired": false,
+          "rateLimit": "No limit"
+        },
+        {
+          "name": "whois",
+          "description": "WHOIS registration data analysis",
+          "apiRequired": false,
+          "rateLimit": "Varies by provider"
+        },
+        {
+          "name": "social_media",
+          "description": "Public social media profile scraping",
+          "apiRequired": false,
+          "rateLimit": "Varies by platform"
+        },
+        {
+          "name": "web_scraping",
+          "description": "Intelligent website contact page analysis",
+          "apiRequired": false,
+          "rateLimit": "Respectful crawling with delays"
+        }
+      ],
+      "features": {
+        "deduplication": true,
+        "confidence_scoring": true,
+        "multi_source_verification": true,
+        "role_inference": true,
+        "privacy_filtering": true
+      }
+    }
+  }
+}

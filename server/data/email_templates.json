@@ -1,0 +1,26 @@
+{
+  "executive_outreach": {
+    "name": "高管外展",
+    "structure": "问候 → 价值主张 → 社会证明 → 行动号召",
+    "defaultSubject": "关于{company}业务增长的想法",
+    "defaultBody": "尊敬的{name}，\n\n作为{company}的{position}，相信您一定关注企业的持续发展..."
+  },
+  "marketing_professional": {
+    "name": "营销专员",
+    "structure": "行业洞察 → 解决方案介绍 → 案例分享 → 合作邀请",
+    "defaultSubject": "提升{company}营销ROI的策略分享",
+    "defaultBody": "您好{name}，\n\n我注意到{company}在营销方面的努力，想与您分享一些有价值的洞察..."
+  },
+  "lead_generation_solution": {
+    "name": "获客解决方案",
+    "structure": "痛点共鸣 → 解决方案 → 效果承诺 → 免费试用",
+    "defaultSubject": "解决{company}获客难题的实用方案",
+    "defaultBody": "{name}您好，\n\n了解到许多{industry}企业都面临获客成本高的挑战..."
+  },
+  "general_business_outreach": {
+    "name": "通用商务外展",
+    "structure": "自我介绍 → 共同价值 → 合作建议 → 下一步",
+    "defaultSubject": "探讨{company}的合作机会",
+    "defaultBody": "尊敬的{name}，\n\n我是专注于帮助企业发展的顾问，希望有机会与{company}合作..."
+  }
+}

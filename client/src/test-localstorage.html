@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test LocalStorage</title>
+</head>
+<body>
+    <h1>LocalStorage Auto-Save Test</h1>
+    <button onclick="checkStorage()">Check Storage</button>
+    <button onclick="clearStorage()">Clear Auto-Save</button>
+    <div id="output"></div>
+
+    <script>
+        function checkStorage() {
+            const output = document.getElementById('output');
+            const keys = Object.keys(localStorage).filter(k => k.includes('email_editor_autosave'));
+
+            let html = '<h2>Auto-Save Keys Found:</h2>';
+
+            if (keys.length === 0) {
+                html += '<p style="color: red;">No auto-save data found!</p>';
+            } else {
+                keys.forEach(key => {
+                    const data = localStorage.getItem(key);
+                    try {
+                        const parsed = JSON.parse(data);
+                        html += `<div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">`;
+                        html += `<h3>${key}</h3>`;
+                        html += `<p>Subject: ${parsed.subject || 'none'}</p>`;
+                        html += `<p>Components: ${parsed.components?.length || 0}</p>`;
+                        html += `<p>HTML Length: ${parsed.html?.length || 0}</p>`;
+                        html += `<p>Timestamp: ${parsed.timestamp || 'none'}</p>`;
+                        html += `</div>`;
+                    } catch (e) {
+                        html += `<p>Failed to parse ${key}: ${e}</p>`;
+                    }
+                });
+            }
+
+            output.innerHTML = html;
+        }
+
+        function clearStorage() {
+            const keys = Object.keys(localStorage).filter(k => k.includes('email_editor_autosave'));
+            keys.forEach(key => localStorage.removeItem(key));
+            alert('Cleared ' + keys.length + ' auto-save entries');
+            checkStorage();
+        }
+
+        // Check on load
+        checkStorage();
+    </script>
+</body>
+</html>

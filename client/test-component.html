@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Component Test</title>
+</head>
+<body>
+    <h1>React Component Test</h1>
+    <p>Opening http://localhost:3001 to test...</p>
+    <script>
+        fetch('http://localhost:3001')
+            .then(response => response.text())
+            .then(html => {
+                console.log('✅ Page loaded successfully');
+                if (html.includes('root')) {
+                    console.log('✅ React root element found');
+                    document.body.innerHTML += '<p style="color: green;">✅ React app structure verified</p>';
+                } else {
+                    document.body.innerHTML += '<p style="color: red;">❌ React root element not found</p>';
+                }
+            })
+            .catch(error => {
+                console.error('❌ Failed to load:', error);
+                document.body.innerHTML += '<p style="color: red;">❌ Failed to load app</p>';
+            });
+    </script>
+</body>
+</html>

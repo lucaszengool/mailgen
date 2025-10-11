@@ -1,0 +1,94 @@
+{
+  "websites": {
+    "https://example.com": {
+      "title": "Example Domain",
+      "description": "",
+      "keywords": "",
+      "headings": [
+        "Example Domain"
+      ],
+      "emails": [],
+      "phones": [
+        "600",
+        "38488",
+        "700"
+      ],
+      "socialMedia": [],
+      "technologies": [],
+      "businessType": "unknown",
+      "industry": "technology",
+      "companySize": "unknown",
+      "analysisTimestamp": "2025-08-12T15:56:48.334Z"
+    },
+    "https://petpoofficial.org": {
+      "url": "https://petpoofficial.org",
+      "timestamp": "2025-08-12T17:38:48.410Z",
+      "businessType": "pet-care",
+      "industry": "pet-care",
+      "targetAudience": {
+        "demographics": {
+          "primaryAge": "25-45",
+          "income": "middle-to-high",
+          "location": "urban/suburban"
+        },
+        "psychographics": {
+          "interests": [
+            "专业服务",
+            "质量产品"
+          ],
+          "painPoints": [
+            "运营效率",
+            "成本优化"
+          ],
+          "values": [
+            "quality",
+            "convenience",
+            "trust"
+          ]
+        }
+      },
+      "products": [],
+      "businessModel": "traditional",
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "contactInfo": {
+        "emails": [],
+        "phones": [
+          "3000000000",
+          "6000000000",
+          "7000000000"
+        ]
+      },
+      "companySize": "medium",
+      "marketingOpportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "title": "PETPO 宠物定制肖像",
+      "description": "专业宠物画作，用AI将爱宠照片转化为高质量艺术作品",
+      "keywords": "",
+      "headings": [
+        "Petpo 宠物肖像画",
+        "专业品质",
+        "多种用途",
+        "手机壁纸",
+        "定制衣服",
+        "社交分享",
+        "艺术风格",
+        "宫崎骏动漫",
+        "水彩插画",
+        "现代简约"
+      ],
+      "analysisTimestamp": "2025-08-12T17:38:48.415Z",
+      "aiAnalysisComplete": true
+    }
+  },
+  "industries": {},
+  "competitors": {},
+  "contacts": {},
+  "lastUpdated": "2025-08-12T17:38:48.415Z"
+}

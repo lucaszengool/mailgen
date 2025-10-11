@@ -1,0 +1,57 @@
+{
+  "campaignGoal": "partnership",
+  "industries": [],
+  "roles": [],
+  "keywords": [],
+  "smtpConfig": {
+    "host": "smtp.gmail.com",
+    "port": 587,
+    "secure": false,
+    "senderName": "Fruit AI",
+    "auth": {
+      "user": "https://fruitai.org/",
+      "pass": "oiwq qinf mazo mxkq"
+    }
+  },
+  "provider": "gmail",
+  "websiteAnalysis": {
+    "businessName": "FruitAI",
+    "logo": "https://fruitai.org/favicon.ico",
+    "businessIntro": "AI-powered fruit and vegetable freshness analyzer for smart grocery shopping",
+    "productType": "Food Technology",
+    "benchmarkBrands": [
+      "Apple",
+      "Meta"
+    ],
+    "sellingPoints": [
+      "Instant fresheness analysis through advanced machine learning algorithms",
+      "User-focused design ensuring seamless smartphone integration,",
+      "Real-time visibility of freshness status in the app dashboard.",
+      "Automated barcode recognition technology enhances accuracy with real time updates",
+      "AI-powered recommendation system suggesting products based on user preferences and shopping history"
+    ],
+    "audiences": [
+      {
+        "title": "Individuals with Diabetic Needs",
+        "description": "People living in areas where access is limited or difficult due to weather conditions, which can lead them into grocery stores without fresh produce. They prioritize quick results and want a reliable tool that ensures they are getting the freshest fruits and vegetables."
+      },
+      {
+        "title": "Savvy Grocery Store Owners",
+        "description": "Retailers who operate in busy markets or supermarkets where time is of utmost importance, leading to inefficient processing times due to frequent changes. They require tools like FruitAI that can quickly analyze fruit quality without compromising freshness and ensure they are getting the freshest produce available."
+      },
+      {
+        "title": "Health-Conscious Families",
+        "description": "Individuals who prioritize their health by eating fresh fruits daily or frequently, seeking ways to assess food safety in grocery stores. They prefer tools like FruitAI that can provide detailed insights into fruit quality without compromising freshness and ensuring they are getting the freshest produce available."
+      },
+      {
+        "title": "Busy Busy Shopkeepers",
+        "description": "Retailers who work with tight schedules or manage their stock during busy periods, leading to inefficient processes. They require tools like"
+      }
+    ]
+  },
+  "targetWebsite": "https://fruitai.org/",
+  "businessType": "auto",
+  "setupComplete": true,
+  "createdAt": "2025-10-11T08:28:42.982Z",
+  "updatedAt": "2025-10-11T08:28:42.988Z"
+}

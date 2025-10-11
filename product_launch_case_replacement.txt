@@ -1,0 +1,305 @@
+      case 'product_launch':
+        return (
+          <div style={{
+            fontFamily: config.fontFamily || "'Helvetica Neue', Arial, sans-serif",
+            maxWidth: '600px',
+            margin: '0 auto',
+            background: 'white'
+          }}>
+            {/* Product Hero Component */}
+            <div style={{
+              background: '#f8f9fa',
+              padding: '50px 30px',
+              textAlign: 'center',
+              color: '#343a40'
+            }}>
+              <div style={{
+                background: 'white',
+                padding: '20px',
+                borderRadius: '15px',
+                display: 'inline-block',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ fontSize: '48px', marginBottom: '10px' }}>🚀</div>
+                <h1 style={{
+                  margin: '0 0 10px',
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#343a40'
+                }}>
+                  {isEditable ? (
+                    <EditableText field="heroTitle">
+                      Revolutionary Launch
+                    </EditableText>
+                  ) : 'Revolutionary Launch'}
+                </h1>
+                <p style={{
+                  margin: '0',
+                  color: '#6c757d',
+                  fontSize: '16px'
+                }}>
+                  {isEditable ? (
+                    <EditableText field="heroSubtitle">
+                      Game-changing solution for {sampleData.company}
+                    </EditableText>
+                  ) : `Game-changing solution for ${sampleData.company}`}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ padding: '40px 30px' }}>
+              {/* Generated Paragraph 1 */}
+              <div style={{ marginBottom: '30px' }}>
+                <p style={{
+                  fontSize: '17px',
+                  lineHeight: '1.7',
+                  color: '#343a40',
+                  margin: '0'
+                }}>
+                  {isEditable ? (
+                    <EditableText field="paragraph1" multiline className="w-full">
+                      [GENERATED CONTENT 1: Exciting product announcement for {sampleData.company}]
+                    </EditableText>
+                  ) : `[GENERATED CONTENT 1: Exciting product announcement for ${sampleData.company}]`}
+                </p>
+              </div>
+
+              {/* Feature Highlights Component */}
+              {template.structure?.components?.includes('feature_highlights') && (
+                <div style={{
+                  background: '#28a745',
+                  color: 'white',
+                  padding: '30px',
+                  borderRadius: '15px',
+                  margin: '35px 0'
+                }}>
+                  <h3 style={{
+                    margin: '0 0 25px',
+                    textAlign: 'center',
+                    fontSize: '20px'
+                  }}>
+                    {isEditable ? (
+                      <EditableText field="featuresTitle" className="text-white">
+                        What's Inside
+                      </EditableText>
+                    ) : "What's Inside"}
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    <div style={{ textAlign: 'center', padding: '15px' }}>
+                      <div style={{ fontSize: '28px', marginBottom: '10px' }}>🎯</div>
+                      <h4 style={{ margin: '0 0 8px', fontSize: '16px' }}>
+                        {isEditable ? (
+                          <EditableText field="feature1Title" className="text-white">
+                            Smart Targeting
+                          </EditableText>
+                        ) : 'Smart Targeting'}
+                      </h4>
+                      <p style={{ margin: '0', fontSize: '14px', opacity: '0.9' }}>
+                        {isEditable ? (
+                          <EditableText field="feature1Desc" className="text-white">
+                            AI-powered precision
+                          </EditableText>
+                        ) : 'AI-powered precision'}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '15px' }}>
+                      <div style={{ fontSize: '28px', marginBottom: '10px' }}>⚡</div>
+                      <h4 style={{ margin: '0 0 8px', fontSize: '16px' }}>
+                        {isEditable ? (
+                          <EditableText field="feature2Title" className="text-white">
+                            Lightning Speed
+                          </EditableText>
+                        ) : 'Lightning Speed'}
+                      </h4>
+                      <p style={{ margin: '0', fontSize: '14px', opacity: '0.9' }}>
+                        {isEditable ? (
+                          <EditableText field="feature2Desc" className="text-white">
+                            10x faster results
+                          </EditableText>
+                        ) : '10x faster results'}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '15px' }}>
+                      <div style={{ fontSize: '28px', marginBottom: '10px' }}>📊</div>
+                      <h4 style={{ margin: '0 0 8px', fontSize: '16px' }}>
+                        {isEditable ? (
+                          <EditableText field="feature3Title" className="text-white">
+                            Real-time Analytics
+                          </EditableText>
+                        ) : 'Real-time Analytics'}
+                      </h4>
+                      <p style={{ margin: '0', fontSize: '14px', opacity: '0.9' }}>
+                        {isEditable ? (
+                          <EditableText field="feature3Desc" className="text-white">
+                            Live performance data
+                          </EditableText>
+                        ) : 'Live performance data'}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '15px' }}>
+                      <div style={{ fontSize: '28px', marginBottom: '10px' }}>🔒</div>
+                      <h4 style={{ margin: '0 0 8px', fontSize: '16px' }}>
+                        {isEditable ? (
+                          <EditableText field="feature4Title" className="text-white">
+                            Enterprise Security
+                          </EditableText>
+                        ) : 'Enterprise Security'}
+                      </h4>
+                      <p style={{ margin: '0', fontSize: '14px', opacity: '0.9' }}>
+                        {isEditable ? (
+                          <EditableText field="feature4Desc" className="text-white">
+                            Bank-level protection
+                          </EditableText>
+                        ) : 'Bank-level protection'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Generated Paragraph 2 */}
+              <div style={{ margin: '30px 0' }}>
+                <p style={{
+                  fontSize: '17px',
+                  lineHeight: '1.7',
+                  color: '#343a40',
+                  margin: '0'
+                }}>
+                  {isEditable ? (
+                    <EditableText field="paragraph2" multiline className="w-full">
+                      [GENERATED CONTENT 2: Key benefits for companies like {sampleData.company}]
+                    </EditableText>
+                  ) : `[GENERATED CONTENT 2: Key benefits for companies like ${sampleData.company}]`}
+                </p>
+              </div>
+
+              {/* Countdown Timer Component */}
+              {template.structure?.components?.includes('countdown_timer') && (
+                <div style={{
+                  background: '#6c757d',
+                  color: 'white',
+                  padding: '25px',
+                  textAlign: 'center',
+                  borderRadius: '10px',
+                  margin: '35px 0'
+                }}>
+                  <h3 style={{ margin: '0 0 15px', fontSize: '18px' }}>
+                    {isEditable ? (
+                      <EditableText field="countdownIcon" className="text-white">
+                        ⏰
+                      </EditableText>
+                    ) : '⏰'}{' '}
+                    {isEditable ? (
+                      <EditableText field="countdownTitle" className="text-white">
+                        Limited Time Exclusive Access
+                      </EditableText>
+                    ) : 'Limited Time Exclusive Access'}
+                  </h3>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '15px',
+                    marginBottom: '15px'
+                  }}>
+                    <div style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      padding: '10px 15px',
+                      borderRadius: '8px',
+                      minWidth: '60px'
+                    }}>
+                      <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                        {isEditable ? (
+                          <EditableText field="countdownDays" className="text-white">07</EditableText>
+                        ) : '07'}
+                      </div>
+                      <div style={{ fontSize: '12px', opacity: '0.9' }}>DAYS</div>
+                    </div>
+                    <div style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      padding: '10px 15px',
+                      borderRadius: '8px',
+                      minWidth: '60px'
+                    }}>
+                      <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                        {isEditable ? (
+                          <EditableText field="countdownHours" className="text-white">14</EditableText>
+                        ) : '14'}
+                      </div>
+                      <div style={{ fontSize: '12px', opacity: '0.9' }}>HOURS</div>
+                    </div>
+                    <div style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      padding: '10px 15px',
+                      borderRadius: '8px',
+                      minWidth: '60px'
+                    }}>
+                      <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                        {isEditable ? (
+                          <EditableText field="countdownMins" className="text-white">32</EditableText>
+                        ) : '32'}
+                      </div>
+                      <div style={{ fontSize: '12px', opacity: '0.9' }}>MINS</div>
+                    </div>
+                  </div>
+                  <p style={{ margin: '0', fontSize: '14px', opacity: '0.9' }}>
+                    {isEditable ? (
+                      <EditableText field="countdownSubtext" className="text-white">
+                        Early access ends soon!
+                      </EditableText>
+                    ) : 'Early access ends soon!'}
+                  </p>
+                </div>
+              )}
+
+              {/* Generated Paragraph 3 */}
+              <div style={{ margin: '30px 0' }}>
+                <p style={{
+                  fontSize: '17px',
+                  lineHeight: '1.7',
+                  color: '#343a40',
+                  margin: '0'
+                }}>
+                  {isEditable ? (
+                    <EditableText field="paragraph3" multiline className="w-full">
+                      [GENERATED CONTENT 3: Exclusive early access and urgency]
+                    </EditableText>
+                  ) : '[GENERATED CONTENT 3: Exclusive early access and urgency]'}
+                </p>
+              </div>
+
+              {/* CTA Button Component */}
+              <div style={{ textAlign: 'center', margin: '35px 0' }}>
+                <a href="https://earlyaccess.product.com" style={{
+                  display: 'inline-block',
+                  background: '#28a745',
+                  color: 'white',
+                  padding: '18px 40px',
+                  textDecoration: 'none',
+                  borderRadius: '50px',
+                  fontWeight: '700',
+                  fontSize: '18px',
+                  boxShadow: '0 6px 25px rgba(40,167,69,0.3)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px'
+                }}>
+                  {isEditable ? (
+                    <EditableText field="buttonText" className="text-white">
+                      GET EARLY ACCESS NOW
+                    </EditableText>
+                  ) : 'GET EARLY ACCESS NOW'}
+                </a>
+                <p style={{
+                  margin: '15px 0 0',
+                  color: '#6c757d',
+                  fontSize: '14px'
+                }}>
+                  {isEditable ? (
+                    <EditableText field="buttonSubtext">
+                      🎁 Includes exclusive launch bonuses worth $500
+                    </EditableText>
+                  ) : '🎁 Includes exclusive launch bonuses worth $500'}
+                </p>
+              </div>
+            </div>
+          </div>
+        );

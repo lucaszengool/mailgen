@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Template Variable Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .result { padding: 10px; margin: 10px 0; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Manual Template Variable Replacement Test</h1>
+    
+    <div class="test-section">
+        <h2>📧 Email Data from API</h2>
+        <div id="email-data">Loading...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Template Replacement Test</h2>
+        <div id="replacement-test">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Expected vs Actual</h2>
+        <div id="comparison">Comparing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📝 Instructions</h2>
+        <p>1. This page fetches the same data as the frontend</p>
+        <p>2. It applies the same template replacement logic</p>
+        <p>3. Compare results with what you see at <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></p>
+    </div>
+
+    <script>
+        // Same function as in HunterStyleEmailCampaign.jsx
+        const replaceTemplateVariables = (content, email) => {
+            if (!content || typeof content !== 'string') return content
+            
+            const variables = {
+                '{{companyName}}': email.recipient_company || 'Your Company',
+                '{{recipientName}}': email.recipient_name || 'there',
+                '{{senderName}}': email.sender_name || 'AI Marketing',
+                '{{websiteUrl}}': email.website_url || 'https://example.com',
+                '{{campaignId}}': email.campaign_id || 'default'
+            }
+            
+            let processedContent = content
+            Object.entries(variables).forEach(([placeholder, value]) => {
+                const regex = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g')
+                processedContent = processedContent.replace(regex, value)
+            })
+            
+            return processedContent
+        }
+
+        // Fetch data and test
+        async function runTest() {
+            try {
+                const response = await fetch('http://localhost:3333/api/workflow/results');
+                const data = await response.json();
+                
+                const emails = data.data?.emailCampaign?.emails || [];
+                
+                document.getElementById('email-data').innerHTML = `
+                    <p><strong>API Success:</strong> ${data.success}</p>
+                    <p><strong>Emails Found:</strong> ${emails.length}</p>
+                    ${emails.map((email, i) => `
+                        <div style="margin: 10px 0; padding: 10px; background: #f8f9fa;">
+                            <strong>Email ${i+1}:</strong> ${email.to}<br>
+                            <strong>Subject:</strong> ${email.subject}<br>
+                            <strong>Company:</strong> ${email.recipient_company}<br>
+                            <strong>Name:</strong> ${email.recipient_name}
+                        </div>
+                    `).join('')}
+                `;
+                
+                if (emails.length > 0) {
+                    const testEmail = emails[0];
+                    const originalSubject = testEmail.subject;
+                    const replacedSubject = replaceTemplateVariables(originalSubject, testEmail);
+                    
+                    const originalBody = testEmail.body;
+                    const replacedBody = replaceTemplateVariables(originalBody, testEmail);
+                    
+                    const subjectWorking = originalSubject !== replacedSubject && !replacedSubject.includes('{{');
+                    const bodyWorking = originalBody !== replacedBody && !replacedBody.includes('{{');
+                    
+                    document.getElementById('replacement-test').innerHTML = `
+                        <div class="${subjectWorking ? 'success' : 'error'}">
+                            <strong>Subject Replacement:</strong> ${subjectWorking ? 'WORKING ✅' : 'FAILED ❌'}<br>
+                            Original: ${originalSubject}<br>
+                            Replaced: ${replacedSubject}
+                        </div>
+                        <div class="${bodyWorking ? 'success' : 'error'}">
+                            <strong>Body Replacement:</strong> ${bodyWorking ? 'WORKING ✅' : 'FAILED ❌'}<br>
+                            Has template vars: ${originalBody.includes('{{') ? 'Yes' : 'No'}<br>
+                            Replaced successfully: ${!replacedBody.includes('{{') ? 'Yes' : 'No'}
+                        </div>
+                    `;
+                    
+                    document.getElementById('comparison').innerHTML = `
+                        <div class="success">
+                            <h3>✅ What you SHOULD see in frontend:</h3>
+                            <p><strong>Subject:</strong> "${replacedSubject}"</p>
+                            <p><strong>Company displayed as:</strong> "${testEmail.recipient_company}"</p>
+                            <p><strong>Name displayed as:</strong> "${testEmail.recipient_name}"</p>
+                        </div>
+                        <div class="error">
+                            <h3>❌ What you should NOT see:</h3>
+                            <p><strong>Subject:</strong> "${originalSubject}" (with template variables)</p>
+                            <p><strong>Text like:</strong> "{{companyName}}", "{{recipientName}}"</p>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('replacement-test').innerHTML = '<div class="error">No emails to test</div>';
+                    document.getElementById('comparison').innerHTML = '<div class="error">No data for comparison</div>';
+                }
+                
+            } catch (error) {
+                document.getElementById('email-data').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        runTest();
+    </script>
+</body>
+</html>

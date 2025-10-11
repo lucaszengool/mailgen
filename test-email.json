@@ -1,0 +1,13 @@
+{
+  "to": "luzgool001@gmail.com",
+  "subject": "AI Marketing Test Email",
+  "body": "<h1>Real AI Email Test</h1><p>This is a real email sent by AI system!</p>",
+  "smtpConfig": {
+    "host": "smtp.gmail.com",
+    "port": 587,
+    "secure": false,
+    "username": "luzgool001@gmail.com",
+    "password": "rksj xojs zqbs fnsg"
+  },
+  "campaignId": "test"
+}

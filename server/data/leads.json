@@ -1,0 +1,696 @@
+[
+  {
+    "id": "lead_1755014204409_ylh0uvaba",
+    "name": "Alex Chen",
+    "email": "alex.chen@techcorp.com",
+    "company": "TechCorp Solutions",
+    "role": "CTO",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "techcorp.com",
+    "phone": "+1-555-0101",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:44.410Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755014204410_6xzdzljnc",
+    "name": "Sarah Johnson",
+    "email": "sarah@innovatetech.io",
+    "company": "InnovateTech",
+    "role": "Product Manager",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "innovatetech.io",
+    "phone": "+1-555-0102",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:44.410Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755014204410_z2zhe23fz",
+    "name": "Michael Zhang",
+    "email": "m.zhang@cloudify.com",
+    "company": "Cloudify Systems",
+    "role": "VP Engineering",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "cloudify.com",
+    "phone": "+1-555-0103",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:44.410Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755014204410_h0t4wdb7f",
+    "name": "Alex Chen",
+    "email": "alex.chen@techcorp.com",
+    "company": "TechCorp Solutions",
+    "role": "CTO",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "techcorp.com",
+    "phone": "+1-555-0101",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:44.410Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755014204410_6nb1jdon3",
+    "name": "Sarah Johnson",
+    "email": "sarah@innovatetech.io",
+    "company": "InnovateTech",
+    "role": "Product Manager",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "innovatetech.io",
+    "phone": "+1-555-0102",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:44.410Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755014208335_5149u6at8",
+    "name": "Alex Chen",
+    "email": "alex.chen@techcorp.com",
+    "company": "TechCorp Solutions",
+    "role": "CTO",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "techcorp.com",
+    "phone": "+1-555-0101",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:48.335Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755014208335_40fgj1pnb",
+    "name": "Sarah Johnson",
+    "email": "sarah@innovatetech.io",
+    "company": "InnovateTech",
+    "role": "Product Manager",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "innovatetech.io",
+    "phone": "+1-555-0102",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:48.335Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755014208335_w8yo6layc",
+    "name": "Michael Zhang",
+    "email": "m.zhang@cloudify.com",
+    "company": "Cloudify Systems",
+    "role": "VP Engineering",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "cloudify.com",
+    "phone": "+1-555-0103",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:48.335Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755014208335_akphfiz72",
+    "name": "Alex Chen",
+    "email": "alex.chen@techcorp.com",
+    "company": "TechCorp Solutions",
+    "role": "CTO",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "techcorp.com",
+    "phone": "+1-555-0101",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:48.335Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755014208335_tsulpopxb",
+    "name": "Sarah Johnson",
+    "email": "sarah@innovatetech.io",
+    "company": "InnovateTech",
+    "role": "Product Manager",
+    "industry": "technology",
+    "businessType": "saas",
+    "website": "innovatetech.io",
+    "phone": "+1-555-0102",
+    "source": "ai_generated",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "AI生成的technology行业相关潜在客户",
+    "personalizedInsights": {
+      "businessType": "unknown",
+      "industry": "technology",
+      "mainServices": [
+        "Example Domain"
+      ],
+      "painPoints": [
+        "运营效率",
+        "成本控制",
+        "市场竞争"
+      ],
+      "opportunities": [
+        "展示产品价值",
+        "解决具体需求",
+        "提供试用体验"
+      ],
+      "approach": "提供个性化的业务解决方案"
+    },
+    "createdAt": "2025-08-12T15:56:48.335Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755015983535_c0x0s342l",
+    "name": "Business Development",
+    "email": "bd@petpoofficial.org",
+    "company": "Petpoofficial",
+    "role": "Business Development Manager",
+    "industry": "pet-care",
+    "businessType": "pet-care",
+    "website": "https://petpoofficial.org",
+    "phone": null,
+    "source": "ai_synthetic",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "基于https://petpoofficial.org网站分析生成的潜在联系人",
+    "personalizedInsights": {
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "opportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "businessModel": "traditional",
+      "interests": [
+        "专业服务",
+        "质量产品"
+      ]
+    },
+    "createdAt": "2025-08-12T16:26:23.535Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755015983535_2ss2rnowf",
+    "name": "Contact Team",
+    "email": "contact@petpoofficial.org",
+    "company": "Petpoofficial",
+    "role": "Contact",
+    "industry": "pet-care",
+    "businessType": "pet-care",
+    "website": "https://petpoofficial.org",
+    "phone": null,
+    "source": "ai_synthetic",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "基于https://petpoofficial.org网站分析生成的潜在联系人",
+    "personalizedInsights": {
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "opportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "businessModel": "traditional",
+      "interests": [
+        "专业服务",
+        "质量产品"
+      ]
+    },
+    "createdAt": "2025-08-12T16:26:23.535Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755015983535_xby7j9qn5",
+    "name": "Info Team",
+    "email": "info@petpoofficial.org",
+    "company": "Petpoofficial",
+    "role": "Information Contact",
+    "industry": "pet-care",
+    "businessType": "pet-care",
+    "website": "https://petpoofficial.org",
+    "phone": null,
+    "source": "ai_synthetic",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "基于https://petpoofficial.org网站分析生成的潜在联系人",
+    "personalizedInsights": {
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "opportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "businessModel": "traditional",
+      "interests": [
+        "专业服务",
+        "质量产品"
+      ]
+    },
+    "createdAt": "2025-08-12T16:26:23.535Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755018225225_db0fn0s0l",
+    "name": "Business Development",
+    "email": "bd@petpoofficial.org",
+    "company": "Petpoofficial",
+    "role": "Business Development Manager",
+    "industry": "pet-care",
+    "businessType": "pet-care",
+    "website": "https://petpoofficial.org",
+    "phone": null,
+    "source": "ai_synthetic",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "基于https://petpoofficial.org网站分析生成的潜在联系人",
+    "personalizedInsights": {
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "opportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "businessModel": "traditional",
+      "interests": [
+        "专业服务",
+        "质量产品"
+      ]
+    },
+    "createdAt": "2025-08-12T17:03:45.225Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755018225225_xa02b40p9",
+    "name": "Contact Team",
+    "email": "contact@petpoofficial.org",
+    "company": "Petpoofficial",
+    "role": "Contact",
+    "industry": "pet-care",
+    "businessType": "pet-care",
+    "website": "https://petpoofficial.org",
+    "phone": null,
+    "source": "ai_synthetic",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "基于https://petpoofficial.org网站分析生成的潜在联系人",
+    "personalizedInsights": {
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "opportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "businessModel": "traditional",
+      "interests": [
+        "专业服务",
+        "质量产品"
+      ]
+    },
+    "createdAt": "2025-08-12T17:03:45.225Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755018225225_s21kwgrqo",
+    "name": "Info Team",
+    "email": "info@petpoofficial.org",
+    "company": "Petpoofficial",
+    "role": "Information Contact",
+    "industry": "pet-care",
+    "businessType": "pet-care",
+    "website": "https://petpoofficial.org",
+    "phone": null,
+    "source": "ai_synthetic",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "基于https://petpoofficial.org网站分析生成的潜在联系人",
+    "personalizedInsights": {
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "opportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "businessModel": "traditional",
+      "interests": [
+        "专业服务",
+        "质量产品"
+      ]
+    },
+    "createdAt": "2025-08-12T17:03:45.225Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755020328416_4ykwp3uhv",
+    "name": "Business Development",
+    "email": "bd@petpoofficial.org",
+    "company": "Petpoofficial",
+    "role": "Business Development Manager",
+    "industry": "pet-care",
+    "businessType": "pet-care",
+    "website": "https://petpoofficial.org",
+    "phone": null,
+    "source": "ai_synthetic",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "基于https://petpoofficial.org网站分析生成的潜在联系人",
+    "personalizedInsights": {
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "opportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "businessModel": "traditional",
+      "interests": [
+        "专业服务",
+        "质量产品"
+      ]
+    },
+    "createdAt": "2025-08-12T17:38:48.416Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755020328416_k3w3yk094",
+    "name": "Contact Team",
+    "email": "contact@petpoofficial.org",
+    "company": "Petpoofficial",
+    "role": "Contact",
+    "industry": "pet-care",
+    "businessType": "pet-care",
+    "website": "https://petpoofficial.org",
+    "phone": null,
+    "source": "ai_synthetic",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "基于https://petpoofficial.org网站分析生成的潜在联系人",
+    "personalizedInsights": {
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "opportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "businessModel": "traditional",
+      "interests": [
+        "专业服务",
+        "质量产品"
+      ]
+    },
+    "createdAt": "2025-08-12T17:38:48.416Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  },
+  {
+    "id": "lead_1755020328416_4i2alqmxx",
+    "name": "Info Team",
+    "email": "info@petpoofficial.org",
+    "company": "Petpoofficial",
+    "role": "Information Contact",
+    "industry": "pet-care",
+    "businessType": "pet-care",
+    "website": "https://petpoofficial.org",
+    "phone": null,
+    "source": "ai_synthetic",
+    "campaignGoal": "product_demo",
+    "priority": "medium",
+    "status": "ready_to_send",
+    "notes": "基于https://petpoofficial.org网站分析生成的潜在联系人",
+    "personalizedInsights": {
+      "painPoints": [
+        "运营效率",
+        "成本优化"
+      ],
+      "opportunities": [
+        "产品演示机会",
+        "成本节省价值主张",
+        "效率提升解决方案",
+        "行业专业知识分享"
+      ],
+      "businessModel": "traditional",
+      "interests": [
+        "专业服务",
+        "质量产品"
+      ]
+    },
+    "createdAt": "2025-08-12T17:38:48.416Z",
+    "lastContactedAt": null,
+    "responseStatus": "pending"
+  }
+]

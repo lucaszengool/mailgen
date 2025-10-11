@@ -1,0 +1,43 @@
+{
+  "id": "test_email_123",
+  "userId": "test_user",
+  "originalTemplate": "default",
+  "editedAt": "2025-09-01T16:37:09.548Z",
+  "structure": {
+    "id": "test_email_123",
+    "subject": "Updated Subject",
+    "components": [
+      {
+        "type": "header",
+        "content": {
+          "title": {
+            "text": "Updated Company"
+          }
+        }
+      }
+    ],
+    "metadata": {
+      "template": "default"
+    }
+  },
+  "changes": [
+    {
+      "type": "component",
+      "componentType": "header",
+      "index": 0,
+      "modifications": [
+        {
+          "path": "content.title.text",
+          "oldValue": "Original Company",
+          "newValue": "Updated Company"
+        }
+      ]
+    },
+    {
+      "type": "metadata",
+      "field": "subject",
+      "oldValue": "Original Subject",
+      "newValue": "Updated Subject"
+    }
+  ]
+}

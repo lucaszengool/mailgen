@@ -1,0 +1,55 @@
+{
+  "id": "test_comprehensive_123",
+  "userId": "comprehensive_test_user",
+  "originalTemplate": "partnership_outreach",
+  "editedAt": "2025-09-01T17:27:15.085Z",
+  "structure": {
+    "id": "test_comprehensive_123",
+    "subject": "Updated Test Subject - Partnership with TestCorp",
+    "components": [
+      {
+        "type": "header",
+        "content": {
+          "title": {
+            "text": "Updated Company Name"
+          }
+        }
+      },
+      {
+        "type": "button",
+        "content": {
+          "text": "Visit Our Website",
+          "url": "https://testcompany.com"
+        }
+      }
+    ],
+    "metadata": {
+      "template": "partnership_outreach"
+    }
+  },
+  "changes": [
+    {
+      "type": "structure",
+      "action": "added_components",
+      "count": 1
+    },
+    {
+      "type": "component",
+      "componentType": "header",
+      "index": 0,
+      "modifications": [
+        {
+          "path": "content.title.text",
+          "oldValue": "Original Company",
+          "newValue": "Updated Company Name"
+        }
+      ]
+    },
+    {
+      "type": "metadata",
+      "field": "subject",
+      "oldValue": "Original Test Subject",
+      "newValue": "Updated Test Subject - Partnership with TestCorp"
+    }
+  ]
+}

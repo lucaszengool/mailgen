@@ -1,0 +1,1 @@
+ sleep 5 echo Server should be running with PID: $(cat server.pid)
