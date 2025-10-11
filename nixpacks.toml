@@ -1,0 +1,13 @@
+# Backend-only build configuration
+[phases.setup]
+nixPkgs = ["nodejs_18", "npm-9_x"]
+
+[phases.install]
+cmds = ["npm ci --omit=dev"]
+
+[phases.build]
+# Skip build phase - backend doesn't need building
+cmds = []
+
+[start]
+cmd = "node server/index.js"
