@@ -9,4 +9,7 @@ cmds = ["npm ci"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npm run preview -- --host 0.0.0.0 --port $PORT"
+cmd = "npm run preview"
+
+[variables]
+PORT = "8080"
