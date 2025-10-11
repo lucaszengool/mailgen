@@ -20,9 +20,9 @@ class EmailEditorService {
 
     // CRITICAL FIX: Use Redis for persistent storage instead of memory
     const redis = require('redis');
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
     this.redisClient = redis.createClient({
-      host: 'localhost',
-      port: 6379,
+      url: redisUrl,
       retryDelayOnFailover: 100,
       enableReadyCheck: false,
       maxRetriesPerRequest: null

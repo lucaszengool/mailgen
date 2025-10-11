@@ -8,10 +8,16 @@ const crypto = require('crypto');
 
 class RedisVectorMemory {
   constructor(options = {}) {
-    this.redis = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || undefined,
+    // Support both REDIS_URL and individual config
+    const redisConfig = process.env.REDIS_URL
+      ? process.env.REDIS_URL  // Use connection string if available
+      : {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: process.env.REDIS_PORT || 6379,
+          password: process.env.REDIS_PASSWORD || undefined,
+        };
+
+    this.redis = new Redis(redisConfig, {
       db: options.db || 0,
       retryDelayOnFailover: 100,
       maxRetriesPerRequest: 3,

@@ -419,7 +419,8 @@ router.post('/reset', async (req, res) => {
   // Clear Redis cache (email learning data, etc.)
   try {
     const redis = require('redis');
-    const redisClient = redis.createClient();
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    const redisClient = redis.createClient({ url: redisUrl });
     await redisClient.connect();
     await redisClient.flushAll();
     await redisClient.disconnect();
