@@ -412,7 +412,8 @@ class OllamaSearxNGEmailDiscovery {
       // 检查Ollama
       let ollamaStatus = false;
       try {
-        const ollamaResponse = await axios.get('http://localhost:11434/api/tags'); // No timeout
+        const ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
+        const ollamaResponse = await axios.get(`${ollamaUrl}/api/tags`); // No timeout
         ollamaStatus = ollamaResponse.status === 200;
       } catch (e) {
         ollamaStatus = false;
@@ -421,7 +422,8 @@ class OllamaSearxNGEmailDiscovery {
       // 检查SearxNG
       let searxngStatus = false;
       try {
-        const searxngResponse = await axios.get('http://localhost:8080/search', {
+        const searxngUrl = process.env.SEARXNG_URL || 'http://localhost:8080';
+        const searxngResponse = await axios.get(`${searxngUrl}/search`, {
           params: { q: 'test', format: 'json' }
         }); // No timeout
         searxngStatus = searxngResponse.status === 200;

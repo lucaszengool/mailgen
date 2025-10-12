@@ -391,9 +391,10 @@ router.get('/status', async (req, res) => {
     // 检查Ollama状态
     let ollamaStatus = false;
     let ollamaModels = [];
-    
+    const ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
+
     try {
-      const ollamaResponse = await axios.get('http://localhost:11434/api/tags'); // No timeout
+      const ollamaResponse = await axios.get(`${ollamaUrl}/api/tags`); // No timeout
       ollamaStatus = true;
       ollamaModels = ollamaResponse.data.models?.map(m => m.name) || [];
     } catch (ollamaError) {
@@ -403,9 +404,10 @@ router.get('/status', async (req, res) => {
     // 检查SearxNG状态
     let searxngStatus = false;
     let searxngSupportsJson = false;
-    
+    const searxngUrl = process.env.SEARXNG_URL || 'http://localhost:8080';
+
     try {
-      const searxngResponse = await axios.get('http://localhost:8080/search', {
+      const searxngResponse = await axios.get(`${searxngUrl}/search`, {
         params: { q: 'test', format: 'json' }
       }); // No timeout
       searxngStatus = true;
@@ -424,12 +426,13 @@ router.get('/status', async (req, res) => {
           connected: ollamaStatus,
           availableModels: ollamaModels,
           requiredModels: ['qwen2.5:0.5b', 'llama3.2'],
-          modelsReady: ollamaModels.includes('qwen2.5:0.5b') && ollamaModels.includes('llama3.2')
+          modelsReady: ollamaModels.includes('qwen2.5:0.5b') && ollamaModels.includes('llama3.2'),
+          url: ollamaUrl
         },
         searxng: {
           connected: searxngStatus,
           jsonSupported: searxngSupportsJson,
-          url: 'http://localhost:8080'
+          url: searxngUrl
         },
         integration: {
           ready: systemReady,
