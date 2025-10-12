@@ -7,9 +7,11 @@ RUN mkdir -p /etc/searxng
 # Copy custom settings
 COPY searxng-settings.yml /etc/searxng/settings.yml
 
-# Set environment variables
-ENV SEARXNG_SECRET=$(openssl rand -hex 32)
-ENV SEARXNG_BASE_URL=https://searxng-production.up.railway.app
+# Generate random secret and set environment variables at build time
+RUN echo "SEARXNG_SECRET=$(openssl rand -hex 32)" >> /etc/environment
+
+# Set other environment variables
+# Note: SEARXNG_SECRET and SEARXNG_BASE_URL should be set via Railway Variables
 ENV BIND_ADDRESS=0.0.0.0:8080
 ENV INSTANCE_NAME="Railway SearXNG"
 
