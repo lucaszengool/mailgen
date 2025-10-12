@@ -1,16 +1,10 @@
 # SearXNG Dockerfile for Railway deployment
 FROM searxng/searxng:latest
 
-# Create settings directory
-RUN mkdir -p /etc/searxng
-
 # Copy custom settings
 COPY searxng-settings.yml /etc/searxng/settings.yml
 
-# Generate random secret and set environment variables at build time
-RUN echo "SEARXNG_SECRET=$(openssl rand -hex 32)" >> /etc/environment
-
-# Set other environment variables
+# Set environment variables
 # Note: SEARXNG_SECRET and SEARXNG_BASE_URL should be set via Railway Variables
 ENV BIND_ADDRESS=0.0.0.0:8080
 ENV INSTANCE_NAME="Railway SearXNG"
@@ -18,5 +12,5 @@ ENV INSTANCE_NAME="Railway SearXNG"
 # Expose port for Railway
 EXPOSE 8080
 
-# Start SearXNG
-CMD ["/usr/local/searxng/dockerfiles/docker-entrypoint.sh"]
+# Use the default entrypoint from the base image
+# The base image already has the correct entrypoint configured
