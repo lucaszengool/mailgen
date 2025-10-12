@@ -1,32 +1,50 @@
-# Minimal SearXNG configuration with JSON enabled
+# SearXNG Settings for Railway deployment
+# Minimal configuration to enable JSON API and basic search
+
+use_default_settings: true
+
+general:
+  instance_name: "Railway SearXNG"
+  enable_metrics: false
+
+server:
+  secret_key: "CHANGE_THIS_SECRET_KEY"  # Will be overridden by env var
+  limiter: false  # Disable rate limiting for backend API usage
+  image_proxy: true
+  public_instance: false
+  bind_address: "0.0.0.0"
+  port: 8080
+
 search:
   safe_search: 0
   autocomplete: ""
   default_lang: "en"
   formats:
     - html
-    - json
-    - csv
-    - rss
-
-server:
-  port: 8080
-  bind_address: "0.0.0.0"
-  limiter: false
-  public_instance: false
+    - json  # CRITICAL: Enable JSON API for backend integration
 
 ui:
-  default_locale: "en"
+  static_use_hash: true
+  default_theme: simple
   theme_args:
-    simple_style: "auto"
+    simple_style: auto
 
 outgoing:
-  request_timeout: 3.0
-  max_request_timeout: 6.0
+  request_timeout: 10.0
+  max_request_timeout: 15.0
 
-# DOI resolver settings
-default_doi_resolver: "oadoi.org"
+engines:
+  - name: duckduckgo
+    disabled: false
 
-doi_resolvers:
-  oadoi.org: 'https://oadoi.org/'
-  doi.org: 'https://doi.org/'
+  - name: google
+    disabled: false
+
+  - name: bing
+    disabled: false
+
+  - name: qwant
+    disabled: false
+
+  - name: brave
+    disabled: false
