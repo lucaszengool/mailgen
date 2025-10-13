@@ -492,7 +492,7 @@ router.get('/step/:stepId', (req, res) => {
 // Get campaign results including prospects
 router.get('/results', async (req, res) => {
   try {
-    console.log('🔍 Fetching campaign results...');
+    // console.log('🔍 Fetching campaign results...'); // Commented to reduce Railway log spam
     
     // First check if we have stored results from the last campaign
     if (lastWorkflowResults && lastWorkflowResults.prospects && lastWorkflowResults.prospects.length > 0) {
@@ -555,22 +555,27 @@ router.get('/results', async (req, res) => {
     const wsManager = req.app.locals.wsManager;
     
     if (wsManager && wsManager.workflowStates.size > 0) {
-      console.log('🔄 Checking WebSocket workflow states for real prospect data...');
-      
+      // console.log('🔄 Checking WebSocket workflow states for real prospect data...'); // Commented to reduce Railway log spam
+
       // Look for prospect data in any workflow state
       for (const [workflowId, state] of wsManager.workflowStates) {
-        console.log(`📊 Checking workflow ${workflowId}, data keys:`, Object.keys(state.data || {}));
-        console.log(`📊 Steps available:`, Object.keys(state.steps || {}));
+        // console.log(`📊 Checking workflow ${workflowId}, data keys:`, Object.keys(state.data || {})); // Commented to reduce Railway log spam
+        // console.log(`📊 Steps available:`, Object.keys(state.steps || {})); // Commented to reduce Railway log spam
         
         // Check for prospects in direct data object
         if (state.data && state.data.prospects && state.data.prospects.length > 0) {
-          console.log(`✅ Found ${state.data.prospects.length} real prospects in workflow ${workflowId} (direct data)`);
+          // Only log once when first found, not on every poll
+          if (prospects.length === 0) {
+            console.log(`✅ Found ${state.data.prospects.length} real prospects in workflow ${workflowId} (direct data)`);
+          }
           prospects = state.data.prospects;
           hasRealResults = true;
         }
         // Also check for prospects in the prospect_search step result
         else if (state.steps && state.steps.prospect_search && state.steps.prospect_search.result && state.steps.prospect_search.result.prospects) {
-          console.log(`✅ Found ${state.steps.prospect_search.result.prospects.length} real prospects in workflow ${workflowId} (step result)`);
+          if (prospects.length === 0) {
+            console.log(`✅ Found ${state.steps.prospect_search.result.prospects.length} real prospects in workflow ${workflowId} (step result)`);
+          }
           prospects = state.steps.prospect_search.result.prospects;
           hasRealResults = true;
         }
@@ -623,8 +628,9 @@ router.get('/results', async (req, res) => {
         sendingResults: workflowState.steps.find(s => s.id === 'email_sending')?.details || null
       };
     }
-    
-    console.log(`📊 Returning ${prospects.length} prospects (real: ${hasRealResults})`);
+
+    // Only log when data actually changes
+    // console.log(`📊 Returning ${prospects.length} prospects (real: ${hasRealResults})`); // Commented to reduce Railway log spam
     
     // Get current email index from marketing agent if available
     let currentEmailIndex = 0;
