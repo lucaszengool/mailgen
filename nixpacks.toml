@@ -5,8 +5,7 @@ nixPkgs = ["nodejs_20", "python311Full"]
 [phases.install]
 cmds = [
   "npm ci --omit=dev",
-  "python3 -m ensurepip --upgrade",
-  "python3 -m pip install requests beautifulsoup4"
+  "python3 -m pip install --user requests beautifulsoup4"
 ]
 
 [phases.build]
