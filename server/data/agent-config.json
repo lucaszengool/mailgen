@@ -9,7 +9,7 @@
     "secure": false,
     "senderName": "Fruit AI",
     "auth": {
-      "user": "https://fruitai.org/",
+      "user": "fruitaiofficial@gmail.com",
       "pass": "oiwq qinf mazo mxkq"
     }
   },
@@ -24,34 +24,34 @@
       "Meta"
     ],
     "sellingPoints": [
-      "Instant fresheness analysis through advanced machine learning algorithms",
-      "User-focused design ensuring seamless smartphone integration,",
-      "Real-time visibility of freshness status in the app dashboard.",
-      "Automated barcode recognition technology enhances accuracy with real time updates",
-      "AI-powered recommendation system suggesting products based on user preferences and shopping history"
+      "Instantly assess the condition of fruits, vegetables,",
+      "Offer real-time nutritional information about each item scanned.",
+      "Supports multiple food groups including dairy products.",
+      "Generate detailed reports on produce quality analysis.",
+      "The exact number may vary based on different models and updates but these are some common features for such a product.)"
     ],
     "audiences": [
       {
-        "title": "Individuals with Diabetic Needs",
-        "description": "People living in areas where access is limited or difficult due to weather conditions, which can lead them into grocery stores without fresh produce. They prioritize quick results and want a reliable tool that ensures they are getting the freshest fruits and vegetables."
+        "title": "Foodie Consumers (Individuals interested in organic, locally-sourced fruits)",
+        "description": "They appreciate the AI-driven freshness analysis that helps them choose healthy options without compromising on taste or appearance. These consumers are keenly seeking a tool to make informed grocery decisions and ensure their meals stay fresh."
       },
       {
-        "title": "Savvy Grocery Store Owners",
-        "description": "Retailers who operate in busy markets or supermarkets where time is of utmost importance, leading to inefficient processing times due to frequent changes. They require tools like FruitAI that can quickly analyze fruit quality without compromising freshness and ensure they are getting the freshest produce available."
+        "title": "Smart Grocery Shoppe Owners",
+        "description": "Those who manage smart home systems may find this product valuable as it offers real-time insights into fruit, vegetable quality for efficient shopping routines at the store front."
       },
       {
-        "title": "Health-Conscious Families",
-        "description": "Individuals who prioritize their health by eating fresh fruits daily or frequently, seeking ways to assess food safety in grocery stores. They prefer tools like FruitAI that can provide detailed insights into fruit quality without compromising freshness and ensuring they are getting the freshest produce available."
+        "title": "Retail Stores (Large-scale retailers)",
+        "description": "With increasing consumer demand around freshness in various sectors like food safety regulations or health-related benefits of using fresh fruits and vegetables. Retailers are looking to enhance their operations with AI-powered tools that help them make data-driven decisions about stock management, inventory optimization etc., making this product a must-have."
       },
       {
-        "title": "Busy Busy Shopkeepers",
-        "description": "Retailers who work with tight schedules or manage their stock during busy periods, leading to inefficient processes. They require tools like"
+        "title": "Health Enthusiasts (Individuals interested in maintaining healthy eating habits)",
+        "description": "With the growing awareness around nutrition-focused products like fruit or vegetable supplements and smoothies. Health enthusiasts are looking for practical ways to ensure their fruits stay fresh without compromising on taste quality as they prioritize using natural ingredients that promote health benefits of consuming these foods."
       }
     ]
   },
   "targetWebsite": "https://fruitai.org/",
   "businessType": "auto",
   "setupComplete": true,
-  "createdAt": "2025-10-11T08:28:42.982Z",
-  "updatedAt": "2025-10-11T08:28:42.988Z"
+  "createdAt": "2025-10-13T14:58:16.465Z",
+  "updatedAt": "2025-10-13T14:58:16.471Z"
 }
