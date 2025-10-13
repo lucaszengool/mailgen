@@ -685,7 +685,13 @@ class LangGraphMarketingAgent {
         return;
       }
 
-      console.log(`✅ Background search found ${prospects.length} prospects`);
+      // Wait briefly for Railway log rate limit to reset
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('\n\n');
+      console.log('='.repeat(80));
+      console.log(`🎉 PROSPECT SEARCH COMPLETE: Found ${prospects.length} prospects`);
+      console.log('='.repeat(80));
       console.log(`📧 Sample emails: ${prospects.slice(0, 3).map(p => p.email).join(', ')}`);
 
       // Step 2: Check if we need to pause for template selection
