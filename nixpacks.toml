@@ -1,12 +1,9 @@
 # Backend-only build configuration
 [phases.setup]
-nixPkgs = ["nodejs_20", "python311"]
+nixPkgs = ["nodejs_20", "python311", "python311Packages.requests", "python311Packages.beautifulsoup4"]
 
 [phases.install]
-cmds = [
-  "npm ci --omit=dev",
-  "python3 -m pip install --user requests beautifulsoup4"
-]
+cmds = ["npm ci --omit=dev"]
 
 [phases.build]
 # Skip build phase - backend doesn't need building
