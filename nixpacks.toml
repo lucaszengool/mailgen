@@ -1,13 +1,13 @@
 # Backend-only build configuration
-[providers]
-# Enable both Node.js and Python providers
-"..." = ["...", "python"]
-
 [phases.setup]
-nixPkgs = ["nodejs_20"]
+nixPkgs = ["nodejs_20", "python311", "python311Packages.pip"]
+aptPkgs = ["python3-pip"]
 
 [phases.install]
-cmds = ["npm ci --omit=dev"]
+cmds = [
+  "npm ci --omit=dev",
+  "pip3 install -r requirements.txt"
+]
 
 [phases.build]
 # Skip build phase - backend doesn't need building
