@@ -181,7 +181,13 @@ router.post('/config', async (req, res) => {
 
     // CRITICAL: Save to memory first (for Railway ephemeral filesystem)
     agentState.config = campaignConfig;
-    console.log('✅ Campaign configuration saved to memory (Railway-compatible)');
+    console.log('✅ Campaign configuration saved to agentState.config (Railway-compatible)');
+
+    // ALSO save to app.locals for cross-route access (Railway-compatible)
+    if (req.app && req.app.locals) {
+      req.app.locals.agentConfig = campaignConfig;
+      console.log('✅ Campaign configuration also saved to app.locals (cross-route access)');
+    }
 
     // Try to save configuration to file (for local development)
     try {
@@ -191,7 +197,7 @@ router.post('/config', async (req, res) => {
     } catch (fileError) {
       // On Railway, filesystem might be read-only or ephemeral, so this is expected
       console.log('⚠️ Could not save config to file (Railway ephemeral filesystem):', fileError.message);
-      console.log('✅ Config is still available in memory');
+      console.log('✅ Config is still available in memory and app.locals');
     }
     
     res.json({ 

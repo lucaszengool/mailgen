@@ -148,17 +148,37 @@ router.post('/start', async (req, res) => {
       console.warn('⚠️ No WebSocket manager found in app.locals');
     }
 
-    // Load saved agent config to get websiteAnalysis
+    // Load saved agent config to get websiteAnalysis (Railway-compatible: check app.locals first)
     let savedConfig = null;
-    try {
-      const fs = require('fs').promises;
-      const configPath = path.join(__dirname, '../data/agent-config.json');
-      const configData = await fs.readFile(configPath, 'utf8');
-      savedConfig = JSON.parse(configData);
-      console.log('✅ Loaded saved agent config with websiteAnalysis:', !!savedConfig.websiteAnalysis);
-    } catch (error) {
-      console.log('⚠️ Could not load saved config, proceeding without it:', error.message);
+
+    // First check app.locals (Railway-compatible, persists across requests)
+    if (req.app && req.app.locals && req.app.locals.agentConfig) {
+      savedConfig = req.app.locals.agentConfig;
+      console.log('✅ Loaded config from app.locals (Railway-compatible)');
+      console.log('🔍 Config has targetWebsite:', !!savedConfig.targetWebsite);
+      console.log('🔍 Config has websiteAnalysis:', !!savedConfig.websiteAnalysis);
     }
+
+    // Fallback to file-based config (for local development)
+    if (!savedConfig) {
+      try {
+        const fs = require('fs').promises;
+        const configPath = path.join(__dirname, '../data/agent-config.json');
+        const configData = await fs.readFile(configPath, 'utf8');
+        savedConfig = JSON.parse(configData);
+        console.log('✅ Loaded saved agent config from file');
+      } catch (error) {
+        console.log('⚠️ Could not load saved config from file:', error.message);
+      }
+    }
+
+    // Log final config status
+    console.log('📋 Final savedConfig status:', {
+      exists: !!savedConfig,
+      hasTargetWebsite: !!savedConfig?.targetWebsite,
+      hasWebsiteAnalysis: !!savedConfig?.websiteAnalysis,
+      hasSMTPConfig: !!savedConfig?.smtpConfig
+    });
 
     // Execute real campaign in background
     const campaignConfig = {
