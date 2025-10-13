@@ -22,9 +22,9 @@ import logging
 class SuperEmailDiscoveryEngine:
     def __init__(self):
         self.setup_logging()
-        
-        # SearxNG配置
-        self.searxng_url = 'http://localhost:8080'
+
+        # SearxNG配置 - Railway兼容
+        self.searxng_url = os.environ.get('SEARXNG_URL', 'http://localhost:8080')
         
         # 网络会话配置 - 无超时限制
         self.session = requests.Session()
