@@ -75,7 +75,9 @@ class LangGraphMarketingAgent {
   async initialize() {
     const connected = await this.memory.connect();
     if (!connected) {
-      throw new Error('Failed to connect to Redis Vector Memory');
+      console.warn('⚠️ Redis Vector Memory not connected - continuing without learning features');
+    } else {
+      console.log('✅ Redis Vector Memory connected successfully');
     }
     console.log('✅ Marketing Agent fully initialized');
   }

@@ -21,13 +21,39 @@ class RedisVectorMemory {
       db: options.db || 0,
       retryDelayOnFailover: 100,
       maxRetriesPerRequest: 3,
-      lazyConnect: true
+      lazyConnect: true,
+      enableOfflineQueue: false,  // Don't queue commands when offline
+      retryStrategy: (times) => {
+        if (times > 3) {
+          console.error('❌ Redis retry limit reached, giving up');
+          return null; // Stop retrying
+        }
+        const delay = Math.min(times * 50, 2000);
+        console.log(`🔄 Redis retry attempt ${times}, waiting ${delay}ms...`);
+        return delay;
+      },
+      reconnectOnError: (err) => {
+        console.error('❌ Redis reconnect error:', err.message);
+        return false; // Don't automatically reconnect on error
+      }
+    });
+
+    // Handle Redis errors to prevent unhandled error events
+    this.redis.on('error', (err) => {
+      console.error('❌ Redis error:', err.message);
+      this.connected = false;
+    });
+
+    this.redis.on('close', () => {
+      console.log('⚠️ Redis connection closed');
+      this.connected = false;
     });
 
     this.vectorDim = options.vectorDim || 384; // Default embedding dimension
     this.indexName = options.indexName || 'agent_memory';
     this.keyPrefix = options.keyPrefix || 'memory:';
-    
+    this.connected = false; // Initialize as disconnected
+
     console.log('🧠 Redis Vector Memory System initialized');
   }
 
