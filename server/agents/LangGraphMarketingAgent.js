@@ -278,7 +278,12 @@ class LangGraphMarketingAgent {
     this.state.currentCampaign = campaignId;
     this.campaignConfig = campaignConfig;  // Store campaign config for later use
 
-    console.log(`🚀 Executing campaign: ${campaignId}`);
+    console.log(`🚀 ============= EXECUTING CAMPAIGN ${campaignId} =============`);
+    console.log(`🚀 [RAILWAY DEBUG] executeCampaign() CALLED`);
+    console.log(`🚀 [RAILWAY DEBUG] Target Website: ${campaignConfig.targetWebsite}`);
+    console.log(`🚀 [RAILWAY DEBUG] Campaign Goal: ${campaignConfig.campaignGoal}`);
+    console.log(`🚀 [RAILWAY DEBUG] Has SMTP Config: ${!!campaignConfig.smtpConfig}`);
+    console.log(`🚀 [RAILWAY DEBUG] Has WebsiteAnalysis: ${!!campaignConfig.websiteAnalysis}`);
     
     // Initialize workflow state in WebSocket manager
     if (this.wsManager) {
@@ -388,8 +393,10 @@ class LangGraphMarketingAgent {
    * 业务分析 + 学习优化
    */
   async executeBusinessAnalysisWithLearning(campaignConfig) {
-    console.log('📊 Executing business analysis with self-healing...');
-    
+    console.log('📊 [RAILWAY DEBUG] ===== BUSINESS ANALYSIS STARTING =====');
+    console.log('📊 [RAILWAY DEBUG] Executing business analysis with self-healing...');
+    console.log('📊 [RAILWAY DEBUG] Target website:', campaignConfig.targetWebsite);
+
     // Send real-time log updates
     if (this.wsManager) {
       this.wsManager.sendLogUpdate('website_analysis', '🔍 Starting website analysis...', 'info');

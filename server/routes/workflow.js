@@ -198,7 +198,18 @@ router.post('/start', async (req, res) => {
 
     // Start real workflow execution in background
     console.log('🎯 About to execute real workflow...');
-    executeRealWorkflow(agent, campaignConfig);
+
+    // CRITICAL: Execute workflow WITHOUT await to prevent blocking the response
+    // but ensure it actually runs by wrapping in an immediately invoked async function
+    (async () => {
+      try {
+        console.log('🚀 [RAILWAY DEBUG] Executing real workflow in background...');
+        await executeRealWorkflow(agent, campaignConfig);
+        console.log('✅ [RAILWAY DEBUG] Real workflow execution completed');
+      } catch (error) {
+        console.error('❌ [RAILWAY DEBUG] Real workflow execution failed:', error);
+      }
+    })();
 
     console.log('✅ Workflow start response sent to frontend');
     res.json({
@@ -1056,18 +1067,27 @@ function addLog(step, message, level = 'info') {
 // Real workflow execution function
 async function executeRealWorkflow(agent, campaignConfig) {
   try {
-    console.log('🚀 Starting REAL LangGraphMarketingAgent workflow execution');
-    
+    console.log('🚀 ======================== REAL WORKFLOW EXECUTION START ========================');
+    console.log('🚀 [RAILWAY DEBUG] Starting REAL LangGraphMarketingAgent workflow execution');
+    console.log('🚀 [RAILWAY DEBUG] Campaign config:', {
+      targetWebsite: campaignConfig.targetWebsite,
+      campaignGoal: campaignConfig.campaignGoal,
+      hasSmtpConfig: !!campaignConfig.smtpConfig,
+      hasWebsiteAnalysis: !!campaignConfig.websiteAnalysis
+    });
+
     // Update workflow state to reflect real execution start
     workflowState.steps[0].status = 'in_progress';
     workflowState.steps[0].startTime = new Date().toISOString();
     workflowState.lastUpdate = new Date().toISOString();
-    
+
+    console.log('📊 [RAILWAY DEBUG] About to call agent.executeCampaign()...');
+
     // Execute the real marketing campaign
     const results = await agent.executeCampaign(campaignConfig);
-    
-    console.log('✅ Real workflow execution completed');
-    console.log('📊 Results:', {
+
+    console.log('✅ [RAILWAY DEBUG] Real workflow execution completed');
+    console.log('📊 [RAILWAY DEBUG] Results:', {
       businessAnalysis: !!results.businessAnalysis,
       marketingStrategy: !!results.marketingStrategy,
       prospects: results.prospects?.length || 0,
@@ -1114,16 +1134,24 @@ async function executeRealWorkflow(agent, campaignConfig) {
     }
     
   } catch (error) {
-    console.error('❌ Real workflow execution failed:', error.message);
-    
+    console.error('❌ ======================== REAL WORKFLOW EXECUTION FAILED ========================');
+    console.error('❌ [RAILWAY DEBUG] Real workflow execution failed:', error.message);
+    console.error('❌ [RAILWAY DEBUG] Error stack:', error.stack);
+
     // Update error state
     workflowState.isRunning = false;
     workflowState.lastUpdate = new Date().toISOString();
-    
+
     // Mark current step as failed
     const currentStepIndex = workflowState.steps.findIndex(s => s.status === 'in_progress');
     if (currentStepIndex >= 0) {
       workflowState.steps[currentStepIndex].status = 'error';
+      workflowState.steps[currentStepIndex].logs.push({
+        time: new Date().toLocaleTimeString(),
+        message: `Error: ${error.message}`,
+        level: 'error',
+        timestamp: new Date().toISOString()
+      });
     }
   }
 }
