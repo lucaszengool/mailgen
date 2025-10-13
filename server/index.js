@@ -139,16 +139,25 @@ app.use((req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
-// Initialize LangGraph agent
+// Start server immediately - don't wait for agent initialization
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 API Server: http://localhost:${PORT}`);
+  console.log(`🔌 WebSocket Server: ws://localhost:${PORT}/ws/workflow`);
+  console.log(`🎯 Frontend: http://localhost:3000`);
+  console.log(`🤖 LangGraph Agent: Initializing...`);
+});
+
+// Initialize LangGraph agent in background (don't block server startup)
 langGraphAgent.initialize().then(async () => {
   // Set WebSocket manager after initialization
   langGraphAgent.setWebSocketManager(wsManager);
-  
+
   // Integrate Marketing Research Agent with LangGraph Agent
   langGraphAgent.setMarketingResearchAgent(marketingResearchAgent);
-  
+
   console.log('✅ LangGraph Marketing Agent initialized with WebSocket and Marketing Research integration');
-  
+
   // Auto-start continuous marketing research - DISABLED TO FREE UP OLLAMA
   /*
   try {
@@ -158,7 +167,7 @@ langGraphAgent.initialize().then(async () => {
       competitors: ['HubSpot', 'Salesforce', 'Mailchimp', 'ActiveCampaign'],
       cycleInterval: 45000 // 45 seconds between cycles
     };
-    
+
     const researchStarted = await marketingAgent.startContinuousResearch(researchConfig);
     if (researchStarted.success) {
       console.log('🔍 Continuous Marketing Research started automatically');
@@ -175,14 +184,7 @@ langGraphAgent.initialize().then(async () => {
   console.log('⚠️ Marketing Research auto-start DISABLED to free up Ollama for workflow');
 }).catch(error => {
   console.error('❌ LangGraph initialization failed:', error.message);
-});
-
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 API Server: http://localhost:${PORT}`);
-  console.log(`🔌 WebSocket Server: ws://localhost:${PORT}/ws/workflow`);
-  console.log(`🎯 Frontend: http://localhost:3000`);
-  console.log(`🤖 LangGraph Agent: Ready for real-time workflows`);
+  console.error('⚠️ Server will continue running without full agent functionality');
 });
 
 // Graceful shutdown
