@@ -326,7 +326,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
             <Shield className="w-5 h-5 text-green-500" />
             <h3 className="font-medium text-black">Secure & Private</h3>
           </div>
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-black">
             Your email credentials are encrypted and stored securely.
             We only use them to send emails on your behalf.
           </p>
@@ -335,7 +335,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
         {/* Tutorial Tips */}
         <div className="bg-white border border-gray-300 rounded-lg p-4">
           <h3 className="font-medium text-black mb-2">📧 SMTP Setup Tips</h3>
-          <ul className="text-xs text-gray-700 space-y-1">
+          <ul className="text-xs text-black space-y-1">
             <li>• Most providers require app-specific passwords</li>
             <li>• Enable 2FA before creating app passwords</li>
             <li>• Test your settings after configuration</li>
@@ -353,7 +353,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
               <Settings className="w-8 h-8 text-green-500" />
               <h1 className="text-2xl font-bold text-black">Configure Email Service</h1>
             </div>
-            <p className="text-gray-700">
+            <p className="text-black">
               Set up your SMTP email configuration to start sending automated marketing emails.
               Choose your email provider and follow the guided setup process.
             </p>
@@ -397,7 +397,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                           <span className="text-2xl">{provider.logo}</span>
                           <div>
                             <h3 className="font-semibold text-black">{provider.name}</h3>
-                            <p className="text-xs text-gray-700">{provider.description}</p>
+                            <p className="text-xs text-black">{provider.description}</p>
                           </div>
                         </div>
                       </div>
@@ -405,22 +405,22 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                       {/* Stats */}
                       <div className="flex justify-between text-sm mb-3">
                         <div>
-                          <span className="text-gray-700">Difficulty:</span>
+                          <span className="text-black">Difficulty:</span>
                           <span className={`ml-1 font-medium ${
                             provider.difficulty === 'Easy' ? 'text-green-600' :
-                            provider.difficulty === 'Medium' ? 'text-gray-600' : 'text-gray-800'
+                            provider.difficulty === 'Medium' ? 'text-black' : 'text-black'
                           }`}>
                             {provider.difficulty}
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-700">Setup:</span>
+                          <span className="text-black">Setup:</span>
                           <span className="ml-1 text-black">{provider.setupTime}</span>
                         </div>
                       </div>
 
                       {/* Requirements */}
-                      <div className="text-xs text-gray-700 mb-3">
+                      <div className="text-xs text-black mb-3">
                         <span className="font-medium text-black">Requirements:</span>
                         <ul className="mt-1 space-y-1">
                           {provider.requirements.map((req, index) => (
@@ -493,7 +493,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                         </div>
                         <div className="flex-1">
                           <h4 className="font-medium text-black">{step.title}</h4>
-                          <p className="text-sm text-gray-700">{step.description}</p>
+                          <p className="text-sm text-black">{step.description}</p>
                         </div>
                         {step.link && (
                           <a
@@ -575,7 +575,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder="Fruit AI"
                       />
-                      <p className="mt-1 text-xs text-gray-700">
+                      <p className="mt-1 text-xs text-black">
                         This name will appear as the sender in all outbound emails
                       </p>
                     </div>
@@ -683,7 +683,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
               <h4 className="font-medium text-black mb-2">
                 {selectedProviderData.tutorial[currentTutorialStep].title}
               </h4>
-              <p className="text-gray-700 mb-4">
+              <p className="text-black mb-4">
                 {selectedProviderData.tutorial[currentTutorialStep].description}
               </p>
 
@@ -701,7 +701,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
             </div>
 
             <div className="flex justify-between">
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-black">
                 Step {currentTutorialStep + 1} of {selectedProviderData.tutorial.length}
               </div>
               <button

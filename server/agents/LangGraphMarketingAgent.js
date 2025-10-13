@@ -307,54 +307,45 @@ class LangGraphMarketingAgent {
       // Store marketing strategy for later use
       this.marketingStrategyData = marketingStrategy;
 
-      // 🔥 阶段3: 潜在客户搜索 - 在后台运行（非阻塞）
-      console.log('🚀 Starting prospect search in BACKGROUND (non-blocking)...');
+      // 🔥 阶段3: 潜在客户搜索 - 直接执行（Railway兼容）
+      console.log('🚀 Starting prospect search IMMEDIATELY for Railway deployment...');
 
-      // Start background search and handle it properly
-      // Don't await - let it run in background, but ensure it's properly scheduled
-      setImmediate(() => {
-        console.log('⚡ Background search scheduled on next event loop tick');
-        this.executeProspectSearchInBackground(
+      // Execute prospect search and await completion
+      // This ensures the search completes before the Railway instance shuts down
+      try {
+        await this.executeProspectSearchInBackground(
           marketingStrategy,
           campaignId,
           businessAnalysis,
           campaignConfig
-        ).catch(error => {
-          console.error('❌ Background search failed:', error);
-          if (this.wsManager) {
-            this.wsManager.broadcast({
-              type: 'prospect_search_error',
-              data: {
-                campaignId,
-                error: error.message,
-                status: 'error'
-              }
-            });
-          }
-        });
-      });
+        );
 
-      // The background process will:
-      // 1. Find prospects
-      // 2. Update UI via WebSocket in real-time
-      // 3. Trigger template selection popup when ready
-      // 4. Wait for user's template selection
-      // 5. Continue with email generation after user approves
+        console.log('✅ Prospect search completed');
 
-      console.log('✅ Prospect search scheduled in background');
-      console.log('📊 Main process continues - background will update UI as prospects are found');
+      } catch (error) {
+        console.error('❌ Prospect search failed:', error);
+        if (this.wsManager) {
+          this.wsManager.broadcast({
+            type: 'prospect_search_error',
+            data: {
+              campaignId,
+              error: error.message,
+              status: 'error'
+            }
+          });
+        }
+      }
 
-      // Return early result while background search continues
+      // Return result with search complete status
       return {
         campaignId,
         businessAnalysis,
         marketingStrategy,
-        prospects: [],
+        prospects: [], // Will be populated via WebSocket
         emailCampaign: null,
-        status: 'searching_prospects_in_background',
-        message: 'Prospect search running in background. You will be notified when prospects are found.',
-        timestamp: new Date().toISOString(),
-        backgroundSearchRunning: true
+        status: 'prospect_search_complete',
+        message: 'Prospect search completed. Check dashboard for results.',
+        timestamp: new Date().toISOString()
       };
 
       // NOTE: Email generation now happens in executeProspectSearchInBackground()
