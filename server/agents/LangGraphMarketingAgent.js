@@ -689,6 +689,11 @@ class LangGraphMarketingAgent {
       console.log(`📧 Sample emails: ${prospects.slice(0, 3).map(p => p.email).join(', ')}`);
 
       // Step 2: Check if we need to pause for template selection
+      console.log(`🔍 [RAILWAY DEBUG] Checking template selection condition:`);
+      console.log(`   - emailTemplate: ${campaignConfig.emailTemplate}`);
+      console.log(`   - templateData: ${JSON.stringify(campaignConfig.templateData)}`);
+      console.log(`   - Should pause: ${!campaignConfig.emailTemplate && !campaignConfig.templateData}`);
+
       if (!campaignConfig.emailTemplate && !campaignConfig.templateData) {
         console.log('🎨 No template provided - triggering template selection popup');
         this.state.isWaitingForTemplate = true;
