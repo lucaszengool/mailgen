@@ -35,12 +35,20 @@ class RedisVectorMemory {
     try {
       await this.redis.connect();
       console.log('✅ Redis connected successfully');
+      this.connected = true;
       await this.createVectorIndex();
       return true;
     } catch (error) {
       console.error('❌ Redis connection failed:', error.message);
+      console.log('⚠️ Continuing without Redis - memory features disabled');
+      this.connected = false;
       return false;
     }
+  }
+
+  // Helper method to check if Redis is available
+  isConnected() {
+    return this.connected === true;
   }
 
   async createVectorIndex() {
@@ -56,117 +64,152 @@ class RedisVectorMemory {
    * 存储搜索查询学习数据
    */
   async storeSearchLearning(campaignId, query, results, performance) {
-    const id = this.generateId('search_learning');
-    const key = `${this.keyPrefix}${id}`;
-    
-    const data = {
-      id,
-      type: 'search_learning',
-      campaign_id: campaignId,
-      timestamp: Date.now(),
-      content: query,
-      results_count: results.length,
-      performance: {
-        emails_found: results.length,
-        success_rate: performance.success_rate || 0,
-        relevance_score: performance.relevance_score || 0
-      },
-      metadata: JSON.stringify({
-        query_type: performance.query_type,
-        search_terms: performance.search_terms,
-        domains_searched: performance.domains_searched
-      }),
-      embedding: await this.generateEmbedding(query)
-    };
+    if (!this.isConnected()) {
+      console.log('⚠️ Redis not connected, skipping search learning storage');
+      return null;
+    }
 
-    await this.redis.set(key, JSON.stringify(data));
-    console.log(`📚 Stored search learning: ${query} (${results.length} results)`);
-    return id;
+    try {
+      const id = this.generateId('search_learning');
+      const key = `${this.keyPrefix}${id}`;
+
+      const data = {
+        id,
+        type: 'search_learning',
+        campaign_id: campaignId,
+        timestamp: Date.now(),
+        content: query,
+        results_count: results.length,
+        performance: {
+          emails_found: results.length,
+          success_rate: performance.success_rate || 0,
+          relevance_score: performance.relevance_score || 0
+        },
+        metadata: JSON.stringify({
+          query_type: performance.query_type,
+          search_terms: performance.search_terms,
+          domains_searched: performance.domains_searched
+        }),
+        embedding: await this.generateEmbedding(query)
+      };
+
+      await this.redis.set(key, JSON.stringify(data));
+      console.log(`📚 Stored search learning: ${query} (${results.length} results)`);
+      return id;
+    } catch (error) {
+      console.error('❌ Failed to store search learning:', error.message);
+      return null;
+    }
   }
 
   /**
    * 存储营销策略学习数据
    */
   async storeMarketingLearning(campaignId, strategy, results, feedback) {
-    const id = this.generateId('marketing_learning');
-    const key = `${this.keyPrefix}${id}`;
-    
-    const data = {
-      id,
-      type: 'marketing_learning',
-      campaign_id: campaignId,
-      timestamp: Date.now(),
-      content: JSON.stringify(strategy),
-      results: {
-        emails_sent: results.emails_sent || 0,
-        responses: results.responses || 0,
-        conversions: results.conversions || 0,
-        response_rate: results.response_rate || 0
-      },
-      feedback: {
-        user_rating: feedback.user_rating || 0,
-        user_comments: feedback.user_comments || '',
-        effectiveness: feedback.effectiveness || 0
-      },
-      metadata: JSON.stringify({
-        target_audience: strategy.target_audience,
-        value_proposition: strategy.value_proposition,
-        approach: strategy.approach
-      }),
-      embedding: await this.generateEmbedding(JSON.stringify(strategy))
-    };
+    if (!this.isConnected()) {
+      console.log('⚠️ Redis not connected, skipping marketing learning storage');
+      return null;
+    }
 
-    await this.redis.set(key, JSON.stringify(data));
-    console.log(`🎯 Stored marketing learning for campaign: ${campaignId}`);
-    return id;
+    try {
+      const id = this.generateId('marketing_learning');
+      const key = `${this.keyPrefix}${id}`;
+
+      const data = {
+        id,
+        type: 'marketing_learning',
+        campaign_id: campaignId,
+        timestamp: Date.now(),
+        content: JSON.stringify(strategy),
+        results: {
+          emails_sent: results.emails_sent || 0,
+          responses: results.responses || 0,
+          conversions: results.conversions || 0,
+          response_rate: results.response_rate || 0
+        },
+        feedback: {
+          user_rating: feedback.user_rating || 0,
+          user_comments: feedback.user_comments || '',
+          effectiveness: feedback.effectiveness || 0
+        },
+        metadata: JSON.stringify({
+          target_audience: strategy.target_audience,
+          value_proposition: strategy.value_proposition,
+          approach: strategy.approach
+        }),
+        embedding: await this.generateEmbedding(JSON.stringify(strategy))
+      };
+
+      await this.redis.set(key, JSON.stringify(data));
+      console.log(`🎯 Stored marketing learning for campaign: ${campaignId}`);
+      return id;
+    } catch (error) {
+      console.error('❌ Failed to store marketing learning:', error.message);
+      return null;
+    }
   }
 
   /**
    * 存储邮件学习数据
    */
   async storeEmailLearning(campaignId, emailContent, results, userFeedback) {
-    const id = this.generateId('email_learning');
-    const key = `${this.keyPrefix}${id}`;
-    
-    const data = {
-      id,
-      type: 'email_learning',
-      campaign_id: campaignId,
-      timestamp: Date.now(),
-      content: emailContent.subject + ' ' + emailContent.body,
-      results: {
-        sent: results.sent || false,
-        opened: results.opened || false,
-        replied: results.replied || false,
-        conversion: results.conversion || false
-      },
-      user_feedback: {
-        approval: userFeedback.approval || false,
-        modifications: userFeedback.modifications || '',
-        rating: userFeedback.rating || 0
-      },
-      metadata: JSON.stringify({
-        email_type: emailContent.type,
-        template_used: emailContent.template,
-        personalization: emailContent.personalization
-      }),
-      embedding: await this.generateEmbedding(emailContent.subject + ' ' + emailContent.body)
-    };
+    if (!this.isConnected()) {
+      console.log('⚠️ Redis not connected, skipping email learning storage');
+      return null;
+    }
 
-    await this.redis.set(key, JSON.stringify(data));
-    console.log(`📧 Stored email learning for campaign: ${campaignId}`);
-    return id;
+    try {
+      const id = this.generateId('email_learning');
+      const key = `${this.keyPrefix}${id}`;
+
+      const data = {
+        id,
+        type: 'email_learning',
+        campaign_id: campaignId,
+        timestamp: Date.now(),
+        content: emailContent.subject + ' ' + emailContent.body,
+        results: {
+          sent: results.sent || false,
+          opened: results.opened || false,
+          replied: results.replied || false,
+          conversion: results.conversion || false
+        },
+        user_feedback: {
+          approval: userFeedback.approval || false,
+          modifications: userFeedback.modifications || '',
+          rating: userFeedback.rating || 0
+        },
+        metadata: JSON.stringify({
+          email_type: emailContent.type,
+          template_used: emailContent.template,
+          personalization: emailContent.personalization
+        }),
+        embedding: await this.generateEmbedding(emailContent.subject + ' ' + emailContent.body)
+      };
+
+      await this.redis.set(key, JSON.stringify(data));
+      console.log(`📧 Stored email learning for campaign: ${campaignId}`);
+      return id;
+    } catch (error) {
+      console.error('❌ Failed to store email learning:', error.message);
+      return null;
+    }
   }
 
   /**
    * 检索相似的学习经验 (使用标准Redis操作)
    */
   async retrieveSimilarLearning(query, type, limit = 10) {
+    if (!this.isConnected()) {
+      console.log('⚠️ Redis not connected, returning empty learning results');
+      return [];
+    }
+
     try {
       // 使用标准Redis操作检索数据
       const keys = await this.redis.keys(`${this.keyPrefix}*`);
       const results = [];
-      
+
       for (const key of keys.slice(0, limit)) {
         try {
           const dataStr = await this.redis.get(key);
@@ -180,7 +223,7 @@ class RedisVectorMemory {
           console.error('Error parsing stored data:', parseError);
         }
       }
-      
+
       return results.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     } catch (error) {
       console.error('❌ Error retrieving similar learning:', error.message);
