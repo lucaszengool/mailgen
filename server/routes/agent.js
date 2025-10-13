@@ -79,14 +79,25 @@ router.post('/configure', async (req, res) => {
 // Get agent configuration
 router.get('/config', async (req, res) => {
   try {
+    // First check in-memory config (for Railway ephemeral filesystem)
+    if (agentState.config && agentState.config.targetWebsite) {
+      console.log('✅ Returning config from memory (Railway-compatible)');
+      return res.json(agentState.config);
+    }
+
+    // Fallback to file-based config for local development
     const configPath = path.join(__dirname, '../data/agent-config.json');
-    
+
     try {
       const configData = await fs.readFile(configPath, 'utf8');
       const config = JSON.parse(configData);
+      // Also store in memory for future requests
+      agentState.config = config;
+      console.log('✅ Loaded config from file and cached in memory');
       res.json(config);
     } catch (error) {
       // No config file exists yet
+      console.log('⚠️ No config found in memory or file');
       res.json(null);
     }
   } catch (error) {
@@ -167,14 +178,21 @@ router.post('/config', async (req, res) => {
     if (targetWebsite) {
       agentConfig.targetWebsite = targetWebsite;
     }
-    
-    // Save configuration to file
-    const configPath = path.join(__dirname, '../data/agent-config.json');
-    await fs.writeFile(configPath, JSON.stringify(campaignConfig, null, 2));
 
+    // CRITICAL: Save to memory first (for Railway ephemeral filesystem)
     agentState.config = campaignConfig;
+    console.log('✅ Campaign configuration saved to memory (Railway-compatible)');
 
-    console.log('✅ Campaign configuration saved successfully');
+    // Try to save configuration to file (for local development)
+    try {
+      const configPath = path.join(__dirname, '../data/agent-config.json');
+      await fs.writeFile(configPath, JSON.stringify(campaignConfig, null, 2));
+      console.log('✅ Campaign configuration also saved to file');
+    } catch (fileError) {
+      // On Railway, filesystem might be read-only or ephemeral, so this is expected
+      console.log('⚠️ Could not save config to file (Railway ephemeral filesystem):', fileError.message);
+      console.log('✅ Config is still available in memory');
+    }
     
     res.json({ 
       success: true, 

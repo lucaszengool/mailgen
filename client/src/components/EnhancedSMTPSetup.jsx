@@ -439,7 +439,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             e.stopPropagation();
                             handleOAuthLogin(provider.id);
                           }}
-                          className="w-full mb-2 py-2 px-4 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
+                          className="w-full mb-2 py-2 px-4 bg-green-500 hover:bg-green-600 text-black text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
                         >
                           <Shield className="w-4 h-4" />
                           <span>Connect with {provider.name}</span>
@@ -455,7 +455,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                         className={`w-full py-2 px-4 text-sm font-medium rounded-lg transition-colors ${
                           ['gmail', 'outlook', 'yahoo'].includes(provider.id)
                             ? 'bg-gray-200 hover:bg-gray-300 text-black'
-                            : 'bg-green-500 hover:bg-green-600 text-white'
+                            : 'bg-green-500 hover:bg-green-600 text-black'
                         }`}
                       >
                         {['gmail', 'outlook', 'yahoo'].includes(provider.id) ? 'Manual Setup' : 'Select Provider'}
@@ -475,7 +475,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   </h2>
                   <button
                     onClick={startTutorial}
-                    className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-black rounded-lg hover:bg-green-600 transition-colors"
                   >
                     <Play className="w-4 h-4" />
                     <span>Start Tutorial</span>
@@ -651,7 +651,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
               className={`
                 flex items-center space-x-2 px-6 py-2 rounded-lg font-medium transition-all
                 ${isFormValid
-                  ? 'bg-green-500 text-white hover:bg-green-600 shadow-md hover:shadow-lg'
+                  ? 'bg-green-500 text-black hover:bg-green-600 shadow-md hover:shadow-lg'
                   : 'bg-gray-300 text-gray-600 cursor-not-allowed'
                 }
               `}
@@ -692,7 +692,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   href={selectedProviderData.tutorial[currentTutorialStep].link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                  className="inline-flex items-center space-x-2 px-4 py-2 bg-green-500 text-black rounded-lg hover:bg-green-600 transition-colors"
                 >
                   <span>{selectedProviderData.tutorial[currentTutorialStep].action}</span>
                   <ExternalLink className="w-4 h-4" />
@@ -706,7 +706,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
               </div>
               <button
                 onClick={nextTutorialStep}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-black rounded-lg hover:bg-green-600 transition-colors"
               >
                 <span>
                   {currentTutorialStep === selectedProviderData.tutorial.length - 1 ? 'Finish' : 'Next'}
