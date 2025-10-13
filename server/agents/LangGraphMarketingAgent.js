@@ -979,8 +979,9 @@ class LangGraphMarketingAgent {
 
         // 🎨 NEW: Trigger template selection popup for user
         if (this.wsManager) {
-          console.log('🎨 Triggering template selection popup...');
-          this.wsManager.broadcast({
+          console.log('🎨🎨🎨 BROADCASTING TEMPLATE SELECTION REQUIRED MESSAGE 🎨🎨🎨');
+          console.log('🎨 Prospects found:', prospects.length);
+          const message = {
             type: 'template_selection_required',
             data: {
               prospectsFound: prospects.length,
@@ -994,7 +995,9 @@ class LangGraphMarketingAgent {
               websiteAnalysis: this.campaignConfig?.websiteAnalysis || null,  // Include websiteAnalysis (logo, etc.)
               message: `Found ${prospects.length} prospects! Please select an email template to use for all emails in this campaign.`
             }
-          });
+          };
+          console.log('🎨 Broadcasting message:', JSON.stringify(message, null, 2));
+          this.wsManager.broadcast(message);
 
           console.log('✅ Template selection popup triggered - waiting for user selection');
         }

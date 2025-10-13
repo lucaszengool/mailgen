@@ -2253,12 +2253,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
   // 🎨 Handle template selection required
   const handleTemplateSelectionRequired = (data) => {
-    console.log('🎨 Template selection required:', data);
+    console.log('🎨 === INSIDE handleTemplateSelectionRequired ===');
+    console.log('🎨 Template selection required data:', data);
+    console.log('🎨 Setting templateRequest...');
     setTemplateRequest(data);
+    console.log('🎨 Setting showTemplateSelection to TRUE...');
     setShowTemplateSelection(true);
+    console.log('🎨 showTemplateSelection state updated to TRUE');
 
     // Show notification
-    console.log(`✨ Found ${data.prospectsFound} prospects! Please select an email template.`);
+    console.log(`✨ Found ${data.prospectsFound || data.prospectsCount || 'N/A'} prospects! Please select an email template.`);
+    console.log('🎨 === EXITING handleTemplateSelectionRequired ===');
   };
 
   // 🎨 Handle template selected confirmation
@@ -2774,32 +2779,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           console.log('🎯 Found', prospects.length, 'prospects - triggering micro-steps!');
           triggerProspectMicroSteps(prospects);
           setProspects(prospects);
-
+          
           // Also check for emails immediately after showing prospects
           if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
             console.log('📧 Also found', emailCampaign.emails.length, 'emails - scheduling email micro-steps!');
             setTimeout(() => {
               triggerEmailMicroSteps(emailCampaign.emails);
             }, 15000); // Delay to let prospect steps finish
-          }
-          // 🎨 NEW: Auto-trigger template selection if no emails exist yet
-          else if (!showTemplateSelection && !templateRequest) {
-            console.log('🎨 AUTO-TRIGGER: Prospects found but no emails - showing template selection popup');
-            const autoTemplateRequest = {
-              campaignId: result.data.campaignId || 'auto-campaign',
-              workflowId: result.data.workflowId || 'auto-workflow',
-              prospectsFound: prospects.length,
-              prospectsCount: prospects.length,
-              sampleProspects: prospects.slice(0, 5).map(p => ({
-                email: p.email,
-                name: p.name || 'Unknown',
-                company: p.company || 'Unknown'
-              })),
-              message: `Found ${prospects.length} prospects! Please select an email template to continue.`
-            };
-            setTemplateRequest(autoTemplateRequest);
-            setShowTemplateSelection(true);
-            console.log('✨ Template selection popup triggered automatically');
           }
         }
         // If we already showed prospects, just show emails
@@ -2908,8 +2894,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         fetchAndTriggerWorkflowSteps();
       } else if (data.type === 'template_selection_required') {
         // 🎨 NEW: Handle template selection required
-        console.log('🎨 Template selection required received:', data.data);
+        console.log('🎨🎨🎨 TEMPLATE SELECTION REQUIRED MESSAGE RECEIVED! 🎨🎨🎨');
+        console.log('🎨 Template selection data:', JSON.stringify(data.data, null, 2));
+        console.log('🎨 Calling handleTemplateSelectionRequired...');
         handleTemplateSelectionRequired(data.data);
+        console.log('🎨 handleTemplateSelectionRequired called successfully');
       } else if (data.type === 'template_selected') {
         // 🎨 NEW: Handle template selected confirmation
         console.log('✅ Template selected confirmed:', data.data);
