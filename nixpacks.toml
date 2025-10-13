@@ -6,7 +6,7 @@ aptPkgs = ["python3-pip"]
 [phases.install]
 cmds = [
   "npm ci --omit=dev",
-  "pip3 install -r requirements.txt"
+  "pip3 install -r requirements.txt --break-system-packages"
 ]
 
 [phases.build]
