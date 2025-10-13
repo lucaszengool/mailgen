@@ -1,12 +1,13 @@
 # Backend-only build configuration
+[providers]
+# Enable both Node.js and Python providers
+"..." = ["...", "python"]
+
 [phases.setup]
-nixPkgs = ["nodejs_20", "python311Full"]
+nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = [
-  "npm ci --omit=dev",
-  "python3 -m pip install --user requests beautifulsoup4"
-]
+cmds = ["npm ci --omit=dev"]
 
 [phases.build]
 # Skip build phase - backend doesn't need building
