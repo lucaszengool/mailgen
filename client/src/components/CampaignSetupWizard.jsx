@@ -123,6 +123,7 @@ const CampaignSetupWizard = ({ onComplete }) => {
           smtpConfig: finalData.smtpConfig,
           emailTemplate: finalData.emailTemplate,
           templateData: finalData.templateData,
+          websiteAnalysis: finalData.websiteAnalysis,  // CRITICAL: Include websiteAnalysis for Railway
           controls: {
             autoReply: true,
             manualApproval: false,
