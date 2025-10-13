@@ -744,11 +744,14 @@ class LangGraphMarketingAgent {
           console.log(`✅ VERIFICATION: Workflow ${campaignId} now has ${workflowState.data.prospects.length} prospects stored`);
 
           // Trigger template selection popup
-          this.wsManager.broadcast({
+          console.log('🎨🎨🎨 BROADCASTING TEMPLATE SELECTION REQUIRED MESSAGE (LOCATION 1) 🎨🎨🎨');
+          console.log('🎨 Prospects found:', prospects.length);
+          const message = {
             type: 'template_selection_required',
             data: {
               campaignId: campaignId,
               prospectsCount: prospects.length,
+              prospectsFound: prospects.length,  // Add this for consistency
               sampleProspects: prospects.slice(0, 5).map(p => ({
                 email: p.email,
                 name: p.name || 'Unknown',
@@ -758,7 +761,10 @@ class LangGraphMarketingAgent {
               canProceed: false,
               status: 'waiting_for_template'
             }
-          });
+          };
+          console.log('🎨 Broadcasting message:', JSON.stringify(message, null, 2));
+          this.wsManager.broadcast(message);
+          console.log('✅ Template selection broadcast completed!');
 
           // Also broadcast prospects data directly
           this.wsManager.broadcast({
