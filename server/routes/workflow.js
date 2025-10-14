@@ -1185,8 +1185,22 @@ async function executeRealWorkflow(agent, campaignConfig) {
 
 // Function to set workflow results from other modules
 function setLastWorkflowResults(results) {
-  lastWorkflowResults = results;
-  console.log(`📦 Stored workflow results with ${results.prospects?.length || 0} prospects`);
+  // 🔥 FIX: Don't overwrite if we already have emails and the new results don't
+  if (lastWorkflowResults &&
+      lastWorkflowResults.emailCampaign &&
+      lastWorkflowResults.emailCampaign.emails &&
+      lastWorkflowResults.emailCampaign.emails.length > 0 &&
+      (!results.emailCampaign || !results.emailCampaign.emails || results.emailCampaign.emails.length === 0)) {
+    console.log(`⚠️ Preserving existing ${lastWorkflowResults.emailCampaign.emails.length} emails - not overwriting with empty campaign`);
+    // Merge: keep existing emails but update other fields
+    lastWorkflowResults = {
+      ...results,
+      emailCampaign: lastWorkflowResults.emailCampaign  // Keep existing emails
+    };
+  } else {
+    lastWorkflowResults = results;
+  }
+  console.log(`📦 Stored workflow results with ${results.prospects?.length || 0} prospects and ${lastWorkflowResults.emailCampaign?.emails?.length || 0} emails`);
 }
 
 // Function to get workflow results from other modules
