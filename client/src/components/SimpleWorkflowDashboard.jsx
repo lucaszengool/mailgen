@@ -2278,38 +2278,41 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   };
 
   // 🎨 Handle template selection confirm
-  const handleTemplateConfirm = async () => {
-    if (!selectedTemplate || !templateRequest) {
-      console.error('❌ No template selected');
+  const handleTemplateConfirm = async (passedTemplate = null) => {
+    // 🔥 FIX: Accept template as parameter to avoid race condition with React state
+    const templateToUse = passedTemplate || selectedTemplate;
+
+    if (!templateToUse || !templateRequest) {
+      console.error('❌ No template selected', { passedTemplate, selectedTemplate, templateRequest });
       return;
     }
 
     setIsSubmittingTemplate(true);
 
     try {
-      console.log('🎨 Confirming template selection:', selectedTemplate.id);
-      console.log('🎨 Selected template data:', selectedTemplate);
+      console.log('🎨 Confirming template selection:', templateToUse.id);
+      console.log('🎨 Selected template data:', templateToUse);
 
-      // Extract customization data from selectedTemplate
-      const baseTemplate = EMAIL_TEMPLATES[selectedTemplate.id];
+      // Extract customization data from templateToUse
+      const baseTemplate = EMAIL_TEMPLATES[templateToUse.id];
 
       const customizations = {
-        subject: selectedTemplate.subject || baseTemplate?.subject,
-        greeting: selectedTemplate.greeting || 'Hi {name},',
-        signature: selectedTemplate.signature || 'Best regards,\n{senderName}\n{company}',
-        customizations: selectedTemplate.customizations || {},
-        templateId: selectedTemplate.id,
-        templateName: selectedTemplate.name || baseTemplate?.name,
+        subject: templateToUse.subject || baseTemplate?.subject,
+        greeting: templateToUse.greeting || 'Hi {name},',
+        signature: templateToUse.signature || 'Best regards,\n{senderName}\n{company}',
+        customizations: templateToUse.customizations || {},
+        templateId: templateToUse.id,
+        templateName: templateToUse.name || baseTemplate?.name,
         // 🎯 INCLUDE THE EDITED TEMPLATE HTML if user customized it
-        html: selectedTemplate.html || baseTemplate?.html,
+        html: templateToUse.html || baseTemplate?.html,
         components: baseTemplate?.structure?.components || [],
         // Mark as customized if we have custom data
         isCustomized: !!(
-          selectedTemplate.customizations ||
-          selectedTemplate.subject ||
-          selectedTemplate.greeting ||
-          selectedTemplate.signature ||
-          selectedTemplate.html  // Also mark as customized if HTML was edited
+          templateToUse.customizations ||
+          templateToUse.subject ||
+          templateToUse.greeting ||
+          templateToUse.signature ||
+          templateToUse.html  // Also mark as customized if HTML was edited
         )
       };
 
@@ -2341,12 +2344,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       });
 
       // Get template components from EMAIL_TEMPLATES
-      const templateComponents = EMAIL_TEMPLATES[selectedTemplate.id]?.structure?.components || [];
+      const templateComponents = EMAIL_TEMPLATES[templateToUse.id]?.structure?.components || [];
       console.log('🧩 Template components:', templateComponents);
 
       // Use TemplateSelectionService to send data with customizations AND components
       const result = await TemplateSelectionService.selectTemplate(
-        selectedTemplate.id,
+        templateToUse.id,
         templateRequest.campaignId || 'default',
         templateRequest.workflowId || 'default',
         customizations.isCustomized ? customizations : null,
@@ -2354,7 +2357,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       );
 
       console.log('✅ Template selection response:', result);
-      console.log(`✅ Template ${selectedTemplate.name} applied successfully with customizations!`);
+      console.log(`✅ Template ${templateToUse.name} applied successfully with customizations!`);
 
       // Close template selection modal and mark as submitted
       setShowTemplateSelection(false);

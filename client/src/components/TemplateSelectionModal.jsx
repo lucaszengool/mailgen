@@ -1054,7 +1054,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
         ? { ...template, ...customTemplateData }
         : template;
       onSelectTemplate(finalTemplate);
-      onConfirm();
+      // 🔥 FIX: Pass template directly to avoid React state race condition
+      onConfirm(finalTemplate);
       onClose();
     }
   };
@@ -1328,11 +1329,13 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsPreviewMode(false);
+                  const template = EMAIL_TEMPLATES[selectedTemplate];
                   if (onSelectTemplate) {
-                    onSelectTemplate(EMAIL_TEMPLATES[selectedTemplate]);
+                    onSelectTemplate(template);
                   }
                   if (onConfirm) {
-                    onConfirm();
+                    // 🔥 FIX: Pass template directly to avoid React state race condition
+                    onConfirm(template);
                   }
                 }}
                 className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
@@ -1698,7 +1701,12 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                     onSelectTemplate(finalTemplate);
                   }
                   if (onConfirm) {
-                    onConfirm();
+                    // 🔥 FIX: Pass template directly to avoid React state race condition
+                    const template = EMAIL_TEMPLATES[selectedTemplate];
+                    const finalTemplate = Object.keys(customTemplateData).length > 0
+                      ? { ...template, ...customTemplateData }
+                      : template;
+                    onConfirm(finalTemplate);
                   }
                 }}
                 className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
