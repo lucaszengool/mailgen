@@ -646,19 +646,21 @@ router.get('/results', async (req, res) => {
     }
 
     // Check if agent is waiting for template selection
+    // Simple logic: If we have prospects but no email campaign, template selection is needed
     let templateSelectionRequired = false;
     let templateSelectionStatus = null;
-    try {
-      const marketingAgent = getMarketingAgent(req);
-      if (marketingAgent.state && marketingAgent.state.workflowPaused &&
-          prospects.length > 0 && !campaignData.emailCampaign) {
-        // Workflow is paused and we have prospects but no emails yet = waiting for template
-        templateSelectionRequired = true;
-        templateSelectionStatus = 'waiting_for_template';
-        console.log('🎨 Template selection required - prospects found but no template selected');
-      }
-    } catch (error) {
-      console.log('⚠️ Could not check template selection state:', error.message);
+
+    if (prospects.length > 0 &&
+        (!campaignData.emailCampaign ||
+         !campaignData.emailCampaign.emails ||
+         campaignData.emailCampaign.emails.length === 0)) {
+      // We have prospects but no emails = template selection required
+      templateSelectionRequired = true;
+      templateSelectionStatus = 'waiting_for_template';
+      console.log('🎨 HTTP POLLING: Template selection required - have prospects but no emails yet');
+      console.log('   Prospects:', prospects.length);
+      console.log('   Email campaign:', campaignData.emailCampaign ? 'exists' : 'null');
+      console.log('   Emails:', campaignData.emailCampaign?.emails?.length || 0);
     }
 
     res.json({
