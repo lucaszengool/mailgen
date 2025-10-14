@@ -7,7 +7,17 @@ class WorkflowWebSocketManager extends EventEmitter {
     // CRITICAL: Specify path for Railway compatibility
     this.wss = new WebSocket.Server({
       server,
-      path: '/ws/workflow'
+      path: '/ws/workflow',
+      // Railway proxy compatibility
+      verifyClient: (info) => {
+        console.log('🔍 WebSocket verify client request:');
+        console.log('   Origin:', info.origin);
+        console.log('   Secure:', info.secure);
+        console.log('   Request URL:', info.req.url);
+        console.log('   Request headers:', JSON.stringify(info.req.headers, null, 2));
+        // Accept all origins for now
+        return true;
+      }
     });
     this.clients = new Map();
     this.workflowStates = new Map();
