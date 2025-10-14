@@ -2868,6 +2868,18 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
     wsInstance.onopen = () => {
       console.log('✅ WebSocket connected to backend!');
+      console.log('✅ WebSocket readyState:', wsInstance.readyState);
+    };
+
+    wsInstance.onerror = (error) => {
+      console.error('❌ WebSocket error:', error);
+      console.error('❌ WebSocket URL was:', wsUrl);
+      console.error('❌ WebSocket readyState:', wsInstance.readyState);
+    };
+
+    wsInstance.onclose = (event) => {
+      console.log('🔌 WebSocket closed:', event.code, event.reason);
+      console.log('🔌 Was clean close?', event.wasClean);
     };
 
     wsInstance.onmessage = (event) => {
