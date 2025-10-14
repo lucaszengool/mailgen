@@ -1653,7 +1653,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [templateRequest, setTemplateRequest] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [isSubmittingTemplate, setIsSubmittingTemplate] = useState(false);
-  const [templateAlreadySubmitted, setTemplateAlreadySubmitted] = useState(false); // NEW: Prevent popup re-triggering
+  const templateAlreadySubmittedRef = useRef(false); // 🔥 FIX: Use ref to persist across re-renders
 
   const [steps, setSteps] = useState([]);
   const [prospects, setProspects] = useState([]);
@@ -2363,7 +2363,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       setShowTemplateSelection(false);
       setSelectedTemplate(null);
       setTemplateRequest(null);
-      setTemplateAlreadySubmitted(true); // 🎯 CRITICAL: Prevent popup from appearing again
+      templateAlreadySubmittedRef.current = true; // 🎯 CRITICAL: Prevent popup from appearing again
       console.log('🎯 Template submission flag set - popup will not retrigger');
 
     } catch (error) {
@@ -2758,10 +2758,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           console.log('🎨 Status:', result.data.status);
           console.log('🎨 Can proceed:', result.data.canProceed);
           console.log('🎨 Template selection required:', result.data.templateSelectionRequired);
-          console.log('🎨 Template already submitted?', templateAlreadySubmitted);
+          console.log('🎨 Template already submitted?', templateAlreadySubmittedRef.current);
 
           // Trigger template selection popup ONLY if not already submitted
-          if (!showTemplateSelection && !templateAlreadySubmitted) {
+          if (!showTemplateSelection && !templateAlreadySubmittedRef.current) {
             console.log('🎨 Triggering template selection popup via HTTP polling');
             handleTemplateSelectionRequired({
               campaignId: result.data.campaignId,
@@ -2772,7 +2772,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
               canProceed: false,
               status: 'waiting_for_template'
             });
-          } else if (templateAlreadySubmitted) {
+          } else if (templateAlreadySubmittedRef.current) {
             console.log('🎨 Template already submitted - waiting for email generation to start...');
           }
 
