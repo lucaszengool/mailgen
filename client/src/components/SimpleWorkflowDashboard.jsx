@@ -2857,11 +2857,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   // Simplified WebSocket connection
   useEffect(() => {
     console.log('SimpleWorkflowDashboard mounted, connecting WebSocket...');
-    const wsInstance = new WebSocket('ws://localhost:3333/ws/workflow');
+
+    // Dynamic WebSocket URL for Railway compatibility
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/workflow`;
+    console.log('🔌 Connecting to WebSocket:', wsUrl);
+
+    const wsInstance = new WebSocket(wsUrl);
     setWs(wsInstance);
-    
+
     wsInstance.onopen = () => {
-      console.log('WebSocket connected to backend!');
+      console.log('✅ WebSocket connected to backend!');
     };
 
     wsInstance.onmessage = (event) => {
