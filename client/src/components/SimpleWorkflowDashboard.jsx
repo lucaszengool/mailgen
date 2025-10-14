@@ -2858,28 +2858,73 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   useEffect(() => {
     console.log('SimpleWorkflowDashboard mounted, connecting WebSocket...');
 
+    // Check WebSocket health before connecting
+    const checkWSHealth = async () => {
+      try {
+        const response = await fetch('/api/ws-health');
+        const health = await response.json();
+        console.log('🏥 WebSocket health check:', health);
+      } catch (error) {
+        console.error('⚠️ WebSocket health check failed:', error);
+      }
+    };
+
+    checkWSHealth();
+
     // Dynamic WebSocket URL for Railway compatibility
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws/workflow`;
-    console.log('🔌 Connecting to WebSocket:', wsUrl);
+    console.log('🔌 Attempting WebSocket connection...');
+    console.log('   Protocol:', protocol);
+    console.log('   Host:', window.location.host);
+    console.log('   Full URL:', wsUrl);
 
     const wsInstance = new WebSocket(wsUrl);
     setWs(wsInstance);
 
+    // Log initial state
+    console.log('🔌 WebSocket instance created, readyState:', wsInstance.readyState);
+    console.log('   0 = CONNECTING, 1 = OPEN, 2 = CLOSING, 3 = CLOSED');
+
     wsInstance.onopen = () => {
-      console.log('✅ WebSocket connected to backend!');
+      console.log('✅✅✅ WEBSOCKET CONNECTED SUCCESSFULLY! ✅✅✅');
       console.log('✅ WebSocket readyState:', wsInstance.readyState);
+      console.log('✅ Connection established to:', wsUrl);
     };
 
     wsInstance.onerror = (error) => {
-      console.error('❌ WebSocket error:', error);
-      console.error('❌ WebSocket URL was:', wsUrl);
+      console.error('❌❌❌ WEBSOCKET CONNECTION ERROR! ❌❌❌');
+      console.error('❌ Error event:', error);
+      console.error('❌ Error type:', error.type);
+      console.error('❌ Error target:', error.target);
+      console.error('❌ WebSocket URL attempted:', wsUrl);
       console.error('❌ WebSocket readyState:', wsInstance.readyState);
+      console.error('❌ Protocol:', protocol);
+      console.error('❌ Host:', window.location.host);
     };
 
     wsInstance.onclose = (event) => {
-      console.log('🔌 WebSocket closed:', event.code, event.reason);
+      console.log('🔌🔌🔌 WEBSOCKET CONNECTION CLOSED 🔌🔌🔌');
+      console.log('🔌 Close code:', event.code);
+      console.log('🔌 Close reason:', event.reason);
       console.log('🔌 Was clean close?', event.wasClean);
+      console.log('🔌 URL was:', wsUrl);
+
+      // Log specific close codes
+      const closeCodes = {
+        1000: 'Normal closure',
+        1001: 'Going away',
+        1002: 'Protocol error',
+        1003: 'Unsupported data',
+        1006: 'Abnormal closure (no close frame)',
+        1007: 'Invalid frame payload',
+        1008: 'Policy violation',
+        1009: 'Message too big',
+        1010: 'Missing extension',
+        1011: 'Internal server error',
+        1015: 'TLS handshake failure'
+      };
+      console.log('🔌 Close code meaning:', closeCodes[event.code] || 'Unknown');
     };
 
     wsInstance.onmessage = (event) => {

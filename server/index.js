@@ -68,6 +68,22 @@ app.post('/api/debug-log', (req, res) => {
   res.json({ success: true });
 });
 
+// WebSocket health check endpoint
+app.get('/api/ws-health', (req, res) => {
+  const wsStats = wsManager.getStats();
+  console.log('🏥 WebSocket health check requested');
+  console.log('   Connected clients:', wsStats.connectedClients);
+  console.log('   Active workflows:', wsStats.activeWorkflows);
+  res.json({
+    status: 'ok',
+    websocket: {
+      enabled: true,
+      path: '/ws/workflow',
+      ...wsStats
+    }
+  });
+});
+
 // AI agent API routes
 app.use('/api/automation', require('./routes/automation')(emailAgent, marketingAgent));
 
@@ -143,9 +159,13 @@ app.use((req, res) => {
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 API Server: http://localhost:${PORT}`);
-  console.log(`🔌 WebSocket Server: ws://localhost:${PORT}/ws/workflow`);
+  console.log(`🔌 WebSocket Server: ws://localhost:${PORT}/ws/workflow (explicit path)`);
+  console.log(`🏥 WebSocket Health: http://localhost:${PORT}/api/ws-health`);
   console.log(`🎯 Frontend: http://localhost:3000`);
   console.log(`🤖 LangGraph Agent: Initializing...`);
+
+  // Log WebSocket server status
+  console.log(`✅ WebSocket manager initialized and ready`);
 });
 
 // Initialize LangGraph agent in background (don't block server startup)

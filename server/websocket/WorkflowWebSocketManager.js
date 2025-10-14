@@ -4,17 +4,40 @@ const EventEmitter = require('events');
 class WorkflowWebSocketManager extends EventEmitter {
   constructor(server) {
     super();
-    this.wss = new WebSocket.Server({ server });
+    // CRITICAL: Specify path for Railway compatibility
+    this.wss = new WebSocket.Server({
+      server,
+      path: '/ws/workflow'
+    });
     this.clients = new Map();
     this.workflowStates = new Map();
     this.setupWebSocketServer();
-    console.log('🔌 WorkflowWebSocketManager initialized');
+    console.log('🔌 WorkflowWebSocketManager initialized with path /ws/workflow');
   }
 
   setupWebSocketServer() {
+    console.log('🔌 Setting up WebSocket server event handlers...');
+
+    // Log server listening status
+    this.wss.on('listening', () => {
+      console.log('✅ WebSocket server is listening for connections');
+    });
+
+    // Log server errors
+    this.wss.on('error', (error) => {
+      console.error('❌ WebSocket SERVER error:', error);
+    });
+
     this.wss.on('connection', (ws, req) => {
       const clientId = this.generateClientId();
-      console.log(`🔗 New WebSocket client connected: ${clientId}`);
+      const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      const origin = req.headers.origin || 'unknown';
+      console.log(`🔗🔗🔗 NEW WEBSOCKET CLIENT CONNECTED 🔗🔗🔗`);
+      console.log(`   Client ID: ${clientId}`);
+      console.log(`   Client IP: ${clientIP}`);
+      console.log(`   Origin: ${origin}`);
+      console.log(`   URL: ${req.url}`);
+      console.log(`   Headers:`, JSON.stringify(req.headers, null, 2));
       
       // 存储客户端
       this.clients.set(clientId, {
