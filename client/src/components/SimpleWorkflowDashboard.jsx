@@ -2742,6 +2742,36 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         const { prospects, campaignData } = result.data;
         const emailCampaign = campaignData?.emailCampaign;
 
+        // 🎨 NEW: Check for template selection required (HTTP polling fallback)
+        // This triggers when prospects are found but no template is selected yet
+        if (result.data.status === 'waiting_for_template' ||
+            result.data.canProceed === false ||
+            (prospects && prospects.length > 0 && result.data.templateSelectionRequired)) {
+          console.log('🎨🎨🎨 TEMPLATE SELECTION REQUIRED (via HTTP polling)! 🎨🎨🎨');
+          console.log('🎨 Prospects found:', prospects?.length || 0);
+          console.log('🎨 Status:', result.data.status);
+          console.log('🎨 Can proceed:', result.data.canProceed);
+          console.log('🎨 Template selection required:', result.data.templateSelectionRequired);
+
+          // Trigger template selection popup
+          if (!showTemplateSelection) {
+            console.log('🎨 Triggering template selection popup via HTTP polling');
+            handleTemplateSelectionRequired({
+              campaignId: result.data.campaignId,
+              prospectsCount: prospects?.length || 0,
+              prospectsFound: prospects?.length || 0,
+              sampleProspects: prospects?.slice(0, 5) || [],
+              message: `Found ${prospects?.length || 0} prospects! Please select an email template to continue.`,
+              canProceed: false,
+              status: 'waiting_for_template'
+            });
+          }
+
+          // Don't process further until template is selected
+          setIsProcessingWorkflowResults(false);
+          return;
+        }
+
         // Check for email review state - ONLY trigger for truly first email with complete content
         if (result.data.waitingForUserApproval &&
             result.data.firstEmailGenerated &&

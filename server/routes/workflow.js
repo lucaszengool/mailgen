@@ -645,6 +645,22 @@ router.get('/results', async (req, res) => {
       console.log('⚠️ Could not get current email index:', error.message);
     }
 
+    // Check if agent is waiting for template selection
+    let templateSelectionRequired = false;
+    let templateSelectionStatus = null;
+    try {
+      const marketingAgent = getMarketingAgent(req);
+      if (marketingAgent.state && marketingAgent.state.workflowPaused &&
+          prospects.length > 0 && !campaignData.emailCampaign) {
+        // Workflow is paused and we have prospects but no emails yet = waiting for template
+        templateSelectionRequired = true;
+        templateSelectionStatus = 'waiting_for_template';
+        console.log('🎨 Template selection required - prospects found but no template selected');
+      }
+    } catch (error) {
+      console.log('⚠️ Could not check template selection state:', error.message);
+    }
+
     res.json({
       success: true,
       data: {
@@ -657,7 +673,10 @@ router.get('/results', async (req, res) => {
         demoMode: !hasRealResults,
         waitingForUserApproval: workflowState.waitingForUserApproval,
         firstEmailGenerated: workflowState.firstEmailGenerated,
-        currentEmailIndex: currentEmailIndex // Add current email index for display
+        currentEmailIndex: currentEmailIndex, // Add current email index for display
+        templateSelectionRequired: templateSelectionRequired,
+        status: templateSelectionStatus,
+        canProceed: !templateSelectionRequired
       }
     });
     
