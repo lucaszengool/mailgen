@@ -1653,6 +1653,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [templateRequest, setTemplateRequest] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [isSubmittingTemplate, setIsSubmittingTemplate] = useState(false);
+  const [templateAlreadySubmitted, setTemplateAlreadySubmitted] = useState(false); // NEW: Prevent popup re-triggering
 
   const [steps, setSteps] = useState([]);
   const [prospects, setProspects] = useState([]);
@@ -2355,10 +2356,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       console.log('✅ Template selection response:', result);
       console.log(`✅ Template ${selectedTemplate.name} applied successfully with customizations!`);
 
-      // Close template selection modal
+      // Close template selection modal and mark as submitted
       setShowTemplateSelection(false);
       setSelectedTemplate(null);
       setTemplateRequest(null);
+      setTemplateAlreadySubmitted(true); // 🎯 CRITICAL: Prevent popup from appearing again
+      console.log('🎯 Template submission flag set - popup will not retrigger');
 
     } catch (error) {
       console.error('❌ Failed to confirm template selection:', error);
@@ -2752,9 +2755,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           console.log('🎨 Status:', result.data.status);
           console.log('🎨 Can proceed:', result.data.canProceed);
           console.log('🎨 Template selection required:', result.data.templateSelectionRequired);
+          console.log('🎨 Template already submitted?', templateAlreadySubmitted);
 
-          // Trigger template selection popup
-          if (!showTemplateSelection) {
+          // Trigger template selection popup ONLY if not already submitted
+          if (!showTemplateSelection && !templateAlreadySubmitted) {
             console.log('🎨 Triggering template selection popup via HTTP polling');
             handleTemplateSelectionRequired({
               campaignId: result.data.campaignId,
@@ -2765,6 +2769,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
               canProceed: false,
               status: 'waiting_for_template'
             });
+          } else if (templateAlreadySubmitted) {
+            console.log('🎨 Template already submitted - waiting for email generation to start...');
           }
 
           // Don't process further until template is selected
