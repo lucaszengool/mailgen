@@ -9,6 +9,9 @@ const db = require('../models/database');
 // Store last workflow results globally
 let lastWorkflowResults = null;
 
+// 🎯 FIX: Track if template has been submitted to prevent popup re-triggering
+let templateSubmitted = false;
+
 // Global EmailEditorService instance for clearing email data
 const emailEditorService = new EmailEditorService();
 
@@ -129,6 +132,9 @@ router.post('/start', async (req, res) => {
       step.logs = [];
       step.details = null;
     });
+
+    // 🎯 FIX: Reset template submission flag when workflow starts
+    templateSubmitted = false;
 
     workflowState.currentStep = 'website_analysis';
     workflowState.isRunning = true;
@@ -325,6 +331,9 @@ router.post('/reset', async (req, res) => {
 
   // Clear all cached workflow results and email data
   lastWorkflowResults = null;
+
+  // 🎯 FIX: Reset template submission flag
+  templateSubmitted = false;
 
   // Clear EmailEditorService pending emails
   emailEditorService.clearPendingEmails();
@@ -647,13 +656,15 @@ router.get('/results', async (req, res) => {
 
     // Check if agent is waiting for template selection
     // Simple logic: If we have prospects but no email campaign, template selection is needed
+    // 🎯 FIX: Also check if template has already been submitted to prevent popup re-triggering
     let templateSelectionRequired = false;
     let templateSelectionStatus = null;
 
     if (prospects.length > 0 &&
         (!campaignData.emailCampaign ||
          !campaignData.emailCampaign.emails ||
-         campaignData.emailCampaign.emails.length === 0)) {
+         campaignData.emailCampaign.emails.length === 0) &&
+        !templateSubmitted) {  // 🎯 FIX: Only show popup if template hasn't been submitted yet
       // We have prospects but no emails = template selection required
       templateSelectionRequired = true;
       templateSelectionStatus = 'waiting_for_template';
@@ -661,6 +672,10 @@ router.get('/results', async (req, res) => {
       console.log('   Prospects:', prospects.length);
       console.log('   Email campaign:', campaignData.emailCampaign ? 'exists' : 'null');
       console.log('   Emails:', campaignData.emailCampaign?.emails?.length || 0);
+    } else if (templateSubmitted && (!campaignData.emailCampaign?.emails || campaignData.emailCampaign.emails.length === 0)) {
+      // Template has been submitted but emails aren't generated yet
+      console.log('🎨 Template already submitted - waiting for email generation to complete...');
+      templateSelectionStatus = 'generating_emails';
     }
 
     res.json({
@@ -1824,7 +1839,14 @@ async function continueEmailGeneration() {
   }, 500);
 }
 
+// 🎯 FIX: Add setter function for template submission flag
+function setTemplateSubmitted(value) {
+  templateSubmitted = value;
+  console.log(`🎯 Template submitted flag set to: ${value}`);
+}
+
 module.exports = router;
 module.exports.setLastWorkflowResults = setLastWorkflowResults;
 module.exports.getLastWorkflowResults = getLastWorkflowResults;
 module.exports.addEmailToWorkflowResults = addEmailToWorkflowResults;
+module.exports.setTemplateSubmitted = setTemplateSubmitted;

@@ -187,6 +187,13 @@ router.post('/select', (req, res) => {
       });
     }
 
+    // 🎯 CRITICAL: Set templateSubmitted flag to prevent popup re-triggering
+    const workflowRoute = require('./workflow');
+    if (workflowRoute.setTemplateSubmitted) {
+      workflowRoute.setTemplateSubmitted(true);
+      console.log('🎯 Template submission flag set in workflow module');
+    }
+
     // 🚀 CRITICAL: Resume workflow with selected template
     console.log('🚀 Resuming workflow with selected template:', templateId);
 
