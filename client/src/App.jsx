@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
@@ -32,6 +33,8 @@ import ClientDetailView from './components/ClientDetailView';
 import AgentControlPanel from './components/AgentControlPanel';
 import EmailDashboard from './components/EmailDashboard';
 import WorkflowPanel from './components/WorkflowPanel';
+import SignInPage from './pages/SignIn';
+import SignUpPage from './pages/SignUp';
 
 function App() {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
@@ -145,39 +148,37 @@ function App() {
   // Show setup wizard if setup is not complete AND not in website-analysis view
   if (!isSetupComplete && currentView !== 'website-analysis') {
     return (
-      <Router>
-        <div className="App bg-white min-h-screen">
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#fff',
-                color: '#374151',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #e5e7eb'
+      <div className="App bg-white min-h-screen">
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#fff',
+              color: '#374151',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e5e7eb'
+            },
+            success: {
+              iconTheme: {
+                primary: '#22c55e',
+                secondary: '#fff',
               },
-              success: {
-                iconTheme: {
-                  primary: '#22c55e',
-                  secondary: '#fff',
-                },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
               },
-              error: {
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
-          />
-          <Routes>
-            <Route path="/" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} />
-            <Route path="/setup" element={<CampaignSetupWizard onComplete={handleSetupComplete} />} />
-            <Route path="/smtp-setup" element={<AgentSetupWizard onComplete={handleSetupComplete} />} />
-          </Routes>
-        </div>
-      </Router>
+            },
+          }}
+        />
+        <Routes>
+          <Route path="/" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} />
+          <Route path="/setup" element={<CampaignSetupWizard onComplete={handleSetupComplete} />} />
+          <Route path="/smtp-setup" element={<AgentSetupWizard onComplete={handleSetupComplete} />} />
+        </Routes>
+      </div>
     );
   }
 
@@ -185,7 +186,7 @@ function App() {
   if (currentView === 'dashboard') {
     return (
       <div className="App bg-black min-h-screen">
-        <Toaster 
+        <Toaster
           position="top-right"
           toastOptions={{
             duration: 4000,
@@ -197,7 +198,7 @@ function App() {
             }
           }}
         />
-        <SimpleWorkflowDashboard 
+        <SimpleWorkflowDashboard
           agentConfig={agentConfig}
           onReset={handleReset}
         />
@@ -209,7 +210,7 @@ function App() {
   if (currentView === 'website-analysis') {
     return (
       <div className="App bg-white min-h-screen">
-        <Toaster 
+        <Toaster
           position="top-right"
           toastOptions={{
             duration: 4000,
@@ -237,7 +238,7 @@ function App() {
     return (
       <div className="App bg-white min-h-screen">
         <Toaster position="top-right" />
-        <ClientDetailView 
+        <ClientDetailView
           client={selectedClient}
           onBack={handleBackToDashboard}
           onUpdateClient={(updatedClient) => {
@@ -251,8 +252,7 @@ function App() {
 
   // Fallback to original routing system
   return (
-    <Router>
-      <div className="App bg-white min-h-screen">
+    <div className="App bg-white min-h-screen">
         <Toaster 
           position="top-right"
           toastOptions={{
@@ -279,6 +279,8 @@ function App() {
         />
 
         <Routes>
+          <Route path="/sign-in/*" element={<SignInPage />} />
+          <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route path="/start" element={<HeadAIStyleStartPage />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
@@ -303,7 +305,6 @@ function App() {
           </Route>
         </Routes>
       </div>
-    </Router>
   );
 }
 

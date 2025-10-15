@@ -175,12 +175,18 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config }) => {
             {/* Right side - Auth buttons */}
             <div className="flex items-center space-x-4">
               {/* Sign In Button */}
-              <button className="font-medium text-gray-700 hover:text-black transition-all duration-300">
+              <button
+                onClick={() => navigate('/sign-in')}
+                className="font-medium text-gray-700 hover:text-black transition-all duration-300"
+              >
                 SIGN IN
               </button>
 
               {/* Join Now Button */}
-              <button className="font-medium px-5 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-300">
+              <button
+                onClick={() => navigate('/sign-up')}
+                className="font-medium px-5 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-300"
+              >
                 JOIN NOW
               </button>
             </div>

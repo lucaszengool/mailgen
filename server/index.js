@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const http = require('http');
+const { clerkMiddleware, requireAuth } = require('@clerk/express');
 require('dotenv').config();
 
 // Import AI agents
@@ -47,6 +48,9 @@ app.use(helmet({
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Add Clerk authentication middleware
+app.use(clerkMiddleware());
 
 // Serve static files from public directory (for email-editor.html)
 app.use(express.static(path.join(__dirname, '../public')));
