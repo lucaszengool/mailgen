@@ -12,6 +12,7 @@
     "install:all": "npm install && cd client && npm install"
   },
   "dependencies": {
+    "@clerk/express": "^1.7.38",
     "@clerk/nextjs": "^6.33.4",
     "@langchain/community": "^0.3.53",
     "@langchain/core": "^0.3.70",
