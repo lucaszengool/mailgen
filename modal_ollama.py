@@ -26,8 +26,9 @@ ollama_image = (
 @app.function(
     image=ollama_image,
     gpu="T4",  # Use T4 GPU (cheapest option on Modal)
-    timeout=600,  # 10 minute timeout for long requests
-    scaledown_window=300,  # Keep alive for 5 minutes
+    timeout=3600,  # 60 minute timeout (NO MORE TIMEOUTS!)
+    keep_warm=1,  # Keep 1 container warm to prevent cold starts
+    container_idle_timeout=1800,  # Keep container alive for 30 minutes
 )
 @modal.asgi_app()
 def serve():
@@ -54,6 +55,21 @@ def serve():
     time.sleep(5)  # Give Ollama time to start
     print("Ollama server started")
 
+    # Pre-load the model to prevent cold starts
+    print("Pre-loading qwen2.5:0.5b model...")
+    try:
+        preload = subprocess.run(
+            ["ollama", "pull", "qwen2.5:0.5b"],
+            capture_output=True,
+            text=True
+        )
+        if preload.returncode == 0:
+            print("✅ Model pre-loaded successfully")
+        else:
+            print(f"⚠️ Model pre-load warning: {preload.stderr}")
+    except Exception as e:
+        print(f"⚠️ Model pre-load failed: {e}")
+
     @web_app.post("/api/generate")
     async def generate(request: Request):
         """
@@ -74,8 +90,7 @@ def serve():
             pull_result = subprocess.run(
                 ["ollama", "pull", model],
                 capture_output=True,
-                text=True,
-                timeout=300
+                text=True
             )
 
             if pull_result.returncode != 0:
@@ -93,8 +108,7 @@ def serve():
                      "options": body.get("options", {})
                  })],
                 capture_output=True,
-                text=True,
-                timeout=300
+                text=True
             )
 
             if result.returncode == 0:
@@ -132,8 +146,7 @@ def serve():
             # Pull model if needed
             subprocess.run(
                 ["ollama", "pull", model],
-                capture_output=True,
-                timeout=300
+                capture_output=True
             )
 
             # Call Ollama chat API
@@ -147,8 +160,7 @@ def serve():
                      "options": body.get("options", {})
                  })],
                 capture_output=True,
-                text=True,
-                timeout=300
+                text=True
             )
 
             if result.returncode == 0:
