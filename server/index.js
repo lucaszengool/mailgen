@@ -49,8 +49,11 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Add Clerk authentication middleware
-app.use(clerkMiddleware());
+// Add Clerk authentication middleware with proper configuration
+app.use(clerkMiddleware({
+  publishableKey: process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  secretKey: process.env.CLERK_SECRET_KEY
+}));
 
 // Serve static files from public directory (for email-editor.html)
 app.use(express.static(path.join(__dirname, '../public')));
