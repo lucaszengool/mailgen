@@ -551,9 +551,22 @@ router.get('/results', async (req, res) => {
       }
       
       console.log('🔧 Template variables replaced in stored results');
+
+      // 🎯 FIX: Include workflowState fields in stored results response
+      // This ensures waitingForUserApproval is available even from cached/stored data
       return res.json({
         success: true,
-        data: processedResults,
+        data: {
+          ...processedResults,
+          // Include workflow state fields that the frontend needs
+          workflowState: workflowState.currentStep,
+          lastUpdate: workflowState.lastUpdate,
+          waitingForUserApproval: workflowState.waitingForUserApproval,  // CRITICAL for popup
+          firstEmailGenerated: workflowState.firstEmailGenerated,
+          templateSelectionRequired: false,  // We already have emails
+          status: 'emails_generated',
+          canProceed: true
+        },
         source: 'stored'
       });
     }
