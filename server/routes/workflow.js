@@ -1761,7 +1761,7 @@ router.post('/user-decision', async (req, res) => {
       console.log('🔍 DEBUG: userTemplate keys:', Object.keys(userTemplate));
       console.log('🔍 DEBUG: userTemplate.components length:', userTemplate.components?.length || 0);
     }
-    
+
     // Get the LangGraph agent instance
     const agent = req.app.locals.langGraphAgent;
     if (!agent) {
@@ -1770,17 +1770,63 @@ router.post('/user-decision', async (req, res) => {
         error: 'LangGraph agent not available'
       });
     }
-    
+
     // Resume the workflow with user decision and SMTP config
     agent.resumeWorkflow(decision, userTemplate, smtpConfig);
-    
+
+    // 🎯 CRITICAL FIX: Actually trigger email generation for remaining prospects
+    if (decision === 'continue' && agent.state?.workflowPaused && agent.state?.pausedCampaignData) {
+      console.log('✅ User approved, continuing email generation for remaining prospects...');
+
+      // Get campaign data from paused state
+      const campaignData = agent.state.pausedCampaignData;
+      const actualCampaignId = campaignData.campaignId || campaignId;
+
+      console.log('📊 Campaign data:', {
+        campaignId: actualCampaignId,
+        prospectsCount: campaignData.prospects?.length || 0,
+        currentIndex: campaignData.currentIndex || 0
+      });
+
+      // Continue from the next prospect (index 1, since first email was already generated)
+      if (campaignData.prospects && campaignData.prospects.length > 1) {
+        // Start email generation in background
+        setTimeout(async () => {
+          try {
+            console.log('🔄 Starting email generation for remaining prospects in background...');
+
+            const templateToUse = {
+              subject: userTemplate?.subject || 'Professional Email',
+              html: userTemplate?.html || '',
+              body: userTemplate?.html || '',
+              components: userTemplate?.components || []
+            };
+
+            await agent.continueGeneratingEmails(
+              actualCampaignId,
+              campaignData.prospects,
+              1,  // Start from second prospect
+              templateToUse,
+              smtpConfig,
+              campaignData.targetAudience,
+              'user_template'
+            );
+
+            console.log('✅ Email generation completed for remaining prospects');
+          } catch (error) {
+            console.error('❌ Error generating remaining emails:', error);
+          }
+        }, 100);
+      }
+    }
+
     res.json({
       success: true,
       message: `User decision processed: ${decision}`,
       decision,
       campaignId
     });
-    
+
   } catch (error) {
     console.error('❌ Error processing user decision:', error);
     res.status(500).json({
