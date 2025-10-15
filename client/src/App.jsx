@@ -174,6 +174,8 @@ function App() {
           }}
         />
         <Routes>
+          <Route path="/sign-in/*" element={<SignInPage />} />
+          <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route path="/" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} />
           <Route path="/setup" element={<CampaignSetupWizard onComplete={handleSetupComplete} />} />
           <Route path="/smtp-setup" element={<AgentSetupWizard onComplete={handleSetupComplete} />} />
