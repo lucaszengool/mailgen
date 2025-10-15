@@ -5,6 +5,8 @@ const LangGraphMarketingAgent = require('../agents/LangGraphMarketingAgent');
 const EmailEditorService = require('../services/EmailEditorService');
 const KnowledgeBaseSingleton = require('../models/KnowledgeBaseSingleton');
 const db = require('../models/database');
+const UserStorageService = require('../services/UserStorageService');
+const { optionalAuth } = require('../middleware/userContext');
 
 // Store last workflow results globally
 let lastWorkflowResults = null;

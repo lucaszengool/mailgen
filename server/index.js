@@ -55,6 +55,10 @@ app.use(clerkMiddleware({
   secretKey: process.env.CLERK_SECRET_KEY
 }));
 
+// Add user context middleware to extract userId from Clerk
+const { extractUserContext } = require('./middleware/userContext');
+app.use(extractUserContext);
+
 // Serve static files from public directory (for email-editor.html)
 app.use(express.static(path.join(__dirname, '../public')));
 
