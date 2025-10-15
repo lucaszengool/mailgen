@@ -552,21 +552,31 @@ router.get('/results', async (req, res) => {
       
       console.log('🔧 Template variables replaced in stored results');
 
-      // 🎯 FIX: Include workflowState fields in stored results response
-      // This ensures waitingForUserApproval is available even from cached/stored data
+      // 🎯 FIX: Add workflowState fields directly to processedResults at the correct level
+      // The frontend expects these fields alongside prospects and campaignData
+      const responseData = {
+        prospects: processedResults.prospects || [],
+        campaignData: processedResults.emailCampaign ? {
+          ...processedResults.campaignData,
+          emailCampaign: processedResults.emailCampaign
+        } : (processedResults.campaignData || {}),
+        // Include workflow state fields that the frontend needs
+        workflowState: workflowState.currentStep,
+        lastUpdate: workflowState.lastUpdate,
+        totalProspects: processedResults.prospects?.length || 0,
+        isRealData: true,
+        demoMode: false,
+        waitingForUserApproval: workflowState.waitingForUserApproval,  // CRITICAL for popup
+        firstEmailGenerated: workflowState.firstEmailGenerated,
+        currentEmailIndex: 0,
+        templateSelectionRequired: false,  // We already have emails
+        status: 'emails_generated',
+        canProceed: true
+      };
+
       return res.json({
         success: true,
-        data: {
-          ...processedResults,
-          // Include workflow state fields that the frontend needs
-          workflowState: workflowState.currentStep,
-          lastUpdate: workflowState.lastUpdate,
-          waitingForUserApproval: workflowState.waitingForUserApproval,  // CRITICAL for popup
-          firstEmailGenerated: workflowState.firstEmailGenerated,
-          templateSelectionRequired: false,  // We already have emails
-          status: 'emails_generated',
-          canProceed: true
-        },
+        data: responseData,
         source: 'stored'
       });
     }
