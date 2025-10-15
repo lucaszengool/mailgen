@@ -27,8 +27,8 @@ ollama_image = (
     image=ollama_image,
     gpu="T4",  # Use T4 GPU (cheapest option on Modal)
     timeout=3600,  # 60 minute timeout (NO MORE TIMEOUTS!)
-    keep_warm=1,  # Keep 1 container warm to prevent cold starts
-    container_idle_timeout=1800,  # Keep container alive for 30 minutes
+    min_containers=1,  # Keep 1 container warm to prevent cold starts
+    scaledown_window=1800,  # Keep container alive for 30 minutes
 )
 @modal.asgi_app()
 def serve():
