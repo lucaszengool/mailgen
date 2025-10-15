@@ -504,8 +504,10 @@ router.get('/results', async (req, res) => {
     // console.log('🔍 Fetching campaign results...'); // Commented to reduce Railway log spam
     
     // First check if we have stored results from the last campaign
-    if (lastWorkflowResults && lastWorkflowResults.prospects && lastWorkflowResults.prospects.length > 0) {
-      console.log(`✅ Found stored workflow results with ${lastWorkflowResults.prospects.length} prospects`);
+    // 🎯 FIX: Also check for emails, not just prospects
+    if (lastWorkflowResults &&
+        (lastWorkflowResults.prospects?.length > 0 || lastWorkflowResults.emailCampaign?.emails?.length > 0)) {
+      console.log(`✅ Found stored workflow results with ${lastWorkflowResults.prospects?.length || 0} prospects and ${lastWorkflowResults.emailCampaign?.emails?.length || 0} emails`);
       console.log('🔧 DEBUG: Starting template replacement process...');
       
       // CRITICAL FIX: Replace template variables in email campaign data before returning
