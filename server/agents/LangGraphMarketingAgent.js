@@ -1665,6 +1665,17 @@ class LangGraphMarketingAgent {
             this.workflowState.waitingForUserApproval = true;
           }
 
+          // 🎯 CRITICAL FIX: Add first email to workflow results immediately
+          try {
+            const workflowModule = require('../routes/workflow');
+            if (workflowModule.addEmailToWorkflowResults) {
+              workflowModule.addEmailToWorkflowResults(realEmailData);
+              console.log(`   ✅ First email added to workflow results for frontend polling`);
+            }
+          } catch (error) {
+            console.log('⚠️ Could not update workflow results with first email:', error.message);
+          }
+
           // Send email preview to frontend for review
           this.wsManager.broadcast({
             type: 'email_preview_generated',
@@ -1888,6 +1899,17 @@ class LangGraphMarketingAgent {
         };
 
         emailCampaign.emails.push(emailRecord);
+
+        // 🎯 CRITICAL FIX: Add email to workflow results so frontend can access it
+        try {
+          const workflowModule = require('../routes/workflow');
+          if (workflowModule.addEmailToWorkflowResults) {
+            workflowModule.addEmailToWorkflowResults(emailRecord);
+            console.log(`   ✅ Email added to workflow results for frontend access`);
+          }
+        } catch (error) {
+          console.log('⚠️ Could not update workflow results:', error.message);
+        }
 
         // 🚀 CRITICAL: Send single email immediately to frontend after generation
         if (this.wsManager) {
