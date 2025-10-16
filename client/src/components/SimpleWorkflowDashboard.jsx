@@ -1236,33 +1236,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   
   // Enhanced workflow history persistence system
   const [workflowHistory, setWorkflowHistory] = useState(() => {
-    // Load complete workflow history from localStorage on component mount
-    try {
-      const savedHistory = localStorage.getItem('workflowHistory');
-      if (savedHistory) {
-        const parsed = JSON.parse(savedHistory);
-        console.log('📂 Restored workflow history with', parsed.messages?.length || 0, 'messages and', parsed.completedAnimations?.length || 0, 'completed animations');
-        return parsed;
-      }
-      return {
-        messages: [],
-        completedAnimations: [],
-        detailedWindows: [],
-        workflowStates: {},
-        lastUpdate: null,
-        sessionId: Date.now().toString()
-      };
-    } catch (error) {
-      console.error('Failed to load workflow history from localStorage:', error);
-      return {
-        messages: [],
-        completedAnimations: [],
-        detailedWindows: [],
-        workflowStates: {},
-        lastUpdate: null,
-        sessionId: Date.now().toString()
-      };
-    }
+    // DO NOT load from localStorage - always start fresh
+    return {
+      messages: [],
+      completedAnimations: [],
+      detailedWindows: [],
+      workflowStates: {},
+      lastUpdate: null,
+      sessionId: Date.now().toString()
+    };
   });
 
   // ChatGPT interface states for workflow view with persistence
@@ -1425,44 +1407,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   };
   const [showTyping, setShowTyping] = useState(false);
   
-  // Enhanced workflow history persistence
+  // Enhanced workflow history persistence - DISABLED (no caching)
   const saveWorkflowHistory = (updatedHistory) => {
-    try {
-      const historyToSave = {
-        ...updatedHistory,
-        lastUpdate: new Date().toISOString()
-      };
-
-      // Limit the size of workflow history to prevent quota issues
-      const MAX_MESSAGES = 50; // Keep only last 50 messages
-      if (historyToSave.messages && historyToSave.messages.length > MAX_MESSAGES) {
-        historyToSave.messages = historyToSave.messages.slice(-MAX_MESSAGES);
-        console.log('🧹 Trimmed workflow history to last', MAX_MESSAGES, 'messages');
-      }
-
-      localStorage.setItem('workflowHistory', JSON.stringify(historyToSave));
-      console.log('💾 Saved workflow history with', historyToSave.messages?.length || 0, 'messages');
-    } catch (error) {
-      console.error('Failed to save workflow history to localStorage:', error);
-
-      // If quota exceeded, clear old data and retry
-      if (error.name === 'QuotaExceededError') {
-        console.log('🧹 Clearing old workflow data due to quota limit...');
-        try {
-          localStorage.removeItem('workflowHistory');
-          // Try saving a minimal version
-          const minimalHistory = {
-            ...updatedHistory,
-            messages: updatedHistory.messages?.slice(-10) || [], // Keep only last 10 messages
-            lastUpdate: new Date().toISOString()
-          };
-          localStorage.setItem('workflowHistory', JSON.stringify(minimalHistory));
-          console.log('💾 Saved minimal workflow history');
-        } catch (retryError) {
-          console.error('Failed to save even minimal history:', retryError);
-        }
-      }
-    }
+    // DO NOT save to localStorage - disabled to prevent data persistence
+    // Data will be cleared on page reload
+    console.log('💾 Workflow history NOT saved (caching disabled)');
   };
 
   // Enhanced updateMessages that saves complete workflow history
@@ -1929,85 +1878,46 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   // Track detailed window completion to pause progression
   const [historyRestored, setHistoryRestored] = useState(false);
   
-  // Restore historical workflow data on component mount
+  // DISABLED: Restore historical workflow data on component mount
   useEffect(() => {
-    if (!historyRestored && workflowHistory.completedAnimations?.length > 0) {
-      console.log('🔄 Restoring workflow history...');
-      console.log('📂 Found', workflowHistory.completedAnimations.length, 'completed animations');
-      console.log('🪟 Found', workflowHistory.detailedWindows?.length || 0, 'detailed windows');
+    // DO NOT restore from localStorage - always start fresh
+    console.log('🚫 Workflow history restoration DISABLED - starting fresh');
 
-      // Restore completed animations as completed messages
-      workflowHistory.completedAnimations.forEach((animation, index) => {
-        const delay = index * 100; // Stagger restoration for visual effect
-        setTimeout(() => {
-          updateMessages(prev => [
-            ...prev,
-            {
-              id: Date.now() + index,
-              type: 'bot',
-              content: `🎬 Restored: ${animation.type.replace('_', ' ')} animation (completed ${new Date(animation.completedAt).toLocaleTimeString()})`,
-              timestamp: animation.completedAt,
-              isRestored: true,
-              animationType: animation.type,
-              animationData: animation.data
-            }
-          ]);
-        }, delay);
-      });
-
-      // Restore workflow states (prospects, emails, etc.)
-      if (workflowHistory.workflowStates.prospects) {
-        setProspects(workflowHistory.workflowStates.prospects);
-        console.log('📊 Restored', workflowHistory.workflowStates.prospects.length, 'prospects');
-      }
-
-      if (workflowHistory.workflowStates.emailCampaignStats) {
-        setEmailCampaignStats(workflowHistory.workflowStates.emailCampaignStats);
-        console.log('📧 Restored email campaign stats');
-      }
-
-      // Check if we just reset (persists across page reloads)
-      const isJustReset = localStorage.getItem('justReset') === 'true';
-
-      if (workflowHistory.workflowStates.generatedEmails && !isJustReset) {
-        setGeneratedEmails(workflowHistory.workflowStates.generatedEmails);
-        console.log('✉️ Restored', workflowHistory.workflowStates.generatedEmails.length, 'generated emails');
-      } else if (isJustReset) {
-        console.log('🚫 Skipping email restoration - just reset, keeping emails empty');
-        // Clear the reset flag after preventing restoration
-        localStorage.removeItem('justReset');
-        setJustReset(false);
-      }
-
-      // Mark history as restored
-      setHistoryRestored(true);
-      console.log('✅ Workflow history restoration complete');
+    // Clear any existing workflow history from localStorage
+    try {
+      localStorage.removeItem('workflowHistory');
+      localStorage.removeItem('justReset');
+      console.log('🧹 Cleared all workflow cache from localStorage');
+    } catch (error) {
+      console.error('Error clearing localStorage:', error);
     }
-  }, [workflowHistory.completedAnimations, historyRestored]);
 
-  // Auto-save prospects to workflow history when they change
+    setHistoryRestored(true);
+  }, []);
+
+  // DISABLED: Auto-save prospects to workflow history when they change
   useEffect(() => {
-    if (prospects.length > 0 && historyRestored) {
-      updateWorkflowState('prospects', prospects);
-      console.log('💾 Auto-saved', prospects.length, 'prospects to workflow history');
+    // DO NOT save to localStorage
+    if (prospects.length > 0) {
+      console.log('🚫 Auto-save prospects DISABLED');
     }
-  }, [prospects, historyRestored]);
+  }, [prospects]);
 
-  // Auto-save email campaign stats to workflow history when they change
+  // DISABLED: Auto-save email campaign stats to workflow history when they change
   useEffect(() => {
-    if (emailCampaignStats.emails.length > 0 && historyRestored) {
-      updateWorkflowState('emailCampaignStats', emailCampaignStats);
-      console.log('💾 Auto-saved email campaign stats to workflow history');
+    // DO NOT save to localStorage
+    if (emailCampaignStats.emails.length > 0) {
+      console.log('🚫 Auto-save email stats DISABLED');
     }
-  }, [emailCampaignStats, historyRestored]);
+  }, [emailCampaignStats]);
 
-  // Auto-save generated emails to workflow history when they change
+  // DISABLED: Auto-save generated emails to workflow history when they change
   useEffect(() => {
-    if (generatedEmails.length > 0 && historyRestored) {
-      updateWorkflowState('generatedEmails', generatedEmails);
-      console.log('💾 Auto-saved', generatedEmails.length, 'generated emails to workflow history');
+    // DO NOT save to localStorage
+    if (generatedEmails.length > 0) {
+      console.log('🚫 Auto-save emails DISABLED');
     }
-  }, [generatedEmails, historyRestored]);
+  }, [generatedEmails]);
 
   // Start initial demo only once when first receiving real data
   useEffect(() => {
