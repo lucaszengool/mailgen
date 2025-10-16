@@ -3394,17 +3394,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         console.log('Workflow started:', result);
         setWorkflowStatus('running');
 
-          // Start checking for workflow updates immediately
-          setTimeout(() => {
-            console.log('🚀 Starting immediate workflow checks after workflow start');
-            fetchAndTriggerWorkflowSteps();
-            checkForEmailUpdates();
-          }, 2000); // Start checking after 2 seconds
-        } else {
-          console.error('Failed to start workflow');
-          setWorkflowStatus('idle');
-          setBackgroundWorkflowRunning(false);
-        }
+        // Start checking for workflow updates immediately
+        setTimeout(() => {
+          console.log('🚀 Starting immediate workflow checks after workflow start');
+          fetchAndTriggerWorkflowSteps();
+          checkForEmailUpdates();
+        }, 2000); // Start checking after 2 seconds
       } catch (error) {
         console.error('Error starting workflow:', error);
         setWorkflowStatus('idle');
