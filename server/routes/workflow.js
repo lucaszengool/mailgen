@@ -8,14 +8,17 @@ const db = require('../models/database');
 const UserStorageService = require('../services/UserStorageService');
 const { optionalAuth } = require('../middleware/userContext');
 
-// Store last workflow results globally
-let lastWorkflowResults = null;
+// Store last workflow results per user (multi-tenant support)
+const userWorkflowResults = new Map(); // userId -> workflowResults
 
-// 🎯 FIX: Track if template has been submitted to prevent popup re-triggering
-let templateSubmitted = false;
+// 🎯 FIX: Track if template has been submitted to prevent popup re-triggering (per user)
+const userTemplateSubmitted = new Map(); // userId -> boolean
 
 // Global EmailEditorService instance for clearing email data
 const emailEditorService = new EmailEditorService();
+
+// User-specific workflow states (multi-tenant support)
+const userWorkflowStates = new Map(); // userId -> workflowState
 
 // Get the global LangGraphMarketingAgent instance from app.locals
 // This ensures we use the SAME instance across all routes
@@ -34,90 +37,109 @@ function getMarketingAgent(req) {
   return global.__marketingAgentFallback;
 }
 
-// Workflow state management
-let workflowState = {
-  currentStep: 'website_analysis',
-  waitingForUserApproval: false,
-  firstEmailGenerated: null,
-  steps: [
-    {
-      id: 'website_analysis',
-      title: 'Website Analysis',
-      status: 'in_progress',
-      progress: 0,
-      startTime: null,
-      endTime: null,
-      logs: [],
-      details: null
-    },
-    {
-      id: 'search_strategy',
-      title: 'Search Strategy',
-      status: 'pending',
-      progress: 0,
-      startTime: null,
-      endTime: null,
-      logs: [],
-      details: null
-    },
-    {
-      id: 'prospect_search',
-      title: 'Prospect Search',
-      status: 'pending',
-      progress: 0,
-      startTime: null,
-      endTime: null,
-      logs: [],
-      details: null
-    },
-    {
-      id: 'email_generation',
-      title: 'Email Generation',
-      status: 'pending',
-      progress: 0,
-      startTime: null,
-      endTime: null,
-      logs: [],
-      details: null
-    },
-    {
-      id: 'email_review',
-      title: 'Email Review & Approval',
-      status: 'pending',
-      progress: 0,
-      startTime: null,
-      endTime: null,
-      logs: [],
-      details: null
-    },
-    {
-      id: 'email_sending',
-      title: 'Email Sending',
-      status: 'pending',
-      progress: 0,
-      startTime: null,
-      endTime: null,
-      logs: [],
-      details: null
-    }
-  ],
-  isRunning: false,
-  lastUpdate: new Date().toISOString()
-};
+// Helper function to get or create user-specific workflow state
+function getUserWorkflowState(userId = 'anonymous') {
+  if (!userWorkflowStates.has(userId)) {
+    userWorkflowStates.set(userId, createDefaultWorkflowState());
+  }
+  return userWorkflowStates.get(userId);
+}
+
+// Helper function to create default workflow state
+function createDefaultWorkflowState() {
+  return {
+    currentStep: 'website_analysis',
+    waitingForUserApproval: false,
+    firstEmailGenerated: null,
+    steps: [
+      {
+        id: 'website_analysis',
+        title: 'Website Analysis',
+        status: 'pending',
+        progress: 0,
+        startTime: null,
+        endTime: null,
+        logs: [],
+        details: null
+      },
+      {
+        id: 'search_strategy',
+        title: 'Search Strategy',
+        status: 'pending',
+        progress: 0,
+        startTime: null,
+        endTime: null,
+        logs: [],
+        details: null
+      },
+      {
+        id: 'prospect_search',
+        title: 'Prospect Search',
+        status: 'pending',
+        progress: 0,
+        startTime: null,
+        endTime: null,
+        logs: [],
+        details: null
+      },
+      {
+        id: 'email_generation',
+        title: 'Email Generation',
+        status: 'pending',
+        progress: 0,
+        startTime: null,
+        endTime: null,
+        logs: [],
+        details: null
+      },
+      {
+        id: 'email_review',
+        title: 'Email Review & Approval',
+        status: 'pending',
+        progress: 0,
+        startTime: null,
+        endTime: null,
+        logs: [],
+        details: null
+      },
+      {
+        id: 'email_sending',
+        title: 'Email Sending',
+        status: 'pending',
+        progress: 0,
+        startTime: null,
+        endTime: null,
+        logs: [],
+        details: null
+      }
+    ],
+    isRunning: false,
+    lastUpdate: new Date().toISOString()
+  };
+}
+
+// Backward compatibility: Default workflow state for anonymous users
+let workflowState = getUserWorkflowState('anonymous');
 
 // Get current workflow status
-router.get('/status', (req, res) => {
+router.get('/status', optionalAuth, (req, res) => {
+  // Get user-specific workflow state
+  const userWorkflowState = getUserWorkflowState(req.userId);
   res.json({
     success: true,
-    data: workflowState
+    data: userWorkflowState
   });
 });
 
 // Start workflow
-router.post('/start', async (req, res) => {
+router.post('/start', optionalAuth, async (req, res) => {
   console.log('🚀 WORKFLOW START ENDPOINT CALLED!');
   console.log('🔍 Request body:', req.body);
+  console.log('👤 User ID:', req.userId);
   try {
+    // Get user-specific workflow state
+    const workflowState = getUserWorkflowState(req.userId);
+
     if (workflowState.isRunning) {
       return res.status(400).json({
         success: false,
@@ -135,12 +157,13 @@ router.post('/start', async (req, res) => {
       step.details = null;
     });
 
-    // 🎯 FIX: Reset template submission flag when workflow starts
-    templateSubmitted = false;
+    // 🎯 FIX: Reset template submission flag when workflow starts (user-specific)
+    userTemplateSubmitted.set(req.userId, false);
 
     workflowState.currentStep = 'website_analysis';
     workflowState.isRunning = true;
     workflowState.lastUpdate = new Date().toISOString();
+    workflowState.userId = req.userId; // Track which user owns this workflow
 
     // Use global LangGraphMarketingAgent instance to maintain state
     const agent = getMarketingAgent(req);
@@ -235,10 +258,11 @@ router.post('/start', async (req, res) => {
 });
 
 // Pause workflow
-router.post('/pause', (req, res) => {
+router.post('/pause', optionalAuth, (req, res) => {
+  const workflowState = getUserWorkflowState(req.userId);
   workflowState.isRunning = false;
   workflowState.lastUpdate = new Date().toISOString();
-  
+
   res.json({
     success: true,
     message: 'Workflow paused',
@@ -247,10 +271,11 @@ router.post('/pause', (req, res) => {
 });
 
 // Resume workflow
-router.post('/resume', (req, res) => {
+router.post('/resume', optionalAuth, (req, res) => {
+  const workflowState = getUserWorkflowState(req.userId);
   workflowState.isRunning = true;
   workflowState.lastUpdate = new Date().toISOString();
-  
+
   res.json({
     success: true,
     message: 'Workflow resumed',
@@ -259,9 +284,12 @@ router.post('/resume', (req, res) => {
 });
 
 // Reset workflow - clear all data
-router.post('/reset', async (req, res) => {
-  // Completely reset workflow state
-  workflowState = {
+router.post('/reset', optionalAuth, async (req, res) => {
+  const userId = req.userId;
+  console.log(`🗑️ Resetting workflow for user: ${userId}`);
+
+  // Completely reset user-specific workflow state
+  userWorkflowStates.set(userId, {
     currentStep: 'website_analysis',
     waitingForUserApproval: false,
     firstEmailGenerated: null,
@@ -331,11 +359,11 @@ router.post('/reset', async (req, res) => {
     lastUpdate: new Date().toISOString()
   };
 
-  // Clear all cached workflow results and email data
-  lastWorkflowResults = null;
+  // Clear all cached workflow results and email data for this user
+  userWorkflowResults.delete(userId);
 
-  // 🎯 FIX: Reset template submission flag
-  templateSubmitted = false;
+  // 🎯 FIX: Reset template submission flag for this user
+  userTemplateSubmitted.set(userId, false);
 
   // Clear EmailEditorService pending emails
   emailEditorService.clearPendingEmails();
@@ -476,6 +504,9 @@ router.post('/reset', async (req, res) => {
     req.app.locals.wsManager.clearAllWorkflowStates();
   }
 
+  // Get the updated workflow state
+  const workflowState = getUserWorkflowState(userId);
+
   res.json({
     success: true,
     message: 'Workflow completely reset - all data cleared',
@@ -484,16 +515,17 @@ router.post('/reset', async (req, res) => {
 });
 
 // Get detailed information for specific step
-router.get('/step/:stepId', (req, res) => {
+router.get('/step/:stepId', optionalAuth, (req, res) => {
+  const workflowState = getUserWorkflowState(req.userId);
   const step = workflowState.steps.find(s => s.id === req.params.stepId);
-  
+
   if (!step) {
     return res.status(404).json({
       success: false,
       message: 'Step not found'
     });
   }
-  
+
   res.json({
     success: true,
     data: step
@@ -501,15 +533,20 @@ router.get('/step/:stepId', (req, res) => {
 });
 
 // Get campaign results including prospects
-router.get('/results', async (req, res) => {
+router.get('/results', optionalAuth, async (req, res) => {
   try {
-    // console.log('🔍 Fetching campaign results...'); // Commented to reduce Railway log spam
-    
+    const userId = req.userId;
+    console.log(`🔍 Fetching campaign results for user: ${userId}`);
+
+    // Get user-specific workflow state and results
+    const workflowState = getUserWorkflowState(userId);
+    const lastWorkflowResults = userWorkflowResults.get(userId);
+
     // First check if we have stored results from the last campaign
     // 🎯 FIX: Also check for emails, not just prospects
     if (lastWorkflowResults &&
         (lastWorkflowResults.prospects?.length > 0 || lastWorkflowResults.emailCampaign?.emails?.length > 0)) {
-      console.log(`✅ Found stored workflow results with ${lastWorkflowResults.prospects?.length || 0} prospects and ${lastWorkflowResults.emailCampaign?.emails?.length || 0} emails`);
+      console.log(`✅ Found stored workflow results for user ${userId} with ${lastWorkflowResults.prospects?.length || 0} prospects and ${lastWorkflowResults.emailCampaign?.emails?.length || 0} emails`);
       console.log('🔧 DEBUG: Starting template replacement process...');
       
       // CRITICAL FIX: Replace template variables in email campaign data before returning
@@ -686,6 +723,7 @@ router.get('/results', async (req, res) => {
     // 🎯 FIX: Also check if template has already been submitted to prevent popup re-triggering
     let templateSelectionRequired = false;
     let templateSelectionStatus = null;
+    const templateSubmitted = userTemplateSubmitted.get(userId) || false;
 
     if (prospects.length > 0 &&
         (!campaignData.emailCampaign ||
@@ -695,13 +733,13 @@ router.get('/results', async (req, res) => {
       // We have prospects but no emails = template selection required
       templateSelectionRequired = true;
       templateSelectionStatus = 'waiting_for_template';
-      console.log('🎨 HTTP POLLING: Template selection required - have prospects but no emails yet');
+      console.log(`🎨 [User: ${userId}] HTTP POLLING: Template selection required - have prospects but no emails yet`);
       console.log('   Prospects:', prospects.length);
       console.log('   Email campaign:', campaignData.emailCampaign ? 'exists' : 'null');
       console.log('   Emails:', campaignData.emailCampaign?.emails?.length || 0);
     } else if (templateSubmitted && (!campaignData.emailCampaign?.emails || campaignData.emailCampaign.emails.length === 0)) {
       // Template has been submitted but emails aren't generated yet
-      console.log('🎨 Template already submitted - waiting for email generation to complete...');
+      console.log(`🎨 [User: ${userId}] Template already submitted - waiting for email generation to complete...`);
       templateSelectionStatus = 'generating_emails';
     }
 
@@ -1225,33 +1263,39 @@ async function executeRealWorkflow(agent, campaignConfig) {
   }
 }
 
-// Function to set workflow results from other modules
-function setLastWorkflowResults(results) {
+// Function to set workflow results from other modules (user-specific)
+function setLastWorkflowResults(results, userId = 'anonymous') {
+  const lastWorkflowResults = userWorkflowResults.get(userId);
+
   // 🔥 FIX: Don't overwrite if we already have emails and the new results don't
   if (lastWorkflowResults &&
       lastWorkflowResults.emailCampaign &&
       lastWorkflowResults.emailCampaign.emails &&
       lastWorkflowResults.emailCampaign.emails.length > 0 &&
       (!results.emailCampaign || !results.emailCampaign.emails || results.emailCampaign.emails.length === 0)) {
-    console.log(`⚠️ Preserving existing ${lastWorkflowResults.emailCampaign.emails.length} emails - not overwriting with empty campaign`);
+    console.log(`⚠️ [User: ${userId}] Preserving existing ${lastWorkflowResults.emailCampaign.emails.length} emails - not overwriting with empty campaign`);
     // Merge: keep existing emails but update other fields
-    lastWorkflowResults = {
+    userWorkflowResults.set(userId, {
       ...results,
       emailCampaign: lastWorkflowResults.emailCampaign  // Keep existing emails
-    };
+    });
   } else {
-    lastWorkflowResults = results;
+    userWorkflowResults.set(userId, results);
   }
-  console.log(`📦 Stored workflow results with ${results.prospects?.length || 0} prospects and ${lastWorkflowResults.emailCampaign?.emails?.length || 0} emails`);
+
+  const updatedResults = userWorkflowResults.get(userId);
+  console.log(`📦 [User: ${userId}] Stored workflow results with ${results.prospects?.length || 0} prospects and ${updatedResults.emailCampaign?.emails?.length || 0} emails`);
 }
 
-// Function to get workflow results from other modules
-function getLastWorkflowResults() {
-  return lastWorkflowResults;
+// Function to get workflow results from other modules (user-specific)
+function getLastWorkflowResults(userId = 'anonymous') {
+  return userWorkflowResults.get(userId);
 }
 
-// Function to add a new email to the workflow results
-function addEmailToWorkflowResults(email) {
+// Function to add a new email to the workflow results (user-specific)
+function addEmailToWorkflowResults(email, userId = 'anonymous') {
+  let lastWorkflowResults = userWorkflowResults.get(userId);
+
   if (!lastWorkflowResults) {
     lastWorkflowResults = { emailCampaign: { emails: [] } };
   }
@@ -1264,7 +1308,9 @@ function addEmailToWorkflowResults(email) {
 
   // Add the new email to the campaign
   lastWorkflowResults.emailCampaign.emails.push(email);
-  console.log(`📧 Added email ${email.to} to workflow results. Total emails: ${lastWorkflowResults.emailCampaign.emails.length}`);
+  userWorkflowResults.set(userId, lastWorkflowResults);
+
+  console.log(`📧 [User: ${userId}] Added email ${email.to} to workflow results. Total emails: ${lastWorkflowResults.emailCampaign.emails.length}`);
 }
 
 // Get generated email for professional editor
@@ -1912,10 +1958,10 @@ async function continueEmailGeneration() {
   }, 500);
 }
 
-// 🎯 FIX: Add setter function for template submission flag
-function setTemplateSubmitted(value) {
-  templateSubmitted = value;
-  console.log(`🎯 Template submitted flag set to: ${value}`);
+// 🎯 FIX: Add setter function for template submission flag (user-specific)
+function setTemplateSubmitted(value, userId = 'anonymous') {
+  userTemplateSubmitted.set(userId, value);
+  console.log(`🎯 [User: ${userId}] Template submitted flag set to: ${value}`);
 }
 
 module.exports = router;

@@ -54,7 +54,8 @@ class EnhancedKnowledgeBase {
       await this.execSQL(`
         CREATE TABLE IF NOT EXISTS prospects (
           id TEXT PRIMARY KEY,
-          email TEXT UNIQUE,
+          user_id TEXT DEFAULT 'anonymous',
+          email TEXT,
           company TEXT,
           contact_name TEXT,
           industry TEXT,
@@ -79,10 +80,21 @@ class EnhancedKnowledgeBase {
         )
       `);
 
+      // Add user_id column if it doesn't exist (for existing databases)
+      await this.execSQL(`
+        ALTER TABLE prospects ADD COLUMN user_id TEXT DEFAULT 'anonymous'
+      `).catch(() => {}); // Ignore error if column already exists
+
+      // Create index for faster user-specific queries
+      await this.execSQL(`
+        CREATE INDEX IF NOT EXISTS idx_prospects_user_id ON prospects(user_id)
+      `);
+
       // 邮件记录表
       await this.execSQL(`
         CREATE TABLE IF NOT EXISTS emails (
           id TEXT PRIMARY KEY,
+          user_id TEXT DEFAULT 'anonymous',
           prospect_id TEXT,
           subject TEXT,
           content TEXT,
@@ -104,6 +116,16 @@ class EnhancedKnowledgeBase {
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (prospect_id) REFERENCES prospects (id)
         )
+      `);
+
+      // Add user_id column if it doesn't exist (for existing databases)
+      await this.execSQL(`
+        ALTER TABLE emails ADD COLUMN user_id TEXT DEFAULT 'anonymous'
+      `).catch(() => {}); // Ignore error if column already exists
+
+      // Create index for faster user-specific queries
+      await this.execSQL(`
+        CREATE INDEX IF NOT EXISTS idx_emails_user_id ON emails(user_id)
       `);
 
       // 业务分析表
@@ -250,15 +272,16 @@ class EnhancedKnowledgeBase {
     ]);
   }
 
-  async getMarketingStrategy(website) {
+  async getMarketingStrategy(website, goal = null, userId = 'anonymous') {
+    // Add user_id to marketing_strategies table
     const sql = 'SELECT * FROM marketing_strategies WHERE website = ? ORDER BY created_at DESC LIMIT 1';
     const result = await this.getSQL(sql, [website]);
-    
+
     if (result) {
       result.strategy_data = JSON.parse(result.strategy_data);
       result.business_analysis = JSON.parse(result.business_analysis);
     }
-    
+
     return result;
   }
 
@@ -292,10 +315,10 @@ class EnhancedKnowledgeBase {
     ]);
   }
 
-  async getProspect(prospectId) {
-    const sql = 'SELECT * FROM prospects WHERE id = ?';
-    const result = await this.getSQL(sql, [prospectId]);
-    
+  async getProspect(prospectId, userId = 'anonymous') {
+    const sql = 'SELECT * FROM prospects WHERE id = ? AND user_id = ?';
+    const result = await this.getSQL(sql, [prospectId, userId]);
+
     if (result && result.tags) {
       try {
         result.tags = JSON.parse(result.tags);
@@ -303,7 +326,7 @@ class EnhancedKnowledgeBase {
         result.tags = [];
       }
     }
-    
+
     return result;
   }
 
@@ -322,29 +345,30 @@ class EnhancedKnowledgeBase {
     return result;
   }
 
-  async updateProspect(prospectId, updateData) {
+  async updateProspect(prospectId, updateData, userId = 'anonymous') {
     const fields = [];
     const values = [];
-    
+
     Object.keys(updateData).forEach(key => {
-      if (key !== 'id') {
+      if (key !== 'id' && key !== 'user_id') {
         fields.push(`${key} = ?`);
         values.push(updateData[key]);
       }
     });
-    
+
     fields.push('updated_at = ?');
     values.push(new Date().toISOString());
     values.push(prospectId);
-    
-    const sql = `UPDATE prospects SET ${fields.join(', ')} WHERE id = ?`;
+    values.push(userId);
+
+    const sql = `UPDATE prospects SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`;
     return await this.execSQL(sql, values);
   }
 
-  async getAllProspects() {
-    const sql = 'SELECT * FROM prospects ORDER BY priority_score DESC, created_at DESC';
-    const results = await this.allSQL(sql);
-    
+  async getAllProspects(userId = 'anonymous') {
+    const sql = 'SELECT * FROM prospects WHERE user_id = ? ORDER BY priority_score DESC, created_at DESC';
+    const results = await this.allSQL(sql, [userId]);
+
     return results.map(prospect => {
       if (prospect.tags) {
         try {
@@ -395,13 +419,13 @@ class EnhancedKnowledgeBase {
     ]);
   }
 
-  async getEmailHistory(prospectId) {
+  async getEmailHistory(prospectId, userId = 'anonymous') {
     const sql = `
-      SELECT * FROM emails 
-      WHERE prospect_id = ? 
+      SELECT * FROM emails
+      WHERE prospect_id = ? AND user_id = ?
       ORDER BY created_at ASC
     `;
-    return await this.allSQL(sql, [prospectId]);
+    return await this.allSQL(sql, [prospectId, userId]);
   }
 
   async getEmailById(emailId) {

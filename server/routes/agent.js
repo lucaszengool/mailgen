@@ -6,6 +6,8 @@ const knowledgeBaseSingleton = require('../models/KnowledgeBaseSingleton');
 const SmartBusinessAnalyzer = require('../agents/SmartBusinessAnalyzer');
 const ComprehensiveEmailAgent = require('../agents/ComprehensiveEmailAgent');
 const LangGraphMarketingAgent = require('../agents/LangGraphMarketingAgent');
+const UserStorageService = require('../services/UserStorageService');
+const { optionalAuth } = require('../middleware/userContext');
 
 // Global agent state and email agent instance
 let emailAgent = new ComprehensiveEmailAgent();
@@ -77,29 +79,20 @@ router.post('/configure', async (req, res) => {
 });
 
 // Get agent configuration
-router.get('/config', async (req, res) => {
+router.get('/config', optionalAuth, async (req, res) => {
   try {
-    // First check in-memory config (for Railway ephemeral filesystem)
-    if (agentState.config && agentState.config.targetWebsite) {
-      console.log('✅ Returning config from memory (Railway-compatible)');
-      return res.json(agentState.config);
+    const storage = new UserStorageService(req.userId);
+    const config = await storage.getConfig();
+
+    console.log(`✅ Loading config for user: ${req.userId}`);
+
+    // Also check app.locals for Railway compatibility
+    if (!config && req.app && req.app.locals && req.app.locals.agentConfig) {
+      console.log('✅ Returning config from app.locals (Railway-compatible)');
+      return res.json(req.app.locals.agentConfig);
     }
 
-    // Fallback to file-based config for local development
-    const configPath = path.join(__dirname, '../data/agent-config.json');
-
-    try {
-      const configData = await fs.readFile(configPath, 'utf8');
-      const config = JSON.parse(configData);
-      // Also store in memory for future requests
-      agentState.config = config;
-      console.log('✅ Loaded config from file and cached in memory');
-      res.json(config);
-    } catch (error) {
-      // No config file exists yet
-      console.log('⚠️ No config found in memory or file');
-      res.json(null);
-    }
+    res.json(config);
   } catch (error) {
     console.error('Failed to get agent config:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -107,8 +100,10 @@ router.get('/config', async (req, res) => {
 });
 
 // Save agent configuration (POST /config endpoint for tutorial wizard)
-router.post('/config', async (req, res) => {
+router.post('/config', optionalAuth, async (req, res) => {
   try {
+    const storage = new UserStorageService(req.userId);
+
     const {
       campaignGoal,
       goalData,
@@ -124,86 +119,55 @@ router.post('/config', async (req, res) => {
       provider,
       setupComplete,
       createdAt,
-      websiteAnalysis,  // Add websiteAnalysis (includes logo, businessName, etc.)
-      // Also accept legacy format for backward compatibility
+      websiteAnalysis,
       targetWebsite,
       businessType
     } = req.body;
-    
-    console.log('📝 Campaign config save request received:', { 
-      campaignGoal, 
-      emailTemplate, 
+
+    console.log(`📝 Campaign config save request for user: ${req.userId}`, {
+      campaignGoal,
+      emailTemplate,
       audienceType,
       setupComplete,
-      smtpConfig: !!smtpConfig 
+      smtpConfig: !!smtpConfig
     });
-    
+
     // Create comprehensive configuration object
     const campaignConfig = {
-      // Campaign setup
-      campaignGoal: campaignGoal,
-      goalData: goalData,
-      emailTemplate: emailTemplate,
-      templateData: templateData,
-
-      // Audience targeting
-      audienceType: audienceType,
+      userId: req.userId,
+      campaignGoal,
+      goalData,
+      emailTemplate,
+      templateData,
+      audienceType,
       industries: industries || [],
       roles: roles || [],
-      companySize: companySize,
-      location: location,
+      companySize,
+      location,
       keywords: keywords || [],
-
-      // SMTP configuration
-      smtpConfig: smtpConfig,
-      provider: provider,
-
-      // Website Analysis (includes logo, businessName, productType, etc.)
-      websiteAnalysis: websiteAnalysis,
-
-      // Legacy compatibility
-      targetWebsite: targetWebsite,
+      smtpConfig,
+      provider,
+      websiteAnalysis,
+      targetWebsite,
       businessType: businessType || 'auto',
-
-      // Setup status
       setupComplete: setupComplete || true,
       createdAt: createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    // Update global agent config for backward compatibility
-    agentConfig.campaignGoal = campaignGoal;
-    agentConfig.smtpConfig = smtpConfig;
-    agentConfig.businessType = businessType || 'auto';
-    if (targetWebsite) {
-      agentConfig.targetWebsite = targetWebsite;
-    }
+    // Save to user-specific storage
+    await storage.saveConfig(campaignConfig);
+    console.log(`✅ Campaign configuration saved for user: ${req.userId}`);
 
-    // CRITICAL: Save to memory first (for Railway ephemeral filesystem)
-    agentState.config = campaignConfig;
-    console.log('✅ Campaign configuration saved to agentState.config (Railway-compatible)');
-
-    // ALSO save to app.locals for cross-route access (Railway-compatible)
+    // ALSO save to app.locals for Railway compatibility
     if (req.app && req.app.locals) {
       req.app.locals.agentConfig = campaignConfig;
-      console.log('✅ Campaign configuration also saved to app.locals (cross-route access)');
     }
 
-    // Try to save configuration to file (for local development)
-    try {
-      const configPath = path.join(__dirname, '../data/agent-config.json');
-      await fs.writeFile(configPath, JSON.stringify(campaignConfig, null, 2));
-      console.log('✅ Campaign configuration also saved to file');
-    } catch (fileError) {
-      // On Railway, filesystem might be read-only or ephemeral, so this is expected
-      console.log('⚠️ Could not save config to file (Railway ephemeral filesystem):', fileError.message);
-      console.log('✅ Config is still available in memory and app.locals');
-    }
-    
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Campaign configuration saved successfully',
-      config: campaignConfig 
+      config: campaignConfig
     });
   } catch (error) {
     console.error('Failed to save campaign config:', error);
@@ -393,9 +357,16 @@ router.post('/stop', async (req, res) => {
 });
 
 // Reset agent configuration and data
-router.post('/reset', async (req, res) => {
+router.post('/reset', optionalAuth, async (req, res) => {
   try {
-    // Stop agent if running
+    const storage = new UserStorageService(req.userId);
+
+    // Clear user-specific configuration
+    await storage.deleteConfig();
+
+    console.log(`🗑️ Configuration reset for user: ${req.userId}`);
+
+    // Reset global agent state
     agentState.isRunning = false;
     agentState.isPaused = false;
     agentState.currentTask = null;
@@ -407,34 +378,11 @@ router.post('/reset', async (req, res) => {
       conversionRate: 0,
       avgResponseTime: 0
     };
-    
-    // Clear configuration
-    agentConfig = {
-      targetWebsite: null,
-      campaignGoal: null,
-      businessType: 'auto',
-      smtpConfig: null,
-      controls: {
-        autoReply: true,
-        manualApproval: false,
-        pauseOnError: true,
-        maxEmailsPerHour: 10,
-        workingHours: { start: 9, end: 18 }
-      }
-    };
-    
+
     agentState.config = null;
 
-    // Delete configuration file
-    const configPath = path.join(__dirname, '../data/agent-config.json');
-    try {
-      await fs.unlink(configPath);
-    } catch (err) {
-      // File might not exist, that's ok
-    }
-
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Agent reset successfully'
     });
   } catch (error) {
@@ -498,13 +446,13 @@ router.put('/controls', (req, res) => {
 });
 
 // Get clients data
-router.get('/clients', async (req, res) => {
+router.get('/clients', optionalAuth, async (req, res) => {
   try {
-    // Use singleton to avoid multiple connections
-    const prospects = await knowledgeBaseSingleton.getAllProspects();
-    
-    console.log(`📊 Found ${prospects.length} prospects in EnhancedKnowledgeBase`);
-    
+    // Get user-specific prospects only
+    const prospects = await knowledgeBaseSingleton.getAllProspects(req.userId);
+
+    console.log(`📊 Found ${prospects.length} prospects for user: ${req.userId}`);
+
     // Transform to client format with intelligent status classification
     const clients = prospects.map(prospect => {
       // Intelligent status classification based on interaction data
@@ -566,10 +514,10 @@ router.get('/clients', async (req, res) => {
 });
 
 // Get specific client
-router.get('/clients/:id', async (req, res) => {
+router.get('/clients/:id', optionalAuth, async (req, res) => {
   try {
-    const prospect = await knowledgeBaseSingleton.getProspect(req.params.id);
-    
+    const prospect = await knowledgeBaseSingleton.getProspect(req.params.id, req.userId);
+
     if (!prospect) {
       return res.status(404).json({ success: false, error: 'Client not found' });
     }
@@ -596,9 +544,9 @@ router.get('/clients/:id', async (req, res) => {
 });
 
 // Update client
-router.patch('/clients/:id', async (req, res) => {
+router.patch('/clients/:id', optionalAuth, async (req, res) => {
   try {
-    await knowledgeBaseSingleton.updateProspect(req.params.id, req.body);
+    await knowledgeBaseSingleton.updateProspect(req.params.id, req.body, req.userId);
 
     res.json({ success: true, message: 'Client updated successfully' });
   } catch (error) {
@@ -608,13 +556,13 @@ router.patch('/clients/:id', async (req, res) => {
 });
 
 // Get client email history
-router.get('/clients/:id/emails', async (req, res) => {
+router.get('/clients/:id/emails', optionalAuth, async (req, res) => {
   try {
-    // Get real email history from enhanced knowledge base
-    const emailHistory = await knowledgeBaseSingleton.getEmailHistory(req.params.id);
-    
-    console.log(`📧 Found ${emailHistory.length} emails for client ${req.params.id}`);
-    
+    // Get real email history from enhanced knowledge base (user-specific)
+    const emailHistory = await knowledgeBaseSingleton.getEmailHistory(req.params.id, req.userId);
+
+    console.log(`📧 Found ${emailHistory.length} emails for client ${req.params.id}, user: ${req.userId}`);
+
     // Transform to frontend format
     const formattedHistory = emailHistory.map(email => ({
       id: email.id,

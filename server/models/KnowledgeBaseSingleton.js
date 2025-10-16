@@ -29,24 +29,24 @@ class KnowledgeBaseSingleton {
     return this.getInstance();
   }
   
-  async getAllProspects() {
+  async getAllProspects(userId = 'anonymous') {
     const kb = await this.getInstance();
-    return kb.getAllProspects();
+    return kb.getAllProspects(userId);
   }
-  
-  async getProspect(id) {
+
+  async getProspect(id, userId = 'anonymous') {
     const kb = await this.getInstance();
-    return kb.getProspect(id);
+    return kb.getProspect(id, userId);
   }
-  
-  async updateProspect(id, data) {
+
+  async updateProspect(id, data, userId = 'anonymous') {
     const kb = await this.getInstance();
-    return kb.updateProspect(id, data);
+    return kb.updateProspect(id, data, userId);
   }
-  
-  async getEmailHistory(prospectId) {
+
+  async getEmailHistory(prospectId, userId = 'anonymous') {
     const kb = await this.getInstance();
-    return kb.getEmailHistory(prospectId);
+    return kb.getEmailHistory(prospectId, userId);
   }
   
   async getEmailById(emailId) {
@@ -54,24 +54,27 @@ class KnowledgeBaseSingleton {
     return kb.getEmailById(emailId);
   }
   
-  async saveEmail(emailData) {
+  async saveEmail(emailData, userId = 'anonymous') {
     const kb = await this.getInstance();
-    return kb.saveEmail(emailData);
+    // Add userId to email data
+    return kb.saveEmail({ ...emailData, user_id: userId });
   }
-  
-  async saveProspect(prospectData) {
+
+  async saveProspect(prospectData, userId = 'anonymous') {
     const kb = await this.getInstance();
-    return kb.saveProspect(prospectData);
+    // Add userId to prospect data
+    return kb.saveProspect({ ...prospectData, user_id: userId });
   }
-  
-  async saveMarketingStrategy(strategyData) {
+
+  async saveMarketingStrategy(strategyData, userId = 'anonymous') {
     const kb = await this.getInstance();
-    return kb.saveMarketingStrategy(strategyData);
+    // Add userId to strategy data
+    return kb.saveMarketingStrategy({ ...strategyData, user_id: userId });
   }
-  
-  async getMarketingStrategy(website, goal) {
+
+  async getMarketingStrategy(website, goal, userId = 'anonymous') {
     const kb = await this.getInstance();
-    return kb.getMarketingStrategy(website, goal);
+    return kb.getMarketingStrategy(website, goal, userId);
   }
 }
 

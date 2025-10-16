@@ -1,0 +1,100 @@
+[
+  {
+    "name": "张明",
+    "email": "zhang.ming@example.com",
+    "company": "创新科技有限公司",
+    "position": "CEO",
+    "industry": "科技",
+    "linkedinUrl": "https://linkedin.com/in/zhangming",
+    "source": "搜索关键词: 科技 CEO",
+    "score": 87,
+    "interests": [
+      "产品创新",
+      "市场拓展",
+      "团队管理"
+    ],
+    "painPoints": [
+      "获客成本高",
+      "市场竞争激烈",
+      "品牌知名度低"
+    ],
+    "id": "prospect_1755011974504_apho3b7gn",
+    "searchKeyword": "科技 CEO",
+    "emailContent": {
+      "subject": "关于创新科技有限公司业务增长的想法",
+      "body": "尊敬的张明，\n\n作为创新科技有限公司的CEO，相信您一定关注企业的持续发展...",
+      "template": "executive_outreach",
+      "generatedAt": "2025-08-12T15:19:34.661Z",
+      "context": {
+        "prospectName": "张明",
+        "prospectCompany": "创新科技有限公司",
+        "prospectPosition": "CEO",
+        "prospectIndustry": "科技",
+        "prospectPainPoints": [
+          "获客成本高",
+          "市场竞争激烈",
+          "品牌知名度低"
+        ],
+        "prospectInterests": [
+          "产品创新",
+          "市场拓展",
+          "团队管理"
+        ],
+        "companyInfo": {},
+        "marketInsights": null,
+        "targetWebsite": "https://example.com"
+      }
+    },
+    "status": "ready_to_send",
+    "createdAt": "2025-08-12T15:19:34.661Z"
+  },
+  {
+    "name": "李小华",
+    "email": "li.xiaohua@company.com",
+    "company": "宠物生活馆",
+    "position": "营销总监",
+    "industry": "宠物",
+    "linkedinUrl": "https://linkedin.com/in/lixiaohua",
+    "source": "搜索关键词: 科技 营销总监",
+    "score": 66,
+    "interests": [
+      "数字营销",
+      "客户体验",
+      "品牌建设"
+    ],
+    "painPoints": [
+      "线上获客难",
+      "客户留存低",
+      "营销效果难衡量"
+    ],
+    "id": "prospect_1755011974504_ajktij8sn",
+    "searchKeyword": "科技 营销总监",
+    "emailContent": {
+      "subject": "提升宠物生活馆营销ROI的策略分享",
+      "body": "您好李小华，\n\n我注意到宠物生活馆在营销方面的努力，想与您分享一些有价值的洞察...",
+      "template": "marketing_professional",
+      "generatedAt": "2025-08-12T15:19:34.666Z",
+      "context": {
+        "prospectName": "李小华",
+        "prospectCompany": "宠物生活馆",
+        "prospectPosition": "营销总监",
+        "prospectIndustry": "宠物",
+        "prospectPainPoints": [
+          "线上获客难",
+          "客户留存低",
+          "营销效果难衡量"
+        ],
+        "prospectInterests": [
+          "数字营销",
+          "客户体验",
+          "品牌建设"
+        ],
+        "companyInfo": {},
+        "marketInsights": null,
+        "targetWebsite": "https://example.com"
+      }
+    },
+    "status": "ready_to_send",
+    "createdAt": "2025-08-12T15:19:34.666Z"
+  }
+]
