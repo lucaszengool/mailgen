@@ -2691,6 +2691,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           return;
         }
 
+        // 🐛 DEBUG: Log all values for first email popup check
+        console.log('🐛 DEBUG: Checking if first email popup should show:');
+        console.log('🐛   waitingForUserApproval:', result.data.waitingForUserApproval);
+        console.log('🐛   firstEmailGenerated:', result.data.firstEmailGenerated);
+        console.log('🐛   firstEmailGenerated.subject:', result.data.firstEmailGenerated?.subject);
+        console.log('🐛   firstEmailGenerated.body:', result.data.firstEmailGenerated?.body);
+        console.log('🐛   hasShownFirstEmailModal:', hasShownFirstEmailModal);
+        console.log('🐛   ALL CONDITIONS MET:',
+          result.data.waitingForUserApproval &&
+          result.data.firstEmailGenerated &&
+          result.data.firstEmailGenerated.subject &&
+          result.data.firstEmailGenerated.body &&
+          !hasShownFirstEmailModal
+        );
+
         // Check for email review state - ONLY trigger for truly first email with complete content
         if (result.data.waitingForUserApproval &&
             result.data.firstEmailGenerated &&
@@ -3049,6 +3064,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           });
         }
       } else if (data.type === 'email_preview_generated') {
+        console.log('🐛 DEBUG: email_preview_generated WebSocket message received!');
+        console.log('🐛   data.data:', data.data);
+        console.log('🐛   data.data.preview:', data.data?.preview);
+        console.log('🐛   templateApproved:', templateApproved);
+        console.log('🐛   hasShownFirstEmailModal:', hasShownFirstEmailModal);
+
         // IMMEDIATELY pause workflow when email preview is received
         if (ws && ws.readyState === WebSocket.OPEN && data.data?.campaignId) {
           console.log('⚠️ EMERGENCY PAUSE: Email preview received, immediately pausing workflow');
