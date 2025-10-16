@@ -2744,12 +2744,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           return; // Don't process other results while waiting for approval
         }
         
+        // 🎯 CRITICAL FIX: Set emails in state whenever they're available
+        if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
+          console.log(`🎯 Setting ${emailCampaign.emails.length} emails in state`);
+          setGeneratedEmails(emailCampaign.emails);
+        } else if (result.data.generatedEmails && result.data.generatedEmails.length > 0) {
+          console.log(`🎯 Setting ${result.data.generatedEmails.length} generated emails in state`);
+          setGeneratedEmails(result.data.generatedEmails);
+        }
+
         // Trigger prospect micro-steps if we have prospects and haven't shown them yet
         if (prospects && prospects.length > 0 && !hasShownProspectSteps) {
           console.log('🎯 Found', prospects.length, 'prospects - triggering micro-steps!');
           triggerProspectMicroSteps(prospects);
           setProspects(prospects);
-          
+
           // Also check for emails immediately after showing prospects
           if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
             console.log('📧 Also found', emailCampaign.emails.length, 'emails - scheduling email micro-steps!');
