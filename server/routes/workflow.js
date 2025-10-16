@@ -1884,79 +1884,8 @@ router.post('/user-decision', async (req, res) => {
   }
 });
 
-// Approve email and continue workflow
-router.post('/approve-email', (req, res) => {
-  const { emailEdits } = req.body;
-  
-  if (!workflowState.waitingForUserApproval) {
-    return res.status(400).json({
-      success: false,
-      error: 'Workflow is not waiting for approval'
-    });
-  }
-  
-  const reviewStep = workflowState.steps.find(s => s.id === 'email_review');
-  if (!reviewStep) {
-    return res.status(400).json({
-      success: false,
-      error: 'Email review step not found'
-    });
-  }
-  
-  // Apply any edits from the user
-  if (emailEdits && workflowState.firstEmailGenerated) {
-    if (emailEdits.subject) {
-      workflowState.firstEmailGenerated.subject = emailEdits.subject;
-    }
-    if (emailEdits.body) {
-      workflowState.firstEmailGenerated.body = emailEdits.body;
-    }
-    addLog(reviewStep, '✏️ User edits applied to sample email', 'success');
-  }
-  
-  // Complete the review step
-  reviewStep.status = 'completed';
-  reviewStep.progress = 100;
-  reviewStep.endTime = new Date().toISOString();
-  addLog(reviewStep, '✅ Email approved by user - continuing workflow', 'success');
-  
-  // Clear waiting state
-  workflowState.waitingForUserApproval = false;
-  
-  // Continue with generating remaining emails
-  setTimeout(() => {
-    if (workflowState.isRunning) {
-      continueEmailGeneration();
-    }
-  }, 1000);
-  
-  res.json({
-    success: true,
-    message: 'Email approved, continuing workflow',
-    data: workflowState
-  });
-});
-
-async function continueEmailGeneration() {
-  // This function continues generating the rest of the emails after approval
-  const sendingStep = workflowState.steps.find(s => s.id === 'email_sending');
-  if (!sendingStep) return;
-  
-  // Add a brief generation step for remaining emails
-  const reviewStep = workflowState.steps.find(s => s.id === 'email_review');
-  addLog(reviewStep, '🚀 Generating remaining 155 emails based on approved template...', 'info');
-  
-  // Simulate generating the rest of the emails quickly
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  addLog(reviewStep, '✅ All 156 emails generated successfully', 'success');
-  
-  // Now start email sending
-  setTimeout(() => {
-    if (workflowState.isRunning) {
-      startEmailSending();
-    }
-  }, 500);
-}
+// REMOVED: Duplicate /approve-email route (was using old global workflowState)
+// The correct user-aware /approve-email route is defined at line 1715
 
 // 🎯 FIX: Add setter function for template submission flag (user-specific)
 function setTemplateSubmitted(value, userId = 'anonymous') {
