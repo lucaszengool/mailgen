@@ -3492,9 +3492,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
         // NO PAGE RELOAD - Just keep the cleared state
         console.log('✅ Reset complete - no page reload needed');
-      } else {
-        console.error('Failed to reset workflow');
-      }
     } catch (error) {
       console.error('Error resetting workflow:', error);
     }
