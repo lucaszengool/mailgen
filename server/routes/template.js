@@ -5,6 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const TemplatePromptService = require('../services/TemplatePromptService');
+const { optionalAuth } = require('../middleware/userContext');
 
 // Get all available templates
 router.get('/templates', (req, res) => {
@@ -130,11 +131,12 @@ router.post('/preview', async (req, res) => {
 });
 
 // Handle template selection for campaign
-router.post('/select', (req, res) => {
+router.post('/select', optionalAuth, (req, res) => {
   try {
+    const userId = req.userId || 'anonymous';
     const { templateId, campaignId, workflowId, components, isCustomized, customizations: userCustomizations, subject, greeting, signature, html: userEditedHtml, ...restCustomizations } = req.body;
 
-    console.log(`🎨 Template selected: ${templateId} for campaign ${campaignId || workflowId}`);
+    console.log(`🎨 [User: ${userId}] Template selected: ${templateId} for campaign ${campaignId || workflowId}`);
     console.log(`🎨 User customizations received:`, {
       hasCustomizations: !!userCustomizations,
       hasSubject: !!subject,
@@ -190,8 +192,8 @@ router.post('/select', (req, res) => {
     // 🎯 CRITICAL: Set templateSubmitted flag to prevent popup re-triggering
     const workflowRoute = require('./workflow');
     if (workflowRoute.setTemplateSubmitted) {
-      workflowRoute.setTemplateSubmitted(true);
-      console.log('🎯 Template submission flag set in workflow module');
+      workflowRoute.setTemplateSubmitted(true, userId);
+      console.log(`🎯 [User: ${userId}] Template submission flag set in workflow module`);
     }
 
     // 🚀 CRITICAL: Resume workflow with selected template
