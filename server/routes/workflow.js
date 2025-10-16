@@ -235,7 +235,8 @@ router.post('/start', optionalAuth, async (req, res) => {
     (async () => {
       try {
         console.log('🚀 [RAILWAY DEBUG] Executing real workflow in background...');
-        await executeRealWorkflow(agent, campaignConfig);
+        console.log(`👤 [RAILWAY DEBUG] User ID: ${req.userId}`);
+        await executeRealWorkflow(agent, campaignConfig, req.userId);
         console.log('✅ [RAILWAY DEBUG] Real workflow execution completed');
       } catch (error) {
         console.error('❌ [RAILWAY DEBUG] Real workflow execution failed:', error);
@@ -1172,10 +1173,11 @@ function addLog(step, message, level = 'info') {
 }
 
 // Real workflow execution function
-async function executeRealWorkflow(agent, campaignConfig) {
+async function executeRealWorkflow(agent, campaignConfig, userId = 'anonymous') {
   try {
     console.log('🚀 ======================== REAL WORKFLOW EXECUTION START ========================');
     console.log('🚀 [RAILWAY DEBUG] Starting REAL LangGraphMarketingAgent workflow execution');
+    console.log(`👤 [RAILWAY DEBUG] User ID: ${userId}`);
     console.log('🚀 [RAILWAY DEBUG] Campaign config:', {
       targetWebsite: campaignConfig.targetWebsite,
       campaignGoal: campaignConfig.campaignGoal,
@@ -1200,9 +1202,10 @@ async function executeRealWorkflow(agent, campaignConfig) {
       prospects: results.prospects?.length || 0,
       emailCampaign: !!results.emailCampaign
     });
-    
+
     // CRITICAL FIX: Store results in both locations for frontend access
-    setLastWorkflowResults(results);
+    console.log(`📦 [RAILWAY DEBUG] Storing results for user: ${userId}`);
+    setLastWorkflowResults(results, userId);
     
     // CRITICAL FIX: Store results in WebSocket manager's workflow states
     if (agent.wsManager && results.prospects && results.prospects.length > 0) {
