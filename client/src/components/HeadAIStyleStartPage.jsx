@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react';
 import WebsiteAnalysisReview from './WebsiteAnalysisReview';
 import WorkflowAnimation from './WorkflowAnimation';
 import JobRightProspectCard from './JobRightProspectCard';
@@ -172,23 +173,54 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config }) => {
               </a>
             </div>
 
-            {/* Right side - Auth buttons */}
+            {/* Right side - Auth buttons or User Profile */}
             <div className="flex items-center space-x-4">
-              {/* Sign In Button */}
-              <button
-                onClick={() => navigate('/sign-in')}
-                className="font-medium text-gray-700 hover:text-black transition-all duration-300"
-              >
-                SIGN IN
-              </button>
+              {/* Show when user is NOT signed in */}
+              <SignedOut>
+                {/* Sign In Button */}
+                <button
+                  onClick={() => navigate('/sign-in')}
+                  className="font-medium text-gray-700 hover:text-black transition-all duration-300"
+                >
+                  SIGN IN
+                </button>
 
-              {/* Join Now Button */}
-              <button
-                onClick={() => navigate('/sign-up')}
-                className="font-medium px-5 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-300"
-              >
-                JOIN NOW
-              </button>
+                {/* Join Now Button */}
+                <button
+                  onClick={() => navigate('/sign-up')}
+                  className="font-medium px-5 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-300"
+                >
+                  JOIN NOW
+                </button>
+              </SignedOut>
+
+              {/* Show when user IS signed in */}
+              <SignedIn>
+                {/* Workflow Dashboard Link */}
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="font-medium text-gray-700 hover:text-black transition-all duration-300 flex items-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <span>Dashboard</span>
+                </button>
+
+                {/* Clerk User Button with dropdown */}
+                <div className="flex items-center">
+                  <UserButton
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-10 h-10",
+                        userButtonPopoverCard: "shadow-lg border border-gray-200",
+                        userButtonPopoverActionButton: "hover:bg-gray-100",
+                      }
+                    }}
+                  />
+                </div>
+              </SignedIn>
             </div>
           </div>
         </div>

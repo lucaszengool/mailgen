@@ -357,7 +357,7 @@ router.post('/reset', optionalAuth, async (req, res) => {
     ],
     isRunning: false,
     lastUpdate: new Date().toISOString()
-  };
+  });
 
   // Clear all cached workflow results and email data for this user
   userWorkflowResults.delete(userId);
