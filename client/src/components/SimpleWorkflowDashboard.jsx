@@ -2670,6 +2670,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           console.log('🎨 Template selection required:', result.data.templateSelectionRequired);
           console.log('🎨 Template already submitted?', templateAlreadySubmittedRef.current);
 
+          // 🎯 CRITICAL FIX: Set prospects BEFORE triggering template selection
+          if (prospects && prospects.length > 0) {
+            console.log(`🎯 Setting ${prospects.length} prospects in state before showing template popup`);
+            setProspects(prospects);
+          }
+
           // Trigger template selection popup ONLY if not already submitted
           if (!showTemplateSelection && !templateAlreadySubmittedRef.current) {
             console.log('🎨 Triggering template selection popup via HTTP polling');
