@@ -9,6 +9,7 @@ import {
   Server, Eye, Cpu, Layers, Workflow, Gauge, Home
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiGet, apiPost } from '../utils/apiClient';
 import ProfessionalEmailEditor from './ProfessionalEmailEditor';
 import TemplateSelectionModal from './TemplateSelectionModal';
 import TemplateSelectionService from '../services/TemplateSelectionService';
@@ -2647,9 +2648,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     try {
       setIsProcessingWorkflowResults(true);
       setLastWorkflowFetchTime(now);
-      console.log('🔄 Fetching workflow results...');
-      const response = await fetch('/api/workflow/results');
-      const result = await response.json();
+      console.log('🔄 Fetching workflow results with authentication...');
+      const result = await apiGet('/api/workflow/results');
 
       console.log('📊 Workflow results fetched:', result);
       console.log('📊 EmailCampaign data:', result.data?.emailCampaign);
@@ -2761,9 +2761,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   // Check for email updates when email activity is detected
   const checkForEmailUpdates = async () => {
     try {
-      console.log('🔄 Checking for email updates...');
-      const response = await fetch('/api/workflow/results');
-      const result = await response.json();
+      console.log('🔄 Checking for email updates with authentication...');
+      const result = await apiGet('/api/workflow/results');
       
       if (result.success && result.data) {
         const { emailCampaign, generatedEmails } = result.data;
@@ -3350,35 +3349,29 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         console.log('🔍 DEBUG - Extracted senderName:', smtpConfig?.senderName);
         console.log('🔍 DEBUG - Extracted senderEmail:', smtpConfig?.auth?.user);
 
-        const response = await fetch('/api/workflow/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            // Include all saved configuration including SMTP
-            targetWebsite: config.targetWebsite || 'https://example.com',
-            businessType: config.businessType || 'technology',
-            campaignGoal: config.campaignGoal || 'partnership',
-            smtpConfig: smtpConfig,
-            emailTemplate: config.emailTemplate,
-            templateData: templateData,
-            audienceType: config.audienceType,
-            industries: config.industries,
-            roles: config.roles,
-            keywords: config.keywords,
-            controls: {
-              autoReply: true,
-              manualApproval: false,
+        const result = await apiPost('/api/workflow/start', {
+          // Include all saved configuration including SMTP
+          targetWebsite: config.targetWebsite || 'https://example.com',
+          businessType: config.businessType || 'technology',
+          campaignGoal: config.campaignGoal || 'partnership',
+          smtpConfig: smtpConfig,
+          emailTemplate: config.emailTemplate,
+          templateData: templateData,
+          audienceType: config.audienceType,
+          industries: config.industries,
+          roles: config.roles,
+          keywords: config.keywords,
+          controls: {
+            autoReply: true,
+            manualApproval: false,
               pauseOnError: true,
               maxEmailsPerHour: 10,
               workingHours: { start: 9, end: 18 }
             }
-          })
-        });
+          });
 
-        if (response.ok) {
-          const result = await response.json();
-          console.log('Workflow started:', result);
-          setWorkflowStatus('running');
+        console.log('Workflow started:', result);
+        setWorkflowStatus('running');
 
           // Start checking for workflow updates immediately
           setTimeout(() => {
@@ -3414,13 +3407,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       setGeneratedEmails([]);
 
       // Call backend API to reset workflow and clear all data
-      const response = await fetch('/api/workflow/reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const result = await apiPost('/api/workflow/reset', {});
 
-      if (response.ok) {
-        console.log('✅ Workflow reset successfully');
+      console.log('✅ Workflow reset successfully');
 
         // Reset all frontend state
         setIsAnimating(false);
