@@ -244,7 +244,9 @@ class LangGraphMarketingAgent {
         prompt,
         stream: false,
         options: { ...defaultOptions, ...options }
-      }); // No timeout configuration - allow infinite processing time
+      }, {
+        timeout: 60000  // 🎯 CRITICAL: 60 second timeout to prevent workflow hangs
+      });
       
       // Timeout was removed - no need to clear
       
@@ -262,12 +264,18 @@ class LangGraphMarketingAgent {
       
       return data.response;
     } catch (error) {
-      if (error.name === 'AbortError') {
-        console.error(`❌ ${modelType} model (${model}) request aborted after timeout`);
+      if (error.name === 'AbortError' || error.code === 'ECONNABORTED') {
+        console.error(`❌ ${modelType} model (${model}) request timed out after 60 seconds`);
+        console.error(`❌ Modal endpoint may be slow or unresponsive`);
+        return null;
+      }
+      if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+        console.error(`❌ ${modelType} model (${model}) request timed out`);
+        console.error(`❌ Consider checking your OLLAMA_URL environment variable`);
         return null;
       }
       console.error(`❌ ${modelType} model (${model}) error: ${error.message}`);
-      console.error(`❌ Full error:`, error);
+      console.error(`❌ Error code: ${error.code}`);
       return null;
     }
   }
