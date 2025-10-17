@@ -3505,8 +3505,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           ws.send(JSON.stringify({ type: 'reset_workflow' }));
         }
 
-        // NO PAGE RELOAD - Just keep the cleared state
-        console.log('✅ Reset complete - no page reload needed');
+        // 🔄 CRITICAL: Navigate back to setup page
+        console.log('✅ Reset complete - navigating back to setup page');
+
+        // Call parent's onReset to navigate back to setup wizard
+        if (props.onReset) {
+          props.onReset();
+        }
     } catch (error) {
       console.error('Error resetting workflow:', error);
     }
