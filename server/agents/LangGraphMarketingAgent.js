@@ -245,7 +245,7 @@ class LangGraphMarketingAgent {
         stream: false,
         options: { ...defaultOptions, ...options }
       }, {
-        timeout: 60000  // 🎯 CRITICAL: 60 second timeout to prevent workflow hangs
+        timeout: 0  // ⏰ NO TIMEOUT: Wait for Ollama as long as needed
       });
       
       // Timeout was removed - no need to clear
@@ -4420,8 +4420,9 @@ Generate a VERY detailed user persona in JSON format with ALL these fields:
 Return ONLY the JSON object, no other text.`;
 
     try {
+      // ⏰ Wait for Ollama response (no timeout)
       const response = await this.callOllama(personaPrompt, 'email', { temperature: 0.7 });
-      
+
       if (!response) {
         throw new Error('No persona response from Ollama');
       }
