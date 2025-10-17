@@ -224,7 +224,8 @@ router.post('/start', optionalAuth, async (req, res) => {
       roles: req.body.roles || savedConfig?.roles,
       keywords: req.body.keywords || savedConfig?.keywords,
       controls: req.body.controls,
-      websiteAnalysis: req.body.websiteAnalysis || savedConfig?.websiteAnalysis  // 🎯 Include websiteAnalysis
+      websiteAnalysis: req.body.websiteAnalysis || savedConfig?.websiteAnalysis,  // 🎯 Include websiteAnalysis
+      userId: req.userId  // 🎯 CRITICAL: Pass userId to agent so it can store results correctly
     };
 
     // Start real workflow execution in background

@@ -279,9 +279,11 @@ class LangGraphMarketingAgent {
     const campaignId = `campaign_${Date.now()}`;
     this.state.currentCampaign = campaignId;
     this.campaignConfig = campaignConfig;  // Store campaign config for later use
+    this.userId = campaignConfig.userId || 'anonymous';  // 🎯 CRITICAL: Store userId for workflow results
 
     console.log(`🚀 ============= EXECUTING CAMPAIGN ${campaignId} =============`);
     console.log(`🚀 [RAILWAY DEBUG] executeCampaign() CALLED`);
+    console.log(`👤 [RAILWAY DEBUG] User ID: ${this.userId}`);
     console.log(`🚀 [RAILWAY DEBUG] Target Website: ${campaignConfig.targetWebsite}`);
     console.log(`🚀 [RAILWAY DEBUG] Campaign Goal: ${campaignConfig.campaignGoal}`);
     console.log(`🚀 [RAILWAY DEBUG] Has SMTP Config: ${!!campaignConfig.smtpConfig}`);
@@ -1669,8 +1671,8 @@ class LangGraphMarketingAgent {
           try {
             const workflowModule = require('../routes/workflow');
             if (workflowModule.addEmailToWorkflowResults) {
-              workflowModule.addEmailToWorkflowResults(realEmailData);
-              console.log(`   ✅ First email added to workflow results for frontend polling`);
+              workflowModule.addEmailToWorkflowResults(realEmailData, this.userId);
+              console.log(`   ✅ [User: ${this.userId}] First email added to workflow results for frontend polling`);
             }
           } catch (error) {
             console.log('⚠️ Could not update workflow results with first email:', error.message);
@@ -1904,8 +1906,8 @@ class LangGraphMarketingAgent {
         try {
           const workflowModule = require('../routes/workflow');
           if (workflowModule.addEmailToWorkflowResults) {
-            workflowModule.addEmailToWorkflowResults(emailRecord);
-            console.log(`   ✅ Email added to workflow results for frontend access`);
+            workflowModule.addEmailToWorkflowResults(emailRecord, this.userId);
+            console.log(`   ✅ [User: ${this.userId}] Email added to workflow results for frontend access`);
           }
         } catch (error) {
           console.log('⚠️ Could not update workflow results:', error.message);
@@ -4122,7 +4124,7 @@ ${senderName || senderCompany}`;
         try {
           const workflowModule = require('../routes/workflow');
           if (workflowModule.addEmailToWorkflowResults) {
-            workflowModule.addEmailToWorkflowResults(newEmail);
+            workflowModule.addEmailToWorkflowResults(newEmail, this.userId);
           }
         } catch (error) {
           console.log('⚠️ Could not update workflow results:', error.message);
@@ -4169,7 +4171,7 @@ ${senderName || senderCompany}`;
         try {
           const workflowModule = require('../routes/workflow');
           if (workflowModule.addEmailToWorkflowResults) {
-            workflowModule.addEmailToWorkflowResults(failedEmail);
+            workflowModule.addEmailToWorkflowResults(failedEmail, this.userId);
           }
         } catch (error) {
           console.log('⚠️ Could not update workflow results:', error.message);
