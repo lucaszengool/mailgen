@@ -1897,8 +1897,16 @@ function setTemplateSubmitted(value, userId = 'anonymous') {
   console.log(`🎯 [User: ${userId}] Template submitted flag set to: ${value}`);
 }
 
+// 🎯 CRITICAL: Update user workflow state (for first email popup)
+function setUserWorkflowState(userId, updates) {
+  const userWorkflowState = getUserWorkflowState(userId);
+  Object.assign(userWorkflowState, updates);
+  console.log(`🎯 [User: ${userId}] Workflow state updated:`, Object.keys(updates));
+}
+
 module.exports = router;
 module.exports.setLastWorkflowResults = setLastWorkflowResults;
 module.exports.getLastWorkflowResults = getLastWorkflowResults;
 module.exports.addEmailToWorkflowResults = addEmailToWorkflowResults;
 module.exports.setTemplateSubmitted = setTemplateSubmitted;
+module.exports.setUserWorkflowState = setUserWorkflowState;

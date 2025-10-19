@@ -1675,12 +1675,21 @@ class LangGraphMarketingAgent {
             this.workflowState.waitingForUserApproval = true;
           }
 
-          // 🎯 CRITICAL FIX: Add first email to workflow results immediately
+          // 🎯 CRITICAL FIX: Add first email to workflow results immediately AND set user workflow state
           try {
             const workflowModule = require('../routes/workflow');
             if (workflowModule.addEmailToWorkflowResults) {
               workflowModule.addEmailToWorkflowResults(realEmailData, this.userId);
               console.log(`   ✅ [User: ${this.userId}] First email added to workflow results for frontend polling`);
+            }
+
+            // 🎯 CRITICAL: Also update the user-specific workflow state that frontend polls!
+            if (workflowModule.setUserWorkflowState) {
+              workflowModule.setUserWorkflowState(this.userId, {
+                waitingForUserApproval: true,
+                firstEmailGenerated: realEmailData
+              });
+              console.log(`   ✅ [User: ${this.userId}] Workflow state updated for frontend polling`);
             }
           } catch (error) {
             console.log('⚠️ Could not update workflow results with first email:', error.message);
