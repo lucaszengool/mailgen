@@ -59,10 +59,12 @@ function App() {
         const config = await response.json();
         console.log('Config received:', config);
         if (config && config.targetWebsite) {
-          console.log('Setup is complete, switching to dashboard');
+          console.log('Setup is complete, but NOT auto-navigating to dashboard');
           setAgentConfig(config);
           setIsSetupComplete(true);
-          setCurrentView('dashboard');
+          // DON'T auto-navigate to dashboard - let user stay on current page
+          // Only navigate to dashboard when explicitly requested via portal menu
+          // setCurrentView('dashboard'); // REMOVED - no auto-navigation
         } else {
           console.log('Config missing targetWebsite');
         }

@@ -2638,11 +2638,18 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const fetchAndTriggerWorkflowSteps = async () => {
     const now = Date.now();
 
-    // Prevent multiple simultaneous calls AND prevent duplicate animations AND debounce rapid calls
-    if (isProcessingWorkflowResults || hasShownProspectSteps || hasShownEmailSteps || (now - lastWorkflowFetchTime < 5000)) {
-      console.log('⏭️ Skipping fetchAndTriggerWorkflowSteps - already processing, animations shown, or too soon');
-      console.log(`⏭️ Flags: processing=${isProcessingWorkflowResults}, prospectSteps=${hasShownProspectSteps}, emailSteps=${hasShownEmailSteps}, timeSinceLast=${now - lastWorkflowFetchTime}ms`);
+    // Prevent multiple simultaneous calls AND debounce rapid calls
+    // BUT DON'T skip if animations have been shown - we still need to check for first email popup!
+    if (isProcessingWorkflowResults || (now - lastWorkflowFetchTime < 5000)) {
+      console.log('⏭️ Skipping fetchAndTriggerWorkflowSteps - already processing or too soon');
+      console.log(`⏭️ Flags: processing=${isProcessingWorkflowResults}, timeSinceLast=${now - lastWorkflowFetchTime}ms`);
       return;
+    }
+
+    // Track if we should skip animations (but still check for first email)
+    const shouldSkipAnimations = hasShownProspectSteps && hasShownEmailSteps;
+    if (shouldSkipAnimations) {
+      console.log('⏭️ Animations already shown, but continuing to check for first email popup...');
     }
 
     try {
