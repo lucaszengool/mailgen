@@ -1296,8 +1296,8 @@ const SettingsView = () => {
 
   const tabs = [
     { id: 'smtp', label: 'SMTP Settings', icon: Mail },
-    { id: 'ai', label: 'AI Model', icon: Brain },
-    { id: 'profile', label: 'Profile', icon: User }
+    { id: 'website', label: 'Website Analysis', icon: Globe },
+    { id: 'campaign', label: 'Campaign Config', icon: Target }
   ];
 
   return (
@@ -1509,32 +1509,138 @@ const SettingsView = () => {
             </div>
           )}
 
-          {/* AI Model Settings */}
-          {activeTab === 'ai' && (
+          {/* Website Analysis Settings */}
+          {activeTab === 'website' && (
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center mb-6">
-                <Brain className="h-6 w-6 text-green-600 mr-3" />
-                <h2 className="text-xl font-semibold text-gray-900">AI Model Settings</h2>
+                <Globe className="h-6 w-6 text-green-600 mr-3" />
+                <h2 className="text-xl font-semibold text-gray-900">Website Analysis</h2>
               </div>
-              <div className="text-center py-12 text-gray-500">
-                <Brain className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <p>AI Model configuration</p>
-                <p className="text-sm">Configure Ollama models and AI parameters</p>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Target Website *</label>
+                  <input
+                    type="url"
+                    placeholder="https://example.com"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
+                  <input
+                    type="text"
+                    placeholder="FruitAI"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Product / Service Type *</label>
+                  <input
+                    type="text"
+                    placeholder="Food Technology"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Introduction *</label>
+                  <textarea
+                    rows={4}
+                    placeholder="AI-powered fruit and vegetable freshness analyzer..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-4 border-t border-gray-200">
+                  <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    Update Website Analysis
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Profile Settings */}
-          {activeTab === 'profile' && (
+          {/* Campaign Configuration */}
+          {activeTab === 'campaign' && (
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center mb-6">
-                <User className="h-6 w-6 text-green-600 mr-3" />
-                <h2 className="text-xl font-semibold text-gray-900">Profile Settings</h2>
+                <Target className="h-6 w-6 text-green-600 mr-3" />
+                <h2 className="text-xl font-semibold text-gray-900">Campaign Configuration</h2>
               </div>
-              <div className="text-center py-12 text-gray-500">
-                <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <p>User profile configuration</p>
-                <p className="text-sm">Manage your personal information and preferences</p>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Campaign Goal</label>
+                  <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    <option value="partnership">Partnership Outreach</option>
+                    <option value="sales">Sales Prospecting</option>
+                    <option value="recruitment">Talent Recruitment</option>
+                    <option value="feedback">Customer Feedback</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Target Industries</label>
+                  <input
+                    type="text"
+                    placeholder="Technology, Healthcare, Finance..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate multiple industries with commas</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Target Roles</label>
+                  <input
+                    type="text"
+                    placeholder="CEO, CTO, Marketing Director..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate multiple roles with commas</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Search Keywords</label>
+                  <input
+                    type="text"
+                    placeholder="AI, machine learning, automation..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Keywords to help find relevant prospects</p>
+                </div>
+
+                <div className="border-t border-gray-200 pt-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Email Limits</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Max Emails per Hour</label>
+                      <input
+                        type="number"
+                        defaultValue={10}
+                        min={1}
+                        max={100}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Daily Email Limit</label>
+                      <input
+                        type="number"
+                        defaultValue={50}
+                        min={1}
+                        max={500}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4 border-t border-gray-200">
+                  <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    Update Campaign Config
+                  </button>
+                </div>
               </div>
             </div>
           )}
