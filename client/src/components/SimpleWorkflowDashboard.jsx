@@ -3291,16 +3291,28 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         fetchAndTriggerWorkflowSteps();
       }
       
+      // 🔥 IMMEDIATE: Handle first email ready signal
+      if (data.type === 'first_email_ready') {
+        console.log('🔔 FIRST EMAIL READY signal received via WebSocket!', data.data);
+        if (data.data.firstEmailGenerated && !hasShownFirstEmailModal) {
+          console.log('👀 Immediately showing first email popup from WebSocket');
+          setEmailForReview(data.data.firstEmailGenerated);
+          setShowEmailReview(true);
+          setHasShownFirstEmailModal(true);
+          setWorkflowStatus('paused_for_review');
+        }
+      }
+
       // Check for email generation progress
       if (data.type === 'email_sent' || data.type === 'email_generated' || data.type === 'email_awaiting_approval') {
         console.log('📧 Email activity detected - checking for new emails');
-        
+
         // Show confirmation modal when first email is sent
         if (data.type === 'email_sent' && data.data?.isFirstEmail) {
           console.log('🚀 First email sent - showing confirmation modal');
           setShowEmailSendConfirmation(true);
         }
-        
+
         setTimeout(() => {
           checkForEmailUpdates();
         }, 1000);

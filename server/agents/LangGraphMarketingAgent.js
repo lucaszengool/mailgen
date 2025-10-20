@@ -1693,6 +1693,19 @@ class LangGraphMarketingAgent {
               });
               console.log(`   ✅ [User: ${this.userId}] Workflow state updated for frontend polling`);
             }
+
+            // 🔥 IMMEDIATE BROADCAST: Send state update via WebSocket for instant delivery
+            if (this.wsManager) {
+              this.wsManager.broadcast({
+                type: 'first_email_ready',
+                data: {
+                  waitingForUserApproval: true,
+                  firstEmailGenerated: realEmailData,
+                  userId: this.userId
+                }
+              });
+              console.log(`   🔔 [User: ${this.userId}] First email state broadcasted via WebSocket`);
+            }
           } catch (error) {
             console.log('⚠️ Could not update workflow results with first email:', error.message);
           }
