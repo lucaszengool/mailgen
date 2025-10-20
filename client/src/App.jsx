@@ -47,6 +47,18 @@ function App() {
 
   useEffect(() => {
     console.log('App mounted, checking setup status...');
+
+    // Clean up any stale reset flags older than 5 seconds
+    const resetTimestamp = sessionStorage.getItem('resetTimestamp');
+    if (resetTimestamp) {
+      const age = Date.now() - parseInt(resetTimestamp);
+      if (age > 5000) {
+        console.log('🧹 Clearing stale justReset flag (age:', age, 'ms)');
+        sessionStorage.removeItem('justReset');
+        sessionStorage.removeItem('resetTimestamp');
+      }
+    }
+
     checkSetupStatus();
   }, []);
 
@@ -59,6 +71,7 @@ function App() {
       if (justReset) {
         console.log('🔄 Just reset detected - staying on setup page, ignoring config');
         sessionStorage.removeItem('justReset'); // Clear the flag
+        sessionStorage.removeItem('resetTimestamp'); // Clear the timestamp
         setIsSetupComplete(false);
         setAgentConfig(null);
         setCurrentView('setup');
@@ -125,9 +138,6 @@ function App() {
   const handleReset = async () => {
     console.log('🔄 App.jsx - handleReset called');
 
-    // Set flag to prevent auto-navigation after reload
-    sessionStorage.setItem('justReset', 'true');
-
     try {
       // Clear server-side configuration first
       const response = await fetch('/api/agent/reset', {
@@ -154,6 +164,10 @@ function App() {
       currentView: 'setup',
       selectedClient: null
     });
+
+    // Set flag JUST BEFORE reload to prevent auto-navigation
+    sessionStorage.setItem('justReset', 'true');
+    sessionStorage.setItem('resetTimestamp', Date.now().toString());
 
     // Force page reload to reset to initial setup
     setTimeout(() => {
