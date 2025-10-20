@@ -65,7 +65,10 @@ export default function Analytics() {
 
   const setupRealtimeConnection = () => {
     try {
-      const ws = new WebSocket('ws://localhost:3333')
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.host;
+      const wsUrl = `${protocol}//${host}`;
+      const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         console.log('📡 Connected to analytics WebSocket')

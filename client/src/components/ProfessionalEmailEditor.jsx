@@ -3412,7 +3412,7 @@ export default function ProfessionalEmailEditor(props) {
       console.log('📧 Sending request with campaignId:', requestData.campaignId);
 
       // Send the email using the backend API
-      const response = await fetch('http://localhost:3333/api/workflow/send-email', {
+      const response = await fetch('/api/workflow/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
@@ -3540,7 +3540,7 @@ export default function ProfessionalEmailEditor(props) {
         sendEmails: true
       });
       
-      const response = await fetch('http://localhost:3333/api/workflow/user-decision', {
+      const response = await fetch('/api/workflow/user-decision', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3638,7 +3638,7 @@ export default function ProfessionalEmailEditor(props) {
       console.log('⚠️ No complete HTML found, attempting AI generation from components');
 
       // Call the new API endpoint to generate personalized content
-      const response = await fetch('http://localhost:3333/api/email/generate-personalized-content', {
+      const response = await fetch('/api/email/generate-personalized-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3815,7 +3815,7 @@ export default function ProfessionalEmailEditor(props) {
         const personalizedHTML = personalizedData.html;
         
         // Send individual email
-        const emailResponse = await fetch('http://localhost:3333/api/workflow/send-email', {
+        const emailResponse = await fetch('/api/workflow/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -4023,7 +4023,7 @@ export default function ProfessionalEmailEditor(props) {
       });
 
       // Try to send specific email
-      const response = await fetch('http://localhost:3333/api/workflow/send-email', {
+      const response = await fetch('/api/workflow/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
