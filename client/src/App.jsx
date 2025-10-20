@@ -53,18 +53,25 @@ function App() {
   const checkSetupStatus = async () => {
     try {
       console.log('Fetching config from API...');
+
+      // Check if user just clicked reset button
+      const justReset = sessionStorage.getItem('justReset');
+      if (justReset) {
+        console.log('🔄 Just reset - staying on home page, not auto-navigating');
+        sessionStorage.removeItem('justReset'); // Clear the flag
+        return; // Don't check config, stay on current page
+      }
+
       const response = await fetch('/api/agent/config');
       console.log('Response status:', response.status);
       if (response.ok) {
         const config = await response.json();
         console.log('Config received:', config);
         if (config && config.targetWebsite) {
-          console.log('Setup is complete, but NOT auto-navigating to dashboard');
+          console.log('Setup is complete, switching to dashboard');
           setAgentConfig(config);
           setIsSetupComplete(true);
-          // DON'T auto-navigate to dashboard - let user stay on current page
-          // Only navigate to dashboard when explicitly requested via portal menu
-          // setCurrentView('dashboard'); // REMOVED - no auto-navigation
+          setCurrentView('dashboard'); // Show workflow dashboard by default
         } else {
           console.log('Config missing targetWebsite');
         }
@@ -113,10 +120,13 @@ function App() {
 
   const handleReset = async () => {
     console.log('🔄 App.jsx - handleReset called');
-    
+
+    // Set flag to prevent auto-navigation after reload
+    sessionStorage.setItem('justReset', 'true');
+
     try {
       // Clear server-side configuration first
-      const response = await fetch('/api/agent/reset', { 
+      const response = await fetch('/api/agent/reset', {
         method: 'POST'
       });
       const result = await response.json();
@@ -124,23 +134,23 @@ function App() {
     } catch (error) {
       console.log('⚠️ Could not clear server config:', error.message);
     }
-    
+
     // Clear all client-side configuration and reset to setup wizard
     setAgentConfig(null);
     setIsSetupComplete(false);
     setCurrentView('setup');
     setSelectedClient(null);
-    
+
     // Clear localStorage
     localStorage.removeItem('agentConfig');
-    
+
     console.log('🔄 App.jsx - State reset complete:', {
       agentConfig: null,
       isSetupComplete: false,
       currentView: 'setup',
       selectedClient: null
     });
-    
+
     // Force page reload to reset to initial setup
     setTimeout(() => {
       window.location.href = '/';
