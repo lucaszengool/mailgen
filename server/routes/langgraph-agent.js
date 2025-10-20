@@ -158,6 +158,7 @@ async function executeRealTimeWorkflow(agent, wsManager, campaignConfig) {
         businessAnalysis,
         marketingStrategy,
         prospects: prospectArray,
+        smtpConfig: campaignConfig?.smtpConfig || null, // 🔥 CRITICAL FIX: Include SMTP config
         status: 'waiting_for_template'
       };
 

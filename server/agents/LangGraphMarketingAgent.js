@@ -1047,6 +1047,7 @@ class LangGraphMarketingAgent {
           campaignId: this.state.currentCampaign?.id,
           businessAnalysis: this.businessAnalysisData || this.state.currentCampaign?.businessAnalysis,
           marketingStrategy: this.marketingStrategyData || this.state.currentCampaign?.marketingStrategy,
+          smtpConfig: this.campaignConfig?.smtpConfig || null, // 🔥 CRITICAL FIX: Include SMTP config
           timestamp: new Date().toISOString()
         };
 
@@ -1081,6 +1082,7 @@ class LangGraphMarketingAgent {
     try {
       console.log(`🎨 Continuing workflow with template: ${templateId}`);
       console.log(`📊 Processing ${waitingState.prospects.length} prospects`);
+      console.log(`📧 SMTP Config from waitingState: ${waitingState.smtpConfig ? 'Found ✅' : 'Missing ❌'}`);
 
       // Clear the waiting flag
       this.state.isWaitingForTemplate = false;
@@ -1205,7 +1207,7 @@ class LangGraphMarketingAgent {
         waitingState.prospects,
         finalMarketingStrategy, // Pass marketing strategy
         campaignId,
-        null, // smtpConfig - will use default
+        waitingState.smtpConfig || null, // 🔥 CRITICAL FIX: Use SMTP config from waitingState
         emailTemplateType, // Use actual template ID
         templateData, // templateData with selected template and user edits
         null, // targetAudience

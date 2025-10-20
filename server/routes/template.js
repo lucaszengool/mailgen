@@ -222,7 +222,8 @@ router.post('/select', optionalAuth, (req, res) => {
       if (agent.state?.waitingForTemplateSelection || agent.state?.isWaitingForTemplate) {
         const waitingState = agent.state.waitingForTemplateSelection || {
           prospects: agent.state.foundProspects || [],
-          campaignId: agent.state.currentCampaign?.id || campaignId
+          campaignId: agent.state.currentCampaign?.id || campaignId,
+          smtpConfig: agent.campaignConfig?.smtpConfig || agent.state.pausedCampaignData?.smtpConfig || null // 🔥 CRITICAL FIX: Include SMTP config in fallback
         };
 
         console.log(`🔄 Resuming email generation for ${waitingState.prospects?.length || 0} prospects`);
@@ -286,7 +287,8 @@ router.post('/select', optionalAuth, (req, res) => {
               prospects: storedResults.prospects,
               campaignId: campaignId || storedResults.campaignId,
               businessAnalysis: storedResults.businessAnalysis,
-              marketingStrategy: storedResults.marketingStrategy
+              marketingStrategy: storedResults.marketingStrategy,
+              smtpConfig: storedResults.smtpConfig || agent.campaignConfig?.smtpConfig || null // 🔥 CRITICAL FIX: Include SMTP config from stored results
             };
 
             console.log('🚀 Attempting to resume with stored results...');
