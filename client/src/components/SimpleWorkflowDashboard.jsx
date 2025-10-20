@@ -1941,6 +1941,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   useEffect(() => {
     if (waitingForDetailedWindow) {
       const timeout = setTimeout(() => {
+        // DON'T reset if we're showing email review or waiting for user approval
+        if (showEmailReview || emailForReview) {
+          console.log('🔧 Skipping auto-reset - email review is active');
+          return;
+        }
         console.log('🔧 Workflow stuck in waitingForDetailedWindow, auto-resetting...');
         setWaitingForDetailedWindow(false);
         setIsAnimating(false);
@@ -1948,7 +1953,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
       return () => clearTimeout(timeout);
     }
-  }, [waitingForDetailedWindow]);
+  }, [waitingForDetailedWindow, showEmailReview, emailForReview]);
   const [userIsScrolling, setUserIsScrolling] = useState(false);
   const [scrollTimeout, setScrollTimeout] = useState(null);
   
@@ -3160,8 +3165,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
           console.log('🔍 DEBUG: Setting emailForReview from firstEmailGenerated:', result.data.firstEmailGenerated);
           console.log('🔍 DEBUG: firstEmailGenerated campaignId:', result.data.firstEmailGenerated?.campaignId);
+
+          // 🔥 CRITICAL: Clear any animation state that might interfere
+          setWaitingForDetailedWindow(false);
+          setIsAnimating(false);
+
           setEmailForReview(result.data.firstEmailGenerated);
           setShowEmailReview(true);
+          console.log('🔥 POPUP STATE SET: showEmailReview = true');
           setHasShownFirstEmailModal(true); // Mark first email modal as shown
 
           // Stop all polling while waiting for user input
@@ -3402,8 +3413,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         console.log('🔔 FIRST EMAIL READY signal received via WebSocket!', data.data);
         if (data.data.firstEmailGenerated && !hasShownFirstEmailModal) {
           console.log('👀 Immediately showing first email popup from WebSocket');
+
+          // 🔥 CRITICAL: Clear any animation state that might interfere
+          setWaitingForDetailedWindow(false);
+          setIsAnimating(false);
+
           setEmailForReview(data.data.firstEmailGenerated);
           setShowEmailReview(true);
+          console.log('🔥 POPUP STATE SET via WebSocket: showEmailReview = true');
           setHasShownFirstEmailModal(true);
           setWorkflowStatus('paused_for_review');
         }

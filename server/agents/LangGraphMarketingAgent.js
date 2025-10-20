@@ -60,7 +60,9 @@ class LangGraphMarketingAgent {
       workflowPaused: false,
       userDecision: null,
       pausedCampaignData: null,
-      userDecisionPromise: null
+      userDecisionPromise: null,
+      // SMTP verification cache - avoid re-verifying same config
+      smtpVerifiedConfigs: new Map() // Key: config hash, Value: timestamp
     };
     
     // WebSocket管理器
@@ -4945,23 +4947,36 @@ Return ONLY the JSON object, no other text.`;
       const transporter = nodemailer.createTransport(emailConfig);
       
       // Verify SMTP connection with retry logic
-      let verifyAttempts = 0;
-      const maxVerifyAttempts = 3;
-      
-      while (verifyAttempts < maxVerifyAttempts) {
-        try {
-          await transporter.verify();
-          console.log('✅ SMTP connection verified successfully');
-          break;
-        } catch (verifyError) {
-          verifyAttempts++;
-          console.error(`❌ SMTP verification failed (attempt ${verifyAttempts}/${maxVerifyAttempts}):`, verifyError.message);
-          
-          if (verifyAttempts >= maxVerifyAttempts) {
-            throw verifyError; // Final failure
-          } else {
-            console.log(`⏳ Retrying SMTP verification in 2 seconds...`);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+      // Create a hash of SMTP config to check if we've verified it before
+      const configHash = `${emailConfig.host}:${emailConfig.port}:${emailConfig.auth?.user}`;
+      const lastVerified = this.state.smtpVerifiedConfigs.get(configHash);
+      const now = Date.now();
+
+      // Skip verification if we verified this config in the last 5 minutes
+      if (lastVerified && (now - lastVerified) < 5 * 60 * 1000) {
+        console.log('✅ SMTP config already verified recently, skipping verification');
+      } else {
+        // Verify SMTP connection
+        let verifyAttempts = 0;
+        const maxVerifyAttempts = 3;
+
+        while (verifyAttempts < maxVerifyAttempts) {
+          try {
+            await transporter.verify();
+            console.log('✅ SMTP connection verified successfully');
+            // Cache successful verification
+            this.state.smtpVerifiedConfigs.set(configHash, now);
+            break;
+          } catch (verifyError) {
+            verifyAttempts++;
+            console.error(`❌ SMTP verification failed (attempt ${verifyAttempts}/${maxVerifyAttempts}):`, verifyError.message);
+
+            if (verifyAttempts >= maxVerifyAttempts) {
+              throw verifyError; // Final failure
+            } else {
+              console.log(`⏳ Retrying SMTP verification in 5 seconds...`);
+              await new Promise(resolve => setTimeout(resolve, 5000)); // Increased to 5 seconds
+            }
           }
         }
       }
