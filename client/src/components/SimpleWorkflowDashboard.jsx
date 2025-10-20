@@ -1232,6 +1232,318 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
       />
 };
 
+// Settings View Component
+const SettingsView = () => {
+  const [activeTab, setActiveTab] = useState('smtp');
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // SMTP Configuration State
+  const [smtpConfig, setSmtpConfig] = useState(() => {
+    const saved = localStorage.getItem('smtpConfig');
+    return saved ? JSON.parse(saved) : {
+      name: '',
+      host: '',
+      port: 587,
+      secure: false,
+      username: '',
+      password: '',
+      senderName: '',
+      companyName: '',
+      companyWebsite: '',
+      ctaText: 'Schedule a Meeting',
+      ctaUrl: ''
+    };
+  });
+
+  const testSmtpConnection = async () => {
+    if (!smtpConfig.host || !smtpConfig.username || !smtpConfig.password) {
+      alert('Please fill in all required SMTP fields');
+      return;
+    }
+    setTestingConnection(true);
+    try {
+      const response = await fetch('/api/email/test-smtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ smtpConfig }),
+      });
+      const data = await response.json();
+      alert(data.success ? 'SMTP Connection Successful!' : `Test Failed: ${data.error}`);
+    } catch (error) {
+      alert('Network error, please try again');
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
+  const updateSmtpConfig = async () => {
+    setIsSaving(true);
+    try {
+      localStorage.setItem('smtpConfig', JSON.stringify(smtpConfig));
+      await fetch('/api/settings/smtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ smtpConfig }),
+      });
+      alert('SMTP Configuration Updated Successfully!');
+    } catch (error) {
+      alert(`Update Failed: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const tabs = [
+    { id: 'smtp', label: 'SMTP Settings', icon: Mail },
+    { id: 'ai', label: 'AI Model', icon: Brain },
+    { id: 'profile', label: 'Profile', icon: User }
+  ];
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-full">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
+        <p className="mt-2 text-gray-600">Configure your email marketing system parameters</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Sidebar Navigation */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-lg shadow p-4">
+            <nav className="space-y-2">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
+                      activeTab === tab.id
+                        ? 'bg-green-100 text-green-700 font-medium'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon className="h-5 w-5 mr-3" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="lg:col-span-3">
+          {/* SMTP Settings */}
+          {activeTab === 'smtp' && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center mb-6">
+                <Mail className="h-6 w-6 text-green-600 mr-3" />
+                <h2 className="text-xl font-semibold text-gray-900">SMTP Email Server Settings</h2>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Configuration Name</label>
+                  <input
+                    type="text"
+                    value={smtpConfig.name}
+                    onChange={(e) => setSmtpConfig(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="e.g., Company Email Server"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">SMTP Server *</label>
+                    <input
+                      type="text"
+                      value={smtpConfig.host}
+                      onChange={(e) => setSmtpConfig(prev => ({ ...prev, host: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      placeholder="smtp.gmail.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Port *</label>
+                    <input
+                      type="number"
+                      value={smtpConfig.port}
+                      onChange={(e) => setSmtpConfig(prev => ({ ...prev, port: parseInt(e.target.value) }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      placeholder="587"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={smtpConfig.secure}
+                      onChange={(e) => setSmtpConfig(prev => ({ ...prev, secure: e.target.checked }))}
+                      className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Use SSL/TLS Encryption (Port 465)</span>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Username/Email *</label>
+                    <input
+                      type="email"
+                      value={smtpConfig.username}
+                      onChange={(e) => setSmtpConfig(prev => ({ ...prev, username: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      placeholder="your-email@gmail.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                    <input
+                      type="password"
+                      value={smtpConfig.password}
+                      onChange={(e) => setSmtpConfig(prev => ({ ...prev, password: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      placeholder="App-specific password"
+                    />
+                  </div>
+                </div>
+
+                {/* Marketing Campaign Configuration */}
+                <div className="border-t border-gray-200 pt-6">
+                  <h4 className="text-lg font-medium text-gray-900 mb-4">Marketing Campaign Configuration</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Sender Name *</label>
+                      <input
+                        type="text"
+                        value={smtpConfig.senderName}
+                        onChange={(e) => setSmtpConfig(prev => ({ ...prev, senderName: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        placeholder="James Wilson"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
+                      <input
+                        type="text"
+                        value={smtpConfig.companyName}
+                        onChange={(e) => setSmtpConfig(prev => ({ ...prev, companyName: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        placeholder="FruitAI"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Company Website *</label>
+                      <input
+                        type="url"
+                        value={smtpConfig.companyWebsite}
+                        onChange={(e) => setSmtpConfig(prev => ({ ...prev, companyWebsite: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        placeholder="https://fruitai.org"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">CTA Button Text *</label>
+                      <input
+                        type="text"
+                        value={smtpConfig.ctaText}
+                        onChange={(e) => setSmtpConfig(prev => ({ ...prev, ctaText: e.target.value }))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        placeholder="Schedule a Meeting"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">CTA Link URL *</label>
+                    <input
+                      type="url"
+                      value={smtpConfig.ctaUrl}
+                      onChange={(e) => setSmtpConfig(prev => ({ ...prev, ctaUrl: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      placeholder="https://calendly.com/your-calendar"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      For booking buttons in emails, e.g., Calendly, Acuity, or other scheduling systems
+                    </p>
+                  </div>
+                </div>
+
+                {/* Common SMTP Configurations */}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Common SMTP Configurations</h4>
+                  <div className="text-sm text-gray-700 space-y-2">
+                    <div><strong>Gmail:</strong> smtp.gmail.com, Port 587 (TLS) or 465 (SSL)</div>
+                    <div><strong>Outlook:</strong> smtp.office365.com, Port 587 (TLS)</div>
+                    <div><strong>Yahoo:</strong> smtp.mail.yahoo.com, Port 465 (SSL)</div>
+                    <div><strong>Corporate Email:</strong> Contact your IT administrator for configuration</div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                  <button
+                    onClick={testSmtpConnection}
+                    disabled={testingConnection}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                  >
+                    {testingConnection ? 'Testing...' : 'Test Connection'}
+                  </button>
+                  <button
+                    onClick={updateSmtpConfig}
+                    disabled={isSaving}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  >
+                    {isSaving ? 'Updating...' : 'Update Configuration'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AI Model Settings */}
+          {activeTab === 'ai' && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center mb-6">
+                <Brain className="h-6 w-6 text-green-600 mr-3" />
+                <h2 className="text-xl font-semibold text-gray-900">AI Model Settings</h2>
+              </div>
+              <div className="text-center py-12 text-gray-500">
+                <Brain className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <p>AI Model configuration</p>
+                <p className="text-sm">Configure Ollama models and AI parameters</p>
+              </div>
+            </div>
+          )}
+
+          {/* Profile Settings */}
+          {activeTab === 'profile' && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center mb-6">
+                <User className="h-6 w-6 text-green-600 mr-3" />
+                <h2 className="text-xl font-semibold text-gray-900">Profile Settings</h2>
+              </div>
+              <div className="text-center py-12 text-gray-500">
+                <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <p>User profile configuration</p>
+                <p className="text-sm">Manage your personal information and preferences</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [activeView, setActiveView] = useState('workflow');
   
@@ -2640,7 +2952,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
     // Prevent multiple simultaneous calls AND debounce rapid calls
     // BUT DON'T skip if animations have been shown - we still need to check for first email popup!
-    if (isProcessingWorkflowResults || (now - lastWorkflowFetchTime < 5000)) {
+    if (isProcessingWorkflowResults || (now - lastWorkflowFetchTime < 2000)) {
       console.log('⏭️ Skipping fetchAndTriggerWorkflowSteps - already processing or too soon');
       console.log(`⏭️ Flags: processing=${isProcessingWorkflowResults}, timeSinceLast=${now - lastWorkflowFetchTime}ms`);
       return;
@@ -2823,7 +3135,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   useEffect(() => {
     const isPaused = workflowStatus.includes('paused') || showEmailReview;
 
-    if ((workflowStatus === 'running' || activeView === 'workflow') && !isPaused) {
+    // Check on workflow, dashboard, emails, and prospects views
+    const shouldCheckForUpdates = workflowStatus === 'running' ||
+                                   activeView === 'workflow' ||
+                                   activeView === 'dashboard' ||
+                                   activeView === 'emails' ||
+                                   activeView === 'prospects';
+
+    if (shouldCheckForUpdates && !isPaused) {
       const interval = setInterval(() => {
         console.log('⏰ Periodic check for workflow updates');
         checkForEmailUpdates();
@@ -4211,6 +4530,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
             <div className="h-full overflow-auto">
               <HomePage onNavigate={(view) => setActiveView(view)} />
             </div>
+          )}
+
+          {/* Settings View */}
+          {activeView === 'settings' && (
+            <SettingsView />
           )}
         </div>
       </div>

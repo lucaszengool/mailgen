@@ -54,24 +54,26 @@ function App() {
     try {
       console.log('Fetching config from API...');
 
-      // Check if user just clicked reset button
-      const justReset = sessionStorage.getItem('justReset');
-      if (justReset) {
-        console.log('🔄 Just reset - staying on home page, not auto-navigating');
-        sessionStorage.removeItem('justReset'); // Clear the flag
-        return; // Don't check config, stay on current page
-      }
-
       const response = await fetch('/api/agent/config');
       console.log('Response status:', response.status);
       if (response.ok) {
         const config = await response.json();
         console.log('Config received:', config);
         if (config && config.targetWebsite) {
-          console.log('Setup is complete, switching to dashboard');
+          console.log('Setup is complete');
           setAgentConfig(config);
           setIsSetupComplete(true);
-          setCurrentView('dashboard'); // Show workflow dashboard by default
+
+          // Check if user just clicked reset - if so, DON'T auto-navigate
+          const justReset = sessionStorage.getItem('justReset');
+          if (justReset) {
+            console.log('🔄 Just reset - staying on home page');
+            sessionStorage.removeItem('justReset'); // Clear the flag
+            setCurrentView('setup'); // Go to setup page
+          } else {
+            console.log('Normal load - switching to dashboard');
+            setCurrentView('dashboard'); // Show workflow dashboard by default
+          }
         } else {
           console.log('Config missing targetWebsite');
         }
