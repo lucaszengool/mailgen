@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
@@ -13,7 +13,6 @@ import EmailMonitoring from './pages/EmailMonitoring';
 import Settings from './pages/Settings';
 import EmailComposer from './pages/EmailComposer';
 import ProfessionalEmailEditorPage from './pages/ProfessionalEmailEditor';
-import ProfessionalEmailEditor from './components/ProfessionalEmailEditor';
 import WebsiteAnalyzer from './pages/WebsiteAnalyzer';
 import ChineseMarketSearch from './pages/ChineseMarketSearch';
 import LangGraphAgent from './pages/LangGraphAgent';
@@ -27,7 +26,6 @@ import EnhancedWorkflowDashboard from './components/EnhancedWorkflowDashboard';
 import ComprehensiveDashboard from './components/ComprehensiveDashboard';
 import RealTimeWorkflowDashboard from './components/RealTimeWorkflowDashboard';
 import GitHubStyleWorkflowDashboard from './components/GitHubStyleWorkflowDashboard';
-import SimpleWorkflowDashboard from './components/SimpleWorkflowDashboard';
 import WorkflowStyleDashboard from './components/WorkflowStyleDashboard';
 import ClientDetailView from './components/ClientDetailView';
 import AgentControlPanel from './components/AgentControlPanel';
@@ -35,6 +33,9 @@ import EmailDashboard from './components/EmailDashboard';
 import WorkflowPanel from './components/WorkflowPanel';
 import SignInPage from './pages/SignIn';
 import SignUpPage from './pages/SignUp';
+
+// Lazy load components with circular dependencies
+const SimpleWorkflowDashboard = lazy(() => import('./components/SimpleWorkflowDashboard'));
 
 function App() {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
@@ -258,10 +259,12 @@ function App() {
             }
           }}
         />
-        <SimpleWorkflowDashboard
-          agentConfig={agentConfig}
-          onReset={handleReset}
-        />
+        <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div></div>}>
+          <SimpleWorkflowDashboard
+            agentConfig={agentConfig}
+            onReset={handleReset}
+          />
+        </Suspense>
       </div>
     );
   }

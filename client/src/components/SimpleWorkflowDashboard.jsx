@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import {
   Send, Bot, User, Loader, CheckCircle, XCircle,
   ChevronDown, ChevronRight, Search, Mail, Building2,
@@ -10,14 +10,16 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiGet, apiPost } from '../utils/apiClient';
-import ProfessionalEmailEditor from './ProfessionalEmailEditor';
-import TemplateSelectionModal from './TemplateSelectionModal';
 import TemplateSelectionService from '../services/TemplateSelectionService';
 import { EMAIL_TEMPLATES } from '../data/emailTemplatesConsistent.js';
 import Analytics from '../pages/Analytics';
 import HomePage from '../pages/Home';
 import JobRightProspectCard from './JobRightProspectCard';
 import JobRightEmailCard from './JobRightEmailCard';
+
+// Lazy load to break circular dependencies
+const ProfessionalEmailEditor = lazy(() => import('./ProfessionalEmailEditor'));
+const TemplateSelectionModal = lazy(() => import('./TemplateSelectionModal'));
 
 // Email Review Modal Component - Simple redirect notification
 const EmailReviewModal = ({ isOpen, email, onApprove, onClose, onEdit }) => {
@@ -4570,12 +4572,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           )}
 
           {activeView === 'email_editor' && (
-            <ProfessionalEmailEditor
-              emailData={emailForReview}
-              availableEmails={generatedEmails}
-              emailCampaignStats={emailCampaignStats}
-              prospects={prospects}
-            />
+            <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader className="w-8 h-8 animate-spin text-green-500" /></div>}>
+              <ProfessionalEmailEditor
+                emailData={emailForReview}
+                availableEmails={generatedEmails}
+                emailCampaignStats={emailCampaignStats}
+                prospects={prospects}
+              />
+            </Suspense>
           )}
 
           {/* Analytics View */}
@@ -4793,22 +4797,24 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
       {/* 🎨 Template Selection Modal */}
       {showTemplateSelection && (
-        <TemplateSelectionModal
-          isOpen={showTemplateSelection}
-          onClose={() => {
-            if (isSubmittingTemplate) return;
-            setShowTemplateSelection(false);
-            setSelectedTemplate(null);
-            setTemplateRequest(null);
-          }}
-          onSelectTemplate={(template) => {
-            console.log("🎨 User selected template:", template.name);
-            setSelectedTemplate(template);
-          }}
-          onConfirm={handleTemplateConfirm}
-          isSubmitting={isSubmittingTemplate}
-          templateRequest={templateRequest}
-        />
+        <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><Loader className="w-8 h-8 animate-spin text-green-500" /></div>}>
+          <TemplateSelectionModal
+            isOpen={showTemplateSelection}
+            onClose={() => {
+              if (isSubmittingTemplate) return;
+              setShowTemplateSelection(false);
+              setSelectedTemplate(null);
+              setTemplateRequest(null);
+            }}
+            onSelectTemplate={(template) => {
+              console.log("🎨 User selected template:", template.name);
+              setSelectedTemplate(template);
+            }}
+            onConfirm={handleTemplateConfirm}
+            isSubmitting={isSubmittingTemplate}
+            templateRequest={templateRequest}
+          />
+        </Suspense>
       )}
     </div>
   );
