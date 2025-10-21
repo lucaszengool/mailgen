@@ -128,24 +128,6 @@ const EmailReviewModal = ({ isOpen, email, onApprove, onClose, onEdit }) => {
       </div>
     </div>
   );
-
-      {/* 🎨 Template Selection Modal */}
-      <TemplateSelectionModal
-        isOpen={showTemplateSelection}
-        onClose={() => {
-          if (isSubmittingTemplate) return;
-          setShowTemplateSelection(false);
-          setSelectedTemplate(null);
-          setTemplateRequest(null);
-        }}
-        onSelectTemplate={(template) => {
-          console.log("🎨 User selected template:", template.name);
-          setSelectedTemplate(template);
-        }}
-        onConfirm={handleTemplateConfirm}
-        isSubmitting={isSubmittingTemplate}
-        templateRequest={templateRequest}
-      />
 };
 
 // Email Send Confirmation Modal - Shows when user sends first email
@@ -225,24 +207,6 @@ const EmailSendConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
       </div>
     </div>
   );
-
-      {/* 🎨 Template Selection Modal */}
-      <TemplateSelectionModal
-        isOpen={showTemplateSelection}
-        onClose={() => {
-          if (isSubmittingTemplate) return;
-          setShowTemplateSelection(false);
-          setSelectedTemplate(null);
-          setTemplateRequest(null);
-        }}
-        onSelectTemplate={(template) => {
-          console.log("🎨 User selected template:", template.name);
-          setSelectedTemplate(template);
-        }}
-        onConfirm={handleTemplateConfirm}
-        isSubmitting={isSubmittingTemplate}
-        templateRequest={templateRequest}
-      />
 };
 
 // Detailed Workflow Window Component for animations with history persistence
@@ -1017,24 +981,6 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
       ))}
     </div>
   );
-
-      {/* 🎨 Template Selection Modal */}
-      <TemplateSelectionModal
-        isOpen={showTemplateSelection}
-        onClose={() => {
-          if (isSubmittingTemplate) return;
-          setShowTemplateSelection(false);
-          setSelectedTemplate(null);
-          setTemplateRequest(null);
-        }}
-        onSelectTemplate={(template) => {
-          console.log("🎨 User selected template:", template.name);
-          setSelectedTemplate(template);
-        }}
-        onConfirm={handleTemplateConfirm}
-        isSubmitting={isSubmittingTemplate}
-        templateRequest={templateRequest}
-      />
 };
 
 // Animated Workflow Window Component for Website Analysis and AI Marketing Strategy
@@ -1212,24 +1158,6 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
       )}
     </div>
   );
-
-      {/* 🎨 Template Selection Modal */}
-      <TemplateSelectionModal
-        isOpen={showTemplateSelection}
-        onClose={() => {
-          if (isSubmittingTemplate) return;
-          setShowTemplateSelection(false);
-          setSelectedTemplate(null);
-          setTemplateRequest(null);
-        }}
-        onSelectTemplate={(template) => {
-          console.log("🎨 User selected template:", template.name);
-          setSelectedTemplate(template);
-        }}
-        onConfirm={handleTemplateConfirm}
-        isSubmitting={isSubmittingTemplate}
-        templateRequest={templateRequest}
-      />
 };
 
 // Settings View Component

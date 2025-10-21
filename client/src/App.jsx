@@ -48,14 +48,21 @@ function App() {
   useEffect(() => {
     console.log('App mounted, checking setup status...');
 
-    // Clean up any stale reset flags older than 5 seconds
-    const resetTimestamp = sessionStorage.getItem('resetTimestamp');
-    if (resetTimestamp) {
-      const age = Date.now() - parseInt(resetTimestamp);
-      if (age > 5000) {
-        console.log('🧹 Clearing stale justReset flag (age:', age, 'ms)');
-        sessionStorage.removeItem('justReset');
-        sessionStorage.removeItem('resetTimestamp');
+    // AGGRESSIVE CLEANUP: Clear justReset flag if user is navigating to dashboard
+    const currentPath = window.location.pathname;
+    const justReset = sessionStorage.getItem('justReset');
+
+    if (currentPath === '/dashboard' || currentPath === '/setup') {
+      if (justReset) {
+        const resetTimestamp = sessionStorage.getItem('resetTimestamp');
+        const age = resetTimestamp ? Date.now() - parseInt(resetTimestamp) : 999999;
+
+        // If navigating to dashboard OR flag is older than 3 seconds, clear it
+        if (currentPath === '/dashboard' || age > 3000) {
+          console.log(`🧹 Clearing justReset flag (path: ${currentPath}, age: ${age}ms)`);
+          sessionStorage.removeItem('justReset');
+          sessionStorage.removeItem('resetTimestamp');
+        }
       }
     }
 
@@ -65,6 +72,27 @@ function App() {
   const checkSetupStatus = async () => {
     try {
       console.log('Fetching config from API...');
+
+      // ROUTE OVERRIDE: If user is on /dashboard, ALWAYS show dashboard
+      const currentPath = window.location.pathname;
+      if (currentPath === '/dashboard') {
+        console.log('🎯 User navigated to /dashboard - forcing dashboard view');
+        // Fetch config but always show dashboard
+        try {
+          const response = await fetch('/api/agent/config');
+          if (response.ok) {
+            const config = await response.json();
+            if (config && config.targetWebsite) {
+              setAgentConfig(config);
+              setIsSetupComplete(true);
+            }
+          }
+        } catch (err) {
+          console.log('Config fetch failed, but showing dashboard anyway');
+        }
+        setCurrentView('dashboard');
+        return; // Force show dashboard regardless of config
+      }
 
       // Check if user just clicked reset BEFORE fetching config
       const justReset = sessionStorage.getItem('justReset');
