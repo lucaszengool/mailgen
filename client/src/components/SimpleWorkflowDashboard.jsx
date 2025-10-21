@@ -21,6 +21,32 @@ import JobRightEmailCard from './JobRightEmailCard';
 const ProfessionalEmailEditor = lazy(() => import('./ProfessionalEmailEditor'));
 const TemplateSelectionModal = lazy(() => import('./TemplateSelectionModal'));
 
+// Utility function for generating gradient patterns
+const getMultiColorRainbowPattern = (seed) => {
+  const seedString = seed || 'default';
+  let hash = 0;
+  for (let i = 0; i < seedString.length; i++) {
+    const char = seedString.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+
+  // JobRight.ai compatible green gradient patterns - no purple colors
+  const greenPatterns = [
+    'linear-gradient(135deg, #00f0a0 0%, #00c98d 100%)', // Primary JobRight green
+    'linear-gradient(45deg, #28fcaf 0%, #00f0a0 50%, #00c98d 100%)', // Light to primary green
+    'linear-gradient(90deg, #52ffba 0%, #00f0a0 50%, #00c98d 100%)', // Horizontal green spectrum
+    'linear-gradient(180deg, #00f0a0 0%, #28fcaf 50%, #52ffba 100%)', // Vertical light green
+    'linear-gradient(225deg, #00c98d 0%, #00f0a0 50%, #28fcaf 100%)', // Diagonal green
+    'linear-gradient(315deg, #00f0a0 0%, #52ffba 100%)', // NW diagonal light
+    'linear-gradient(60deg, #00c98d 0%, #00f0a0 100%)', // 60deg green
+    'linear-gradient(120deg, #28fcaf 0%, #00c98d 100%)', // 120deg green
+  ];
+
+  const patternIndex = Math.abs(hash) % greenPatterns.length;
+  return greenPatterns[patternIndex];
+};
+
 // Email Review Modal Component - Simple redirect notification
 const EmailReviewModal = ({ isOpen, email, onApprove, onClose, onEdit }) => {
   if (!isOpen || !email) return null;
@@ -1730,30 +1756,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     }
   };
 
-  const getMultiColorRainbowPattern = (seed) => {
-    const seedString = seed || 'default';
-    let hash = 0;
-    for (let i = 0; i < seedString.length; i++) {
-      const char = seedString.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    
-    // JobRight.ai compatible green gradient patterns - no purple colors
-    const greenPatterns = [
-      'linear-gradient(135deg, #00f0a0 0%, #00c98d 100%)', // Primary JobRight green
-      'linear-gradient(45deg, #28fcaf 0%, #00f0a0 50%, #00c98d 100%)', // Light to primary green
-      'linear-gradient(90deg, #52ffba 0%, #00f0a0 50%, #00c98d 100%)', // Horizontal green spectrum
-      'linear-gradient(180deg, #00f0a0 0%, #28fcaf 50%, #52ffba 100%)', // Vertical light green
-      'linear-gradient(225deg, #00c98d 0%, #00f0a0 50%, #28fcaf 100%)', // Diagonal green
-      'linear-gradient(315deg, #00f0a0 0%, #52ffba 100%)', // NW diagonal light
-      'linear-gradient(60deg, #00c98d 0%, #00f0a0 100%)', // 60deg green
-      'linear-gradient(120deg, #28fcaf 0%, #00c98d 100%)', // 120deg green
-    ];
-    
-    const patternIndex = Math.abs(hash) % greenPatterns.length;
-    return greenPatterns[patternIndex];
-  };
   const [showTyping, setShowTyping] = useState(false);
   
   // Enhanced workflow history persistence - DISABLED (no caching)
