@@ -4823,4 +4823,4 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 };
 
 export default SimpleWorkflowDashboard;
-// Cache bust 1761036628
+// FIXED: All style attributes separated from className + getMultiColorRainbowPattern at module level
