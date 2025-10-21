@@ -2084,8 +2084,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       });
       
       // Add individual prospect micro-steps
-      const prospects = workflowData.prospects || [];
-      prospects.slice(0, 5).forEach((prospect, index) => {
+      const workflowProspects = workflowData.prospects || [];
+      workflowProspects.slice(0, 5).forEach((prospect, index) => {
         stepsArray.push({
           type: 'agent_message',
           message: index === 0 ? "I found this qualified prospect:" : "I found another qualified prospect:",
@@ -2125,8 +2125,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       });
       
       // Add individual email micro-steps
-      const emails = workflowData.emails || [];
-      emails.slice(0, 3).forEach((email, index) => {
+      const workflowEmails = workflowData.emails || [];
+      workflowEmails.slice(0, 3).forEach((email, index) => {
         stepsArray.push({
           type: 'agent_message',
           message: index === 0 ? "I created this personalized email:" : "I created another personalized email:",
@@ -2158,11 +2158,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   // Auto-advance to next micro-step
   useEffect(() => {
     if (isAnimating && currentMicroStepIndex < microSteps.length && !waitingForDetailedWindow) {
-      const currentStep = microSteps[currentMicroStepIndex];
-      console.log(`🎬 Processing micro-step ${currentMicroStepIndex}/${microSteps.length}: ${currentStep.type} - ${currentStep.message || currentStep.title || 'N/A'}`);
-      
+      const currentMicroStep = microSteps[currentMicroStepIndex];
+      console.log(`🎬 Processing micro-step ${currentMicroStepIndex}/${microSteps.length}: ${currentMicroStep.type} - ${currentMicroStep.message || currentMicroStep.title || 'N/A'}`);
+
       // Check if current step is a detailed window
-      if (currentStep.type === 'detailed_window') {
+      if (currentMicroStep.type === 'detailed_window') {
         console.log('🎬 Starting detailed window animation, pausing progression');
         setWaitingForDetailedWindow(true);
         // Don't set timer for next step yet - wait for detailed window completion
@@ -2171,17 +2171,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       
       const timer = setTimeout(() => {
         setCurrentMicroStepIndex(prev => prev + 1);
-        
+
         // Auto-scroll to latest content
         if (!userIsScrolling) {
           setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'end' 
+            messagesEndRef.current?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'end'
             });
           }, 200);
         }
-      }, currentStep.delay);
+      }, currentMicroStep.delay);
 
       return () => clearTimeout(timer);
     } else if (currentMicroStepIndex >= microSteps.length) {
@@ -3164,13 +3164,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         const { emailCampaign, generatedEmails: emailsFromAPI } = result.data;
 
         // Check if we have new emails that haven't been shown yet
-        const emails = emailCampaign?.emails || emailsFromAPI || [];
-        if (emails.length > 0) {
-          console.log('📧 Found', emails.length, 'emails in update check');
+        const updatedEmails = emailCampaign?.emails || emailsFromAPI || [];
+        if (updatedEmails.length > 0) {
+          console.log('📧 Found', updatedEmails.length, 'emails in update check');
 
           // DISABLE ANIMATIONS IN THIS FUNCTION - Only update state
           console.log('📧 Updating emails state without animations to prevent duplicates');
-          setGeneratedEmails(emails);
+          setGeneratedEmails(updatedEmails);
         }
       }
     } catch (error) {
@@ -3375,13 +3375,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       if (data.type === 'prospect_list') {
         // Handle prospect list updates and trigger micro-steps
         console.log('👥 Prospect list received:', data.prospects);
-        const prospects = data.prospects || [];
-        setProspects(prospects);
-        
+        const receivedProspects = data.prospects || [];
+        setProspects(receivedProspects);
+
         // Create micro-steps for prospect discovery
-        if (prospects.length > 0 && !hasShownProspectSteps) {
+        if (receivedProspects.length > 0 && !hasShownProspectSteps) {
           console.log('🎯 Triggering prospect micro-steps from prospect_list');
-          triggerProspectMicroSteps(prospects);
+          triggerProspectMicroSteps(receivedProspects);
         }
       } else if (data.type === 'prospect_updated') {
         // Handle individual prospect updates
