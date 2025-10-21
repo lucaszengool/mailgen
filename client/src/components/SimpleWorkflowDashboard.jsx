@@ -3159,15 +3159,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     try {
       console.log('🔄 Checking for email updates with authentication...');
       const result = await apiGet('/api/workflow/results');
-      
+
       if (result.success && result.data) {
-        const { emailCampaign, generatedEmails } = result.data;
-        
+        const { emailCampaign, generatedEmails: emailsFromAPI } = result.data;
+
         // Check if we have new emails that haven't been shown yet
-        const emails = emailCampaign?.emails || generatedEmails || [];
+        const emails = emailCampaign?.emails || emailsFromAPI || [];
         if (emails.length > 0) {
           console.log('📧 Found', emails.length, 'emails in update check');
-          
+
           // DISABLE ANIMATIONS IN THIS FUNCTION - Only update state
           console.log('📧 Updating emails state without animations to prevent duplicates');
           setGeneratedEmails(emails);
