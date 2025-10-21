@@ -148,9 +148,29 @@ app.use('/api/template', templateRoutes);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/dist')));
-  
+  // Serve static assets with cache control
+  app.use('/assets', express.static(path.join(__dirname, '../client/dist/assets'), {
+    maxAge: '1y', // Cache assets for 1 year (they have hashed filenames)
+    immutable: true
+  }));
+
+  // Serve index.html with no cache
+  app.use(express.static(path.join(__dirname, '../client/dist'), {
+    maxAge: 0,
+    etag: false,
+    setHeaders: (res, path) => {
+      if (path.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
+    }
+  }));
+
   app.get('*', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
 }
