@@ -1903,7 +1903,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           const statusData = await statusResponse.json();
 
           if (statusData.success && statusData.data) {
-            const { isRunning, currentStep, steps } = statusData.data;
+            const { isRunning, currentStep: currentStepFromAPI, steps: stepsFromAPI } = statusData.data;
 
             // If workflow is not running anymore, show completion
             if (!isRunning && microSteps.length <= 2) {
