@@ -1,17 +1,19 @@
-# Backend-only build configuration
+# Full-stack build configuration
 [phases.setup]
 nixPkgs = ["nodejs_20", "python311", "python311Packages.pip"]
 aptPkgs = ["python3-pip"]
 
 [phases.install]
 cmds = [
-  "npm ci --omit=dev",
+  "npm install",
+  "cd client && npm install",
   "pip3 install -r requirements.txt --break-system-packages"
 ]
 
 [phases.build]
-# Skip build phase - backend doesn't need building
-cmds = []
+cmds = [
+  "cd client && npm run build"
+]
 
 [start]
 cmd = "node server/index.js"
