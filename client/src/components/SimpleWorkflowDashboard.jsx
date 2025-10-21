@@ -406,7 +406,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
         {/* Search Progress */}
         <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 style={{ background: getMultiColorRainbowPattern('workflow-icon') }} rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('workflow-icon') }}>
               <Radar className="w-5 h-5 text-white" />
             </div>
             <h4 className="text-xl font-bold text-gray-900">Email Discovery Progress</h4>
@@ -465,7 +465,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             className="mt-6 space-y-4"
           >
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-8 h-8 style={{ background: getMultiColorRainbowPattern('success-icon') }} rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('success-icon') }}>
                 <BarChart className="w-4 h-4 text-white" />
               </div>
               <h5 className="text-xl font-bold text-gray-900">Search Results</h5>
@@ -558,7 +558,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
         {/* Verification Progress */}
         <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 style={{ background: getMultiColorRainbowPattern('workflow-icon') }} rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('workflow-icon') }}>
               <Shield className="w-5 h-5 text-white" />
             </div>
             <h4 className="text-xl font-bold text-gray-900">Email Verification Progress</h4>
@@ -617,7 +617,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             className="mt-6 space-y-4"
           >
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-8 h-8 style={{ background: getMultiColorRainbowPattern('success-icon') }} rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('success-icon') }}>
                 <CheckCircle className="w-4 h-4 text-white" />
               </div>
               <h5 className="text-xl font-bold text-gray-900">Verification Results</h5>
@@ -680,7 +680,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
         {/* Persona Generation Progress */}
         <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 style={{ background: getMultiColorRainbowPattern('ai-icon') }} rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('ai-icon') }}>
               <Brain className="w-5 h-5 text-white" />
             </div>
             <h4 className="text-xl font-bold text-gray-900">🎯 AI Persona Generator</h4>
@@ -768,7 +768,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             className="mt-6 space-y-4"
           >
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-8 h-8 style={{ background: getMultiColorRainbowPattern('ai-icon') }} rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('ai-icon') }}>
                 <CheckCircle className="w-4 h-4 text-white" />
               </div>
               <h5 className="text-xl font-bold text-gray-900">Results</h5>
@@ -848,7 +848,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
         {/* Email Generation Progress */}
         <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 style={{ background: getMultiColorRainbowPattern('workflow-icon') }} rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('workflow-icon') }}>
               <Mail className="w-5 h-5 text-white" />
             </div>
             <h4 className="text-xl font-bold text-gray-900">📝 AI Email Generation System</h4>
@@ -936,7 +936,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             className="mt-6 space-y-4"
           >
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-8 h-8 style={{ background: getMultiColorRainbowPattern('workflow-icon') }} rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('workflow-icon') }}>
                 <Mail className="w-4 h-4 text-white" />
               </div>
               <h5 className="text-xl font-bold text-gray-900">Generated Emails</h5>
@@ -1106,7 +1106,7 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
       {/* Progress Header */}
       <div className="flex items-center justify-between mb-4 p-3 bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 style={{ background: getMultiColorRainbowPattern('workflow-icon') }} rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('workflow-icon') }}>
             {title.includes('Website') ? <Globe className="w-4 h-4 text-white" /> : 
              title.includes('Persona') ? <Target className="w-4 h-4 text-white" /> : 
              <Brain className="w-4 h-4 text-white" />}
