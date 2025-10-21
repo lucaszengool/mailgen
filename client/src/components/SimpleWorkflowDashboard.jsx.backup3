@@ -3041,8 +3041,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
             console.log('🎨 Triggering template selection popup via HTTP polling');
             handleTemplateSelectionRequired({
               campaignId: result.data.campaignId,
-              prospectsCount: prospectsFromAPI?.length || 0,
-              prospectsFound: prospectsFromAPI?.length || 0,
+              prospectsFromAPICount: prospectsFromAPI?.length || 0,
+              prospectsFromAPIFound: prospectsFromAPI?.length || 0,
               sampleProspects: prospectsFromAPI?.slice(0, 5) || [],
               message: `Found ${prospectsFromAPI?.length || 0} prospectsFromAPI! Please select an email template to continue.`,
               canProceed: false,

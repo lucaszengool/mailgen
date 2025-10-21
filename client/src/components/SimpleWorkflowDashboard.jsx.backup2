@@ -3019,21 +3019,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         const emailCampaign = campaignData?.emailCampaign;
 
         // 🎨 NEW: Check for template selection required (HTTP polling fallback)
-        // This triggers when prospectsFromAPI are found but no template is selected yet
+        // This triggers when prospects are found but no template is selected yet
         if (result.data.status === 'waiting_for_template' ||
             result.data.canProceed === false ||
-            (prospectsFromAPI && prospectsFromAPI.length > 0 && result.data.templateSelectionRequired)) {
+            (prospects && prospects.length > 0 && result.data.templateSelectionRequired)) {
           console.log('🎨🎨🎨 TEMPLATE SELECTION REQUIRED (via HTTP polling)! 🎨🎨🎨');
-          console.log('🎨 Prospects found:', prospectsFromAPI?.length || 0);
+          console.log('🎨 Prospects found:', prospects?.length || 0);
           console.log('🎨 Status:', result.data.status);
           console.log('🎨 Can proceed:', result.data.canProceed);
           console.log('🎨 Template selection required:', result.data.templateSelectionRequired);
           console.log('🎨 Template already submitted?', templateAlreadySubmittedRef.current);
 
-          // 🎯 CRITICAL FIX: Set prospectsFromAPI BEFORE triggering template selection
-          if (prospectsFromAPI && prospectsFromAPI.length > 0) {
-            console.log(`🎯 Setting ${prospectsFromAPI.length} prospectsFromAPI in state before showing template popup`);
-            setProspects(prospectsFromAPI);
+          // 🎯 CRITICAL FIX: Set prospects BEFORE triggering template selection
+          if (prospects && prospects.length > 0) {
+            console.log(`🎯 Setting ${prospects.length} prospects in state before showing template popup`);
+            setProspects(prospects);
           }
 
           // Trigger template selection popup ONLY if not already submitted
@@ -3041,10 +3041,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
             console.log('🎨 Triggering template selection popup via HTTP polling');
             handleTemplateSelectionRequired({
               campaignId: result.data.campaignId,
-              prospectsCount: prospectsFromAPI?.length || 0,
-              prospectsFound: prospectsFromAPI?.length || 0,
-              sampleProspects: prospectsFromAPI?.slice(0, 5) || [],
-              message: `Found ${prospectsFromAPI?.length || 0} prospectsFromAPI! Please select an email template to continue.`,
+              prospectsCount: prospects?.length || 0,
+              prospectsFound: prospects?.length || 0,
+              sampleProspects: prospects?.slice(0, 5) || [],
+              message: `Found ${prospects?.length || 0} prospects! Please select an email template to continue.`,
               canProceed: false,
               status: 'waiting_for_template'
             });
@@ -3119,13 +3119,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           setGeneratedEmails(result.data.generatedEmails);
         }
 
-        // Trigger prospect micro-steps if we have prospectsFromAPI and haven't shown them yet
-        if (prospectsFromAPI && prospectsFromAPI.length > 0 && !hasShownProspectSteps) {
-          console.log('🎯 Found', prospectsFromAPI.length, 'prospectsFromAPI - triggering micro-steps!');
-          triggerProspectMicroSteps(prospectsFromAPI);
-          setProspects(prospectsFromAPI);
+        // Trigger prospect micro-steps if we have prospects and haven't shown them yet
+        if (prospects && prospects.length > 0 && !hasShownProspectSteps) {
+          console.log('🎯 Found', prospects.length, 'prospects - triggering micro-steps!');
+          triggerProspectMicroSteps(prospects);
+          setProspects(prospects);
 
-          // Also check for emails immediately after showing prospectsFromAPI
+          // Also check for emails immediately after showing prospects
           if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
             console.log('📧 Also found', emailCampaign.emails.length, 'emails - scheduling email micro-steps!');
             setTimeout(() => {
@@ -3133,7 +3133,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
             }, 15000); // Delay to let prospect steps finish
           }
         }
-        // If we already showed prospectsFromAPI, just show emails
+        // If we already showed prospects, just show emails
         else if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
           console.log('📧 Found', emailCampaign.emails.length, 'emails - triggering email micro-steps!');
           // Check if we already showed email steps using state flag
