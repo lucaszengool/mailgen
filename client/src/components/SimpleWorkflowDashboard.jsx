@@ -2017,21 +2017,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
   // Create micro-steps from workflow data
   const createMicroSteps = (workflowData) => {
-    const microSteps = [];
+    const stepsArray = [];
     
     // Business Analysis Micro-steps
     if (workflowData.type === 'business_analysis' || workflowData.stepId?.includes('business')) {
-      microSteps.push({
+      stepsArray.push({
         type: 'agent_message',
         message: "I'm analyzing your business and website.",
         delay: 1000
       });
-      microSteps.push({
+      stepsArray.push({
         type: 'agent_message', 
         message: "I'll first analyze your website structure.",
         delay: 1500
       });
-      microSteps.push({
+      stepsArray.push({
         type: 'window',
         title: 'Website Analysis',
         content: {
@@ -2041,12 +2041,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         },
         delay: 2000
       });
-      microSteps.push({
+      stepsArray.push({
         type: 'agent_message',
         message: "Now I'm generating your marketing strategy.",
         delay: 1500
       });
-      microSteps.push({
+      stepsArray.push({
         type: 'window',
         title: 'Marketing Strategy Generated',
         content: {
@@ -2060,17 +2060,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     
     // Prospect Search Micro-steps  
     if (workflowData.prospects || workflowData.stepId?.includes('prospect')) {
-      microSteps.push({
+      stepsArray.push({
         type: 'agent_message',
         message: "I'm finding qualified prospects for you.",
         delay: 1000
       });
-      microSteps.push({
+      stepsArray.push({
         type: 'agent_message',
         message: "I'll first activate the 🔍 Super Email Search Engine.",
         delay: 1500
       });
-      microSteps.push({
+      stepsArray.push({
         type: 'window',
         title: 'Super Email Search Engine Active',
         content: {
@@ -2086,12 +2086,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       // Add individual prospect micro-steps
       const prospects = workflowData.prospects || [];
       prospects.slice(0, 5).forEach((prospect, index) => {
-        microSteps.push({
+        stepsArray.push({
           type: 'agent_message',
           message: index === 0 ? "I found this qualified prospect:" : "I found another qualified prospect:",
           delay: 1200
         });
-        microSteps.push({
+        stepsArray.push({
           type: 'prospect_card',
           prospect: prospect,
           delay: 2000
@@ -2101,17 +2101,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     
     // Email Generation Micro-steps
     if (workflowData.emails || workflowData.stepId?.includes('email')) {
-      microSteps.push({
+      stepsArray.push({
         type: 'agent_message',
         message: "I'm creating personalized emails for you.",
         delay: 1000
       });
-      microSteps.push({
+      stepsArray.push({
         type: 'agent_message',
         message: "I'll first analyze each prospect's persona.",
         delay: 1500
       });
-      microSteps.push({
+      stepsArray.push({
         type: 'detailed_window',
         title: 'AI Email Generation System',
         content: {
@@ -2127,12 +2127,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       // Add individual email micro-steps
       const emails = workflowData.emails || [];
       emails.slice(0, 3).forEach((email, index) => {
-        microSteps.push({
+        stepsArray.push({
           type: 'agent_message',
           message: index === 0 ? "I created this personalized email:" : "I created another personalized email:",
           delay: 1500
         });
-        microSteps.push({
+        stepsArray.push({
           type: 'email_card',
           email: email,
           delay: 2500
@@ -2140,7 +2140,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       });
     }
     
-    return microSteps;
+    return stepsArray;
   };
 
   // Sequential micro-step animation - only animate new steps
