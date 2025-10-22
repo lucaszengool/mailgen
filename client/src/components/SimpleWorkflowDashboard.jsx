@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Send, Bot, User, Loader, CheckCircle, XCircle,
   ChevronDown, ChevronRight, Search, Mail, Building2,
@@ -16,10 +16,9 @@ import Analytics from '../pages/Analytics';
 import HomePage from '../pages/Home';
 import JobRightProspectCard from './JobRightProspectCard';
 import JobRightEmailCard from './JobRightEmailCard';
+import ProfessionalEmailEditor from './ProfessionalEmailEditor';
+import TemplateSelectionModal from './TemplateSelectionModal';
 
-// Lazy load to break circular dependencies
-const ProfessionalEmailEditor = lazy(() => import('./ProfessionalEmailEditor'));
-const TemplateSelectionModal = lazy(() => import('./TemplateSelectionModal'));
 
 // Utility function for generating gradient patterns
 const getMultiColorRainbowPattern = (seed) => {
