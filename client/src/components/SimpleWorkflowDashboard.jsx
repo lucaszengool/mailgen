@@ -4573,14 +4573,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           )}
 
           {activeView === 'email_editor' && (
-            <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader className="w-8 h-8 animate-spin text-green-500" /></div>}>
-              <ProfessionalEmailEditor
-                emailData={emailForReview}
-                availableEmails={generatedEmails}
-                emailCampaignStats={emailCampaignStats}
-                prospects={prospects}
-              />
-            </Suspense>
+            <ProfessionalEmailEditor
+              emailData={emailForReview}
+              availableEmails={generatedEmails}
+              emailCampaignStats={emailCampaignStats}
+              prospects={prospects}
+            />
           )}
 
           {/* Analytics View */}
@@ -4798,24 +4796,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
       {/* 🎨 Template Selection Modal */}
       {showTemplateSelection && (
-        <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><Loader className="w-8 h-8 animate-spin text-green-500" /></div>}>
-          <TemplateSelectionModal
-            isOpen={showTemplateSelection}
-            onClose={() => {
-              if (isSubmittingTemplate) return;
-              setShowTemplateSelection(false);
-              setSelectedTemplate(null);
-              setTemplateRequest(null);
-            }}
-            onSelectTemplate={(template) => {
-              console.log("🎨 User selected template:", template.name);
-              setSelectedTemplate(template);
-            }}
-            onConfirm={handleTemplateConfirm}
-            isSubmitting={isSubmittingTemplate}
-            templateRequest={templateRequest}
-          />
-        </Suspense>
+        <TemplateSelectionModal
+          isOpen={showTemplateSelection}
+          onClose={() => {
+            if (isSubmittingTemplate) return;
+            setShowTemplateSelection(false);
+            setSelectedTemplate(null);
+            setTemplateRequest(null);
+          }}
+          onSelectTemplate={(template) => {
+            console.log("🎨 User selected template:", template.name);
+            setSelectedTemplate(template);
+          }}
+          onConfirm={handleTemplateConfirm}
+          isSubmitting={isSubmittingTemplate}
+          templateRequest={templateRequest}
+        />
       )}
     </div>
   );
