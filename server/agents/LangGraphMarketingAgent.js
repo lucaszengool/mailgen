@@ -4963,40 +4963,21 @@ Return ONLY the JSON object, no other text.`;
           maxConnections: 1, // Limit concurrent connections to avoid rate limiting
           maxMessages: 100, // Max messages per connection
           rateDelta: 1000, // Wait 1 second between messages
-          rateLimit: 1 // Send 1 message per rateDelta
+          rateLimit: 1, // Send 1 message per rateDelta
+          connectionTimeout: 10000, // 10 second connection timeout
+          greetingTimeout: 10000, // 10 second greeting timeout
+          socketTimeout: 30000 // 30 second socket timeout
         });
 
-        // Verify SMTP connection only for new transporter
-        let verifyAttempts = 0;
-        const maxVerifyAttempts = 3;
+        // Skip verify() - Gmail often blocks it but still allows sending
+        // We'll verify the connection works when we actually send
+        console.log('✅ SMTP transporter created (skipping verification to avoid timeout)');
 
-        while (verifyAttempts < maxVerifyAttempts) {
-          try {
-            // Add timeout to verify() to prevent hanging
-            await Promise.race([
-              transporter.verify(),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Verification timeout')), 10000))
-            ]);
-            console.log('✅ SMTP connection verified successfully');
-
-            // Cache transporter and verification timestamp
-            this.state.smtpTransporters.set(configHash, transporter);
-            this.state.smtpVerifiedConfigs.set(configHash, now);
-            break;
-          } catch (verifyError) {
-            verifyAttempts++;
-            console.error(`❌ SMTP verification failed (attempt ${verifyAttempts}/${maxVerifyAttempts}):`, verifyError.message);
-
-            if (verifyAttempts >= maxVerifyAttempts) {
-              throw verifyError; // Final failure
-            } else {
-              console.log(`⏳ Retrying SMTP verification in 5 seconds...`);
-              await new Promise(resolve => setTimeout(resolve, 5000));
-            }
-          }
-        }
+        // Cache transporter and timestamp
+        this.state.smtpTransporters.set(configHash, transporter);
+        this.state.smtpVerifiedConfigs.set(configHash, now);
       } else {
-        console.log('✅ Using cached SMTP transporter (verified', Math.floor((now - lastVerified) / 1000), 'seconds ago)');
+        console.log('✅ Using cached SMTP transporter (created', Math.floor((now - lastVerified) / 1000), 'seconds ago)');
       }
       
       // Email options - Use sender name and email from template data or SMTP config
