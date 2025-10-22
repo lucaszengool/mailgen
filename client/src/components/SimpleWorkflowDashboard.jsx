@@ -3181,28 +3181,27 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
   // Poll for workflow updates periodically
   useEffect(() => {
-    const isPaused = workflowStatus.includes('paused') || showEmailReview;
+    // IMPORTANT: Keep polling even when paused for email approval
+    // Only pause animations/micro-steps, not data fetching
+    const isPausedForAnimation = workflowStatus.includes('paused') && !workflowStatus.includes('waitingForUserApproval');
 
     // Check on workflow, dashboard, emails, and prospects views
     const shouldCheckForUpdates = workflowStatus === 'running' ||
+                                   workflowStatus.includes('waitingForUserApproval') || // Keep polling during email approval!
                                    activeView === 'workflow' ||
                                    activeView === 'dashboard' ||
                                    activeView === 'emails' ||
                                    activeView === 'prospects';
 
-    if (shouldCheckForUpdates && !isPaused) {
+    if (shouldCheckForUpdates) {
       const interval = setInterval(() => {
         console.log('⏰ Periodic check for workflow updates');
         checkForEmailUpdates();
-        // Also check workflow results - but not if email review is showing
-        if (!isPaused) {
-          fetchAndTriggerWorkflowSteps();
-        }
+        // Always fetch workflow steps to get newly generated emails
+        fetchAndTriggerWorkflowSteps();
       }, 3000); // Check every 3 seconds for faster updates
 
       return () => clearInterval(interval);
-    } else if (isPaused) {
-      console.log('⏸️ Workflow is paused, stopping periodic checks');
     }
   }, [workflowStatus, activeView, showEmailReview]);
   
