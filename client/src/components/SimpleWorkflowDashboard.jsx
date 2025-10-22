@@ -1867,6 +1867,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     }
   };
   const [waitingForDetailedWindow, setWaitingForDetailedWindow] = useState(false);
+  const [showEmailReview, setShowEmailReview] = useState(false);
+  const [emailForReview, setEmailForReview] = useState(null);
 
   // Timeout to prevent getting stuck in waitingForDetailedWindow state
   useEffect(() => {
@@ -1942,11 +1944,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     }
   }, [backgroundWorkflowRunning, microSteps.length]);
   
-  // Original states for other views  
+  // Original states for other views
   const [ws, setWs] = useState(null);
   const [workflowStatus, setWorkflowStatus] = useState('idle');
-  const [showEmailReview, setShowEmailReview] = useState(false);
-  const [emailForReview, setEmailForReview] = useState(null);
   const [showEmailSendConfirmation, setShowEmailSendConfirmation] = useState(false);
   const [hasShownFirstEmailModal, setHasShownFirstEmailModal] = useState(false);
   const [templateApproved, setTemplateApproved] = useState(false); // Track if user approved template usage
