@@ -62,7 +62,8 @@ class LangGraphMarketingAgent {
       pausedCampaignData: null,
       userDecisionPromise: null,
       // SMTP verification cache - avoid re-verifying same config
-      smtpVerifiedConfigs: new Map() // Key: config hash, Value: timestamp
+      smtpVerifiedConfigs: new Map(), // Key: config hash, Value: timestamp
+      smtpTransporters: new Map() // Key: config hash, Value: transporter instance
     };
     
     // WebSocket管理器
@@ -4943,28 +4944,43 @@ Return ONLY the JSON object, no other text.`;
         };
       }
       
-      // Create transporter
-      const transporter = nodemailer.createTransport(emailConfig);
-      
-      // Verify SMTP connection with retry logic
-      // Create a hash of SMTP config to check if we've verified it before
+      // Create a hash of SMTP config to check if we have a cached transporter
       const configHash = `${emailConfig.host}:${emailConfig.port}:${emailConfig.auth?.user}`;
-      const lastVerified = this.state.smtpVerifiedConfigs.get(configHash);
       const now = Date.now();
 
-      // Skip verification if we verified this config in the last 5 minutes
-      if (lastVerified && (now - lastVerified) < 5 * 60 * 1000) {
-        console.log('✅ SMTP config already verified recently, skipping verification');
-      } else {
-        // Verify SMTP connection
+      // Get or create transporter
+      let transporter = this.state.smtpTransporters.get(configHash);
+      const lastVerified = this.state.smtpVerifiedConfigs.get(configHash);
+
+      // Create new transporter if we don't have one cached or it's been more than 1 hour
+      if (!transporter || !lastVerified || (now - lastVerified) > 60 * 60 * 1000) {
+        console.log('🔧 Creating new SMTP transporter with connection pooling...');
+
+        // Add connection pool configuration to prevent rate limiting
+        transporter = nodemailer.createTransport({
+          ...emailConfig,
+          pool: true, // Use pooled connections
+          maxConnections: 1, // Limit concurrent connections to avoid rate limiting
+          maxMessages: 100, // Max messages per connection
+          rateDelta: 1000, // Wait 1 second between messages
+          rateLimit: 1 // Send 1 message per rateDelta
+        });
+
+        // Verify SMTP connection only for new transporter
         let verifyAttempts = 0;
         const maxVerifyAttempts = 3;
 
         while (verifyAttempts < maxVerifyAttempts) {
           try {
-            await transporter.verify();
+            // Add timeout to verify() to prevent hanging
+            await Promise.race([
+              transporter.verify(),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Verification timeout')), 10000))
+            ]);
             console.log('✅ SMTP connection verified successfully');
-            // Cache successful verification
+
+            // Cache transporter and verification timestamp
+            this.state.smtpTransporters.set(configHash, transporter);
             this.state.smtpVerifiedConfigs.set(configHash, now);
             break;
           } catch (verifyError) {
@@ -4975,10 +4991,12 @@ Return ONLY the JSON object, no other text.`;
               throw verifyError; // Final failure
             } else {
               console.log(`⏳ Retrying SMTP verification in 5 seconds...`);
-              await new Promise(resolve => setTimeout(resolve, 5000)); // Increased to 5 seconds
+              await new Promise(resolve => setTimeout(resolve, 5000));
             }
           }
         }
+      } else {
+        console.log('✅ Using cached SMTP transporter (verified', Math.floor((now - lastVerified) / 1000), 'seconds ago)');
       }
       
       // Email options - Use sender name and email from template data or SMTP config
