@@ -1818,7 +1818,7 @@ router.post('/send-email', async (req, res) => {
         res.json({
           success: false,
           message: 'Email sending failed',
-          sendError: sendResult.error,
+          error: sendResult.error || 'Unknown error occurred',
           sendingFailed: true
         });
       }
@@ -1828,7 +1828,7 @@ router.post('/send-email', async (req, res) => {
       res.json({
         success: false,
         message: 'Email sending encountered an error',
-        sendError: sendError.message,
+        error: sendError.message || sendError.toString() || 'Unknown error occurred',
         sendingFailed: true
       });
     }
@@ -1837,7 +1837,7 @@ router.post('/send-email', async (req, res) => {
     console.error('❌ [WORKFLOW] /send-email endpoint failed:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || error.toString() || 'Internal server error'
     });
   }
 });
@@ -1901,30 +1901,30 @@ router.post('/approve-email', async (req, res) => {
         });
       } else {
         console.log('❌ [WORKFLOW] Email send failed:', sendResult.error);
-        
+
         res.json({
           success: false,
           message: 'Email sending failed',
-          sendError: sendResult.error,
+          error: sendResult.error || 'Unknown error occurred',
           sendingFailed: true
         });
       }
     } catch (sendError) {
       console.error('❌ [WORKFLOW] Email sending error:', sendError);
-      
+
       res.json({
         success: false,
         message: 'Email sending encountered an error',
-        sendError: sendError.message,
+        error: sendError.message || sendError.toString() || 'Unknown error occurred',
         sendingFailed: true
       });
     }
-    
+
   } catch (error) {
     console.error('❌ [WORKFLOW] Failed to approve email:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || error.toString() || 'Internal server error'
     });
   }
 });

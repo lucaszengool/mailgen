@@ -2099,10 +2099,25 @@ class LangGraphMarketingAgent {
     }
 
     this.state.optimizationSuggestions.email = emailCampaign.emails[0]?.optimization_used || [];
-    
+
     // 🚀 Add prospects with personas to return data
     emailCampaign.prospects = validatedProspects;
-    
+
+    // 💾 CRITICAL: Save complete email campaign to database via workflow module
+    try {
+      const workflowModule = require('../routes/workflow');
+      if (workflowModule.setLastWorkflowResults) {
+        console.log(`💾 [User: ${this.userId}] Saving ${emailCampaign.emails.length} emails to database via setLastWorkflowResults...`);
+        await workflowModule.setLastWorkflowResults({
+          prospects: validatedProspects,
+          emailCampaign: emailCampaign
+        }, this.userId);
+        console.log(`✅ [User: ${this.userId}] Email campaign saved to database successfully`);
+      }
+    } catch (error) {
+      console.error(`❌ [User: ${this.userId}] Failed to save email campaign to database:`, error.message);
+    }
+
     return emailCampaign;
   }
 
@@ -5080,8 +5095,10 @@ Return ONLY the JSON object, no other text.`;
       };
       
     } catch (error) {
-      console.error(`❌ Failed to send email to ${to}:`, error.message);
-      
+      // Ensure we always have a meaningful error message
+      const errorMessage = error.message || error.toString() || 'Unknown email sending error';
+      console.error(`❌ Failed to send email to ${to}:`, errorMessage);
+
       // Provide specific guidance for authentication errors
       if (error.code === 'EAUTH') {
         console.log('🔑 GMAIL AUTHENTICATION ERROR DETECTED:');
@@ -5098,10 +5115,10 @@ Return ONLY the JSON object, no other text.`;
         console.log('   📝 The system is connecting to Gmail SMTP successfully,');
         console.log('      but authentication is failing due to missing App Password.');
       }
-      
+
       return {
         success: false,
-        error: error.message,
+        error: errorMessage,
         code: error.code,
         sentAt: new Date().toISOString(),
         authenticationGuidance: error.code === 'EAUTH' ? 'Gmail App Password required' : null
