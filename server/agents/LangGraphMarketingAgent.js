@@ -4899,9 +4899,9 @@ Return ONLY the JSON object, no other text.`;
           host: smtpConfig.host || 'smtp.gmail.com',
           port: parseInt(smtpConfig.port || '587'),
           secure: smtpConfig.secure === true,
-          connectionTimeout: 60000, // 60 seconds
-          greetingTimeout: 30000,   // 30 seconds
-          socketTimeout: 60000,     // 60 seconds
+          connectionTimeout: 90000, // 90 seconds (increased for Railway network latency)
+          greetingTimeout: 90000,   // 90 seconds (increased for Railway network latency)
+          socketTimeout: 120000,    // 120 seconds (increased for Railway network latency)
           auth: {
             user: smtpConfig.auth?.user || smtpConfig.username || smtpConfig.email,
             pass: smtpConfig.auth?.pass || smtpConfig.password || smtpConfig.pass
@@ -4979,9 +4979,9 @@ Return ONLY the JSON object, no other text.`;
           maxMessages: 100, // Max messages per connection
           rateDelta: 1000, // Wait 1 second between messages
           rateLimit: 1, // Send 1 message per rateDelta
-          connectionTimeout: 10000, // 10 second connection timeout
-          greetingTimeout: 10000, // 10 second greeting timeout
-          socketTimeout: 30000 // 30 second socket timeout
+          connectionTimeout: 60000, // 60 second connection timeout (increased from 10s)
+          greetingTimeout: 60000, // 60 second greeting timeout (increased from 10s)
+          socketTimeout: 120000 // 120 second socket timeout (increased from 30s)
         });
 
         // Skip verify() - Gmail often blocks it but still allows sending
@@ -5041,24 +5041,29 @@ Return ONLY the JSON object, no other text.`;
         hasHeaders: !!mailOptions.headers
       });
       
-      // Send email with retry logic
+      // Send email with retry logic and exponential backoff
       let sendAttempts = 0;
       const maxSendAttempts = 3;
       let info;
-      
+
       while (sendAttempts < maxSendAttempts) {
         try {
+          console.log(`📤 Sending email attempt ${sendAttempts + 1}/${maxSendAttempts}...`);
           info = await transporter.sendMail(mailOptions);
+          console.log(`✅ Email sent successfully on attempt ${sendAttempts + 1}`);
           break;
         } catch (sendError) {
           sendAttempts++;
           console.error(`❌ Email send failed (attempt ${sendAttempts}/${maxSendAttempts}):`, sendError.message);
-          
+          console.error(`❌ Error code: ${sendError.code}, Command: ${sendError.command}`);
+
           if (sendAttempts >= maxSendAttempts) {
             throw sendError; // Final failure
           } else {
-            console.log(`⏳ Retrying email send in 3 seconds...`);
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // Exponential backoff: 5s, 15s, 30s
+            const backoffDelay = sendAttempts === 1 ? 5000 : sendAttempts === 2 ? 15000 : 30000;
+            console.log(`⏳ Retrying email send in ${backoffDelay / 1000} seconds (exponential backoff)...`);
+            await new Promise(resolve => setTimeout(resolve, backoffDelay));
           }
         }
       }
