@@ -63,6 +63,7 @@ class Database {
         status TEXT DEFAULT 'active',
         target_audience TEXT,
         email_template TEXT,
+        user_id TEXT NOT NULL DEFAULT 'anonymous',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -72,7 +73,7 @@ class Database {
     this.db.run(`
       CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
+        email TEXT NOT NULL,
         name TEXT,
         company TEXT,
         position TEXT,
@@ -83,8 +84,27 @@ class Database {
         tags TEXT,
         notes TEXT,
         status TEXT DEFAULT 'active',
+        user_id TEXT NOT NULL DEFAULT 'anonymous',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(email, user_id)
+      )
+    `);
+
+    // 邮件草稿表
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS email_drafts (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        email_key TEXT NOT NULL,
+        subject TEXT,
+        preheader TEXT,
+        components TEXT NOT NULL,
+        html TEXT,
+        metadata TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(email_key, user_id)
       )
     `);
 
@@ -103,7 +123,53 @@ class Database {
       )
     `);
 
+    // 迁移现有数据：为旧数据添加 user_id
+    this.migrateExistingData();
+
     console.log('✅ 数据库表初始化完成');
+  }
+
+  // 迁移现有数据
+  migrateExistingData() {
+    // 检查 contacts 表是否有 user_id 列
+    this.db.all("PRAGMA table_info(contacts)", (err, columns) => {
+      if (err) {
+        console.error('检查 contacts 表结构失败:', err);
+        return;
+      }
+
+      const hasUserId = columns.some(col => col.name === 'user_id');
+      if (!hasUserId) {
+        // 添加 user_id 列到现有表
+        this.db.run("ALTER TABLE contacts ADD COLUMN user_id TEXT NOT NULL DEFAULT 'anonymous'", (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('添加 user_id 到 contacts 失败:', err);
+          } else {
+            console.log('✅ Contacts 表已添加 user_id 列');
+          }
+        });
+      }
+    });
+
+    // 检查 campaigns 表是否有 user_id 列
+    this.db.all("PRAGMA table_info(campaigns)", (err, columns) => {
+      if (err) {
+        console.error('检查 campaigns 表结构失败:', err);
+        return;
+      }
+
+      const hasUserId = columns.some(col => col.name === 'user_id');
+      if (!hasUserId) {
+        // 添加 user_id 列到现有表
+        this.db.run("ALTER TABLE campaigns ADD COLUMN user_id TEXT NOT NULL DEFAULT 'anonymous'", (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('添加 user_id 到 campaigns 失败:', err);
+          } else {
+            console.log('✅ Campaigns 表已添加 user_id 列');
+          }
+        });
+      }
+    });
   }
 
   // 记录邮件发送
@@ -260,20 +326,21 @@ class Database {
   }
 
   // 保存营销活动
-  saveCampaign(campaign) {
+  saveCampaign(campaign, userId = 'anonymous') {
     return new Promise((resolve, reject) => {
       const stmt = this.db.prepare(`
-        INSERT OR REPLACE INTO campaigns (id, name, description, status, target_audience, email_template, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        INSERT OR REPLACE INTO campaigns (id, name, description, status, target_audience, email_template, user_id, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `);
-      
+
       stmt.run([
         campaign.id,
         campaign.name,
         campaign.description,
         campaign.status,
         JSON.stringify(campaign.targetAudience),
-        campaign.emailTemplate
+        campaign.emailTemplate,
+        userId
       ], function(err) {
         if (err) {
           reject(err);
@@ -281,17 +348,17 @@ class Database {
           resolve(campaign.id);
         }
       });
-      
+
       stmt.finalize();
     });
   }
 
   // 获取营销活动列表
-  getCampaigns(limit = 50) {
+  getCampaigns(userId = 'anonymous', limit = 50) {
     return new Promise((resolve, reject) => {
       this.db.all(
-        'SELECT * FROM campaigns ORDER BY created_at DESC LIMIT ?',
-        [limit],
+        'SELECT * FROM campaigns WHERE user_id = ? ORDER BY created_at DESC LIMIT ?',
+        [userId, limit],
         (err, rows) => {
           if (err) {
             reject(err);
@@ -308,14 +375,14 @@ class Database {
   }
 
   // 保存联系人
-  saveContact(contact) {
+  saveContact(contact, userId = 'anonymous') {
     return new Promise((resolve, reject) => {
       const stmt = this.db.prepare(`
-        INSERT OR REPLACE INTO contacts 
-        (email, name, company, position, industry, phone, address, source, tags, notes, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        INSERT OR REPLACE INTO contacts
+        (email, name, company, position, industry, phone, address, source, tags, notes, user_id, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `);
-      
+
       stmt.run([
         contact.email,
         contact.name,
@@ -326,7 +393,8 @@ class Database {
         contact.address,
         contact.source,
         contact.tags,
-        contact.notes
+        contact.notes,
+        userId
       ], function(err) {
         if (err) {
           reject(err);
@@ -334,27 +402,27 @@ class Database {
           resolve(this.lastID);
         }
       });
-      
+
       stmt.finalize();
     });
   }
 
   // 获取联系人列表
-  getContacts(filter = {}, limit = 100) {
+  getContacts(userId = 'anonymous', filter = {}, limit = 100) {
     return new Promise((resolve, reject) => {
-      let query = 'SELECT * FROM contacts WHERE 1=1';
-      const params = [];
+      let query = 'SELECT * FROM contacts WHERE user_id = ?';
+      const params = [userId];
 
       if (filter.industry) {
         query += ' AND industry = ?';
         params.push(filter.industry);
       }
-      
+
       if (filter.company) {
         query += ' AND company LIKE ?';
         params.push('%' + filter.company + '%');
       }
-      
+
       if (filter.status) {
         query += ' AND status = ?';
         params.push(filter.status);
@@ -369,6 +437,129 @@ class Database {
         } else {
           resolve(rows);
         }
+      });
+    });
+  }
+
+  // 保存邮件草稿
+  saveEmailDraft(draft, userId = 'anonymous') {
+    return new Promise((resolve, reject) => {
+      const stmt = this.db.prepare(`
+        INSERT OR REPLACE INTO email_drafts
+        (id, user_id, email_key, subject, preheader, components, html, metadata, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      `);
+
+      stmt.run([
+        draft.id || `draft_${Date.now()}`,
+        userId,
+        draft.emailKey,
+        draft.subject,
+        draft.preheader,
+        JSON.stringify(draft.components),
+        draft.html,
+        JSON.stringify(draft.metadata)
+      ], function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(draft.id || `draft_${Date.now()}`);
+        }
+      });
+
+      stmt.finalize();
+    });
+  }
+
+  // 获取邮件草稿列表
+  getEmailDrafts(userId = 'anonymous') {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        'SELECT * FROM email_drafts WHERE user_id = ? ORDER BY updated_at DESC',
+        [userId],
+        (err, rows) => {
+          if (err) {
+            reject(err);
+          } else {
+            const drafts = rows.map(row => ({
+              id: row.id,
+              userId: row.user_id,
+              emailKey: row.email_key,
+              subject: row.subject,
+              preheader: row.preheader,
+              components: JSON.parse(row.components || '[]'),
+              html: row.html,
+              metadata: JSON.parse(row.metadata || '{}'),
+              createdAt: row.created_at,
+              updatedAt: row.updated_at
+            }));
+            resolve(drafts);
+          }
+        }
+      );
+    });
+  }
+
+  // 获取单个邮件草稿
+  getEmailDraft(emailKey, userId = 'anonymous') {
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        'SELECT * FROM email_drafts WHERE email_key = ? AND user_id = ?',
+        [emailKey, userId],
+        (err, row) => {
+          if (err) {
+            reject(err);
+          } else if (!row) {
+            resolve(null);
+          } else {
+            resolve({
+              id: row.id,
+              userId: row.user_id,
+              emailKey: row.email_key,
+              subject: row.subject,
+              preheader: row.preheader,
+              components: JSON.parse(row.components || '[]'),
+              html: row.html,
+              metadata: JSON.parse(row.metadata || '{}'),
+              createdAt: row.created_at,
+              updatedAt: row.updated_at
+            });
+          }
+        }
+      );
+    });
+  }
+
+  // 删除邮件草稿
+  deleteEmailDraft(emailKey, userId = 'anonymous') {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        'DELETE FROM email_drafts WHERE email_key = ? AND user_id = ?',
+        [emailKey, userId],
+        function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(this.changes);
+          }
+        }
+      );
+    });
+  }
+
+  // 清空用户所有数据
+  clearUserData(userId = 'anonymous') {
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        this.db.run('DELETE FROM contacts WHERE user_id = ?', [userId]);
+        this.db.run('DELETE FROM campaigns WHERE user_id = ?', [userId]);
+        this.db.run('DELETE FROM email_drafts WHERE user_id = ?', [userId], function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({ message: 'All user data cleared successfully' });
+          }
+        });
       });
     });
   }

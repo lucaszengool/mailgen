@@ -1866,6 +1866,37 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       console.error('Failed to clear workflow history:', error);
     }
   };
+
+  // Function to clear all user data (prospects, campaigns, email drafts)
+  const clearAllUserData = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to clear ALL data?\n\nThis will delete:\n• All prospects\n• All campaigns\n• All email drafts\n\nThis action cannot be undone!'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await apiPost('/api/email-editor/clear-all-data', {});
+
+      if (response.success) {
+        console.log('✅ All user data cleared successfully');
+        alert('All data has been cleared successfully!');
+
+        // Also clear workflow history
+        clearWorkflowHistory();
+
+        // Reload the page to reset all state
+        window.location.reload();
+      } else {
+        console.error('Failed to clear user data:', response.error);
+        alert('Failed to clear data: ' + response.error);
+      }
+    } catch (error) {
+      console.error('Error clearing user data:', error);
+      alert('Error clearing data: ' + error.message);
+    }
+  };
+
   const [waitingForDetailedWindow, setWaitingForDetailedWindow] = useState(false);
   const [showEmailReview, setShowEmailReview] = useState(false);
   const [emailForReview, setEmailForReview] = useState(null);
@@ -3979,7 +4010,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
               <p className="text-sm font-medium" style={{color: '#000000'}}>Qwen2.5 Model</p>
               <p className="text-xs" style={{color: '#00f0a0'}}>Local Deployment</p>
             </div>
-            <div className="ml-auto flex items-center space-x-3">
+            <div className="ml-auto flex items-center space-x-2">
               <div className="w-2 h-2 rounded-full" style={{backgroundColor: '#00f0a0'}}></div>
               <button
                 onClick={clearWorkflowHistory}
@@ -3990,6 +4021,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                 title="Clear Workflow History"
               >
                 🗑️
+              </button>
+              <button
+                onClick={clearAllUserData}
+                className="text-xs p-2 rounded transition-colors"
+                style={{color: '#dc2626'}}
+                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(220, 38, 38, 0.1)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                title="Clear All Data (Prospects, Campaigns, Drafts)"
+              >
+                ⚠️
               </button>
               <button
                 onClick={onReset}

@@ -20,17 +20,20 @@ router.get('/', async (req, res) => {
       search
     } = req.query;
 
+    // 获取用户ID
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+
     let filter = { status };
     if (industry) filter.industry = industry;
     if (company) filter.company = company;
 
-    const contacts = await db.getContacts(filter, parseInt(limit));
+    const contacts = await db.getContacts(userId, filter, parseInt(limit));
 
     // 如果有搜索关键词，进行过滤
     let filteredContacts = contacts;
     if (search) {
       const searchLower = search.toLowerCase();
-      filteredContacts = contacts.filter(contact => 
+      filteredContacts = contacts.filter(contact =>
         contact.name?.toLowerCase().includes(searchLower) ||
         contact.email?.toLowerCase().includes(searchLower) ||
         contact.company?.toLowerCase().includes(searchLower) ||
@@ -61,6 +64,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const contactData = req.body;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     // 验证必需字段
     if (!contactData.email) {
@@ -82,7 +86,7 @@ router.post('/', async (req, res) => {
     const contactId = await db.saveContact({
       ...contactData,
       source: contactData.source || 'manual'
-    });
+    }, userId);
 
     res.json({
       success: true,
@@ -95,7 +99,7 @@ router.post('/', async (req, res) => {
 
   } catch (error) {
     console.error('添加联系人失败:', error);
-    
+
     if (error.message.includes('UNIQUE constraint failed')) {
       return res.status(400).json({
         success: false,
@@ -157,7 +161,8 @@ router.post('/import/csv', upload.single('csvFile'), async (req, res) => {
             notes: row.notes || row['备注'] || ''
           };
 
-          await db.saveContact(contact);
+          const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+          await db.saveContact(contact, userId);
           successCount++;
           results.push(contact);
 
@@ -215,6 +220,7 @@ router.post('/import/csv', upload.single('csvFile'), async (req, res) => {
 router.post('/import/search', async (req, res) => {
   try {
     const { searchResults, source = 'website_search' } = req.body;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     if (!searchResults || !Array.isArray(searchResults)) {
       return res.status(400).json({
@@ -249,7 +255,7 @@ router.post('/import/search', async (req, res) => {
           notes: result.notes || `从网站导入: ${result.website || ''}`
         };
 
-        await db.saveContact(contact);
+        await db.saveContact(contact, userId);
         results.imported++;
 
       } catch (error) {
@@ -279,9 +285,10 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     // 检查联系人是否存在
-    const contacts = await db.getContacts({}, 1000);
+    const contacts = await db.getContacts(userId, {}, 1000);
     const existingContact = contacts.find(c => c.id === parseInt(id));
 
     if (!existingContact) {
@@ -308,7 +315,7 @@ router.put('/:id', async (req, res) => {
       ...updateData
     };
 
-    await db.saveContact(updatedContact);
+    await db.saveContact(updatedContact, userId);
 
     res.json({
       success: true,
@@ -328,8 +335,9 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
-    const contacts = await db.getContacts({}, 1000);
+    const contacts = await db.getContacts(userId, {}, 1000);
     const contact = contacts.find(c => c.id === parseInt(id));
 
     if (!contact) {
@@ -343,7 +351,7 @@ router.delete('/:id', async (req, res) => {
     await db.saveContact({
       ...contact,
       status: 'deleted'
-    });
+    }, userId);
 
     res.json({
       success: true,
@@ -363,6 +371,7 @@ router.delete('/:id', async (req, res) => {
 router.post('/batch', async (req, res) => {
   try {
     const { action, contactIds, updateData } = req.body;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     if (!action || !contactIds || !Array.isArray(contactIds)) {
       return res.status(400).json({
@@ -377,12 +386,12 @@ router.post('/batch', async (req, res) => {
       errors: []
     };
 
-    const contacts = await db.getContacts({}, 1000);
+    const contacts = await db.getContacts(userId, {}, 1000);
 
     for (const contactId of contactIds) {
       try {
         const contact = contacts.find(c => c.id === parseInt(contactId));
-        
+
         if (!contact) {
           results.failed++;
           results.errors.push({
@@ -410,7 +419,7 @@ router.post('/batch', async (req, res) => {
             throw new Error('不支持的批量操作类型');
         }
 
-        await db.saveContact(updatedContact);
+        await db.saveContact(updatedContact, userId);
         results.success++;
 
       } catch (error) {
@@ -440,12 +449,13 @@ router.post('/batch', async (req, res) => {
 router.get('/export/csv', async (req, res) => {
   try {
     const { industry, company, status = 'active' } = req.query;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     let filter = { status };
     if (industry) filter.industry = industry;
     if (company) filter.company = company;
 
-    const contacts = await db.getContacts(filter, 10000);
+    const contacts = await db.getContacts(userId, filter, 10000);
 
     // 生成CSV内容
     const csvWriter = require('csv-writer').createObjectCsvStringifier({
@@ -481,7 +491,8 @@ router.get('/export/csv', async (req, res) => {
 // 获取联系人统计信息
 router.get('/stats', async (req, res) => {
   try {
-    const contacts = await db.getContacts({}, 10000);
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+    const contacts = await db.getContacts(userId, {}, 10000);
     
     const stats = {
       total: contacts.filter(c => c.status === 'active').length,

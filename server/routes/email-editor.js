@@ -455,4 +455,141 @@ router.get('/pending-approval', async (req, res) => {
   }
 });
 
+// ========== DATABASE-BACKED DRAFT PERSISTENCE ==========
+
+const db = require('../models/database');
+
+// Save draft to database
+router.post('/drafts', async (req, res) => {
+  try {
+    const { emailKey, subject, preheader, components, html, metadata } = req.body;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+
+    if (!emailKey || !components) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email key and components are required'
+      });
+    }
+
+    const draft = {
+      emailKey,
+      subject,
+      preheader,
+      components,
+      html,
+      metadata
+    };
+
+    const draftId = await db.saveEmailDraft(draft, userId);
+
+    res.json({
+      success: true,
+      data: { id: draftId, ...draft },
+      message: 'Draft saved successfully'
+    });
+
+  } catch (error) {
+    console.error('Failed to save draft:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get all drafts for user
+router.get('/drafts', async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+    const drafts = await db.getEmailDrafts(userId);
+
+    res.json({
+      success: true,
+      data: drafts,
+      total: drafts.length
+    });
+
+  } catch (error) {
+    console.error('Failed to get drafts:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get single draft by email key
+router.get('/drafts/:emailKey', async (req, res) => {
+  try {
+    const { emailKey } = req.params;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+
+    const draft = await db.getEmailDraft(emailKey, userId);
+
+    if (!draft) {
+      return res.status(404).json({
+        success: false,
+        error: 'Draft not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: draft
+    });
+
+  } catch (error) {
+    console.error('Failed to get draft:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Delete draft
+router.delete('/drafts/:emailKey', async (req, res) => {
+  try {
+    const { emailKey } = req.params;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+
+    await db.deleteEmailDraft(emailKey, userId);
+
+    res.json({
+      success: true,
+      message: 'Draft deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Failed to delete draft:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Clear all user data (reset)
+router.post('/clear-all-data', async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+
+    const result = await db.clearUserData(userId);
+
+    res.json({
+      success: true,
+      message: 'All user data cleared successfully',
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Failed to clear user data:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

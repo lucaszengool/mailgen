@@ -14,8 +14,9 @@ router.post('/', async (req, res) => {
       status = 'draft'
     } = req.body;
 
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
     const campaignId = uuidv4();
-    
+
     const campaign = {
       id: campaignId,
       name,
@@ -25,7 +26,7 @@ router.post('/', async (req, res) => {
       status
     };
 
-    await db.saveCampaign(campaign);
+    await db.saveCampaign(campaign, userId);
 
     res.json({
       success: true,
@@ -49,7 +50,8 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const { limit = 50 } = req.query;
-    const campaigns = await db.getCampaigns(parseInt(limit));
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+    const campaigns = await db.getCampaigns(userId, parseInt(limit));
 
     // 为每个活动添加统计数据
     const campaignsWithStats = await Promise.all(
@@ -97,7 +99,8 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const campaigns = await db.getCampaigns();
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+    const campaigns = await db.getCampaigns(userId);
     const campaign = campaigns.find(c => c.id === id);
 
     if (!campaign) {
@@ -132,9 +135,10 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     // 检查活动是否存在
-    const campaigns = await db.getCampaigns();
+    const campaigns = await db.getCampaigns(userId);
     const existingCampaign = campaigns.find(c => c.id === id);
 
     if (!existingCampaign) {
@@ -151,7 +155,7 @@ router.put('/:id', async (req, res) => {
       id: id // 确保ID不被覆盖
     };
 
-    await db.saveCampaign(updatedCampaign);
+    await db.saveCampaign(updatedCampaign, userId);
 
     res.json({
       success: true,
@@ -172,9 +176,10 @@ router.post('/:id/start', async (req, res) => {
   try {
     const { id } = req.params;
     const { recipients, smtpConfig, delayBetweenEmails = 5000 } = req.body;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     // 获取活动详情
-    const campaigns = await db.getCampaigns();
+    const campaigns = await db.getCampaigns(userId);
     const campaign = campaigns.find(c => c.id === id);
 
     if (!campaign) {
@@ -202,7 +207,7 @@ router.post('/:id/start', async (req, res) => {
     await db.saveCampaign({
       ...campaign,
       status: 'running'
-    });
+    }, userId);
 
     // 开始发送邮件（调用邮件发送API）
     const axios = require('axios');
@@ -231,7 +236,7 @@ router.post('/:id/start', async (req, res) => {
       await db.saveCampaign({
         ...campaign,
         status: 'draft'
-      });
+      }, userId);
 
       throw emailError;
     }
@@ -249,9 +254,10 @@ router.post('/:id/start', async (req, res) => {
 router.post('/:id/stop', async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     // 获取活动详情
-    const campaigns = await db.getCampaigns();
+    const campaigns = await db.getCampaigns(userId);
     const campaign = campaigns.find(c => c.id === id);
 
     if (!campaign) {
@@ -265,7 +271,7 @@ router.post('/:id/stop', async (req, res) => {
     await db.saveCampaign({
       ...campaign,
       status: 'stopped'
-    });
+    }, userId);
 
     res.json({
       success: true,
@@ -289,9 +295,10 @@ router.post('/:id/stop', async (req, res) => {
 router.post('/:id/duplicate', async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     // 获取原活动
-    const campaigns = await db.getCampaigns();
+    const campaigns = await db.getCampaigns(userId);
     const originalCampaign = campaigns.find(c => c.id === id);
 
     if (!originalCampaign) {
@@ -310,7 +317,7 @@ router.post('/:id/duplicate', async (req, res) => {
       status: 'draft'
     };
 
-    await db.saveCampaign(duplicatedCampaign);
+    await db.saveCampaign(duplicatedCampaign, userId);
 
     res.json({
       success: true,
@@ -333,10 +340,11 @@ router.post('/:id/duplicate', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     // 这里应该实现软删除或硬删除逻辑
     // 暂时通过更新状态为已删除来实现
-    const campaigns = await db.getCampaigns();
+    const campaigns = await db.getCampaigns(userId);
     const campaign = campaigns.find(c => c.id === id);
 
     if (!campaign) {
@@ -349,7 +357,7 @@ router.delete('/:id', async (req, res) => {
     await db.saveCampaign({
       ...campaign,
       status: 'deleted'
-    });
+    }, userId);
 
     res.json({
       success: true,
