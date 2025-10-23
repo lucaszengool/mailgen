@@ -3254,11 +3254,23 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     checkWSHealth();
 
     // Dynamic WebSocket URL for Railway compatibility
+    // In production, frontend and backend are separate services
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/workflow`;
+
+    // Determine the correct WebSocket host
+    let wsHost = window.location.host;
+
+    // If we're on the frontend Railway service, use the backend service for WebSocket
+    if (window.location.host.includes('honest-hope') || window.location.host.includes('powerful-contentment')) {
+      wsHost = 'mailgen-production.up.railway.app';
+      console.log('🔄 Detected frontend service, redirecting WebSocket to backend:', wsHost);
+    }
+
+    const wsUrl = `${protocol}//${wsHost}/ws/workflow`;
     console.log('🔌 Attempting WebSocket connection...');
     console.log('   Protocol:', protocol);
-    console.log('   Host:', window.location.host);
+    console.log('   Host (original):', window.location.host);
+    console.log('   Host (WebSocket):', wsHost);
     console.log('   Full URL:', wsUrl);
 
     const wsInstance = new WebSocket(wsUrl);

@@ -66,8 +66,17 @@ export default function Analytics() {
   const setupRealtimeConnection = () => {
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.host;
-      const wsUrl = `${protocol}//${host}`;
+
+      // Determine the correct WebSocket host
+      let wsHost = window.location.host;
+
+      // If we're on the frontend Railway service, use the backend service for WebSocket
+      if (window.location.host.includes('honest-hope') || window.location.host.includes('powerful-contentment')) {
+        wsHost = 'mailgen-production.up.railway.app';
+        console.log('🔄 Analytics: Detected frontend service, redirecting WebSocket to backend:', wsHost);
+      }
+
+      const wsUrl = `${protocol}//${wsHost}`;
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
