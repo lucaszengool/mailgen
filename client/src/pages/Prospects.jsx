@@ -70,8 +70,21 @@ export default function Prospects() {
 
   const connectWebSocket = () => {
     try {
-      ws.current = new WebSocket(`ws://localhost:3333/ws/workflow`)
-      
+      // Dynamic WebSocket URL for Railway compatibility
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      let wsHost = window.location.host;
+
+      // If we're on the frontend Railway service, use the backend service for WebSocket
+      if (window.location.host.includes('honest-hope') || window.location.host.includes('powerful-contentment')) {
+        wsHost = 'mailgen-production.up.railway.app';
+        console.log('🔄 Prospects: Detected frontend service, redirecting WebSocket to backend:', wsHost);
+      }
+
+      const wsUrl = `${protocol}//${wsHost}/ws/workflow`;
+      console.log('🔌 Prospects: Connecting to WebSocket:', wsUrl);
+
+      ws.current = new WebSocket(wsUrl)
+
       ws.current.onmessage = (event) => {
         const data = JSON.parse(event.data)
         console.log('🔌 WebSocket message received:', data.type, data)
@@ -209,47 +222,64 @@ export default function Prospects() {
 
   const fetchProspects = async () => {
     try {
-      // First try to get prospects from workflow results
+      console.log('📊 Fetching prospects from database and workflow...');
+
+      // Fetch prospects from database (persisted data)
+      const dbResponse = await fetch('/api/contacts?status=active&limit=1000')
+      let dbProspects = []
+
+      if (dbResponse.ok) {
+        const dbData = await dbResponse.json()
+        if (dbData.success && dbData.data?.contacts) {
+          dbProspects = dbData.data.contacts.map(c => ({
+            id: c.id || `contact_${c.email}`,
+            email: c.email,
+            name: c.name || 'Unknown',
+            company: c.company || 'Unknown',
+            position: c.position || 'Unknown',
+            industry: c.industry || 'Unknown',
+            phone: c.phone || '',
+            source: c.source || 'Database',
+            confidence: c.confidence || 75,
+            created_at: c.created_at || new Date().toISOString(),
+            lastContact: c.lastContact || null,
+            responseRate: c.responseRate || 0,
+            companySize: c.companySize || '1-10',
+            techStack: c.techStack || []
+          }))
+          console.log(`📊 Loaded ${dbProspects.length} prospects from database`);
+        }
+      }
+
+      // Also try to get prospects from workflow results (in-memory/recent)
       const workflowResponse = await fetch('/api/workflow/results')
       let workflowProspects = []
-      
+
       if (workflowResponse.ok) {
         const workflowData = await workflowResponse.json()
         if (workflowData.success && workflowData.data.prospects) {
           workflowProspects = workflowData.data.prospects.map(p => ({
             ...p,
             source: 'AI Campaign',
-            confidence: p.confidence || Math.floor(Math.random() * 40) + 60, // 60-100%
+            confidence: p.confidence || Math.floor(Math.random() * 40) + 60,
             created_at: p.created_at || new Date().toISOString(),
             lastContact: p.lastContact || null,
             responseRate: p.responseRate || Math.floor(Math.random() * 50) + 10,
             companySize: p.companySize || ['1-10', '11-50', '51-200', '201-1000', '1000+'][Math.floor(Math.random() * 5)],
             techStack: p.techStack || ['React', 'Node.js', 'Python', 'AI/ML', 'Cloud'][Math.floor(Math.random() * 5)]
           }))
+          console.log(`📊 Loaded ${workflowProspects.length} prospects from workflow results`);
         }
       }
 
-      // Then get regular contacts
-      const response = await fetch('/api/contacts')
-      const data = await response.json()
-      let contacts = []
-      
-      if (data.success) {
-        contacts = data.data.contacts.map(contact => ({
-          ...contact,
-          source: contact.source || 'Manual',
-          confidence: contact.confidence || 85,
-          responseRate: contact.responseRate || Math.floor(Math.random() * 30) + 20,
-          companySize: contact.companySize || ['1-10', '11-50', '51-200'][Math.floor(Math.random() * 3)],
-          techStack: contact.techStack || []
-        }))
-      }
-
-      // Combine and deduplicate by email
-      const allProspects = [...workflowProspects, ...contacts]
-      const uniqueProspects = allProspects.filter((prospect, index, self) => 
+      // Combine all sources and deduplicate by email
+      // Priority: workflowProspects (most recent) > dbProspects (persisted)
+      const allProspects = [...workflowProspects, ...dbProspects]
+      const uniqueProspects = allProspects.filter((prospect, index, self) =>
         index === self.findIndex(p => p.email === prospect.email)
       )
+
+      console.log(`📊 Total unique prospects after deduplication: ${uniqueProspects.length}`)
       
       setProspects(uniqueProspects)
     } catch (error) {

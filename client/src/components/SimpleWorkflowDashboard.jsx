@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import {
   Send, Bot, User, Loader, CheckCircle, XCircle,
   ChevronDown, ChevronRight, Search, Mail, Building2,
@@ -4846,8 +4847,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         }}
       />
 
-      {/* 🎨 Template Selection Modal */}
-      {showTemplateSelection && (
+      {/* 🎨 Template Selection Modal - Rendered via Portal to escape overflow-hidden */}
+      {showTemplateSelection && ReactDOM.createPortal(
         <TemplateSelectionModal
           isOpen={showTemplateSelection}
           onClose={() => {
@@ -4863,7 +4864,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           onConfirm={handleTemplateConfirm}
           isSubmitting={isSubmittingTemplate}
           templateRequest={templateRequest}
-        />
+        />,
+        document.body
       )}
     </div>
   );

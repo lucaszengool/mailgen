@@ -745,6 +745,59 @@ router.get('/results', optionalAuth, async (req, res) => {
       templateSelectionStatus = 'generating_emails';
     }
 
+    // 💾 If no in-memory results, fetch from database
+    if (!hasRealResults || prospects.length === 0) {
+      try {
+        console.log(`💾 [User: ${userId}] No in-memory results, fetching from database...`);
+
+        // Fetch prospects from database
+        const dbProspects = await db.getContacts(userId, { status: 'active' }, 1000);
+        if (dbProspects && dbProspects.length > 0) {
+          prospects = dbProspects.map(c => ({
+            id: c.id || `contact_${c.email}`,
+            email: c.email,
+            name: c.name || 'Unknown',
+            company: c.company || 'Unknown',
+            position: c.position || 'Unknown',
+            industry: c.industry || 'Unknown',
+            source: c.source || 'Database'
+          }));
+          hasRealResults = true;
+          console.log(`💾 [User: ${userId}] Loaded ${prospects.length} prospects from database`);
+        }
+
+        // Fetch email drafts from database
+        const dbDrafts = await db.getEmailDrafts(userId);
+        if (dbDrafts && dbDrafts.length > 0) {
+          const emails = dbDrafts.map(draft => ({
+            id: draft.id,
+            to: draft.metadata.recipient || '',
+            subject: draft.subject,
+            body: draft.html,
+            recipientName: draft.metadata.recipientName || '',
+            recipientCompany: draft.metadata.recipientCompany || '',
+            senderName: draft.metadata.senderName || '',
+            companyName: draft.metadata.companyName || '',
+            template: draft.metadata.template || 'default',
+            createdAt: draft.metadata.createdAt || draft.createdAt,
+            status: draft.metadata.status || 'generated'
+          }));
+
+          campaignData.emailCampaign = {
+            emails: emails,
+            totalSent: 0,
+            totalOpened: 0,
+            totalClicked: 0
+          };
+
+          hasRealResults = true;
+          console.log(`💾 [User: ${userId}] Loaded ${emails.length} email drafts from database`);
+        }
+      } catch (dbError) {
+        console.error(`❌ [User: ${userId}] Error fetching from database:`, dbError);
+      }
+    }
+
     res.json({
       success: true,
       data: {
@@ -1268,7 +1321,7 @@ async function executeRealWorkflow(agent, campaignConfig, userId = 'anonymous') 
 }
 
 // Function to set workflow results from other modules (user-specific)
-function setLastWorkflowResults(results, userId = 'anonymous') {
+async function setLastWorkflowResults(results, userId = 'anonymous') {
   const lastWorkflowResults = userWorkflowResults.get(userId);
 
   // 🔥 FIX: Don't overwrite if we already have emails and the new results don't
@@ -1289,6 +1342,80 @@ function setLastWorkflowResults(results, userId = 'anonymous') {
 
   const updatedResults = userWorkflowResults.get(userId);
   console.log(`📦 [User: ${userId}] Stored workflow results with ${results.prospects?.length || 0} prospects and ${updatedResults.emailCampaign?.emails?.length || 0} emails`);
+
+  // 💾 Save prospects to database for persistence
+  if (results.prospects && results.prospects.length > 0) {
+    try {
+      console.log(`💾 [User: ${userId}] Saving ${results.prospects.length} prospects to database...`);
+
+      for (const prospect of results.prospects) {
+        try {
+          await db.saveContact({
+            email: prospect.email,
+            name: prospect.name || 'Unknown',
+            company: prospect.company || 'Unknown',
+            position: prospect.position || 'Unknown',
+            industry: prospect.industry || 'Unknown',
+            phone: prospect.phone || '',
+            address: prospect.address || '',
+            source: prospect.source || 'AI Workflow',
+            tags: prospect.tags || '',
+            notes: prospect.notes || `Found via AI workflow on ${new Date().toLocaleString()}`
+          }, userId);
+        } catch (saveError) {
+          // Skip if already exists (UNIQUE constraint)
+          if (!saveError.message.includes('UNIQUE constraint')) {
+            console.error(`⚠️ Failed to save prospect ${prospect.email}:`, saveError.message);
+          }
+        }
+      }
+
+      console.log(`✅ [User: ${userId}] Prospects saved to database successfully`);
+    } catch (error) {
+      console.error(`❌ [User: ${userId}] Error saving prospects to database:`, error);
+    }
+  }
+
+  // 💾 Save generated emails to database for persistence
+  if (results.emailCampaign && results.emailCampaign.emails && results.emailCampaign.emails.length > 0) {
+    try {
+      console.log(`💾 [User: ${userId}] Saving ${results.emailCampaign.emails.length} email drafts to database...`);
+
+      for (const email of results.emailCampaign.emails) {
+        try {
+          // Generate a unique email key for this draft
+          const emailKey = `email_${email.to}_${Date.now()}`;
+
+          await db.saveEmailDraft({
+            emailKey: emailKey,
+            subject: email.subject || 'No Subject',
+            preheader: email.preheader || '',
+            components: email.components || [],
+            html: email.body || email.html || '',
+            metadata: {
+              recipient: email.to,
+              recipientName: email.recipientName || '',
+              recipientCompany: email.recipientCompany || '',
+              senderName: email.senderName || '',
+              companyName: email.companyName || '',
+              template: email.template || 'default',
+              createdAt: email.createdAt || new Date().toISOString(),
+              status: email.status || 'generated'
+            }
+          }, userId);
+        } catch (saveError) {
+          // Skip if already exists (UNIQUE constraint)
+          if (!saveError.message.includes('UNIQUE constraint')) {
+            console.error(`⚠️ Failed to save email draft for ${email.to}:`, saveError.message);
+          }
+        }
+      }
+
+      console.log(`✅ [User: ${userId}] Email drafts saved to database successfully`);
+    } catch (error) {
+      console.error(`❌ [User: ${userId}] Error saving email drafts to database:`, error);
+    }
+  }
 }
 
 // Function to get workflow results from other modules (user-specific)
