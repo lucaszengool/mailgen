@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import '../styles/animations.css'
 import '../styles/jobright-colors.css'
-import { 
-  PlusIcon, 
+import { apiGet } from '../utils/apiClient'
+import {
+  PlusIcon,
   MagnifyingGlassIcon,
   UserGroupIcon,
   DocumentArrowUpIcon,
@@ -230,54 +231,48 @@ export default function Prospects() {
 
   const fetchProspects = async () => {
     try {
-      console.log('📊 Fetching prospects from database and workflow...');
+      console.log('📊 Fetching prospects from database and workflow with authentication...');
 
-      // Fetch prospects from database (persisted data)
-      const dbResponse = await fetch('/api/contacts?status=active&limit=1000')
+      // 🔐 Fetch prospects from database with authentication (persisted data)
+      const dbData = await apiGet('/api/contacts?status=active&limit=1000')
       let dbProspects = []
 
-      if (dbResponse.ok) {
-        const dbData = await dbResponse.json()
-        if (dbData.success && dbData.data?.contacts) {
-          dbProspects = dbData.data.contacts.map(c => ({
-            id: c.id || `contact_${c.email}`,
-            email: c.email,
-            name: c.name || 'Unknown',
-            company: c.company || 'Unknown',
-            position: c.position || 'Unknown',
-            industry: c.industry || 'Unknown',
-            phone: c.phone || '',
-            source: c.source || 'Database',
-            confidence: c.confidence || 75,
-            created_at: c.created_at || new Date().toISOString(),
-            lastContact: c.lastContact || null,
-            responseRate: c.responseRate || 0,
-            companySize: c.companySize || '1-10',
-            techStack: c.techStack || []
-          }))
-          console.log(`📊 Loaded ${dbProspects.length} prospects from database`);
-        }
+      if (dbData.success && dbData.data?.contacts) {
+        dbProspects = dbData.data.contacts.map(c => ({
+          id: c.id || `contact_${c.email}`,
+          email: c.email,
+          name: c.name || 'Unknown',
+          company: c.company || 'Unknown',
+          position: c.position || 'Unknown',
+          industry: c.industry || 'Unknown',
+          phone: c.phone || '',
+          source: c.source || 'Database',
+          confidence: c.confidence || 75,
+          created_at: c.created_at || new Date().toISOString(),
+          lastContact: c.lastContact || null,
+          responseRate: c.responseRate || 0,
+          companySize: c.companySize || '1-10',
+          techStack: c.techStack || []
+        }))
+        console.log(`📊 Loaded ${dbProspects.length} prospects from database for current user`);
       }
 
-      // Also try to get prospects from workflow results (in-memory/recent)
-      const workflowResponse = await fetch('/api/workflow/results')
+      // 🔐 Also try to get prospects from workflow results with authentication (in-memory/recent)
+      const workflowData = await apiGet('/api/workflow/results')
       let workflowProspects = []
 
-      if (workflowResponse.ok) {
-        const workflowData = await workflowResponse.json()
-        if (workflowData.success && workflowData.data.prospects) {
-          workflowProspects = workflowData.data.prospects.map(p => ({
-            ...p,
-            source: 'AI Campaign',
-            confidence: p.confidence || Math.floor(Math.random() * 40) + 60,
-            created_at: p.created_at || new Date().toISOString(),
-            lastContact: p.lastContact || null,
-            responseRate: p.responseRate || Math.floor(Math.random() * 50) + 10,
-            companySize: p.companySize || ['1-10', '11-50', '51-200', '201-1000', '1000+'][Math.floor(Math.random() * 5)],
-            techStack: p.techStack || ['React', 'Node.js', 'Python', 'AI/ML', 'Cloud'][Math.floor(Math.random() * 5)]
-          }))
-          console.log(`📊 Loaded ${workflowProspects.length} prospects from workflow results`);
-        }
+      if (workflowData.success && workflowData.data.prospects) {
+        workflowProspects = workflowData.data.prospects.map(p => ({
+          ...p,
+          source: 'AI Campaign',
+          confidence: p.confidence || Math.floor(Math.random() * 40) + 60,
+          created_at: p.created_at || new Date().toISOString(),
+          lastContact: p.lastContact || null,
+          responseRate: p.responseRate || Math.floor(Math.random() * 50) + 10,
+          companySize: p.companySize || ['1-10', '11-50', '51-200', '201-1000', '1000+'][Math.floor(Math.random() * 5)],
+          techStack: p.techStack || ['React', 'Node.js', 'Python', 'AI/ML', 'Cloud'][Math.floor(Math.random() * 5)]
+        }))
+        console.log(`📊 Loaded ${workflowProspects.length} prospects from workflow results for current user`);
       }
 
       // Combine all sources and deduplicate by email
@@ -288,11 +283,11 @@ export default function Prospects() {
       )
 
       console.log(`📊 Total unique prospects after deduplication: ${uniqueProspects.length}`)
-      
+
       setProspects(uniqueProspects)
     } catch (error) {
-      console.error('获取prospects失败:', error)
-      toast.error('加载prospects失败')
+      console.error('❌ Failed to fetch prospects:', error)
+      toast.error('Failed to load prospects')
     } finally {
       setLoading(false)
     }
