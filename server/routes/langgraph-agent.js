@@ -253,6 +253,22 @@ async function executeRealTimeWorkflow(agent, wsManager, campaignConfig) {
       wsManager.stepCompleted('email_generation', emailCampaign);
       wsManager.sendLogUpdate('email_generation', `Generated ${emailCampaign.emails?.length || 0} personalized emails`, 'success');
       wsManager.sendNotification(`生成 ${emailCampaign.emails?.length || 0} 封个性化邮件`, 'success');
+
+      // 💾 CRITICAL: Save complete workflow results to database
+      try {
+        const workflowModule = require('./workflow');
+        const userId = campaignConfig?.userId || 'anonymous';
+        if (workflowModule.setLastWorkflowResults && emailCampaign?.emails?.length > 0) {
+          console.log(`💾 [executeRealTimeWorkflow] Saving ${emailCampaign.emails.length} emails to database for user ${userId}...`);
+          await workflowModule.setLastWorkflowResults({
+            prospects: prospectArray,
+            emailCampaign: emailCampaign
+          }, userId);
+          console.log(`✅ [executeRealTimeWorkflow] Workflow results saved to database successfully`);
+        }
+      } catch (saveError) {
+        console.error(`❌ [executeRealTimeWorkflow] Failed to save workflow results to database:`, saveError.message);
+      }
     } catch (emailError) {
       console.error('❌ Email campaign execution failed:', emailError.message);
       console.error('❌ Email campaign error stack:', emailError.stack);

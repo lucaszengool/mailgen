@@ -94,6 +94,10 @@ export default function Prospects() {
         } else if (data.type === 'new_prospect') {
           setProspects(prev => [data.prospect, ...prev])
           // toast.success(`New prospect found: ${data.prospect.email}`)
+
+          // 🚀 Immediately fetch from database to ensure persistence
+          console.log('🚀 New prospect received - triggering immediate fetch');
+          fetchProspects();
         } else if (data.type === 'data_update' && data.data?.prospects) {
           // Real-time prospect data update from LangGraphMarketingAgent
           console.log('📊 🔥 CRITICAL: Updating prospects from data_update:', data.data.prospects.length)
@@ -123,7 +127,11 @@ export default function Prospects() {
             console.log('📊 Previous prospects:', prev.length, 'New prospects:', updatedProspects.length)
             return updatedProspects
           })
-          
+
+          // 🚀 Immediately fetch from database to ensure persistence
+          console.log('🚀 Data update with prospects - triggering immediate fetch');
+          fetchProspects();
+
           // toast.success(`🎉 ${data.data.prospects.length} prospects found from AI campaign!`)
         } else if (data.type === 'prospect_list') {
           // Direct prospect list update

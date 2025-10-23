@@ -10,6 +10,7 @@ import {
   Server, Eye, Cpu, Layers, Workflow, Gauge, Home
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SignedIn, UserButton } from '@clerk/clerk-react';
 import { apiGet, apiPost } from '../utils/apiClient';
 import TemplateSelectionService from '../services/TemplateSelectionService';
 import { EMAIL_TEMPLATES } from '../data/emailTemplatesConsistent.js';
@@ -3231,7 +3232,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         checkForEmailUpdates();
         // Always fetch workflow steps to get newly generated emails
         fetchAndTriggerWorkflowSteps();
-      }, 3000); // Check every 3 seconds for faster updates
+      }, 1000); // Check every 1 second for fast updates (changed from 3000ms)
 
       return () => clearInterval(interval);
     }
@@ -3427,6 +3428,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           console.log('🎯 Triggering prospect micro-steps from prospect_list');
           triggerProspectMicroSteps(receivedProspects);
         }
+
+        // 🚀 Immediately fetch latest workflow state to ensure template popup shows
+        console.log('🚀 Prospect list received - triggering immediate fetch');
+        fetchAndTriggerWorkflowSteps();
       } else if (data.type === 'prospect_updated') {
         // Handle individual prospect updates
         if (data.data && data.data.prospect) {
@@ -3467,6 +3472,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
           triggerEmailMicroSteps(emailCampaign.emails);
         }
+
+        // 🚀 Immediately fetch latest workflow state to get all emails
+        console.log('🚀 Email generated/sent - triggering immediate fetch');
+        fetchAndTriggerWorkflowSteps();
       } else if (data.type === 'email_awaiting_approval') {
         // Handle emails awaiting approval - trigger review modal ONLY for first email
         console.log('📧 Email awaiting approval:', data.data);
@@ -3773,6 +3782,48 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     return () => wsInstance.close();
   }, []);
 
+  // 💾 CRITICAL: Fetch persisted data from database on component mount
+  useEffect(() => {
+    console.log('💾 Component mounted - fetching persisted data from database...');
+
+    // Immediately fetch data to restore previous session
+    const loadPersistedData = async () => {
+      try {
+        // Fetch workflow results (includes both prospects and emails from database)
+        await fetchAndTriggerWorkflowSteps();
+
+        // Also fetch prospects directly to ensure they're loaded
+        const contactsData = await apiGet('/api/contacts?status=active&limit=1000');
+        if (contactsData.success && contactsData.data?.contacts) {
+          const dbProspects = contactsData.data.contacts.map(c => ({
+            id: c.id,
+            email: c.email,
+            name: c.name || 'Unknown',
+            company: c.company || 'Unknown',
+            position: c.position || 'Unknown',
+            industry: c.industry || 'Unknown',
+            source: c.source || 'Database'
+          }));
+          console.log(`💾 Loaded ${dbProspects.length} prospects from database on mount`);
+          if (dbProspects.length > 0) {
+            setProspects(prev => {
+              // Merge with existing to avoid duplicates
+              const combined = [...dbProspects, ...prev];
+              const unique = combined.filter((prospect, index, self) =>
+                index === self.findIndex(p => p.email === prospect.email)
+              );
+              return unique;
+            });
+          }
+        }
+      } catch (error) {
+        console.error('❌ Failed to load persisted data from database:', error);
+      }
+    };
+
+    loadPersistedData();
+  }, []);
+
   const startWorkflow = async () => {
     console.log('Starting workflow...');
 
@@ -4014,17 +4065,25 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         </nav>
 
         {/* Footer */}
-        <div className="px-6 py-4">
+        <div className="px-6 py-4 border-t border-gray-100">
           <div className="flex items-center">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{backgroundColor: '#e6fff2'}}>
-              <span className="text-sm font-medium" style={{color: '#00f0a0'}}>AI</span>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium" style={{color: '#000000'}}>Qwen2.5 Model</p>
-              <p className="text-xs" style={{color: '#00f0a0'}}>Local Deployment</p>
-            </div>
-            <div className="ml-auto flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full" style={{backgroundColor: '#00f0a0'}}></div>
+            {/* User Info Section */}
+            <SignedIn>
+              <div className="flex items-center flex-1">
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8"
+                    }
+                  }}
+                />
+                <div className="ml-3 flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate" style={{color: '#000000'}}>My Account</p>
+                  <p className="text-xs truncate" style={{color: '#00f0a0'}}>Active</p>
+                </div>
+              </div>
+            </SignedIn>
+            <div className="ml-auto flex items-center space-x-1">
               <button
                 onClick={clearWorkflowHistory}
                 className="text-xs p-2 rounded transition-colors"
