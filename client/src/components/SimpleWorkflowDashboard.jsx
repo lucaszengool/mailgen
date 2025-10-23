@@ -3153,18 +3153,23 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           setGeneratedEmails(result.data.generatedEmails);
         }
 
-        // Trigger prospect micro-steps if we have prospectsFromAPI and haven't shown them yet
-        if (prospectsFromAPI && prospectsFromAPI.length > 0 && !hasShownProspectSteps) {
-          console.log('🎯 Found', prospectsFromAPI.length, 'prospectsFromAPI - triggering micro-steps!');
-          triggerProspectMicroSteps(prospectsFromAPI);
+        // 🎯 CRITICAL FIX: Always set prospects when available (separate from animation logic)
+        if (prospectsFromAPI && prospectsFromAPI.length > 0) {
+          console.log(`🎯 Found ${prospectsFromAPI.length} prospects - setting in state`);
           setProspects(prospectsFromAPI);
 
-          // Also check for emails immediately after showing prospectsFromAPI
-          if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
-            console.log('📧 Also found', emailCampaign.emails.length, 'emails - scheduling email micro-steps!');
-            setTimeout(() => {
-              triggerEmailMicroSteps(emailCampaign.emails);
-            }, 15000); // Delay to let prospect steps finish
+          // Trigger animation micro-steps only if not shown yet
+          if (!hasShownProspectSteps) {
+            console.log('🎬 Triggering prospect animation micro-steps');
+            triggerProspectMicroSteps(prospectsFromAPI);
+
+            // Also check for emails immediately after showing prospectsFromAPI
+            if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
+              console.log('📧 Also found', emailCampaign.emails.length, 'emails - scheduling email micro-steps!');
+              setTimeout(() => {
+                triggerEmailMicroSteps(emailCampaign.emails);
+              }, 15000); // Delay to let prospect steps finish
+            }
           }
         }
         // If we already showed prospectsFromAPI, just show emails
