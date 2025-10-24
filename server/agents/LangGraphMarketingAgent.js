@@ -19,13 +19,13 @@ class LangGraphMarketingAgent {
       indexName: 'marketing_agent_memory',
       keyPrefix: 'agent:memory:'
     });
-    
+
     // 初始化自愈LangGraph Agent
     this.healingAgent = new SelfHealingLangGraphAgent();
-    
+
     // Marketing Research Agent integration
     this.marketingResearchAgent = options.marketingResearchAgent || null;
-    
+
     // Ollama configuration with multi-model support
     this.ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
     this.models = {
@@ -33,13 +33,16 @@ class LangGraphMarketingAgent {
       general: process.env.OLLAMA_MODEL || 'qwen2.5:0.5b', // General tasks
       email: process.env.OLLAMA_EMAIL_MODEL || 'qwen2.5:0.5b' // Ultra-fast for email generation
     };
-    
+
     this.businessAnalyzer = new SmartBusinessAnalyzer();
     this.prospectSearchAgent = new ProspectSearchAgent();
     this.emailGenerator = new EmailContentGenerator();
     this.emailValidator = new EmailValidator();
     // this.smtpVerifier = new SMTPEmailVerifier(); // Disabled - use DNS validation only
-    
+
+    // 🔥 FIX: Initialize foundProspects array for persistence
+    this.foundProspects = [];
+
     this.state = {
       currentCampaign: null,
       learningHistory: [],
@@ -65,13 +68,13 @@ class LangGraphMarketingAgent {
       smtpVerifiedConfigs: new Map(), // Key: config hash, Value: timestamp
       smtpTransporters: new Map() // Key: config hash, Value: transporter instance
     };
-    
+
     // WebSocket管理器
     this.wsManager = options.wsManager || null;
 
     console.log('🤖 LangGraph Marketing Agent initialized');
     console.log(`   📊 Fast Model: ${this.models.fast} (analysis, strategy)`);
-    console.log(`   🔧 General Model: ${this.models.general} (general tasks)`);  
+    console.log(`   🔧 General Model: ${this.models.general} (general tasks)`);
     console.log(`   📧 Email Model: ${this.models.email} (email generation)`);
   }
 
@@ -361,7 +364,7 @@ class LangGraphMarketingAgent {
         campaignId,
         businessAnalysis,
         marketingStrategy,
-        prospects: [], // Will be populated via WebSocket
+        prospects: this.foundProspects || [], // 🔥 FIX: Include found prospects in return value
         emailCampaign: null,
         status: 'prospect_search_complete',
         message: 'Prospect search completed. Check dashboard for results.',
