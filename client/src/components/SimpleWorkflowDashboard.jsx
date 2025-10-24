@@ -86,17 +86,17 @@ const EmailReviewModal = ({ isOpen, email, onApprove, onClose, onEdit }) => {
           <div className="text-center">
             {/* Large Green Card - mimicking the reference UI */}
             <div className="mx-auto mb-8 p-12 rounded-3xl" style={{
-              background: 'linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%)',
+              backgroundColor: '#00f5a0',
               maxWidth: '600px'
             }}>
               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <Mail className="w-8 h-8 text-green-600" />
+                <Mail className="w-8 h-8 text-black" />
               </div>
               <h2 className="text-3xl font-bold text-black mb-4">First Email Generated Successfully!</h2>
               <p className="text-lg text-black mb-0">
                 Your first email for <strong>{email.to}</strong> is ready for review and editing.
               </p>
-              <p className="text-sm text-gray-700 mt-2">
+              <p className="text-sm text-black mt-2">
                 ⚠️ <strong>Important:</strong> All remaining emails are paused until you review this first email. Any edits you make will be used as a template for all subsequent emails.
               </p>
             </div>
@@ -104,15 +104,15 @@ const EmailReviewModal = ({ isOpen, email, onApprove, onClose, onEdit }) => {
             {/* Email Preview */}
             {email.body && (
               <details className="mb-8 text-left">
-                <summary className="cursor-pointer text-base font-medium p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <summary className="cursor-pointer text-base font-medium p-3 bg-white rounded-lg hover:bg-gray-100 transition-colors border-2 border-gray-200">
                   📄 Preview Generated Email
                 </summary>
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg max-h-64 overflow-y-auto">
+                <div className="mt-4 p-4 bg-white rounded-lg max-h-64 overflow-y-auto border-2 border-gray-200">
                   <div className="text-sm mb-3 font-medium text-black">
                     <strong>Subject:</strong> {email.subject}
                   </div>
-                  <div className="text-sm border-t border-gray-200 pt-3 text-gray-700">
-                    <div 
+                  <div className="text-sm border-t border-gray-200 pt-3 text-black">
+                    <div
                       dangerouslySetInnerHTML={{ __html: email.body }}
                       className="prose prose-sm max-w-none"
                     />
@@ -132,24 +132,24 @@ const EmailReviewModal = ({ isOpen, email, onApprove, onClose, onEdit }) => {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={onClose}
-                className="px-8 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                className="px-8 py-3 border-2 border-gray-300 rounded-xl text-black hover:bg-gray-100 transition-colors font-medium"
               >
                 Later
               </button>
               <button
                 onClick={handleGoToEmailEditor}
-                className="px-12 py-4 rounded-2xl font-semibold text-lg text-white transition-colors"
+                className="px-12 py-4 rounded-2xl font-semibold text-lg text-black transition-colors"
                 style={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                  backgroundColor: '#00f5a0',
+                  boxShadow: '0 4px 12px rgba(0, 245, 160, 0.3)'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(0, 245, 160, 0.4)';
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(0, 245, 160, 0.3)';
                 }}
               >
                 Go to Email Editor
@@ -188,47 +188,47 @@ const EmailSendConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
           <div className="text-center">
             {/* Large Green Card - mimicking the reference UI */}
             <div className="mx-auto mb-8 p-12 rounded-3xl" style={{
-              background: 'linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%)',
+              backgroundColor: '#00f5a0',
               maxWidth: '600px'
             }}>
               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+                <CheckCircle className="w-8 h-8 text-black" />
               </div>
               <h2 className="text-3xl font-bold text-black mb-4">First Email Sent!</h2>
               <p className="text-lg text-black mb-0">
                 Your first email has been sent successfully. Would you like to use the same template to generate and send emails to all remaining prospects?
               </p>
             </div>
-            
+
             {/* Batch Processing Info - White background with black text */}
             <div className="bg-white p-6 rounded-xl mb-8 border border-gray-200">
               <p className="text-base text-black">
                 ⚡ <strong>Batch Processing:</strong> We'll use your approved email template to generate personalized emails for all remaining prospects.
               </p>
             </div>
-            
+
             {/* Buttons */}
             <div className="flex justify-center space-x-4">
               <button
                 onClick={onClose}
-                className="px-8 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                className="px-8 py-3 border-2 border-gray-300 rounded-xl text-black hover:bg-gray-100 transition-colors font-medium"
               >
                 Stop Here
               </button>
               <button
                 onClick={onConfirm}
-                className="px-12 py-4 rounded-2xl font-semibold text-lg text-white transition-colors"
+                className="px-12 py-4 rounded-2xl font-semibold text-lg text-black transition-colors"
                 style={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                  backgroundColor: '#00f5a0',
+                  boxShadow: '0 4px 12px rgba(0, 245, 160, 0.3)'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(0, 245, 160, 0.4)';
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(0, 245, 160, 0.3)';
                 }}
               >
                 Yes, Send All Emails
@@ -4178,17 +4178,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         <div className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Campaign Workflow</h1>
-              <p className="text-gray-900 mt-2">AI-powered marketing automation</p>
+              <h1 className="text-3xl font-bold text-black">Campaign Workflow</h1>
+              <p className="text-black mt-2">AI-powered marketing automation</p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-full">
-                <div className={`w-2 h-2 rounded-full ${ws ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                <span className="text-xs text-gray-900 font-medium">
+              <div className="flex items-center space-x-2 px-3 py-1 bg-white border border-gray-200 rounded-full">
+                <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: ws ? '#00f5a0' : '#ef4444' }}></div>
+                <span className="text-xs text-black font-medium">
                   {ws ? 'Live' : 'Offline'}
                 </span>
               </div>
-              
+
               <button
                 onClick={startWorkflow}
                 disabled={workflowStatus === 'running'}
@@ -4196,10 +4196,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
               >
                 START CAMPAIGN
               </button>
-              
+
               <button
                 onClick={resetWorkflow}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50"
+                className="px-6 py-3 border border-gray-300 text-black rounded-xl hover:bg-gray-100"
               >
                 RESET
               </button>
@@ -4209,12 +4209,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         
         <div className="flex-1 p-6 overflow-y-auto">
           {activeView === 'workflow' && (
-            <div className="h-full -m-6 flex flex-col" style={{backgroundColor: '#e8f5e8'}}>
+            <div className="h-full -m-6 flex flex-col bg-white">
               {/* Main Agent Speech Bubble - Exact JobRight.ai Style */}
               <div className="px-8 py-6">
                 {/* Agent will speak through micro-steps */}
               </div>
-              
+
               {/* Sequential Micro-Steps Animation */}
               <div
                 ref={scrollContainerRef}
@@ -4236,8 +4236,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         <div className="w-4 h-4 bg-[#00f5a0] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
                         <div className="w-4 h-4 bg-[#00f5a0] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
                       </div>
-                      <p className="text-xl font-medium text-gray-700">Initializing AI Marketing Agent...</p>
-                      <p className="text-sm text-gray-500 mt-2">Setting up automation pipeline</p>
+                      <p className="text-xl font-medium text-black">Initializing AI Marketing Agent...</p>
+                      <p className="text-sm text-black mt-2">Setting up automation pipeline</p>
                     </div>
                   </motion.div>
                 )}
@@ -4251,11 +4251,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                     className="flex items-center justify-center h-64"
                   >
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <div className="w-6 h-6 text-gray-400">🚀</div>
+                      <div className="w-16 h-16 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-6 h-6 text-black">🚀</div>
                       </div>
-                      <p className="text-xl font-medium text-gray-700">Ready to Start</p>
-                      <p className="text-sm text-gray-500 mt-2">Click "START CAMPAIGN" to begin automation</p>
+                      <p className="text-xl font-medium text-black">Ready to Start</p>
+                      <p className="text-sm text-black mt-2">Click "START CAMPAIGN" to begin automation</p>
                     </div>
                   </motion.div>
                 )}
@@ -4280,7 +4280,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                           <div className="w-2 h-2 bg-black rounded-full ml-1"></div>
                         </div>
                         <div className="flex flex-col">
-                          <div className="text-lg font-bold text-gray-900 leading-tight">
+                          <div className="text-lg font-bold text-black leading-tight">
                             {microStep.message}
                           </div>
 
@@ -4294,7 +4294,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               transition={{ delay: 1.0 }}
-                              className="mt-3 flex items-center space-x-2 text-sm text-gray-600"
+                              className="mt-3 flex items-center space-x-2 text-sm text-black"
                             >
                               <div className="flex space-x-1">
                                 <div className="w-2 h-2 bg-[#00f5a0] rounded-full animate-bounce"></div>
@@ -4317,29 +4317,29 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         className="flex items-start space-x-4 w-full"
                       >
                         {/* AI Avatar */}
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-600 flex-shrink-0 mt-1">
-                          <Bot className="w-6 h-6 text-white" />
+                        <div className="flex items-center justify-center w-12 h-12 rounded-full flex-shrink-0 mt-1" style={{ backgroundColor: '#00f5a0' }}>
+                          <Bot className="w-6 h-6 text-black" />
                         </div>
 
                         {/* Chat Message Bubble */}
                         <div className="flex-1 max-w-[85%]">
-                          <div className="bg-green-50 rounded-2xl p-4 border border-green-100 shadow-sm">
+                          <div className="bg-white rounded-2xl p-4 border-2 border-gray-200 shadow-sm">
                             {/* Message Header */}
                             <div className="flex items-center justify-between mb-3">
-                              <h3 className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                              <h3 className="text-lg font-bold text-black flex items-center space-x-2">
                                 {microStep.type === 'processing_window' && (
-                                  <Loader className="w-5 h-5 animate-spin text-green-600" />
+                                  <Loader className="w-5 h-5 animate-spin" style={{ color: '#00f5a0' }} />
                                 )}
                                 {microStep.icon && (
-                                  <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
-                                    <microStep.icon className="w-4 h-4 text-white" />
+                                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
+                                    <microStep.icon className="w-4 h-4 text-black" />
                                   </div>
                                 )}
                                 <span>{microStep.title}</span>
                               </h3>
                               <div className="flex items-center space-x-1">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                <span className="text-xs text-green-600 font-medium">Live</span>
+                                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#00f5a0' }}></div>
+                                <span className="text-xs font-medium" style={{ color: '#00f5a0' }}>Live</span>
                               </div>
                             </div>
 
@@ -4357,21 +4357,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                                 <div className="space-y-2">
                                   {Object.entries(microStep.content || {}).map(([key, value], index) => (
                                     <div key={index} className="flex justify-between items-center">
-                                      <span className="text-sm font-medium text-gray-700 capitalize">
+                                      <span className="text-sm font-medium text-black capitalize">
                                         {key.replace(/([A-Z])/g, ' $1').trim()}:
                                       </span>
-                                      <span className="text-sm text-gray-900 font-semibold">{value}</span>
+                                      <span className="text-sm text-black font-semibold">{value}</span>
                                     </div>
                                   ))}
 
                                   {microStep.type === 'processing_window' && (
                                     <div className="flex items-center space-x-2 mt-3">
                                       <div className="flex space-x-1">
-                                        <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce"></div>
-                                        <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                        <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                        <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#00f5a0' }}></div>
+                                        <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#00f5a0', animationDelay: '0.1s' }}></div>
+                                        <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#00f5a0', animationDelay: '0.2s' }}></div>
                                       </div>
-                                      <span className="text-sm text-gray-600">Processing...</span>
+                                      <span className="text-sm text-black">Processing...</span>
                                     </div>
                                   )}
                                 </div>
@@ -4379,7 +4379,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                             </div>
 
                             {/* Timestamp */}
-                            <div className="text-xs text-gray-400 mt-3">
+                            <div className="text-xs text-black mt-3">
                               {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
                           </div>
@@ -4396,7 +4396,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         className="relative"
                       >
                         <div className="absolute -left-6 top-4">
-                          <div className="w-3 h-3 rounded-full bg-green-500" />
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#00f5a0' }} />
                         </div>
                         
                         <div className="w-full max-w-4xl">
@@ -4445,25 +4445,25 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         }}
                       >
                         <div className="absolute -left-6 top-4">
-                          <div className="w-3 h-3 rounded-full bg-green-500" />
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#00f5a0' }} />
                         </div>
-                        
-                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden max-w-2xl hover:shadow-lg transition-shadow">
-                          <div className="bg-green-50 px-4 py-3 border-b">
+
+                        <div className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden max-w-2xl hover:shadow-lg transition-shadow">
+                          <div className="bg-white px-4 py-3 border-b-2 border-gray-200">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-3">
                                 <div className="text-lg">📧</div>
                                 <div>
-                                  <div className="font-medium text-gray-900">
+                                  <div className="font-medium text-black">
                                     To: {microStep.email.to || microStep.email.recipient_name || 'prospect@company.com'}
                                   </div>
-                                  <div className="text-sm text-gray-700">
+                                  <div className="text-sm text-black">
                                     From: {microStep.email.from || 'Fruit AI'}
                                   </div>
                                 </div>
                               </div>
-                              <div className="bg-green-100 px-3 py-1 rounded-full">
-                                <span className="text-xs font-medium text-gray-900">
+                              <div className="px-3 py-1 rounded-full" style={{ backgroundColor: '#00f5a0' }}>
+                                <span className="text-xs font-medium text-black">
                                   {microStep.email.quality || microStep.email.confidence || Math.floor(Math.random() * 15) + 85}% Quality
                                 </span>
                               </div>
@@ -4471,10 +4471,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                           </div>
 
                           <div className="p-4">
-                            <h5 className="font-bold text-gray-900 mb-2">
+                            <h5 className="font-bold text-black mb-2">
                               Subject: {microStep.email.subject || `${microStep.email.to?.split('@')[1]?.split('.')[0]} - Strategic Collaboration`}
                             </h5>
-                            <div className="text-sm text-gray-700 space-y-1">
+                            <div className="text-sm text-black space-y-1">
                               {(() => {
                                 // Extract actual email content
                                 let emailContent = '';
@@ -4501,7 +4501,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                                       <div className="whitespace-pre-wrap">
                                         {previewText}{previewText.length >= 200 ? '...' : ''}
                                       </div>
-                                      <div className="text-xs text-gray-600 mt-2 italic">
+                                      <div className="text-xs text-black mt-2 italic">
                                         Click to view full email
                                       </div>
                                     </>
@@ -4513,7 +4513,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                                     <>
                                       <p>Hi {recipientName.charAt(0).toUpperCase() + recipientName.slice(1)},</p>
                                       <p>I noticed your work in Food Technology and thought you'd be interested in our AI solution that could benefit {companyName}...</p>
-                                      <div className="text-xs text-gray-600 mt-2 italic">
+                                      <div className="text-xs text-black mt-2 italic">
                                         Click to view full email
                                       </div>
                                     </>
