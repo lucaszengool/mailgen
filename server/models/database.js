@@ -170,6 +170,26 @@ class Database {
         });
       }
     });
+
+    // 检查 smtp_configs 表是否有 user_id 列
+    this.db.all("PRAGMA table_info(smtp_configs)", (err, columns) => {
+      if (err) {
+        console.error('检查 smtp_configs 表结构失败:', err);
+        return;
+      }
+
+      const hasUserId = columns.some(col => col.name === 'user_id');
+      if (!hasUserId) {
+        // 添加 user_id 列到现有表
+        this.db.run("ALTER TABLE smtp_configs ADD COLUMN user_id TEXT NOT NULL DEFAULT 'anonymous'", (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('添加 user_id 到 smtp_configs 失败:', err);
+          } else {
+            console.log('✅ SMTP Configs 表已添加 user_id 列');
+          }
+        });
+      }
+    });
   }
 
   // 记录邮件发送
@@ -547,16 +567,99 @@ class Database {
     });
   }
 
+  // 💾 Save SMTP config for user
+  saveSMTPConfig(smtpConfig, userId = 'anonymous') {
+    return new Promise((resolve, reject) => {
+      // First, unset any existing default for this user
+      this.db.run(
+        'UPDATE smtp_configs SET is_default = 0 WHERE user_id = ?',
+        [userId],
+        (err) => {
+          if (err) {
+            console.error('Error unsetting default SMTP:', err);
+          }
+
+          // Then insert or update the new config
+          const stmt = this.db.prepare(`
+            INSERT INTO smtp_configs (name, host, port, secure, username, password, is_default, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, 1, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              host = excluded.host,
+              port = excluded.port,
+              secure = excluded.secure,
+              username = excluded.username,
+              password = excluded.password,
+              is_default = 1
+          `);
+
+          stmt.run(
+            smtpConfig.provider || 'gmail',
+            smtpConfig.host || 'smtp.gmail.com',
+            smtpConfig.port || 587,
+            smtpConfig.secure ? 1 : 0,
+            smtpConfig.username || smtpConfig.user || smtpConfig.email,
+            smtpConfig.password || smtpConfig.pass,
+            userId,
+            function(err) {
+              if (err) {
+                reject(err);
+              } else {
+                console.log(`✅ [User: ${userId}] SMTP config saved to database`);
+                resolve({ id: this.lastID, message: 'SMTP config saved successfully' });
+              }
+            }
+          );
+          stmt.finalize();
+        }
+      );
+    });
+  }
+
+  // 💾 Get SMTP config for user
+  getSMTPConfig(userId = 'anonymous') {
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        'SELECT * FROM smtp_configs WHERE user_id = ? AND is_default = 1 ORDER BY created_at DESC LIMIT 1',
+        [userId],
+        (err, row) => {
+          if (err) {
+            reject(err);
+          } else {
+            if (row) {
+              console.log(`✅ [User: ${userId}] Loaded SMTP config from database`);
+              resolve({
+                provider: row.name,
+                host: row.host,
+                port: row.port,
+                secure: row.secure === 1,
+                username: row.username,
+                user: row.username,
+                email: row.username,
+                password: row.password,
+                pass: row.password
+              });
+            } else {
+              console.log(`⚠️ [User: ${userId}] No SMTP config found in database`);
+              resolve(null);
+            }
+          }
+        }
+      );
+    });
+  }
+
   // 清空用户所有数据
   clearUserData(userId = 'anonymous') {
     return new Promise((resolve, reject) => {
       this.db.serialize(() => {
         this.db.run('DELETE FROM contacts WHERE user_id = ?', [userId]);
         this.db.run('DELETE FROM campaigns WHERE user_id = ?', [userId]);
-        this.db.run('DELETE FROM email_drafts WHERE user_id = ?', [userId], function(err) {
+        this.db.run('DELETE FROM email_drafts WHERE user_id = ?', [userId]);
+        this.db.run('DELETE FROM smtp_configs WHERE user_id = ?', [userId], function(err) {
           if (err) {
             reject(err);
           } else {
+            console.log(`✅ [User: ${userId}] All user data cleared from database`);
             resolve({ message: 'All user data cleared successfully' });
           }
         });

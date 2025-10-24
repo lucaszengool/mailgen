@@ -146,6 +146,22 @@ async function executeRealTimeWorkflow(agent, wsManager, campaignConfig) {
     wsManager.sendLogUpdate('prospect_search', `Found ${prospectArray.length} qualified prospects`, 'success');
     wsManager.sendNotification(`找到 ${prospectArray.length} 个潜在客户`, 'success');
 
+    // 💾 CRITICAL: Save prospects to database immediately when found
+    try {
+      const workflowModule = require('./workflow');
+      const userId = campaignConfig?.userId || 'anonymous';
+      if (workflowModule.setLastWorkflowResults && prospectArray.length > 0) {
+        console.log(`💾 [executeRealTimeWorkflow] Saving ${prospectArray.length} prospects to database for user ${userId}...`);
+        await workflowModule.setLastWorkflowResults({
+          prospects: prospectArray,
+          campaignId: campaignId
+        }, userId);
+        console.log(`✅ [executeRealTimeWorkflow] Prospects saved to database successfully`);
+      }
+    } catch (saveError) {
+      console.error(`❌ [executeRealTimeWorkflow] Failed to save prospects to database:`, saveError.message);
+    }
+
     // 🛑 CHECK: Is the workflow waiting for template selection?
     if (agent.state?.isWaitingForTemplate) {
       console.log('⏸️ Workflow is waiting for template selection - pausing execution');

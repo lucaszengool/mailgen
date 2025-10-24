@@ -203,12 +203,26 @@ router.post('/start', optionalAuth, async (req, res) => {
       }
     }
 
+    // 💾 CRITICAL: Load SMTP config from database for user persistence
+    let smtpConfigFromDB = null;
+    try {
+      smtpConfigFromDB = await db.getSMTPConfig(req.userId);
+      if (smtpConfigFromDB) {
+        console.log(`✅ [User: ${req.userId}] Loaded SMTP config from database`);
+      } else {
+        console.log(`⚠️ [User: ${req.userId}] No SMTP config found in database, will use savedConfig or request body`);
+      }
+    } catch (dbError) {
+      console.error(`❌ [User: ${req.userId}] Failed to load SMTP config from database:`, dbError);
+    }
+
     // Log final config status
     console.log('📋 Final savedConfig status:', {
       exists: !!savedConfig,
       hasTargetWebsite: !!savedConfig?.targetWebsite,
       hasWebsiteAnalysis: !!savedConfig?.websiteAnalysis,
-      hasSMTPConfig: !!savedConfig?.smtpConfig
+      hasSMTPConfig: !!savedConfig?.smtpConfig,
+      hasSMTPConfigFromDB: !!smtpConfigFromDB
     });
 
     // Execute real campaign in background
@@ -216,7 +230,7 @@ router.post('/start', optionalAuth, async (req, res) => {
       targetWebsite: req.body.targetWebsite || savedConfig?.targetWebsite || 'https://example.com',
       campaignGoal: req.body.campaignGoal || savedConfig?.campaignGoal || 'partnership',
       businessType: req.body.businessType || savedConfig?.businessType || 'technology',
-      smtpConfig: req.body.smtpConfig || savedConfig?.smtpConfig,
+      smtpConfig: req.body.smtpConfig || smtpConfigFromDB || savedConfig?.smtpConfig, // 💾 Prioritize DB config
       emailTemplate: req.body.emailTemplate || savedConfig?.emailTemplate,
       templateData: req.body.templateData || savedConfig?.templateData,
       audienceType: req.body.audienceType || savedConfig?.audienceType,

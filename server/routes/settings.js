@@ -37,29 +37,40 @@ router.get('/', (req, res) => {
 /**
  * POST /api/settings/smtp - Update SMTP configuration
  */
-router.post('/smtp', (req, res) => {
+router.post('/smtp', async (req, res) => {
   try {
     const { smtpConfig, timestamp } = req.body;
-    
-    console.log('📧 更新SMTP配置:', smtpConfig);
-    
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+
+    console.log(`📧 [User: ${userId}] 更新SMTP配置:`, smtpConfig);
+
     // Validate required fields
-    const required = ['host', 'username', 'password', 'senderName', 'companyName'];
+    const required = ['host', 'username', 'password'];
     const missing = required.filter(field => !smtpConfig[field]);
-    
+
     if (missing.length > 0) {
       return res.status(400).json({
         success: false,
         error: `缺少必需字段: ${missing.join(', ')}`
       });
     }
-    
-    // Store SMTP configuration
+
+    // Store SMTP configuration in memory (for backwards compatibility)
     userSettings.smtp = {
       ...smtpConfig,
       updatedAt: timestamp || new Date().toISOString()
     };
-    
+
+    // 💾 CRITICAL: Save SMTP config to database for user persistence
+    try {
+      const db = require('../models/database');
+      await db.saveSMTPConfig(smtpConfig, userId);
+      console.log(`✅ [User: ${userId}] SMTP config saved to database successfully`);
+    } catch (dbError) {
+      console.error(`❌ [User: ${userId}] Failed to save SMTP config to database:`, dbError);
+      // Continue anyway - at least we have it in memory
+    }
+
     // Notify WebSocket manager about config update
     if (req.app.locals.wsManager) {
       req.app.locals.wsManager.broadcast({
@@ -68,15 +79,15 @@ router.post('/smtp', (req, res) => {
         data: userSettings.smtp
       });
     }
-    
-    console.log('✅ SMTP配置已保存并广播更新');
-    
+
+    console.log(`✅ [User: ${userId}] SMTP配置已保存并广播更新`);
+
     res.json({
       success: true,
       message: 'SMTP配置更新成功',
       data: userSettings.smtp
     });
-    
+
   } catch (error) {
     console.error('保存SMTP配置失败:', error);
     res.status(500).json({
