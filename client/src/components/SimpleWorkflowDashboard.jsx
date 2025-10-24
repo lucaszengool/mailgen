@@ -3819,6 +3819,30 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
               );
               return unique;
             });
+
+            // 🔥 FIX: Check if template selection is needed
+            // If we have prospects but no emails, trigger template selection popup
+            console.log('🎨 Checking if template selection popup should be triggered...');
+            console.log(`   Prospects: ${dbProspects.length}`);
+            console.log(`   Generated emails: ${generatedEmails.length}`);
+
+            // Wait a bit to check if emails are also loaded
+            setTimeout(async () => {
+              // Fetch workflow results to check if emails exist
+              const workflowCheck = await fetchAndTriggerWorkflowSteps();
+              const hasEmails = generatedEmails.length > 0 || emailCampaignStats.emails?.length > 0;
+
+              console.log(`🎨 Template selection check after data load:`);
+              console.log(`   Has prospects: ${dbProspects.length > 0}`);
+              console.log(`   Has emails: ${hasEmails}`);
+              console.log(`   Should show popup: ${dbProspects.length > 0 && !hasEmails}`);
+
+              if (dbProspects.length > 0 && !hasEmails) {
+                console.log('🎨🎨🎨 TRIGGERING TEMPLATE SELECTION POPUP - prospects exist but no emails');
+                setShowTemplateSelectionModal(true);
+                setWaitingForTemplate(true);
+              }
+            }, 1000);
           }
         }
       } catch (error) {
