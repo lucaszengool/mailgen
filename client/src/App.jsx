@@ -135,17 +135,32 @@ function App() {
     console.log('🔄 App.jsx - Setup completed, navigating to:', config.nextStep || 'dashboard');
 
     setAgentConfig(config);
+
+    // 🎯 Check if first time user - show onboarding tour first
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+
+    if (!hasSeenOnboarding && config.nextStep !== 'dashboard') {
+      // First time user completing setup → show onboarding tour
+      console.log('🎓 First time setup complete - showing onboarding tour');
+      localStorage.setItem('hasSeenOnboarding', 'true');
+      localStorage.setItem('pendingNextStep', config.nextStep || 'dashboard'); // Save where to go after tour
+      setIsSetupComplete(true);
+      setShowOnboardingTour(true);
+      setCurrentView('dashboard'); // Show dashboard with tour overlay
+      return;
+    }
+
+    // Not first time or explicitly navigating to dashboard
     if (config.nextStep === 'website-analysis') {
       // Show website analysis review page
       setCurrentView('website-analysis');
     } else if (config.nextStep === 'dashboard') {
-      // Show SimpleWorkflowDashboard directly (skip onboarding if explicitly navigating)
+      // Show SimpleWorkflowDashboard directly
       setIsSetupComplete(true);
       setCurrentView('dashboard');
     } else {
-      // 🎯 NEW: Show onboarding tour after initial setup
+      // Default: show dashboard
       setIsSetupComplete(true);
-      setShowOnboardingTour(true);
       setCurrentView('dashboard');
     }
   };
@@ -153,6 +168,19 @@ function App() {
   const handleOnboardingComplete = () => {
     console.log('✅ Onboarding tour completed');
     setShowOnboardingTour(false);
+
+    // Check if there's a pending next step after onboarding
+    const pendingNextStep = localStorage.getItem('pendingNextStep');
+    if (pendingNextStep) {
+      console.log('📍 Navigating to pending step:', pendingNextStep);
+      localStorage.removeItem('pendingNextStep'); // Clean up
+
+      if (pendingNextStep === 'website-analysis') {
+        setCurrentView('website-analysis');
+      } else {
+        setCurrentView('dashboard');
+      }
+    }
   };
 
   const handleClientClick = (client) => {
