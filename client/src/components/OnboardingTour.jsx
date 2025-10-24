@@ -23,7 +23,7 @@ const OnboardingTour = ({ isOpen, onComplete, startStep = 0 }) => {
         'All emails will be personalized automatically'
       ],
       action: 'Get Started',
-      color: '#22c55e' // Light green
+      color: '#00f5a0'
     },
     {
       id: 'ai-agent',
@@ -37,7 +37,7 @@ const OnboardingTour = ({ isOpen, onComplete, startStep = 0 }) => {
         'Monitors campaign performance in real-time'
       ],
       action: 'Continue',
-      color: '#22c55e'
+      color: '#00f5a0'
     },
     {
       id: 'prospect-search',
@@ -51,7 +51,7 @@ const OnboardingTour = ({ isOpen, onComplete, startStep = 0 }) => {
         'All prospects saved to your database'
       ],
       action: 'Next',
-      color: '#22c55e'
+      color: '#00f5a0'
     },
     {
       id: 'email-generation',
@@ -65,7 +65,7 @@ const OnboardingTour = ({ isOpen, onComplete, startStep = 0 }) => {
         'Preview before sending'
       ],
       action: 'Next',
-      color: '#22c55e'
+      color: '#00f5a0'
     },
     {
       id: 'campaign-launch',
@@ -79,7 +79,7 @@ const OnboardingTour = ({ isOpen, onComplete, startStep = 0 }) => {
         'Review and send when ready'
       ],
       action: 'Launch Campaign',
-      color: '#22c55e',
+      color: '#00f5a0',
       isLast: true
     }
   ];

@@ -43,7 +43,7 @@ const UserActionReminder = ({ userId, onNavigate }) => {
               message: 'Your AI agent has found qualified prospects. Select an email template to continue.',
               buttonText: 'Select Template',
               buttonAction: 'template-selection',
-              color: '#22c55e',
+              color: '#00f5a0',
               details: [
                 `${prospects.length} verified prospects ready`,
                 'AI will personalize emails for each prospect',
@@ -63,7 +63,7 @@ const UserActionReminder = ({ userId, onNavigate }) => {
                 message: 'Your personalized emails are generated and ready. Review and send them now.',
                 buttonText: 'Review & Send',
                 buttonAction: 'email-campaign',
-                color: '#22c55e',
+                color: '#00f5a0',
                 details: [
                   `${unsent.length} personalized emails ready`,
                   'Preview each email before sending',
@@ -133,23 +133,26 @@ const UserActionReminder = ({ userId, onNavigate }) => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-black">{reminderData.title}</h3>
-                <p className="text-sm text-gray-700 mt-1">{reminderData.message}</p>
+                <p className="text-sm text-black mt-1">{reminderData.message}</p>
               </div>
             </div>
             <button
               onClick={handleDismiss}
               className="p-1 rounded-full hover:bg-gray-100 transition-colors"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-black" />
             </button>
           </div>
 
           {/* Details */}
           {reminderData.details && reminderData.details.length > 0 && (
-            <div className="space-y-2 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="space-y-2 mb-4 p-3 bg-white rounded-lg border border-gray-200">
               {reminderData.details.map((detail, index) => (
                 <div key={index} className="flex items-start space-x-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
+                  <div
+                    className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
+                    style={{ backgroundColor: reminderData.color }}
+                  />
                   <span className="text-sm text-black">{detail}</span>
                 </div>
               ))}
@@ -159,7 +162,7 @@ const UserActionReminder = ({ userId, onNavigate }) => {
           {/* Action button */}
           <button
             onClick={handleAction}
-            className="w-full py-3 rounded-lg font-semibold text-white flex items-center justify-center space-x-2 transition-all hover:scale-105"
+            className="w-full py-3 rounded-lg font-semibold text-black flex items-center justify-center space-x-2 transition-all hover:scale-105"
             style={{ backgroundColor: reminderData.color }}
           >
             <span>{reminderData.buttonText}</span>
@@ -167,7 +170,7 @@ const UserActionReminder = ({ userId, onNavigate }) => {
           </button>
 
           {/* Footer note */}
-          <p className="text-xs text-gray-500 mt-3 text-center">
+          <p className="text-xs text-black mt-3 text-center">
             This reminder is based on your campaign's current status
           </p>
         </div>

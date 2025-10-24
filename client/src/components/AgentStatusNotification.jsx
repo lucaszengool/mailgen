@@ -42,41 +42,46 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
   const statusConfig = {
     loading: {
       icon: Loader2,
-      iconClass: 'animate-spin text-green-500',
-      bgClass: 'bg-green-50',
-      borderClass: 'border-green-200',
+      iconClass: 'animate-spin',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
       title: 'Agent Working...',
-      progressColor: '#22c55e'
+      progressColor: '#00f5a0'
     },
     searching: {
       icon: Search,
-      iconClass: 'animate-pulse text-green-500',
-      bgClass: 'bg-green-50',
-      borderClass: 'border-green-200',
+      iconClass: 'animate-pulse',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
       title: 'Searching Prospects...',
-      progressColor: '#22c55e'
+      progressColor: '#00f5a0'
     },
     generating: {
       icon: Mail,
-      iconClass: 'animate-pulse text-green-500',
-      bgClass: 'bg-green-50',
-      borderClass: 'border-green-200',
+      iconClass: 'animate-pulse',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
       title: 'Generating Emails...',
-      progressColor: '#22c55e'
+      progressColor: '#00f5a0'
     },
     success: {
       icon: CheckCircle,
-      iconClass: 'text-green-500',
-      bgClass: 'bg-green-50',
-      borderClass: 'border-green-200',
+      iconClass: '',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
       title: 'Success!',
-      progressColor: '#22c55e'
+      progressColor: '#00f5a0'
     },
     error: {
       icon: AlertCircle,
-      iconClass: 'text-red-500',
-      bgClass: 'bg-red-50',
-      borderClass: 'border-red-200',
+      iconClass: '',
+      iconColor: '#ef4444',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
       title: 'Error',
       progressColor: '#ef4444'
     }
@@ -107,18 +112,18 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
-                <Icon className={`w-6 h-6 ${config.iconClass}`} />
+                <Icon className={`w-6 h-6 ${config.iconClass}`} style={{ color: config.iconColor }} />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-black">{config.title}</h3>
-                <p className="text-sm text-gray-700">{message}</p>
+                <p className="text-sm text-black">{message}</p>
               </div>
             </div>
             <button
               onClick={handleClose}
-              className="p-1 rounded-full hover:bg-white/50 transition-colors"
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-black" />
             </button>
           </div>
 
@@ -127,7 +132,10 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
             <div className="space-y-2 mt-4 pt-4 border-t border-gray-200">
               {details.map((detail, index) => (
                 <div key={index} className="flex items-start space-x-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
+                  <div
+                    className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
+                    style={{ backgroundColor: config.progressColor }}
+                  />
                   <span className="text-sm text-black">{detail}</span>
                 </div>
               ))}
@@ -149,51 +157,51 @@ export const AgentActivityPanel = ({ activities = [], isOpen, onClose }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="w-full max-w-2xl mx-4 bg-white rounded-2xl shadow-2xl border-2 border-gray-200 overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-500 to-green-600 p-6">
+        <div className="p-6 border-b-2 border-gray-200" style={{ backgroundColor: '#00f5a0' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Sparkles className="w-6 h-6 text-white" />
-              <h2 className="text-2xl font-bold text-white">Agent Activity</h2>
+              <Sparkles className="w-6 h-6 text-black" />
+              <h2 className="text-2xl font-bold text-black">Agent Activity</h2>
             </div>
             <button
               onClick={onClose}
               className="p-2 rounded-full hover:bg-white/20 transition-colors"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-5 h-5 text-black" />
             </button>
           </div>
         </div>
 
         {/* Activity list */}
-        <div className="p-6 max-h-96 overflow-y-auto">
+        <div className="p-6 max-h-96 overflow-y-auto bg-white">
           {activities.length === 0 ? (
             <div className="text-center py-12">
-              <Loader2 className="w-12 h-12 animate-spin text-green-500 mx-auto mb-4" />
-              <p className="text-gray-600">Waiting for agent to start...</p>
+              <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: '#00f5a0' }} />
+              <p className="text-black">Waiting for agent to start...</p>
             </div>
           ) : (
             <div className="space-y-4">
               {activities.map((activity, index) => (
                 <div
                   key={index}
-                  className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                  className="flex items-start space-x-4 p-4 bg-white rounded-lg border border-gray-200"
                 >
-                  <div className={`flex-shrink-0 ${activity.completed ? 'text-green-500' : 'text-gray-400'}`}>
+                  <div className="flex-shrink-0">
                     {activity.completed ? (
-                      <CheckCircle className="w-6 h-6" />
+                      <CheckCircle className="w-6 h-6" style={{ color: '#00f5a0' }} />
                     ) : (
-                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#00f5a0' }} />
                     )}
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-black">{activity.title}</h4>
-                    <p className="text-sm text-gray-700 mt-1">{activity.description}</p>
+                    <p className="text-sm text-black mt-1">{activity.description}</p>
                     {activity.result && (
-                      <p className="text-sm text-green-600 mt-2 font-medium">{activity.result}</p>
+                      <p className="text-sm mt-2 font-medium" style={{ color: '#00f5a0' }}>{activity.result}</p>
                     )}
                   </div>
                   {activity.time && (
-                    <span className="text-xs text-gray-500">{activity.time}</span>
+                    <span className="text-xs text-black">{activity.time}</span>
                   )}
                 </div>
               ))}
@@ -202,10 +210,11 @@ export const AgentActivityPanel = ({ activities = [], isOpen, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-gray-50 border-t border-gray-200">
+        <div className="p-4 bg-white border-t border-gray-200">
           <button
             onClick={onClose}
-            className="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
+            className="w-full px-4 py-3 font-semibold text-black rounded-lg transition-colors hover:opacity-90"
+            style={{ backgroundColor: '#00f5a0' }}
           >
             Close
           </button>
