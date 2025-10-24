@@ -33,6 +33,7 @@ import EmailDashboard from './components/EmailDashboard';
 import WorkflowPanel from './components/WorkflowPanel';
 import SignInPage from './pages/SignIn';
 import SignUpPage from './pages/SignUp';
+import OnboardingTour from './components/OnboardingTour';
 
 // Lazy load components with circular dependencies
 const SimpleWorkflowDashboard = lazy(() => import('./components/SimpleWorkflowDashboard'));
@@ -42,6 +43,7 @@ function App() {
   const [agentConfig, setAgentConfig] = useState(null);
   const [currentView, setCurrentView] = useState('setup');
   const [selectedClient, setSelectedClient] = useState(null);
+  const [showOnboardingTour, setShowOnboardingTour] = useState(false);
 
   // Debug current view state
   // console.log('🔍 App.jsx render - Current state:', { currentView, isSetupComplete });
@@ -137,14 +139,20 @@ function App() {
       // Show website analysis review page
       setCurrentView('website-analysis');
     } else if (config.nextStep === 'dashboard') {
-      // Show SimpleWorkflowDashboard directly
+      // Show SimpleWorkflowDashboard directly (skip onboarding if explicitly navigating)
       setIsSetupComplete(true);
       setCurrentView('dashboard');
     } else {
-      // Default: show dashboard
+      // 🎯 NEW: Show onboarding tour after initial setup
       setIsSetupComplete(true);
+      setShowOnboardingTour(true);
       setCurrentView('dashboard');
     }
+  };
+
+  const handleOnboardingComplete = () => {
+    console.log('✅ Onboarding tour completed');
+    setShowOnboardingTour(false);
   };
 
   const handleClientClick = (client) => {
@@ -270,6 +278,13 @@ function App() {
             onReset={handleReset}
           />
         </Suspense>
+
+        {/* 🎯 Onboarding Tour - shown after initial setup */}
+        <OnboardingTour
+          isOpen={showOnboardingTour}
+          onComplete={handleOnboardingComplete}
+          startStep={0}
+        />
       </div>
     );
   }

@@ -20,6 +20,7 @@ import JobRightProspectCard from './JobRightProspectCard';
 import JobRightEmailCard from './JobRightEmailCard';
 import ProfessionalEmailEditor from './ProfessionalEmailEditor';
 import TemplateSelectionModal from './TemplateSelectionModal';
+import AgentStatusNotification, { AgentActivityPanel } from './AgentStatusNotification';
 
 
 // Utility function for generating gradient patterns
@@ -1641,6 +1642,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [emailFilters, setEmailFilters] = useState({});
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
+
+  // 🎯 Agent status notification states
+  const [agentStatus, setAgentStatus] = useState(null);
+  const [agentMessage, setAgentMessage] = useState('');
+  const [agentDetails, setAgentDetails] = useState([]);
+  const [showAgentActivity, setShowAgentActivity] = useState(false);
+  const [agentActivities, setAgentActivities] = useState([]);
 
   // Filter handlers
   const handleProspectFilterChange = (filterType, value) => {
