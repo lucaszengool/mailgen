@@ -12,6 +12,7 @@ const UserActionReminder = ({ userId, onNavigate }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [reminderData, setReminderData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [dismissedReminders, setDismissedReminders] = useState(new Set());
 
   useEffect(() => {
     // Check backend state every 10 seconds
@@ -35,9 +36,14 @@ const UserActionReminder = ({ userId, onNavigate }) => {
           let actionNeeded = null;
 
           // Case 1: Prospects found but no template selected
-          if (prospects.length > 0 && (!emailCampaign || !emailCampaign.emails || emailCampaign.emails.length === 0)) {
+          // Only show if: prospects exist, no emails generated, AND user hasn't dismissed this specific reminder
+          const selectTemplateKey = `select_template_${prospects.length}`;
+          if (prospects.length > 0 &&
+              (!emailCampaign || !emailCampaign.emails || emailCampaign.emails.length === 0) &&
+              !dismissedReminders.has(selectTemplateKey)) {
             actionNeeded = {
               type: 'select_template',
+              dismissKey: selectTemplateKey,
               icon: Mail,
               title: `${prospects.length} Prospects Found!`,
               message: 'Your AI agent has found qualified prospects. Select an email template to continue.',
@@ -53,11 +59,14 @@ const UserActionReminder = ({ userId, onNavigate }) => {
           }
 
           // Case 2: Emails generated but not sent
+          // Only show if there are unsent emails AND user hasn't dismissed this specific reminder
           else if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
             const unsent = emailCampaign.emails.filter(e => e.status === 'generated' || e.status === 'pending');
-            if (unsent.length > 0) {
+            const sendEmailsKey = `send_emails_${unsent.length}`;
+            if (unsent.length > 0 && !dismissedReminders.has(sendEmailsKey)) {
               actionNeeded = {
                 type: 'send_emails',
+                dismissKey: sendEmailsKey,
                 icon: CheckCircle,
                 title: `${unsent.length} Emails Ready to Send!`,
                 message: 'Your personalized emails are generated and ready. Review and send them now.',
@@ -95,15 +104,23 @@ const UserActionReminder = ({ userId, onNavigate }) => {
     const interval = setInterval(checkBackendState, 10000);
 
     return () => clearInterval(interval);
-  }, [userId]);
+  }, [userId, dismissedReminders]);
 
   const handleAction = () => {
     if (reminderData && onNavigate) {
+      // Mark as dismissed when user takes action
+      if (reminderData.dismissKey) {
+        setDismissedReminders(prev => new Set([...prev, reminderData.dismissKey]));
+      }
       onNavigate(reminderData.buttonAction);
     }
   };
 
   const handleDismiss = () => {
+    // Mark as dismissed when user closes the reminder
+    if (reminderData && reminderData.dismissKey) {
+      setDismissedReminders(prev => new Set([...prev, reminderData.dismissKey]));
+    }
     setIsVisible(false);
   };
 
