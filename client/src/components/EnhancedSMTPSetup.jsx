@@ -287,65 +287,9 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
   const selectedProviderData = emailProviders.find(p => p.id === selectedProvider);
 
   return (
-    <div className="min-h-screen bg-white flex">
-      {/* Progress Sidebar */}
-      <div className="w-80 bg-green-50 border-r border-gray-300 p-6">
-        <div className="mb-8">
-          <h2 className="text-sm font-semibold text-black mb-4">Setup Progress</h2>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                <CheckCircle className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-black">Campaign Goal</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                <CheckCircle className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-black">Email Templates</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                <CheckCircle className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-black">Target Audience</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center">
-                <div className="w-3 h-3 bg-white rounded-full"></div>
-              </div>
-              <span className="text-sm font-medium text-black">SMTP Configuration</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Security Notice */}
-        <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <Shield className="w-5 h-5 text-green-500" />
-            <h3 className="font-medium text-black">Secure & Private</h3>
-          </div>
-          <p className="text-sm text-black">
-            Your email credentials are encrypted and stored securely.
-            We only use them to send emails on your behalf.
-          </p>
-        </div>
-
-        {/* Tutorial Tips */}
-        <div className="bg-white border border-gray-300 rounded-lg p-4">
-          <h3 className="font-medium text-black mb-2">📧 SMTP Setup Tips</h3>
-          <ul className="text-xs text-black space-y-1">
-            <li>• Most providers require app-specific passwords</li>
-            <li>• Enable 2FA before creating app passwords</li>
-            <li>• Test your settings after configuration</li>
-            <li>• Gmail is the most reliable option</li>
-          </ul>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-white">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex flex-col">
         {/* Header */}
         <div className="bg-white border-b border-gray-300 p-6">
           <div className="max-w-4xl mx-auto">
