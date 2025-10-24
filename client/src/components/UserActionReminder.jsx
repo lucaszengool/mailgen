@@ -1,0 +1,201 @@
+import React, { useState, useEffect } from 'react';
+import { X, AlertCircle, ArrowRight, Mail, Users, CheckCircle } from 'lucide-react';
+import { apiGet } from '../utils/apiClient';
+
+/**
+ * UserActionReminder Component
+ * Checks backend state and reminds user of pending actions
+ * UI Style: Light green, grey, white background, black text
+ */
+
+const UserActionReminder = ({ userId, onNavigate }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [reminderData, setReminderData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check backend state every 10 seconds
+    const checkBackendState = async () => {
+      try {
+        setIsLoading(true);
+
+        // Fetch workflow results to check current state
+        const result = await apiGet('/api/workflow/results');
+
+        if (result.success && result.data) {
+          const { prospects = [], emailCampaign = null } = result.data;
+
+          console.log('🔍 Checking user action state:', {
+            prospects: prospects.length,
+            emails: emailCampaign?.emails?.length || 0,
+            userId
+          });
+
+          // Determine what action is needed
+          let actionNeeded = null;
+
+          // Case 1: Prospects found but no template selected
+          if (prospects.length > 0 && (!emailCampaign || !emailCampaign.emails || emailCampaign.emails.length === 0)) {
+            actionNeeded = {
+              type: 'select_template',
+              icon: Mail,
+              title: `${prospects.length} Prospects Found!`,
+              message: 'Your AI agent has found qualified prospects. Select an email template to continue.',
+              buttonText: 'Select Template',
+              buttonAction: 'template-selection',
+              color: '#22c55e',
+              details: [
+                `${prospects.length} verified prospects ready`,
+                'AI will personalize emails for each prospect',
+                'Preview before sending'
+              ]
+            };
+          }
+
+          // Case 2: Emails generated but not sent
+          else if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
+            const unsent = emailCampaign.emails.filter(e => e.status === 'generated' || e.status === 'pending');
+            if (unsent.length > 0) {
+              actionNeeded = {
+                type: 'send_emails',
+                icon: CheckCircle,
+                title: `${unsent.length} Emails Ready to Send!`,
+                message: 'Your personalized emails are generated and ready. Review and send them now.',
+                buttonText: 'Review & Send',
+                buttonAction: 'email-campaign',
+                color: '#22c55e',
+                details: [
+                  `${unsent.length} personalized emails ready`,
+                  'Preview each email before sending',
+                  'Track opens, clicks, and replies'
+                ]
+              };
+            }
+          }
+
+          if (actionNeeded) {
+            setReminderData(actionNeeded);
+            setIsVisible(true);
+          } else {
+            setIsVisible(false);
+          }
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error checking backend state:', error);
+        setIsLoading(false);
+      }
+    };
+
+    // Initial check
+    checkBackendState();
+
+    // Check every 10 seconds
+    const interval = setInterval(checkBackendState, 10000);
+
+    return () => clearInterval(interval);
+  }, [userId]);
+
+  const handleAction = () => {
+    if (reminderData && onNavigate) {
+      onNavigate(reminderData.buttonAction);
+    }
+  };
+
+  const handleDismiss = () => {
+    setIsVisible(false);
+  };
+
+  if (!isVisible || !reminderData) return null;
+
+  const Icon = reminderData.icon;
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 animate-slideUp">
+      <div className="w-96 bg-white rounded-xl shadow-2xl border-2 border-gray-200 overflow-hidden">
+        {/* Colored accent bar */}
+        <div
+          className="h-2"
+          style={{ backgroundColor: reminderData.color }}
+        />
+
+        {/* Content */}
+        <div className="p-6 bg-white">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start space-x-3">
+              <div
+                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: `${reminderData.color}20` }}
+              >
+                <Icon className="w-5 h-5" style={{ color: reminderData.color }} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-black">{reminderData.title}</h3>
+                <p className="text-sm text-gray-700 mt-1">{reminderData.message}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleDismiss}
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+
+          {/* Details */}
+          {reminderData.details && reminderData.details.length > 0 && (
+            <div className="space-y-2 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              {reminderData.details.map((detail, index) => (
+                <div key={index} className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0" />
+                  <span className="text-sm text-black">{detail}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Action button */}
+          <button
+            onClick={handleAction}
+            className="w-full py-3 rounded-lg font-semibold text-white flex items-center justify-center space-x-2 transition-all hover:scale-105"
+            style={{ backgroundColor: reminderData.color }}
+          >
+            <span>{reminderData.buttonText}</span>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+
+          {/* Footer note */}
+          <p className="text-xs text-gray-500 mt-3 text-center">
+            This reminder is based on your campaign's current status
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Add animation styles
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  .animate-slideUp {
+    animation: slideUp 0.4s ease-out;
+  }
+`;
+if (!document.getElementById('user-action-reminder-styles')) {
+  style.id = 'user-action-reminder-styles';
+  document.head.appendChild(style);
+}
+
+export default UserActionReminder;

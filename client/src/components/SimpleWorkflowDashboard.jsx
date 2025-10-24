@@ -21,6 +21,7 @@ import JobRightEmailCard from './JobRightEmailCard';
 import ProfessionalEmailEditor from './ProfessionalEmailEditor';
 import TemplateSelectionModal from './TemplateSelectionModal';
 import AgentStatusNotification, { AgentActivityPanel } from './AgentStatusNotification';
+import UserActionReminder from './UserActionReminder';
 
 
 // Utility function for generating gradient patterns
@@ -4963,6 +4964,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         />,
         document.body
       )}
+
+      {/* 🎯 User Action Reminder - Shows pending actions specific to this user */}
+      <UserActionReminder
+        userId={localStorage.getItem('userId')}
+        onNavigate={(action) => {
+          console.log('📍 User clicked reminder button, navigating to:', action);
+          if (action === 'template-selection') {
+            setShowTemplateSelection(true);
+          } else if (action === 'email-campaign') {
+            setActiveView('email-campaign');
+          } else if (action === 'prospects') {
+            setActiveView('prospects');
+          }
+        }}
+      />
     </div>
   );
 };
