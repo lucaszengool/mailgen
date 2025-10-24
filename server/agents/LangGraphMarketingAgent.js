@@ -4963,15 +4963,21 @@ Return ONLY the JSON object, no other text.`;
       }
       
       // Create a hash of SMTP config to check if we have a cached transporter
-      const configHash = `${emailConfig.host}:${emailConfig.port}:${emailConfig.auth?.user}`;
+      // 🔥 FIX: Include password hash in cache key to detect credential changes
+      const crypto = require('crypto');
+      const passwordHash = emailConfig.auth?.pass ?
+        crypto.createHash('md5').update(emailConfig.auth.pass).digest('hex').substring(0, 8) :
+        'nopass';
+      const configHash = `${emailConfig.host}:${emailConfig.port}:${emailConfig.auth?.user}:${passwordHash}`;
       const now = Date.now();
 
       // Get or create transporter
       let transporter = this.state.smtpTransporters.get(configHash);
       const lastVerified = this.state.smtpVerifiedConfigs.get(configHash);
 
-      // Create new transporter if we don't have one cached or it's been more than 1 hour
-      if (!transporter || !lastVerified || (now - lastVerified) > 60 * 60 * 1000) {
+      // Create new transporter if we don't have one cached or it's been more than 5 minutes
+      // 🔥 FIX: Reduced cache time from 1 hour to 5 minutes to catch config updates faster
+      if (!transporter || !lastVerified || (now - lastVerified) > 5 * 60 * 1000) {
         console.log('🔧 Creating new SMTP transporter with connection pooling...');
 
         // Add connection pool configuration to prevent rate limiting
@@ -5727,6 +5733,20 @@ Return ONLY the JSON object, no other text.`;
       console.log(`🗑️ Cleared ${count} pending emails from LangGraphMarketingAgent`);
     } else {
       console.log('🗑️ No pending emails to clear in LangGraphMarketingAgent');
+    }
+  }
+
+  /**
+   * Clear SMTP transporter cache (useful when user updates SMTP config)
+   */
+  clearSMTPCache() {
+    if (this.state.smtpTransporters) {
+      const count = this.state.smtpTransporters.size;
+      this.state.smtpTransporters.clear();
+      this.state.smtpVerifiedConfigs.clear();
+      console.log(`🗑️ Cleared ${count} cached SMTP transporters`);
+    } else {
+      console.log('🗑️ No SMTP cache to clear');
     }
   }
 

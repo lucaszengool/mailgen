@@ -71,6 +71,18 @@ router.post('/smtp', async (req, res) => {
       // Continue anyway - at least we have it in memory
     }
 
+    // 🔥 FIX: Clear SMTP transporter cache when config is updated
+    // This ensures new credentials are used immediately
+    try {
+      const agent = req.app.locals.langGraphAgent;
+      if (agent && agent.clearSMTPCache) {
+        agent.clearSMTPCache();
+        console.log(`✅ [User: ${userId}] SMTP cache cleared - new config will be used`);
+      }
+    } catch (cacheError) {
+      console.error(`⚠️ [User: ${userId}] Failed to clear SMTP cache:`, cacheError.message);
+    }
+
     // Notify WebSocket manager about config update
     if (req.app.locals.wsManager) {
       req.app.locals.wsManager.broadcast({
