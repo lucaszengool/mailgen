@@ -131,12 +131,17 @@ function App() {
 
   const handleSetupComplete = (config) => {
     console.log('🔄 App.jsx - Setup completed, navigating to:', config.nextStep || 'dashboard');
-    
+
     setAgentConfig(config);
     if (config.nextStep === 'website-analysis') {
       // Show website analysis review page
       setCurrentView('website-analysis');
+    } else if (config.nextStep === 'dashboard') {
+      // Show SimpleWorkflowDashboard directly
+      setIsSetupComplete(true);
+      setCurrentView('dashboard');
     } else {
+      // Default: show dashboard
       setIsSetupComplete(true);
       setCurrentView('dashboard');
     }

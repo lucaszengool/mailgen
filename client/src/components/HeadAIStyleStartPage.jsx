@@ -37,7 +37,7 @@ if (typeof document !== 'undefined') {
   }
 }
 
-const HeadAIStyleStartPage = ({ onWebsiteSubmit, config }) => {
+const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
   const navigate = useNavigate();
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [businessType, setBusinessType] = useState('auto');
@@ -198,7 +198,14 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config }) => {
               <SignedIn>
                 {/* Workflow Dashboard Link */}
                 <button
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => {
+                    // Navigate to SimpleWorkflowDashboard via onComplete callback
+                    if (onComplete) {
+                      onComplete({ nextStep: 'dashboard' });
+                    } else {
+                      navigate('/dashboard');
+                    }
+                  }}
                   className="font-medium text-gray-700 hover:text-black transition-all duration-300 flex items-center space-x-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
