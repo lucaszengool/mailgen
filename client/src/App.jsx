@@ -139,8 +139,8 @@ function App() {
     // 🎯 Check if first time user - show onboarding tour first
     const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
 
-    if (!hasSeenOnboarding && config.nextStep !== 'dashboard') {
-      // First time user completing setup → show onboarding tour
+    if (!hasSeenOnboarding) {
+      // First time user completing setup → show onboarding tour ALWAYS
       console.log('🎓 First time setup complete - showing onboarding tour');
       localStorage.setItem('hasSeenOnboarding', 'true');
       localStorage.setItem('pendingNextStep', config.nextStep || 'dashboard'); // Save where to go after tour
@@ -150,7 +150,7 @@ function App() {
       return;
     }
 
-    // Not first time or explicitly navigating to dashboard
+    // Not first time - navigate based on nextStep
     if (config.nextStep === 'website-analysis') {
       // Show website analysis review page
       setCurrentView('website-analysis');
