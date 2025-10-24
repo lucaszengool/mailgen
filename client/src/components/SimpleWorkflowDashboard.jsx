@@ -22,6 +22,7 @@ import ProfessionalEmailEditor from './ProfessionalEmailEditor';
 import TemplateSelectionModal from './TemplateSelectionModal';
 import AgentStatusNotification, { AgentActivityPanel } from './AgentStatusNotification';
 import UserActionReminder from './UserActionReminder';
+import OnboardingTour from './OnboardingTour';
 
 
 // Utility function for generating gradient patterns
@@ -1650,6 +1651,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [agentDetails, setAgentDetails] = useState([]);
   const [showAgentActivity, setShowAgentActivity] = useState(false);
   const [agentActivities, setAgentActivities] = useState([]);
+
+  // 🎯 Onboarding tour state
+  const [showOnboardingTour, setShowOnboardingTour] = useState(false);
 
   // Filter handlers
   const handleProspectFilterChange = (filterType, value) => {
@@ -3865,6 +3869,18 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const startWorkflow = async () => {
     console.log('Starting workflow...');
 
+    // 🎯 Check if this is the user's first time - show onboarding tour
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    if (!hasSeenOnboarding) {
+      console.log('🎓 First time user - showing onboarding tour');
+      localStorage.setItem('hasSeenOnboarding', 'true');
+      setShowOnboardingTour(true);
+      setActiveView('home'); // Navigate to home page to show tour
+
+      // Don't start the workflow yet - let user go through tour first
+      return;
+    }
+
     // Only reset if this is a completely new workflow start
     if (!backgroundWorkflowRunning) {
       setWorkflowStatus('starting');
@@ -4978,6 +4994,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
             setActiveView('prospects');
           }
         }}
+      />
+
+      {/* 🎓 Onboarding Tour - Shows after clicking START CAMPAIGN for first time */}
+      <OnboardingTour
+        isOpen={showOnboardingTour}
+        onComplete={() => {
+          console.log('✅ Onboarding tour completed');
+          setShowOnboardingTour(false);
+          setActiveView('workflow'); // Navigate back to workflow view
+          // Now actually start the workflow
+          setTimeout(() => {
+            startWorkflow();
+          }, 500);
+        }}
+        startStep={0}
       />
     </div>
   );
