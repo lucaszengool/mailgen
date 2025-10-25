@@ -49,6 +49,18 @@ export default function Settings() {
     templateData: null,
     preferredTemplates: []
   })
+
+  // Website Analysis Configuration State
+  const [websiteAnalysisConfig, setWebsiteAnalysisConfig] = useState({
+    targetWebsite: '',
+    businessName: '',
+    businessLogo: '',
+    productServiceType: '',
+    businessIntro: '',
+    benchmarkBrands: [],
+    sellingPoints: [],
+    targetAudiences: []
+  })
   
   // Targeting Configuration State
   const [targetingConfig, setTargetingConfig] = useState({
@@ -81,12 +93,12 @@ export default function Settings() {
   // 🎯 Track changes to show unsaved indicator
   useEffect(() => {
     // Don't mark as changed on initial load
-    if (smtpConfig.host === '' && smtpConfig.username === '' && 
+    if (smtpConfig.host === '' && smtpConfig.username === '' &&
         !campaignConfig.campaignGoal && targetingConfig.industries.length === 0) {
       return
     }
     setHasUnsavedChanges(true)
-  }, [smtpConfig, campaignConfig, templateConfig, targetingConfig, aiConfig])
+  }, [smtpConfig, campaignConfig, templateConfig, targetingConfig, aiConfig, websiteAnalysisConfig])
 
   const loadAllConfigurations = () => {
     try {
@@ -143,7 +155,26 @@ export default function Settings() {
         const parsedAiConfig = JSON.parse(savedAiConfig)
         setAiConfig(prev => ({ ...prev, ...parsedAiConfig }))
       }
-      
+
+      // Load Website Analysis Config
+      const savedWebsiteAnalysis = localStorage.getItem('websiteAnalysisConfig')
+      if (savedWebsiteAnalysis) {
+        const parsedAnalysis = JSON.parse(savedWebsiteAnalysis)
+        setWebsiteAnalysisConfig(prev => ({ ...prev, ...parsedAnalysis }))
+      } else if (parsedSetup.targetWebsite) {
+        // Fallback: load from agentSetupData if websiteAnalysisConfig doesn't exist
+        setWebsiteAnalysisConfig(prev => ({
+          ...prev,
+          targetWebsite: parsedSetup.targetWebsite || '',
+          businessName: parsedSetup.businessName || '',
+          productServiceType: parsedSetup.businessType || '',
+          businessIntro: parsedSetup.businessIntro || '',
+          benchmarkBrands: parsedSetup.benchmarkBrands || [],
+          sellingPoints: parsedSetup.sellingPoints || [],
+          targetAudiences: parsedSetup.targetAudiences || []
+        }))
+      }
+
     } catch (error) {
       console.error('加载配置失败:', error)
     }
@@ -333,10 +364,10 @@ export default function Settings() {
   
   const updateAiConfig = async () => {
     setIsSaving(true)
-    
+
     try {
       localStorage.setItem('aiConfig', JSON.stringify(aiConfig))
-      
+
       const response = await fetch('/api/settings/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -344,16 +375,64 @@ export default function Settings() {
       })
 
       const data = await response.json()
-      
+
       if (data.success) {
         toast.success('AI配置更新成功！')
       } else {
         throw new Error(data.error || '后端保存失败')
       }
-      
+
     } catch (error) {
       console.error('更新AI配置失败:', error)
       toast.error(`配置更新失败: ${error.message}`)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const updateWebsiteAnalysisConfig = async () => {
+    if (!websiteAnalysisConfig.targetWebsite || !websiteAnalysisConfig.businessName) {
+      toast.error('Please fill in Target Website and Business Name')
+      return
+    }
+
+    setIsSaving(true)
+
+    try {
+      // Save to localStorage
+      localStorage.setItem('websiteAnalysisConfig', JSON.stringify(websiteAnalysisConfig))
+
+      // Also update agentSetupData for backwards compatibility
+      const existingSetup = JSON.parse(localStorage.getItem('agentSetupData') || '{}')
+      const updatedSetup = {
+        ...existingSetup,
+        targetWebsite: websiteAnalysisConfig.targetWebsite,
+        businessName: websiteAnalysisConfig.businessName,
+        businessType: websiteAnalysisConfig.productServiceType,
+        businessIntro: websiteAnalysisConfig.businessIntro,
+        benchmarkBrands: websiteAnalysisConfig.benchmarkBrands,
+        sellingPoints: websiteAnalysisConfig.sellingPoints,
+        targetAudiences: websiteAnalysisConfig.targetAudiences
+      }
+      localStorage.setItem('agentSetupData', JSON.stringify(updatedSetup))
+
+      const response = await fetch('/api/settings/website-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ websiteAnalysisConfig }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success('Website Analysis updated successfully!')
+      } else {
+        throw new Error(data.error || 'Backend save failed')
+      }
+
+    } catch (error) {
+      console.error('Update website analysis config failed:', error)
+      toast.error(`Update failed: ${error.message}`)
     } finally {
       setIsSaving(false)
     }
@@ -370,18 +449,27 @@ export default function Settings() {
         campaign: campaignConfig,
         targeting: targetingConfig,
         templates: templateConfig,
-        ai: aiConfig
+        ai: aiConfig,
+        websiteAnalysis: websiteAnalysisConfig
       }
       
       // Save to localStorage
       localStorage.setItem('smtpConfig', JSON.stringify(smtpConfig))
       localStorage.setItem('aiConfig', JSON.stringify(aiConfig))
-      
+      localStorage.setItem('websiteAnalysisConfig', JSON.stringify(websiteAnalysisConfig))
+
       // Update agentSetupData with all relevant configs
       const updatedAgentSetup = {
         ...campaignConfig,
         ...templateConfig,
         ...targetingConfig,
+        targetWebsite: websiteAnalysisConfig.targetWebsite,
+        businessName: websiteAnalysisConfig.businessName,
+        businessType: websiteAnalysisConfig.productServiceType,
+        businessIntro: websiteAnalysisConfig.businessIntro,
+        benchmarkBrands: websiteAnalysisConfig.benchmarkBrands,
+        sellingPoints: websiteAnalysisConfig.sellingPoints,
+        targetAudiences: websiteAnalysisConfig.targetAudiences,
         updatedAt: new Date().toISOString()
       }
       localStorage.setItem('agentSetupData', JSON.stringify(updatedAgentSetup))
@@ -425,8 +513,9 @@ export default function Settings() {
   }
 
   const tabs = [
-    { id: 'smtp', label: 'SMTP设置', icon: EnvelopeIcon },
-    { id: 'campaign', label: '活动目标', icon: TargetIcon },
+    { id: 'smtp', label: 'SMTP Settings', icon: EnvelopeIcon },
+    { id: 'website-analysis', label: 'Website Analysis', icon: PresentationChartBarIcon },
+    { id: 'campaign', label: 'Campaign Config', icon: TargetIcon },
     { id: 'targeting', label: '目标受众', icon: UsersIcon },
     { id: 'templates', label: '邮件模板', icon: DocumentTextIcon },
     { id: 'ai', label: 'AI模型', icon: ServerIcon },
@@ -715,6 +804,274 @@ export default function Settings() {
                         已保存
                       </>
                     )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Website Analysis Settings */}
+          {activeTab === 'website-analysis' && (
+            <div className="card">
+              <div className="flex items-center mb-6">
+                <PresentationChartBarIcon className="h-6 w-6 text-primary-600 mr-3" />
+                <h2 className="text-xl font-semibold text-primary-900">Website Analysis</h2>
+              </div>
+              <p className="text-sm text-gray-600 mb-6">AI-powered insights for {websiteAnalysisConfig.targetWebsite || 'your target website'}</p>
+
+              <div className="space-y-6">
+                {/* Basic Information */}
+                <div className="border-b border-gray-200 pb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+
+                  {/* Business Logo */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Business Logo
+                    </label>
+                    <div className="flex items-center space-x-4">
+                      {websiteAnalysisConfig.businessLogo ? (
+                        <img src={websiteAnalysisConfig.businessLogo} alt="Logo" className="w-16 h-16 object-contain" />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400">
+                          <span className="text-2xl">🏢</span>
+                        </div>
+                      )}
+                      <div>
+                        <button
+                          onClick={() => {
+                            const url = prompt('Enter logo URL (SVG format recommended):')
+                            if (url) setWebsiteAnalysisConfig(prev => ({ ...prev, businessLogo: url }))
+                          }}
+                          className="btn-secondary text-sm"
+                        >
+                          Upload
+                        </button>
+                        <p className="text-xs text-gray-500 mt-1">Only support uploading logos in SVG format.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Target Website + Business Name */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="target-website" className="block text-sm font-medium text-gray-700 mb-2">
+                        Target Website *
+                      </label>
+                      <input
+                        type="url"
+                        id="target-website"
+                        value={websiteAnalysisConfig.targetWebsite}
+                        onChange={(e) => setWebsiteAnalysisConfig(prev => ({ ...prev, targetWebsite: e.target.value }))}
+                        className="input-field"
+                        placeholder="https://example.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="business-name" className="block text-sm font-medium text-gray-700 mb-2">
+                        Business name *
+                      </label>
+                      <input
+                        type="text"
+                        id="business-name"
+                        value={websiteAnalysisConfig.businessName}
+                        onChange={(e) => setWebsiteAnalysisConfig(prev => ({ ...prev, businessName: e.target.value }))}
+                        className="input-field"
+                        placeholder="Aha"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Product/Service Type */}
+                  <div className="mt-4">
+                    <label htmlFor="product-type" className="block text-sm font-medium text-gray-700 mb-2">
+                      Product / Service type *
+                    </label>
+                    <input
+                      type="text"
+                      id="product-type"
+                      value={websiteAnalysisConfig.productServiceType}
+                      onChange={(e) => setWebsiteAnalysisConfig(prev => ({ ...prev, productServiceType: e.target.value }))}
+                      className="input-field"
+                      placeholder="Marketing/Digital"
+                    />
+                  </div>
+
+                  {/* Benchmark Brands */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Benchmark brands *
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {(websiteAnalysisConfig.benchmarkBrands || []).map((brand, index) => (
+                        <span key={index} className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">
+                          {brand}
+                          <button
+                            onClick={() => {
+                              const newBrands = websiteAnalysisConfig.benchmarkBrands.filter((_, i) => i !== index)
+                              setWebsiteAnalysisConfig(prev => ({ ...prev, benchmarkBrands: newBrands }))
+                            }}
+                            className="ml-2 text-blue-600 hover:text-blue-800"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      className="input-field"
+                      placeholder="Type brand name and press Enter"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          const value = e.target.value.trim()
+                          if (value && !websiteAnalysisConfig.benchmarkBrands.includes(value)) {
+                            setWebsiteAnalysisConfig(prev => ({
+                              ...prev,
+                              benchmarkBrands: [...prev.benchmarkBrands, value]
+                            }))
+                            e.target.value = ''
+                          }
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      We'll recommend influencers who have worked with these brands or reached similar audiences.
+                    </p>
+                  </div>
+
+                  {/* Business Introduction */}
+                  <div className="mt-4">
+                    <label htmlFor="business-intro" className="block text-sm font-medium text-gray-700 mb-2">
+                      Business introduction *
+                    </label>
+                    <textarea
+                      id="business-intro"
+                      rows={3}
+                      value={websiteAnalysisConfig.businessIntro}
+                      onChange={(e) => setWebsiteAnalysisConfig(prev => ({ ...prev, businessIntro: e.target.value }))}
+                      className="input-field resize-none"
+                      placeholder="Aha is your influencer marketing AI Agent — matching, pricing, negotiating, and protecting every collaboration, turning it into measurable growth."
+                    />
+                  </div>
+                </div>
+
+                {/* Core Selling Points */}
+                <div className="border-b border-gray-200 pb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Core Selling Points</h3>
+                    <button
+                      onClick={() => {
+                        setWebsiteAnalysisConfig(prev => ({
+                          ...prev,
+                          sellingPoints: [...prev.sellingPoints, '']
+                        }))
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      + Add Point
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {(websiteAnalysisConfig.sellingPoints || []).map((point, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <span className="text-gray-500 mt-3">{index + 1}</span>
+                        <input
+                          type="text"
+                          value={point}
+                          onChange={(e) => {
+                            const newPoints = [...websiteAnalysisConfig.sellingPoints]
+                            newPoints[index] = e.target.value
+                            setWebsiteAnalysisConfig(prev => ({ ...prev, sellingPoints: newPoints }))
+                          }}
+                          className="flex-1 input-field"
+                          placeholder="Instant fresheness detection via advanced machine learning algorithms"
+                        />
+                        <button
+                          onClick={() => {
+                            const newPoints = websiteAnalysisConfig.sellingPoints.filter((_, i) => i !== index)
+                            setWebsiteAnalysisConfig(prev => ({ ...prev, sellingPoints: newPoints }))
+                          }}
+                          className="mt-3 text-red-500 hover:text-red-700"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Target Audiences */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Target Audiences ({(websiteAnalysisConfig.targetAudiences || []).length} segments)
+                    </h3>
+                    <button
+                      onClick={() => {
+                        setWebsiteAnalysisConfig(prev => ({
+                          ...prev,
+                          targetAudiences: [...prev.targetAudiences, { name: '', description: '' }]
+                        }))
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      + Add Audience
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {(websiteAnalysisConfig.targetAudiences || []).map((audience, index) => (
+                      <div key={index} className="p-4 border border-gray-300 rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="font-semibold text-gray-700">{index + 1}</span>
+                          <button
+                            onClick={() => {
+                              const newAudiences = websiteAnalysisConfig.targetAudiences.filter((_, i) => i !== index)
+                              setWebsiteAnalysisConfig(prev => ({ ...prev, targetAudiences: newAudiences }))
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={audience.name || ''}
+                          onChange={(e) => {
+                            const newAudiences = [...websiteAnalysisConfig.targetAudiences]
+                            newAudiences[index] = { ...newAudiences[index], name: e.target.value }
+                            setWebsiteAnalysisConfig(prev => ({ ...prev, targetAudiences: newAudiences }))
+                          }}
+                          className="input-field mb-2"
+                          placeholder="baby"
+                        />
+                        <textarea
+                          value={audience.description || ''}
+                          onChange={(e) => {
+                            const newAudiences = [...websiteAnalysisConfig.targetAudiences]
+                            newAudiences[index] = { ...newAudiences[index], description: e.target.value }
+                            setWebsiteAnalysisConfig(prev => ({ ...prev, targetAudiences: newAudiences }))
+                          }}
+                          className="input-field resize-none"
+                          rows={2}
+                          placeholder="this is a baby"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Update Button */}
+                <div className="flex justify-end pt-4 border-t border-gray-200">
+                  <button
+                    onClick={updateWebsiteAnalysisConfig}
+                    disabled={isSaving || !websiteAnalysisConfig.targetWebsite || !websiteAnalysisConfig.businessName}
+                    className={`btn-primary ${isSaving ? 'opacity-50' : ''}`}
+                  >
+                    {isSaving ? 'Updating...' : 'Update Website Analysis'}
                   </button>
                 </div>
               </div>

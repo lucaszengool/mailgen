@@ -12,7 +12,8 @@ let userSettings = {
   targeting: {},
   templates: {},
   ai: {},
-  notifications: {}
+  notifications: {},
+  websiteAnalysis: {}
 };
 
 /**
@@ -257,6 +258,44 @@ router.post('/ai', (req, res) => {
     res.status(500).json({
       success: false,
       error: '保存AI配置失败'
+    });
+  }
+});
+
+/**
+ * POST /api/settings/website-analysis - Update website analysis configuration
+ */
+router.post('/website-analysis', (req, res) => {
+  try {
+    const { websiteAnalysisConfig } = req.body;
+
+    console.log('🌐 更新网站分析配置:', websiteAnalysisConfig);
+
+    userSettings.websiteAnalysis = {
+      ...websiteAnalysisConfig,
+      updatedAt: new Date().toISOString()
+    };
+
+    // Notify WebSocket manager
+    if (req.app.locals.wsManager) {
+      req.app.locals.wsManager.broadcast({
+        type: 'settings_updated',
+        category: 'websiteAnalysis',
+        data: userSettings.websiteAnalysis
+      });
+    }
+
+    res.json({
+      success: true,
+      message: '网站分析配置更新成功',
+      data: userSettings.websiteAnalysis
+    });
+
+  } catch (error) {
+    console.error('保存网站分析配置失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '保存网站分析配置失败'
     });
   }
 });
