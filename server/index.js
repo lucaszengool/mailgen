@@ -128,6 +128,9 @@ app.use('/api/ollama-searxng', require('./routes/ollama-searxng'));
 // Marketing Research API routes
 app.use('/api/marketing-research', require('./routes/marketing-research')(marketingResearchAgent));
 
+// Research API routes (Market Intelligence)
+app.use('/api/research', require('./routes/research'));
+
 // Settings API routes
 app.use('/api/settings', require('./routes/settings'));
 

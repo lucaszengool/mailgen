@@ -23,6 +23,7 @@ import TemplateSelectionModal from './TemplateSelectionModal';
 import AgentStatusNotification, { AgentActivityPanel } from './AgentStatusNotification';
 import UserActionReminder from './UserActionReminder';
 import OnboardingTour from './OnboardingTour';
+import MarketResearch from './MarketResearch';
 
 
 // Utility function for generating gradient patterns
@@ -4750,6 +4751,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           {/* Analytics View */}
           {activeView === 'analytics' && (
             <Analytics />
+          )}
+
+          {/* Research View */}
+          {activeView === 'research' && (
+            <MarketResearch />
           )}
 
           {/* Dashboard View - Import Dashboard component */}
