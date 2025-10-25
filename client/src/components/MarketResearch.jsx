@@ -4,7 +4,7 @@ import {
   Brain, TrendingUp, Target, Search, RefreshCw, Globe,
   AlertCircle, CheckCircle, Sparkles, BarChart3, Users,
   Zap, Eye, Play, Pause, Settings, Download, Plus, X,
-  DollarSign, Shield, AlertTriangle, PieChart, Activity,
+  DollarSign, Shield, AlertTriangle, PieChart as PieChartIcon, Activity,
   TrendingDown, Minus, FileText, Layers, ChevronDown, ChevronRight
 } from 'lucide-react';
 import {
@@ -386,7 +386,7 @@ const MarketResearch = () => {
           {insight.type === 'opportunity' && (
             <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
-                <PieChart className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
+                <PieChartIcon className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
                 Market Segmentation
               </h4>
               <ResponsiveContainer width="100%" height={200}>
