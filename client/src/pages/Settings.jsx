@@ -15,6 +15,7 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import WebsiteAnalysisHistory from '../components/WebsiteAnalysisHistory'
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -402,6 +403,18 @@ export default function Settings() {
       // Save to localStorage
       localStorage.setItem('websiteAnalysisConfig', JSON.stringify(websiteAnalysisConfig))
 
+      // Save to history
+      const historyEntry = {
+        ...websiteAnalysisConfig,
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+        analyzedAt: new Date().toISOString()
+      }
+
+      const existingHistory = JSON.parse(localStorage.getItem('websiteAnalysisHistory') || '[]')
+      const updatedHistory = [historyEntry, ...existingHistory]
+      localStorage.setItem('websiteAnalysisHistory', JSON.stringify(updatedHistory))
+
       // Also update agentSetupData for backwards compatibility
       const existingSetup = JSON.parse(localStorage.getItem('agentSetupData') || '{}')
       const updatedSetup = {
@@ -425,7 +438,9 @@ export default function Settings() {
       const data = await response.json()
 
       if (data.success) {
-        toast.success('Website Analysis updated successfully!')
+        toast.success('Website Analysis updated and saved to history!')
+        // Trigger a refresh of the history component
+        window.dispatchEvent(new Event('storage'))
       } else {
         throw new Error(data.error || 'Backend save failed')
       }
@@ -812,12 +827,19 @@ export default function Settings() {
 
           {/* Website Analysis Settings */}
           {activeTab === 'website-analysis' && (
-            <div className="card">
-              <div className="flex items-center mb-6">
-                <PresentationChartBarIcon className="h-6 w-6 text-primary-600 mr-3" />
-                <h2 className="text-xl font-semibold text-primary-900">Website Analysis</h2>
+            <div className="space-y-6">
+              {/* Analysis History Section */}
+              <div className="card">
+                <WebsiteAnalysisHistory />
               </div>
-              <p className="text-sm text-gray-600 mb-6">AI-powered insights for {websiteAnalysisConfig.targetWebsite || 'your target website'}</p>
+
+              {/* Configuration Form */}
+              <div className="card">
+                <div className="flex items-center mb-6">
+                  <PresentationChartBarIcon className="h-6 w-6 text-primary-600 mr-3" />
+                  <h2 className="text-xl font-semibold text-primary-900">Website Analysis Configuration</h2>
+                </div>
+                <p className="text-sm text-gray-600 mb-6">Configure and update your website analysis settings</p>
 
               <div className="space-y-6">
                 {/* Basic Information */}
@@ -1075,6 +1097,7 @@ export default function Settings() {
                   </button>
                 </div>
               </div>
+            </div>
             </div>
           )}
 
