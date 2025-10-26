@@ -494,7 +494,7 @@ export default function ProfessionalEmailEditorPage() {
   // Show loading state while emails are being loaded
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -545,9 +545,9 @@ export default function ProfessionalEmailEditorPage() {
 
   // Render the Professional Email Editor with loaded data
   return (
-  <div className="min-h-screen bg-gray-50">
+  <div className="min-h-screen bg-white">
     {loading ? (
-      <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-50">
+      <div className="absolute inset-0 flex items-center justify-center bg-white z-50">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>

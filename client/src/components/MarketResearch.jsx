@@ -54,7 +54,20 @@ const MarketResearch = () => {
       if (response.ok) {
         const data = await response.json();
         const validInsights = (data.insights || []).filter(insight => insight != null);
-        setInsights(validInsights);
+
+        // Remove duplicates based on title and createdAt
+        const uniqueInsights = validInsights.reduce((acc, current) => {
+          const duplicate = acc.find(item =>
+            item.title === current.title &&
+            item.createdAt === current.createdAt
+          );
+          if (!duplicate) {
+            acc.push(current);
+          }
+          return acc;
+        }, []);
+
+        setInsights(uniqueInsights);
       }
     } catch (error) {
       console.error('Failed to load insights:', error);
@@ -309,7 +322,7 @@ const MarketResearch = () => {
 
           {/* Market Analysis Chart */}
           {(insight.type === 'market' || insight.type === 'trend') && (
-            <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
                 <BarChart3 className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
                 Market Growth Trajectory
@@ -336,7 +349,7 @@ const MarketResearch = () => {
 
           {/* Competitive Positioning */}
           {insight.type === 'competitor' && competitorPositioning.length > 0 && (
-            <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
                 <Target className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
                 Competitive Positioning Matrix
@@ -362,7 +375,7 @@ const MarketResearch = () => {
 
           {/* Industry Trends */}
           {insight.type === 'trend' && (
-            <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
                 <Activity className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
                 Key Industry Trends
@@ -384,7 +397,7 @@ const MarketResearch = () => {
 
           {/* Market Segments */}
           {insight.type === 'opportunity' && (
-            <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
                 <PieChartIcon className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
                 Market Segmentation
@@ -522,7 +535,7 @@ const MarketResearch = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 bg-white sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
