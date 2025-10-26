@@ -1262,7 +1262,7 @@ const SettingsView = () => {
   ];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-full">
+    <div className="p-6 bg-white min-h-full">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
         <p className="mt-2 text-gray-600">Configure your email marketing system parameters</p>
@@ -4556,7 +4556,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           )}
 
           {activeView === 'prospects' && (
-            <div className="bg-gray-100 min-h-full">
+            <div className="bg-white min-h-full">
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Prospects</h2>
 
@@ -4570,7 +4570,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         placeholder="Search prospects... (e.g., name, company, location, role, email)"
                         value={prospectSearchQuery}
                         onChange={(e) => setProspectSearchQuery(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                       />
                       {prospectSearchQuery && (
                         <button
@@ -4614,7 +4614,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           )}
 
           {activeView === 'emails' && (
-            <div className="bg-gray-100 min-h-full">
+            <div className="bg-white min-h-full">
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Campaign</h2>
 
@@ -4628,7 +4628,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         placeholder="Search emails... (e.g., subject, recipient, status, template type)"
                         value={emailSearchQuery}
                         onChange={(e) => setEmailSearchQuery(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                       />
                       {emailSearchQuery && (
                         <button

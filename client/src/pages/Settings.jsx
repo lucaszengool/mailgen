@@ -1252,7 +1252,7 @@ export default function Settings() {
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           targetingConfig.industries.includes(industry)
                             ? 'bg-primary-500 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
                         }`}
                       >
                         {industry}
@@ -1285,7 +1285,7 @@ export default function Settings() {
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           targetingConfig.roles.includes(role)
                             ? 'bg-purple-500 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
                         }`}
                       >
                         {role}
@@ -1418,7 +1418,7 @@ export default function Settings() {
                     模板偏好设置
                   </label>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
                       <div>
                         <h3 className="font-medium text-gray-900">模板轮换</h3>
                         <p className="text-sm text-gray-600">在选中的模板类型中随机轮换</p>
@@ -1433,8 +1433,8 @@ export default function Settings() {
                         className="h-4 w-4 text-primary-600 rounded"
                       />
                     </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
                       <div>
                         <h3 className="font-medium text-gray-900">HTML格式</h3>
                         <p className="text-sm text-gray-600">使用富文本HTML邮件格式</p>
@@ -1683,7 +1683,7 @@ export default function Settings() {
                 <div>
                   <h3 className="text-lg font-semibold text-primary-900 mb-4">数据收集偏好</h3>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
                       <div>
                         <h4 className="font-medium text-gray-900">邮件打开追踪</h4>
                         <p className="text-sm text-gray-600">追踪收件人是否打开邮件</p>
@@ -1694,8 +1694,8 @@ export default function Settings() {
                         className="h-4 w-4 text-primary-600 rounded"
                       />
                     </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
                       <div>
                         <h4 className="font-medium text-gray-900">链接点击追踪</h4>
                         <p className="text-sm text-gray-600">追踪邮件中链接的点击情况</p>
@@ -1706,8 +1706,8 @@ export default function Settings() {
                         className="h-4 w-4 text-primary-600 rounded"
                       />
                     </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
                       <div>
                         <h4 className="font-medium text-gray-900">回复分析</h4>
                         <p className="text-sm text-gray-600">自动分析回复内容的情感和意向</p>
@@ -1718,8 +1718,8 @@ export default function Settings() {
                         className="h-4 w-4 text-primary-600 rounded"
                       />
                     </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+
+                    <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
                       <div>
                         <h4 className="font-medium text-gray-900">性能报告</h4>
                         <p className="text-sm text-gray-600">定期生成营销活动效果报告</p>
