@@ -7,7 +7,10 @@ const router = express.Router();
  */
 router.get('/gmail', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
-  const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/gmail/callback`;
+
+  // Use HTTPS in production (Railway/Heroku use reverse proxy)
+  const protocol = req.get('x-forwarded-proto') || req.protocol;
+  const redirectUri = `${protocol}://${req.get('host')}/api/auth/gmail/callback`;
   const scope = [
     'https://www.googleapis.com/auth/gmail.send',
     'https://www.googleapis.com/auth/gmail.readonly',
@@ -40,7 +43,10 @@ router.get('/gmail/callback', async (req, res) => {
     // Exchange code for tokens
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/gmail/callback`;
+
+    // Use HTTPS in production (Railway/Heroku use reverse proxy)
+    const protocol = req.get('x-forwarded-proto') || req.protocol;
+    const redirectUri = `${protocol}://${req.get('host')}/api/auth/gmail/callback`;
 
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -77,7 +83,10 @@ router.get('/gmail/callback', async (req, res) => {
  */
 router.get('/outlook', (req, res) => {
   const clientId = process.env.MICROSOFT_CLIENT_ID || 'YOUR_MICROSOFT_CLIENT_ID';
-  const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/outlook/callback`;
+
+  // Use HTTPS in production (Railway/Heroku use reverse proxy)
+  const protocol = req.get('x-forwarded-proto') || req.protocol;
+  const redirectUri = `${protocol}://${req.get('host')}/api/auth/outlook/callback`;
   const scope = [
     'https://outlook.office.com/SMTP.Send',
     'https://outlook.office.com/Mail.Read',
@@ -107,7 +116,10 @@ router.get('/outlook/callback', async (req, res) => {
   try {
     const clientId = process.env.MICROSOFT_CLIENT_ID;
     const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/outlook/callback`;
+
+    // Use HTTPS in production (Railway/Heroku use reverse proxy)
+    const protocol = req.get('x-forwarded-proto') || req.protocol;
+    const redirectUri = `${protocol}://${req.get('host')}/api/auth/outlook/callback`;
 
     const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
       method: 'POST',
@@ -142,7 +154,10 @@ router.get('/outlook/callback', async (req, res) => {
  */
 router.get('/yahoo', (req, res) => {
   const clientId = process.env.YAHOO_CLIENT_ID || 'YOUR_YAHOO_CLIENT_ID';
-  const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/yahoo/callback`;
+
+  // Use HTTPS in production (Railway/Heroku use reverse proxy)
+  const protocol = req.get('x-forwarded-proto') || req.protocol;
+  const redirectUri = `${protocol}://${req.get('host')}/api/auth/yahoo/callback`;
 
   const authUrl = `https://api.login.yahoo.com/oauth2/request_auth?` +
     `client_id=${clientId}&` +
@@ -166,7 +181,10 @@ router.get('/yahoo/callback', async (req, res) => {
   try {
     const clientId = process.env.YAHOO_CLIENT_ID;
     const clientSecret = process.env.YAHOO_CLIENT_SECRET;
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/yahoo/callback`;
+
+    // Use HTTPS in production (Railway/Heroku use reverse proxy)
+    const protocol = req.get('x-forwarded-proto') || req.protocol;
+    const redirectUri = `${protocol}://${req.get('host')}/api/auth/yahoo/callback`;
 
     const tokenResponse = await fetch('https://api.login.yahoo.com/oauth2/get_token', {
       method: 'POST',
