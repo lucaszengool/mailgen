@@ -11,6 +11,8 @@ import Prospects from './pages/ProspectsClean';
 import Analytics from './pages/Analytics';
 import EmailMonitoring from './pages/EmailMonitoring';
 import Settings from './pages/Settings';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 import EmailComposer from './pages/EmailComposer';
 import ProfessionalEmailEditorPage from './pages/ProfessionalEmailEditor';
 import WebsiteAnalyzer from './pages/WebsiteAnalyzer';
@@ -407,6 +409,8 @@ function App() {
             <Route path="editor" element={<ProfessionalEmailEditorPage />} />
             <Route path="research" element={<WebsiteAnalyzer />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="privacy" element={<Privacy />} />
+            <Route path="terms" element={<Terms />} />
             <Route path="compose" element={<EmailComposer />} />
             <Route path="professional-email-editor" element={<ProfessionalEmailEditorPage />} />
             <Route path="email-editor" element={<ProfessionalEmailEditorPage />} />
