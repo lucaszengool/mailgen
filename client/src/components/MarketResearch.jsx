@@ -68,9 +68,24 @@ const MarketResearch = () => {
         }, []);
 
         setInsights(uniqueInsights);
+
+        // Save to localStorage for persistence
+        if (uniqueInsights.length > 0) {
+          localStorage.setItem('marketResearchInsights', JSON.stringify(uniqueInsights));
+        }
       }
     } catch (error) {
-      console.error('Failed to load insights:', error);
+      console.error('Failed to load insights from API:', error);
+
+      // Fallback: Load from localStorage
+      const savedInsights = localStorage.getItem('marketResearchInsights');
+      if (savedInsights) {
+        try {
+          setInsights(JSON.parse(savedInsights));
+        } catch (e) {
+          console.error('Failed to parse saved insights:', e);
+        }
+      }
     }
   };
 
@@ -109,12 +124,20 @@ const MarketResearch = () => {
         const response = await fetch(`/api/research/status/${researchId}`);
         const data = await response.json();
 
+        // Update progress
+        if (data.research) {
+          setCurrentResearch(data.research);
+        }
+
         if (data.status === 'completed') {
           setResearchStatus('completed');
-          if (data.insight) {
-            setInsights(prev => [data.insight, ...prev]);
-          }
           clearInterval(interval);
+
+          // Fetch all insights after completion
+          setTimeout(() => {
+            fetchInsights();
+            setResearchStatus('idle');
+          }, 1000);
         } else if (data.status === 'failed') {
           setResearchStatus('idle');
           clearInterval(interval);
