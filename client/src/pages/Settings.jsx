@@ -109,12 +109,12 @@ export default function Settings() {
         const parsedConfig = JSON.parse(savedSmtpConfig)
         setSmtpConfig(prev => ({ ...prev, ...parsedConfig }))
       }
-      
+
       // Load Agent Setup Data (contains campaign, template, targeting data)
       const savedAgentSetup = localStorage.getItem('agentSetupData')
+      const parsedSetup = savedAgentSetup ? JSON.parse(savedAgentSetup) : {}
+
       if (savedAgentSetup) {
-        const parsedSetup = JSON.parse(savedAgentSetup)
-        
         // Load Campaign Config
         if (parsedSetup.campaignGoal || parsedSetup.targetWebsite) {
           setCampaignConfig(prev => ({
@@ -125,7 +125,7 @@ export default function Settings() {
             businessType: parsedSetup.businessType || 'auto'
           }))
         }
-        
+
         // Load Template Config
         if (parsedSetup.emailTemplate || parsedSetup.templateData) {
           setTemplateConfig(prev => ({
@@ -135,7 +135,7 @@ export default function Settings() {
             preferredTemplates: parsedSetup.preferredTemplates || []
           }))
         }
-        
+
         // Load Targeting Config
         if (parsedSetup.audienceType || parsedSetup.industries) {
           setTargetingConfig(prev => ({
@@ -149,7 +149,7 @@ export default function Settings() {
           }))
         }
       }
-      
+
       // Load AI Config
       const savedAiConfig = localStorage.getItem('aiConfig')
       if (savedAiConfig) {
@@ -162,7 +162,7 @@ export default function Settings() {
       if (savedWebsiteAnalysis) {
         const parsedAnalysis = JSON.parse(savedWebsiteAnalysis)
         setWebsiteAnalysisConfig(prev => ({ ...prev, ...parsedAnalysis }))
-      } else if (parsedSetup.targetWebsite) {
+      } else if (parsedSetup && parsedSetup.targetWebsite) {
         // Fallback: load from agentSetupData if websiteAnalysisConfig doesn't exist
         setWebsiteAnalysisConfig(prev => ({
           ...prev,
