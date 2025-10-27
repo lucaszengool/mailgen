@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
@@ -36,9 +36,7 @@ import WorkflowPanel from './components/WorkflowPanel';
 import SignInPage from './pages/SignIn';
 import SignUpPage from './pages/SignUp';
 import OnboardingTour from './components/OnboardingTour';
-
-// Lazy load components with circular dependencies
-const SimpleWorkflowDashboard = lazy(() => import('./components/SimpleWorkflowDashboard'));
+import SimpleWorkflowDashboard from './components/SimpleWorkflowDashboard';
 
 function App() {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
@@ -302,12 +300,10 @@ function App() {
             }
           }}
         />
-        <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div></div>}>
-          <SimpleWorkflowDashboard
-            agentConfig={agentConfig}
-            onReset={handleReset}
-          />
-        </Suspense>
+        <SimpleWorkflowDashboard
+          agentConfig={agentConfig}
+          onReset={handleReset}
+        />
 
         {/* 🎯 Onboarding Tour - shown after initial setup */}
         <OnboardingTour
