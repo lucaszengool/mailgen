@@ -108,6 +108,37 @@ const CampaignSetupWizard = ({ onComplete }) => {
       localStorage.setItem('agentConfig', JSON.stringify(configForWorkflow));
       console.log('✅ Configuration saved to localStorage for workflow:', configForWorkflow);
 
+      // Save website analysis to history and config
+      if (finalData.websiteAnalysis || setupData.websiteAnalysis) {
+        const websiteAnalysisData = finalData.websiteAnalysis || setupData.websiteAnalysis || {};
+
+        // Save to websiteAnalysisConfig for Settings page
+        const websiteAnalysisConfig = {
+          targetWebsite: setupData.targetWebsite || finalData.targetWebsite,
+          businessName: websiteAnalysisData.businessName || setupData.businessName,
+          businessLogo: websiteAnalysisData.businessLogo,
+          productServiceType: websiteAnalysisData.productServiceType || setupData.businessType,
+          businessIntro: websiteAnalysisData.businessIntro || setupData.businessIntro,
+          benchmarkBrands: websiteAnalysisData.benchmarkBrands || setupData.benchmarkBrands || [],
+          sellingPoints: websiteAnalysisData.sellingPoints || setupData.sellingPoints || [],
+          targetAudiences: websiteAnalysisData.targetAudiences || setupData.targetAudiences || []
+        };
+        localStorage.setItem('websiteAnalysisConfig', JSON.stringify(websiteAnalysisConfig));
+
+        // Save to history
+        const historyEntry = {
+          ...websiteAnalysisConfig,
+          id: Date.now(),
+          createdAt: new Date().toISOString(),
+          analyzedAt: new Date().toISOString()
+        };
+
+        const existingHistory = JSON.parse(localStorage.getItem('websiteAnalysisHistory') || '[]');
+        const updatedHistory = [historyEntry, ...existingHistory];
+        localStorage.setItem('websiteAnalysisHistory', JSON.stringify(updatedHistory));
+        console.log('✅ Website analysis saved to history:', historyEntry);
+      }
+
       // Now start the agent with the complete configuration
       console.log('🚀 Starting AI agent workflow...');
       const startResponse = await fetch('/api/workflow/start', {

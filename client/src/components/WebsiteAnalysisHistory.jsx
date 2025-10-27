@@ -34,15 +34,62 @@ const WebsiteAnalysisHistory = () => {
       if (response.ok) {
         const data = await response.json();
         setAnalyses(data.analyses || []);
+        setLoading(false);
+        return;
       }
     } catch (error) {
-      console.error('Failed to fetch analyses:', error);
+      console.error('Failed to fetch analyses from API:', error);
+    }
 
-      // Fallback: load from localStorage
+    // Fallback: load from localStorage
+    try {
       const savedAnalyses = localStorage.getItem('websiteAnalysisHistory');
       if (savedAnalyses) {
-        setAnalyses(JSON.parse(savedAnalyses));
+        const parsedAnalyses = JSON.parse(savedAnalyses);
+        setAnalyses(parsedAnalyses);
+      } else {
+        // Also check agentSetupData as a fallback
+        const agentSetupData = localStorage.getItem('agentSetupData');
+        const websiteAnalysisConfig = localStorage.getItem('websiteAnalysisConfig');
+
+        if (websiteAnalysisConfig) {
+          const config = JSON.parse(websiteAnalysisConfig);
+          // Create a history entry from config if it doesn't exist yet
+          if (config.targetWebsite || config.businessName) {
+            const historyEntry = {
+              ...config,
+              id: Date.now(),
+              createdAt: new Date().toISOString(),
+              analyzedAt: new Date().toISOString()
+            };
+            setAnalyses([historyEntry]);
+            // Save to history for next time
+            localStorage.setItem('websiteAnalysisHistory', JSON.stringify([historyEntry]));
+          }
+        } else if (agentSetupData) {
+          const setupData = JSON.parse(agentSetupData);
+          if (setupData.targetWebsite || setupData.businessName) {
+            const historyEntry = {
+              targetWebsite: setupData.targetWebsite,
+              businessName: setupData.businessName,
+              businessLogo: setupData.businessLogo,
+              productServiceType: setupData.businessType,
+              businessIntro: setupData.businessIntro,
+              benchmarkBrands: setupData.benchmarkBrands || [],
+              sellingPoints: setupData.sellingPoints || [],
+              targetAudiences: setupData.targetAudiences || [],
+              id: Date.now(),
+              createdAt: new Date().toISOString(),
+              analyzedAt: new Date().toISOString()
+            };
+            setAnalyses([historyEntry]);
+            // Save to history for next time
+            localStorage.setItem('websiteAnalysisHistory', JSON.stringify([historyEntry]));
+          }
+        }
       }
+    } catch (error) {
+      console.error('Failed to load analyses from localStorage:', error);
     } finally {
       setLoading(false);
     }
