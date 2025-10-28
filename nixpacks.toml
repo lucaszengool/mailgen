@@ -1,7 +1,8 @@
 # Full-stack build configuration
 [phases.setup]
 nixPkgs = ["nodejs_20", "python311", "python311Packages.pip"]
-aptPkgs = ["python3-pip"]
+# Don't use apt-get - Nix provides pip already
+aptPkgs = []
 
 [phases.install]
 cmds = [
