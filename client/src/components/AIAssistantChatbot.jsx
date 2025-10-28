@@ -1,25 +1,63 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, BookOpen, Loader, Sparkles } from 'lucide-react';
 
-const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView }) => {
+const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospects = [], emails = [] }) => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Great! You\'ve just unlocked your Chat with me, MailGen!\n\nI\'m your AI copilot for email marketing automation. I can navigate you through different sections and help you manage your campaigns. What would you like to explore?',
+      content: 'Great! You\'ve just unlocked your Chat with me, MailGen!\n\nI\'m your AI copilot for email marketing automation. Here\'s what I can help you with:\n\n**Home Dashboard** - Overview of your campaigns and system status\n\n**Prospects Management** - Add and manage your contact list for email campaigns\n\n**Email Campaign** - Create, send, and track your email campaigns\n\n**Email Editor** - Design and customize professional email templates\n\n**Analytics** - Monitor campaign performance and engagement metrics\n\n**Market Research** - Research your target market and competitors\n\n**Settings** - Configure SMTP/IMAP email servers and system preferences\n\nWhat would you like to explore first?',
       timestamp: new Date().toISOString(),
       suggestions: [
-        { text: 'Show me the home dashboard', action: 'goto_home' },
-        { text: 'View my prospects', action: 'goto_prospects' },
-        { text: 'Check email campaign status', action: 'goto_emails' },
-        { text: 'Open analytics & insights', action: 'goto_analytics' },
-        { text: 'Configure system settings', action: 'goto_settings' }
+        { text: 'View Home Dashboard', action: 'goto_home' },
+        { text: 'Manage My Prospects', action: 'goto_prospects' },
+        { text: 'Check Email Campaigns', action: 'goto_emails' },
+        { text: 'Open Email Editor', action: 'goto_email_editor' },
+        { text: 'View Analytics', action: 'goto_analytics' },
+        { text: 'Market Research', action: 'goto_research' },
+        { text: 'Configure Settings', action: 'goto_settings' }
       ]
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [systemState, setSystemState] = useState({
+    prospects: [],
+    emails: [],
+    smtpConfigured: false,
+    activeView: 'workflow'
+  });
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Fetch system state on mount and when props change
+  useEffect(() => {
+    const fetchSystemState = async () => {
+      try {
+        // Fetch SMTP status
+        const smtpResponse = await fetch('/api/settings/smtp');
+        const smtpData = await smtpResponse.json();
+
+        setSystemState({
+          prospects: prospects,
+          emails: emails,
+          smtpConfigured: smtpData.success && smtpData.smtp?.host,
+          activeView: activeView
+        });
+      } catch (error) {
+        console.error('Failed to fetch system state:', error);
+        setSystemState({
+          prospects: prospects,
+          emails: emails,
+          smtpConfigured: false,
+          activeView: activeView
+        });
+      }
+    };
+
+    if (isOpen) {
+      fetchSystemState();
+    }
+  }, [isOpen, prospects, emails, activeView]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -136,7 +174,8 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView }) => {
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
-          userQuery: userInput
+          userQuery: userInput,
+          systemState: systemState
         }),
       });
 
@@ -266,7 +305,7 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView }) => {
         {messages.map((message, index) => (
           <div key={index} className="space-y-3">
             {message.role === 'assistant' && (
-              <div className="bg-gray-50 rounded-lg p-5 shadow-sm border border-gray-100">
+              <div className="p-0">
                 <div className="whitespace-pre-wrap break-words text-gray-800 leading-relaxed">
                   {message.content}
                 </div>
@@ -281,11 +320,11 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView }) => {
 
             {message.role === 'user' && (
               <div className="flex justify-end">
-                <div className="bg-green-500 text-white rounded-lg p-4 max-w-[80%] shadow-sm">
+                <div className="text-gray-800 rounded-lg p-0 max-w-[80%]">
                   <div className="whitespace-pre-wrap break-words">
                     {message.content}
                   </div>
-                  <div className="text-xs text-green-100 mt-1">
+                  <div className="text-xs text-gray-400 mt-1 text-right">
                     {new Date(message.timestamp).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit'
@@ -316,7 +355,7 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView }) => {
         ))}
 
         {isLoading && (
-          <div className="bg-gray-50 rounded-lg p-5 shadow-sm border border-gray-100">
+          <div className="p-0">
             <Loader className="w-5 h-5 animate-spin text-green-500" />
           </div>
         )}
