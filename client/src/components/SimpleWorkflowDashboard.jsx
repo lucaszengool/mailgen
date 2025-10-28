@@ -5033,7 +5033,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         activeView={activeView}
         setActiveView={setActiveView}
         prospects={prospects}
-        emails={emails}
+        emails={emailCampaignStats.emails || generatedEmails || []}
       />
 
       {/* Floating chat button */}
