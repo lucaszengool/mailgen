@@ -24,6 +24,7 @@ import AgentStatusNotification, { AgentActivityPanel } from './AgentStatusNotifi
 import UserActionReminder from './UserActionReminder';
 import OnboardingTour from './OnboardingTour';
 import MarketResearch from './MarketResearch';
+import AIAssistantChatbot from './AIAssistantChatbot';
 
 
 // Utility function for generating gradient patterns
@@ -1613,6 +1614,7 @@ const SettingsView = () => {
 
 const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [activeView, setActiveView] = useState('workflow');
+  const [showChatbot, setShowChatbot] = useState(false);
   
   // Enhanced workflow history persistence system
   const [workflowHistory, setWorkflowHistory] = useState(() => {
@@ -5016,6 +5018,25 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         }}
         startStep={0}
       />
+
+      {/* MailGen AI Assistant */}
+      <AIAssistantChatbot
+        isOpen={showChatbot}
+        onClose={() => setShowChatbot(false)}
+        activeView={activeView}
+        setActiveView={setActiveView}
+      />
+
+      {/* Floating chat button */}
+      {!showChatbot && (
+        <button
+          onClick={() => setShowChatbot(true)}
+          className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all z-40"
+          title="Open MailGen AI Assistant"
+        >
+          <MessageSquare className="w-6 h-6" />
+        </button>
+      )}
     </div>
   );
 };

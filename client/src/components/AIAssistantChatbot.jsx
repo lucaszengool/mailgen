@@ -1,19 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { MessageSquare, Send, X, BookOpen, Loader, Sparkles } from 'lucide-react';
 
-const AIAssistantChatbot = ({ isOpen, onClose }) => {
-  const navigate = useNavigate();
+const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView }) => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Great! You\'ve just unlocked your Chat with me, MailGen!\n\nI\'m your AI copilot for email marketing automation. I can help you with setting up campaigns, configuring SMTP, managing prospects, and much more. What would you like to do today?',
+      content: 'Great! You\'ve just unlocked your Chat with me, MailGen!\n\nI\'m your AI copilot for email marketing automation. I can navigate you through different sections and help you manage your campaigns. What would you like to explore?',
       timestamp: new Date().toISOString(),
       suggestions: [
-        { text: 'Set up SMTP email configuration', action: 'setup_smtp' },
-        { text: 'Create a new email campaign', action: 'create_campaign' },
-        { text: 'Add prospects to my audience', action: 'add_prospects' },
-        { text: 'Show me email templates', action: 'show_templates' }
+        { text: 'Show me the home dashboard', action: 'goto_home' },
+        { text: 'View my prospects', action: 'goto_prospects' },
+        { text: 'Check email campaign status', action: 'goto_emails' },
+        { text: 'Open analytics & insights', action: 'goto_analytics' },
+        { text: 'Configure system settings', action: 'goto_settings' }
       ]
     }
   ]);
@@ -48,71 +47,70 @@ const AIAssistantChatbot = ({ isOpen, onClose }) => {
     }
 
     // Perform action
+    let responseMessage = '';
+    let newView = null;
+
     switch (action) {
-      case 'setup_smtp':
-        // Navigate to SMTP setup page
-        setTimeout(() => {
-          const assistantMsg = {
-            role: 'assistant',
-            content: 'Opening SMTP setup wizard for you now. You\'ll be able to configure Gmail, Outlook, Yahoo, or custom SMTP settings...',
-            timestamp: new Date().toISOString()
-          };
-          setMessages(prev => [...prev, assistantMsg]);
-
-          // Navigate after short delay
-          setTimeout(() => {
-            navigate('/smtp-setup');
-          }, 1000);
-        }, 500);
+      case 'goto_home':
+        responseMessage = 'Taking you to the Home dashboard...';
+        newView = 'home';
         break;
 
-      case 'create_campaign':
-        setTimeout(() => {
-          const assistantMsg = {
-            role: 'assistant',
-            content: 'Let me help you create a campaign. Opening the campaign setup wizard...',
-            timestamp: new Date().toISOString()
-          };
-          setMessages(prev => [...prev, assistantMsg]);
-
-          setTimeout(() => {
-            navigate('/setup');
-          }, 1000);
-        }, 500);
+      case 'goto_workflow':
+        responseMessage = 'Opening the Smart Workflow Platform...';
+        newView = 'workflow';
         break;
 
-      case 'add_prospects':
-        setTimeout(() => {
-          const assistantMsg = {
-            role: 'assistant',
-            content: 'Taking you to the prospects page where you can add and manage your audience...',
-            timestamp: new Date().toISOString()
-          };
-          setMessages(prev => [...prev, assistantMsg]);
-
-          setTimeout(() => {
-            navigate('/prospects');
-          }, 1000);
-        }, 500);
+      case 'goto_prospects':
+        responseMessage = 'Navigating to your Prospects section...';
+        newView = 'prospects';
         break;
 
-      case 'show_templates':
-        setTimeout(() => {
-          const assistantMsg = {
-            role: 'assistant',
-            content: 'Opening the email template library. You\'ll see 6 professional templates you can customize...',
-            timestamp: new Date().toISOString()
-          };
-          setMessages(prev => [...prev, assistantMsg]);
+      case 'goto_emails':
+        responseMessage = 'Opening your Email Campaign view...';
+        newView = 'emails';
+        break;
 
-          setTimeout(() => {
-            navigate('/email-editor');
-          }, 1000);
-        }, 500);
+      case 'goto_email_editor':
+        responseMessage = 'Loading the Email Editor...';
+        newView = 'email_editor';
+        break;
+
+      case 'goto_analytics':
+        responseMessage = 'Taking you to Analytics & Insights...';
+        newView = 'analytics';
+        break;
+
+      case 'goto_research':
+        responseMessage = 'Opening Market Research section...';
+        newView = 'research';
+        break;
+
+      case 'goto_settings':
+        responseMessage = 'Loading System Settings...';
+        newView = 'settings';
         break;
 
       default:
         break;
+    }
+
+    if (responseMessage && newView) {
+      setTimeout(() => {
+        const assistantMsg = {
+          role: 'assistant',
+          content: responseMessage,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, assistantMsg]);
+
+        // Navigate after short delay
+        setTimeout(() => {
+          if (setActiveView) {
+            setActiveView(newView);
+          }
+        }, 800);
+      }, 500);
     }
   };
 
@@ -152,27 +150,52 @@ const AIAssistantChatbot = ({ isOpen, onClose }) => {
           timestamp: new Date().toISOString()
         };
 
-        // Check if response suggests actions
+        // Check if response suggests actions based on keywords
         const lowerResponse = data.response.toLowerCase();
-        if (lowerResponse.includes('smtp') || lowerResponse.includes('email configuration')) {
+        const lowerQuery = userInput.toLowerCase();
+
+        // Generate contextual suggestions based on query and response
+        if (lowerQuery.includes('home') || lowerResponse.includes('home') || lowerQuery.includes('dashboard')) {
           assistantMessage.suggestions = [
-            { text: 'Open SMTP setup wizard', action: 'setup_smtp' },
-            { text: 'Show me setup instructions', action: 'smtp_help' }
+            { text: 'Go to Home', action: 'goto_home' },
+            { text: 'View Workflow', action: 'goto_workflow' }
           ];
-        } else if (lowerResponse.includes('campaign')) {
+        } else if (lowerQuery.includes('prospect') || lowerResponse.includes('prospect') || lowerQuery.includes('audience') || lowerQuery.includes('contact')) {
           assistantMessage.suggestions = [
-            { text: 'Create new campaign now', action: 'create_campaign' },
-            { text: 'View existing campaigns', action: 'view_campaigns' }
+            { text: 'View Prospects', action: 'goto_prospects' },
+            { text: 'Go to Home', action: 'goto_home' }
           ];
-        } else if (lowerResponse.includes('prospect') || lowerResponse.includes('audience')) {
+        } else if (lowerQuery.includes('campaign') || lowerResponse.includes('campaign') || lowerQuery.includes('email')) {
           assistantMessage.suggestions = [
-            { text: 'Go to prospects page', action: 'add_prospects' },
-            { text: 'Import contacts', action: 'import_contacts' }
+            { text: 'View Email Campaign', action: 'goto_emails' },
+            { text: 'Open Email Editor', action: 'goto_email_editor' }
           ];
-        } else if (lowerResponse.includes('template')) {
+        } else if (lowerQuery.includes('template') || lowerQuery.includes('editor')) {
           assistantMessage.suggestions = [
-            { text: 'Browse email templates', action: 'show_templates' },
-            { text: 'Create custom template', action: 'create_template' }
+            { text: 'Open Email Editor', action: 'goto_email_editor' },
+            { text: 'View Campaigns', action: 'goto_emails' }
+          ];
+        } else if (lowerQuery.includes('analytic') || lowerResponse.includes('analytic') || lowerQuery.includes('insight') || lowerQuery.includes('report')) {
+          assistantMessage.suggestions = [
+            { text: 'View Analytics', action: 'goto_analytics' },
+            { text: 'Check Campaigns', action: 'goto_emails' }
+          ];
+        } else if (lowerQuery.includes('research') || lowerResponse.includes('research') || lowerQuery.includes('market')) {
+          assistantMessage.suggestions = [
+            { text: 'Open Research', action: 'goto_research' },
+            { text: 'View Analytics', action: 'goto_analytics' }
+          ];
+        } else if (lowerQuery.includes('setting') || lowerResponse.includes('setting') || lowerQuery.includes('config') || lowerQuery.includes('smtp')) {
+          assistantMessage.suggestions = [
+            { text: 'Open Settings', action: 'goto_settings' },
+            { text: 'Go to Home', action: 'goto_home' }
+          ];
+        } else {
+          // Default suggestions
+          assistantMessage.suggestions = [
+            { text: 'Go to Home', action: 'goto_home' },
+            { text: 'View Prospects', action: 'goto_prospects' },
+            { text: 'Check Campaigns', action: 'goto_emails' }
           ];
         }
 
@@ -185,7 +208,11 @@ const AIAssistantChatbot = ({ isOpen, onClose }) => {
       const errorMessage = {
         role: 'assistant',
         content: 'I apologize, but I encountered an error. Please make sure the backend services are running and try again.',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        suggestions: [
+          { text: 'Go to Home', action: 'goto_home' },
+          { text: 'View Settings', action: 'goto_settings' }
+        ]
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -203,7 +230,7 @@ const AIAssistantChatbot = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-[480px] bg-gray-50 shadow-2xl z-50 flex flex-col border-l border-gray-200">
+    <div className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col border-l border-gray-200">
       {/* Header */}
       <div className="flex items-center justify-between p-6 bg-white border-b border-gray-200">
         <div className="flex items-center space-x-3">
@@ -219,7 +246,7 @@ const AIAssistantChatbot = ({ isOpen, onClose }) => {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => {/* Show quick guide */}}
-            className="px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            className="px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
             <BookOpen className="w-4 h-4 inline mr-1" />
             Quick Guide
@@ -235,11 +262,11 @@ const AIAssistantChatbot = ({ isOpen, onClose }) => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
         {messages.map((message, index) => (
           <div key={index} className="space-y-3">
             {message.role === 'assistant' && (
-              <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200">
+              <div className="bg-gray-50 rounded-lg p-5 shadow-sm border border-gray-100">
                 <div className="whitespace-pre-wrap break-words text-gray-800 leading-relaxed">
                   {message.content}
                 </div>
@@ -289,7 +316,7 @@ const AIAssistantChatbot = ({ isOpen, onClose }) => {
         ))}
 
         {isLoading && (
-          <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-200">
+          <div className="bg-gray-50 rounded-lg p-5 shadow-sm border border-gray-100">
             <Loader className="w-5 h-5 animate-spin text-green-500" />
           </div>
         )}
