@@ -37,6 +37,7 @@ import SignInPage from './pages/SignIn';
 import SignUpPage from './pages/SignUp';
 import OnboardingTour from './components/OnboardingTour';
 import SimpleWorkflowDashboard from './components/SimpleWorkflowDashboard';
+import AIAssistantChatbot from './components/AIAssistantChatbot';
 
 function App() {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
@@ -44,6 +45,8 @@ function App() {
   const [currentView, setCurrentView] = useState('setup');
   const [selectedClient, setSelectedClient] = useState(null);
   const [showOnboardingTour, setShowOnboardingTour] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [isChatbotMinimized, setIsChatbotMinimized] = useState(false);
 
   // Debug current view state
   // console.log('🔍 App.jsx render - Current state:', { currentView, isSetupComplete });
@@ -280,6 +283,14 @@ function App() {
           <Route path="/setup" element={<CampaignSetupWizard onComplete={handleSetupComplete} />} />
           <Route path="/smtp-setup" element={<AgentSetupWizard onComplete={handleSetupComplete} />} />
         </Routes>
+
+        {/* 🤖 AI Assistant Chatbot - available during setup too */}
+        <AIAssistantChatbot
+          isOpen={showChatbot}
+          onClose={() => setShowChatbot(!showChatbot)}
+          isMinimized={isChatbotMinimized}
+          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
+        />
       </div>
     );
   }
@@ -311,6 +322,14 @@ function App() {
           onComplete={handleOnboardingComplete}
           startStep={0}
         />
+
+        {/* 🤖 AI Assistant Chatbot */}
+        <AIAssistantChatbot
+          isOpen={showChatbot}
+          onClose={() => setShowChatbot(!showChatbot)}
+          isMinimized={isChatbotMinimized}
+          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
+        />
       </div>
     );
   }
@@ -338,6 +357,14 @@ function App() {
           onConfirm={handleAnalysisConfirm}
           onBack={handleBackToSetup}
         />
+
+        {/* 🤖 AI Assistant Chatbot */}
+        <AIAssistantChatbot
+          isOpen={showChatbot}
+          onClose={() => setShowChatbot(!showChatbot)}
+          isMinimized={isChatbotMinimized}
+          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
+        />
       </div>
     );
   }
@@ -354,6 +381,14 @@ function App() {
             setSelectedClient(updatedClient);
             // Update the client in the main list as well
           }}
+        />
+
+        {/* 🤖 AI Assistant Chatbot */}
+        <AIAssistantChatbot
+          isOpen={showChatbot}
+          onClose={() => setShowChatbot(!showChatbot)}
+          isMinimized={isChatbotMinimized}
+          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
         />
       </div>
     );
@@ -415,6 +450,14 @@ function App() {
             <Route path="langgraph-agent" element={<LangGraphAgent />} />
           </Route>
         </Routes>
+
+        {/* 🤖 AI Assistant Chatbot */}
+        <AIAssistantChatbot
+          isOpen={showChatbot}
+          onClose={() => setShowChatbot(!showChatbot)}
+          isMinimized={isChatbotMinimized}
+          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
+        />
       </div>
   );
 }
