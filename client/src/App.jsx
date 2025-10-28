@@ -46,7 +46,6 @@ function App() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [showOnboardingTour, setShowOnboardingTour] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
-  const [isChatbotMinimized, setIsChatbotMinimized] = useState(false);
 
   // Debug current view state
   // console.log('🔍 App.jsx render - Current state:', { currentView, isSetupComplete });
@@ -284,13 +283,24 @@ function App() {
           <Route path="/smtp-setup" element={<AgentSetupWizard onComplete={handleSetupComplete} />} />
         </Routes>
 
-        {/* 🤖 AI Assistant Chatbot - available during setup too */}
+        {/* 🤖 MailGen AI Assistant */}
         <AIAssistantChatbot
           isOpen={showChatbot}
-          onClose={() => setShowChatbot(!showChatbot)}
-          isMinimized={isChatbotMinimized}
-          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
+          onClose={() => setShowChatbot(false)}
         />
+
+        {/* Floating chat button */}
+        {!showChatbot && (
+          <button
+            onClick={() => setShowChatbot(true)}
+            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all z-50"
+            title="Open MailGen AI Assistant"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+          </button>
+        )}
       </div>
     );
   }
@@ -323,13 +333,24 @@ function App() {
           startStep={0}
         />
 
-        {/* 🤖 AI Assistant Chatbot */}
+        {/* 🤖 MailGen AI Assistant */}
         <AIAssistantChatbot
           isOpen={showChatbot}
-          onClose={() => setShowChatbot(!showChatbot)}
-          isMinimized={isChatbotMinimized}
-          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
+          onClose={() => setShowChatbot(false)}
         />
+
+        {/* Floating chat button */}
+        {!showChatbot && (
+          <button
+            onClick={() => setShowChatbot(true)}
+            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all z-50"
+            title="Open MailGen AI Assistant"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+          </button>
+        )}
       </div>
     );
   }
@@ -358,13 +379,24 @@ function App() {
           onBack={handleBackToSetup}
         />
 
-        {/* 🤖 AI Assistant Chatbot */}
+        {/* 🤖 MailGen AI Assistant */}
         <AIAssistantChatbot
           isOpen={showChatbot}
-          onClose={() => setShowChatbot(!showChatbot)}
-          isMinimized={isChatbotMinimized}
-          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
+          onClose={() => setShowChatbot(false)}
         />
+
+        {/* Floating chat button */}
+        {!showChatbot && (
+          <button
+            onClick={() => setShowChatbot(true)}
+            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all z-50"
+            title="Open MailGen AI Assistant"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+          </button>
+        )}
       </div>
     );
   }
@@ -383,13 +415,24 @@ function App() {
           }}
         />
 
-        {/* 🤖 AI Assistant Chatbot */}
+        {/* 🤖 MailGen AI Assistant */}
         <AIAssistantChatbot
           isOpen={showChatbot}
-          onClose={() => setShowChatbot(!showChatbot)}
-          isMinimized={isChatbotMinimized}
-          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
+          onClose={() => setShowChatbot(false)}
         />
+
+        {/* Floating chat button */}
+        {!showChatbot && (
+          <button
+            onClick={() => setShowChatbot(true)}
+            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all z-50"
+            title="Open MailGen AI Assistant"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+          </button>
+        )}
       </div>
     );
   }
@@ -451,13 +494,24 @@ function App() {
           </Route>
         </Routes>
 
-        {/* 🤖 AI Assistant Chatbot */}
+        {/* 🤖 MailGen AI Assistant */}
         <AIAssistantChatbot
           isOpen={showChatbot}
-          onClose={() => setShowChatbot(!showChatbot)}
-          isMinimized={isChatbotMinimized}
-          onToggleMinimize={() => setIsChatbotMinimized(!isChatbotMinimized)}
+          onClose={() => setShowChatbot(false)}
         />
+
+        {/* Floating chat button */}
+        {!showChatbot && (
+          <button
+            onClick={() => setShowChatbot(true)}
+            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all z-50"
+            title="Open MailGen AI Assistant"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+          </button>
+        )}
       </div>
   );
 }
