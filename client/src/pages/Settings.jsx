@@ -762,17 +762,134 @@ export default function Settings() {
                   </div>
                 </div>
 
+                {/* Email Tracking Configuration */}
+                <div className="border-t border-primary-200 pt-6">
+                  <h4 className="text-lg font-medium text-primary-900 mb-4 flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Email Analytics Tracking
+                  </h4>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-blue-800">
+                      📊 Enable email tracking to monitor opens, clicks, replies, and bounces.
+                      Gmail app passwords work for both SMTP (sending) and IMAP (reading inbox).
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <input
+                        type="checkbox"
+                        id="enable-tracking"
+                        checked={smtpConfig.enableTracking || false}
+                        onChange={(e) => setSmtpConfig(prev => ({ ...prev, enableTracking: e.target.checked }))}
+                        className="mt-1 rounded border-primary-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <label htmlFor="enable-tracking" className="ml-3">
+                        <span className="text-sm font-medium text-primary-900">Enable Email Tracking</span>
+                        <p className="text-xs text-primary-600 mt-1">
+                          Track email opens (via pixel), link clicks, replies (via IMAP), and bounces for analytics
+                        </p>
+                      </label>
+                    </div>
+
+                    {smtpConfig.enableTracking && (
+                      <div className="ml-7 space-y-4 pl-4 border-l-2 border-blue-200">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="imap-host" className="block text-sm font-medium text-primary-700 mb-2">
+                              IMAP Server *
+                            </label>
+                            <input
+                              type="text"
+                              id="imap-host"
+                              value={smtpConfig.imapHost || 'imap.gmail.com'}
+                              onChange={(e) => setSmtpConfig(prev => ({ ...prev, imapHost: e.target.value }))}
+                              className="input-field"
+                              placeholder="imap.gmail.com"
+                            />
+                          </div>
+
+                          <div>
+                            <label htmlFor="imap-port" className="block text-sm font-medium text-primary-700 mb-2">
+                              IMAP Port *
+                            </label>
+                            <input
+                              type="number"
+                              id="imap-port"
+                              value={smtpConfig.imapPort || 993}
+                              onChange={(e) => setSmtpConfig(prev => ({ ...prev, imapPort: parseInt(e.target.value) }))}
+                              className="input-field"
+                              placeholder="993"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="bg-green-50 border border-green-200 rounded p-3">
+                          <p className="text-xs text-green-800">
+                            ✅ <strong>Uses same credentials:</strong> IMAP will use your SMTP username and password above
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={smtpConfig.trackOpens !== false}
+                              onChange={(e) => setSmtpConfig(prev => ({ ...prev, trackOpens: e.target.checked }))}
+                              className="rounded border-primary-300 text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="ml-2 text-sm text-primary-700">Track email opens (1x1 pixel)</span>
+                          </label>
+
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={smtpConfig.trackClicks !== false}
+                              onChange={(e) => setSmtpConfig(prev => ({ ...prev, trackClicks: e.target.checked }))}
+                              className="rounded border-primary-300 text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="ml-2 text-sm text-primary-700">Track link clicks (redirect tracking)</span>
+                          </label>
+
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={smtpConfig.trackReplies !== false}
+                              onChange={(e) => setSmtpConfig(prev => ({ ...prev, trackReplies: e.target.checked }))}
+                              className="rounded border-primary-300 text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="ml-2 text-sm text-primary-700">Monitor replies (via IMAP)</span>
+                          </label>
+
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={smtpConfig.trackBounces !== false}
+                              onChange={(e) => setSmtpConfig(prev => ({ ...prev, trackBounces: e.target.checked }))}
+                              className="rounded border-primary-300 text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="ml-2 text-sm text-primary-700">Detect bounces (via IMAP)</span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="bg-primary-50 p-4 rounded-lg">
                   <h4 className="font-medium text-primary-900 mb-2">常用SMTP配置</h4>
                   <div className="text-sm text-primary-700 space-y-2">
                     <div>
-                      <strong>Gmail:</strong> smtp.gmail.com, 端口587 (TLS) 或 465 (SSL)
+                      <strong>Gmail:</strong> smtp.gmail.com, 端口587 (TLS) 或 465 (SSL) | IMAP: imap.gmail.com:993
                     </div>
                     <div>
-                      <strong>QQ邮箱:</strong> smtp.qq.com, 端口587 (TLS) 或 465 (SSL)
+                      <strong>QQ邮箱:</strong> smtp.qq.com, 端口587 (TLS) 或 465 (SSL) | IMAP: imap.qq.com:993
                     </div>
                     <div>
-                      <strong>163邮箱:</strong> smtp.163.com, 端口25 或 465 (SSL)
+                      <strong>163邮箱:</strong> smtp.163.com, 端口25 或 465 (SSL) | IMAP: imap.163.com:993
                     </div>
                     <div>
                       <strong>企业邮箱:</strong> 请联系您的IT管理员获取配置信息

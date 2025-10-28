@@ -144,6 +144,9 @@ app.use('/api/campaign-workflow', require('./routes/campaign-workflow'));
 // Website Analysis API routes
 app.use('/api/website-analysis', require('./routes/website-analysis'));
 
+// Email Tracking API routes (pixel tracking, click tracking, analytics)
+app.use('/api/track', require('./routes/tracking'));
+
 // Template Selection API routes (pass wsManager for broadcasting)
 const templateRoutes = require('./routes/template');
 templateRoutes.wsManager = wsManager; // Attach wsManager
