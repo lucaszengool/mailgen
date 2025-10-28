@@ -20,6 +20,9 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationResult, setVerificationResult] = useState(null);
 
   const emailProviders = [
     {
@@ -253,12 +256,75 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
     }
   };
 
-  const handleNext = () => {
-    const isValid = smtpConfig.host && smtpConfig.port && 
-                    smtpConfig.auth.user && smtpConfig.auth.pass && 
-                    smtpConfig.senderName;
-    if (!isValid) return;
+  // Test SMTP + IMAP Connection
+  const testConnection = async () => {
+    setIsTestingConnection(true);
+    setShowVerificationModal(true);
+    setVerificationResult({ status: 'testing' });
 
+    try {
+      // Test SMTP connection
+      const smtpTestResponse = await fetch('/api/test-smtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          host: smtpConfig.host,
+          port: smtpConfig.port,
+          secure: smtpConfig.secure,
+          username: smtpConfig.auth.user,
+          password: smtpConfig.auth.pass
+        })
+      });
+
+      const smtpResult = await smtpTestResponse.json();
+
+      // Test IMAP connection (same credentials)
+      const imapTestResponse = await fetch('/api/test-smtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          testImap: true,
+          imapHost: selectedProvider === 'gmail' ? 'imap.gmail.com' :
+                    selectedProvider === 'outlook' ? 'outlook.office365.com' :
+                    selectedProvider === 'yahoo' ? 'imap.mail.yahoo.com' : 'imap.gmail.com',
+          imapPort: 993,
+          username: smtpConfig.auth.user,
+          password: smtpConfig.auth.pass
+        })
+      });
+
+      const imapResult = await imapTestResponse.json();
+
+      // Show results
+      setVerificationResult({
+        status: smtpResult.success && imapResult.success ? 'success' : 'error',
+        smtp: smtpResult,
+        imap: imapResult,
+        provider: selectedProvider
+      });
+
+      setIsTestingConnection(false);
+
+      // If successful, proceed after 2 seconds
+      if (smtpResult.success && imapResult.success) {
+        setTimeout(() => {
+          proceedToNextStep();
+        }, 2000);
+      }
+
+    } catch (error) {
+      console.error('Connection test failed:', error);
+      setVerificationResult({
+        status: 'error',
+        smtp: { success: false, message: 'Network error: Could not connect to server' },
+        imap: { success: false, message: 'Network error: Could not connect to server' },
+        provider: selectedProvider
+      });
+      setIsTestingConnection(false);
+    }
+  };
+
+  const proceedToNextStep = () => {
     // Save SMTP configuration to localStorage for ProfessionalEmailEditor
     const smtpConfigForStorage = {
       provider: selectedProvider,
@@ -270,14 +336,26 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
       username: smtpConfig.auth.user, // Add username alias
       fromName: smtpConfig.senderName
     };
-    
+
     localStorage.setItem('smtpConfig', JSON.stringify(smtpConfigForStorage));
     console.log('✅ SMTP Config saved to localStorage:', smtpConfigForStorage);
+
+    setShowVerificationModal(false);
 
     onNext({
       provider: selectedProvider,
       smtpConfig: smtpConfig
     });
+  };
+
+  const handleNext = () => {
+    const isValid = smtpConfig.host && smtpConfig.port &&
+                    smtpConfig.auth.user && smtpConfig.auth.pass &&
+                    smtpConfig.senderName;
+    if (!isValid) return;
+
+    // Test connection before proceeding
+    testConnection();
   };
 
   const isFormValid = smtpConfig.host && smtpConfig.port && 
@@ -658,6 +736,163 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Connection Verification Modal */}
+      {showVerificationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative">
+            {verificationResult?.status === 'testing' && (
+              <>
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Testing Connections...</h3>
+                  <p className="text-gray-600 mb-4">Verifying SMTP and IMAP connectivity</p>
+                  <div className="space-y-2 text-left bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center text-sm text-gray-700">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                      Testing SMTP send capability...
+                    </div>
+                    <div className="flex items-center text-sm text-gray-700">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                      Testing IMAP inbox access...
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {verificationResult?.status === 'success' && (
+              <>
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <CheckCircle className="w-10 h-10 text-green-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">✅ Connection Successful!</h3>
+                  <p className="text-gray-600 mb-4">SMTP and IMAP are configured correctly</p>
+                  <div className="space-y-2 text-left bg-green-50 rounded-lg p-4">
+                    <div className="flex items-center text-sm text-green-700">
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      SMTP: {verificationResult.smtp?.message || 'Connected'}
+                    </div>
+                    <div className="flex items-center text-sm text-green-700">
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      IMAP: {verificationResult.imap?.message || 'Connected'}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-4">Proceeding to next step...</p>
+                </div>
+              </>
+            )}
+
+            {verificationResult?.status === 'error' && (
+              <>
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                    <AlertCircle className="w-10 h-10 text-red-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">⚠️ Connection Failed</h3>
+                  <p className="text-gray-600 mb-4">Please check your credentials and try again</p>
+
+                  <div className="space-y-2 text-left bg-red-50 rounded-lg p-4 mb-4">
+                    {!verificationResult.smtp?.success && (
+                      <div className="flex items-start text-sm text-red-700">
+                        <AlertCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <strong>SMTP Error:</strong> {verificationResult.smtp?.message || 'Connection failed'}
+                        </div>
+                      </div>
+                    )}
+                    {!verificationResult.imap?.success && (
+                      <div className="flex items-start text-sm text-red-700">
+                        <AlertCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <strong>IMAP Error:</strong> {verificationResult.imap?.message || 'Connection failed'}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Help Links */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-left">
+                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
+                      <HelpCircle className="w-4 h-4 mr-2 text-blue-600" />
+                      Need Help? Get App Password:
+                    </h4>
+                    <div className="space-y-2">
+                      {verificationResult.provider === 'gmail' && (
+                        <>
+                          <a
+                            href="https://myaccount.google.com/apppasswords"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Generate Gmail App Password
+                          </a>
+                          <p className="text-xs text-gray-600">
+                            Note: You must enable 2-Factor Authentication first
+                          </p>
+                        </>
+                      )}
+                      {verificationResult.provider === 'outlook' && (
+                        <>
+                          <a
+                            href="https://account.microsoft.com/security/app-passwords"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Generate Outlook App Password
+                          </a>
+                          <p className="text-xs text-gray-600">
+                            Note: You must enable 2-Factor Authentication first
+                          </p>
+                        </>
+                      )}
+                      {verificationResult.provider === 'yahoo' && (
+                        <>
+                          <a
+                            href="https://login.yahoo.com/account/security"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Generate Yahoo App Password
+                          </a>
+                          <p className="text-xs text-gray-600">
+                            Go to Security → Generate app password → Select "Other App"
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => setShowVerificationModal(false)}
+                      className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={testConnection}
+                      className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
+                    >
+                      <span>Retry</span>
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
