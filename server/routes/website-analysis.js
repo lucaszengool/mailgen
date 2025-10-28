@@ -12,6 +12,27 @@ const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_FAST_MODEL || 'qwen2.5:0.5b';
 
 /**
+ * GET /api/website-analysis/history
+ * Get saved website analysis history
+ */
+router.get('/history', async (req, res) => {
+  try {
+    // For now, return empty array - client will fallback to localStorage
+    // In the future, this could fetch from database
+    res.json({
+      success: true,
+      analyses: []
+    });
+  } catch (error) {
+    console.error('Failed to fetch analysis history:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch analysis history'
+    });
+  }
+});
+
+/**
  * POST /api/website-analysis/analyze
  * 分析网站并返回结构化数据供前端编辑
  */
@@ -49,23 +70,30 @@ router.post('/analyze', async (req, res) => {
     const businessIntro = metadata.description ||
                          comprehensiveAnalysis?.businessIntroduction ||
                          basicAnalysis.valueProposition;
-    const sellingPoints = comprehensiveAnalysis?.sellingPoints || [
-      'AI-powered scanning technology',
-      'Instant freshness assessment',
-      'Smart recommendations',
-      'User-friendly interface',
-      'Free to use',
-      'Multi-language support',
-      'Regular updates',
-      'Lightweight application'
-    ];
-    const targetAudiences = comprehensiveAnalysis?.targetAudiences || [
-      { title: 'Health-Conscious Shoppers', description: 'Individuals seeking fresh, quality produce' },
-      { title: 'Busy Parents', description: 'Parents managing family nutrition efficiently' },
-      { title: 'Fitness Enthusiasts', description: 'People maintaining healthy diets' },
-      { title: 'Budget-Conscious Students', description: 'Students avoiding food waste' },
-      { title: 'Food Professionals', description: 'Chefs and food service providers' }
-    ];
+
+    // Fix: Check array length, not just truthiness (empty array [] is truthy!)
+    const sellingPoints = (comprehensiveAnalysis?.sellingPoints?.length > 0)
+      ? comprehensiveAnalysis.sellingPoints
+      : [
+        'AI-powered scanning technology',
+        'Instant freshness assessment',
+        'Smart recommendations',
+        'User-friendly interface',
+        'Free to use',
+        'Multi-language support',
+        'Regular updates',
+        'Lightweight application'
+      ];
+
+    const targetAudiences = (comprehensiveAnalysis?.targetAudiences?.length > 0)
+      ? comprehensiveAnalysis.targetAudiences
+      : [
+        { title: 'Health-Conscious Shoppers', description: 'Individuals seeking fresh, quality produce' },
+        { title: 'Busy Parents', description: 'Parents managing family nutrition efficiently' },
+        { title: 'Fitness Enthusiasts', description: 'People maintaining healthy diets' },
+        { title: 'Budget-Conscious Students', description: 'Students avoiding food waste' },
+        { title: 'Food Professionals', description: 'Chefs and food service providers' }
+      ];
 
     const formattedAnalysis = {
       // Basic information
