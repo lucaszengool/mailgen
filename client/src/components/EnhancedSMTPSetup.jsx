@@ -747,18 +747,18 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
             {verificationResult?.status === 'testing' && (
               <>
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">Testing Connections...</h3>
                   <p className="text-gray-600 mb-4">Verifying SMTP and IMAP connectivity</p>
                   <div className="space-y-2 text-left bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center text-sm text-gray-700">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                       Testing SMTP send capability...
                     </div>
                     <div className="flex items-center text-sm text-gray-700">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                       Testing IMAP inbox access...
                     </div>
                   </div>
@@ -792,15 +792,15 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
             {verificationResult?.status === 'error' && (
               <>
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-                    <AlertCircle className="w-10 h-10 text-red-500" />
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <AlertCircle className="w-10 h-10 text-gray-600" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">⚠️ Connection Failed</h3>
                   <p className="text-gray-600 mb-4">Please check your credentials and try again</p>
 
-                  <div className="space-y-2 text-left bg-red-50 rounded-lg p-4 mb-4">
+                  <div className="space-y-2 text-left bg-gray-50 rounded-lg p-4 mb-4">
                     {!verificationResult.smtp?.success && (
-                      <div className="flex items-start text-sm text-red-700">
+                      <div className="flex items-start text-sm text-gray-700">
                         <AlertCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
                         <div>
                           <strong>SMTP Error:</strong> {verificationResult.smtp?.message || 'Connection failed'}
@@ -808,7 +808,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                       </div>
                     )}
                     {!verificationResult.imap?.success && (
-                      <div className="flex items-start text-sm text-red-700">
+                      <div className="flex items-start text-sm text-gray-700">
                         <AlertCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
                         <div>
                           <strong>IMAP Error:</strong> {verificationResult.imap?.message || 'Connection failed'}
@@ -818,9 +818,9 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   </div>
 
                   {/* Help Links */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-left">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 text-left">
                     <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
-                      <HelpCircle className="w-4 h-4 mr-2 text-blue-600" />
+                      <HelpCircle className="w-4 h-4 mr-2 text-green-600" />
                       Need Help? Get App Password:
                     </h4>
                     <div className="space-y-2">
@@ -830,7 +830,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             href="https://myaccount.google.com/apppasswords"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                            className="flex items-center text-sm text-green-600 hover:text-green-800"
                           >
                             <ExternalLink className="w-3 h-3 mr-1" />
                             Generate Gmail App Password
@@ -846,7 +846,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             href="https://account.microsoft.com/security/app-passwords"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                            className="flex items-center text-sm text-green-600 hover:text-green-800"
                           >
                             <ExternalLink className="w-3 h-3 mr-1" />
                             Generate Outlook App Password
@@ -862,7 +862,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             href="https://login.yahoo.com/account/security"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                            className="flex items-center text-sm text-green-600 hover:text-green-800"
                           >
                             <ExternalLink className="w-3 h-3 mr-1" />
                             Generate Yahoo App Password
@@ -884,7 +884,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                     </button>
                     <button
                       onClick={testConnection}
-                      className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
+                      className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center"
                     >
                       <span>Retry</span>
                       <ArrowRight className="w-4 h-4 ml-2" />

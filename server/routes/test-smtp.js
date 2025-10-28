@@ -248,4 +248,88 @@ router.get('/', async (req, res) => {
   res.send(html);
 });
 
+// POST endpoint for automated testing from setup wizard
+router.post('/', async (req, res) => {
+  try {
+    const { host, port, secure, username, password, testImap, imapHost, imapPort } = req.body;
+
+    console.log(`🔍 Testing SMTP: ${username}@${host}:${port}`);
+
+    // Test SMTP if not testing IMAP
+    if (!testImap) {
+      const smtpResult = await testSMTPAuth({
+        host,
+        port: parseInt(port),
+        secure: secure || false,
+        user: username,
+        pass: password
+      });
+
+      return res.json(smtpResult);
+    }
+
+    // Test IMAP
+    console.log(`🔍 Testing IMAP: ${username}@${imapHost}:${imapPort}`);
+
+    const Imap = require('imap');
+
+    const imapResult = await new Promise((resolve) => {
+      const imap = new Imap({
+        user: username,
+        password: password,
+        host: imapHost || 'imap.gmail.com',
+        port: parseInt(imapPort) || 993,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false },
+        connTimeout: 15000,
+        authTimeout: 15000
+      });
+
+      const timeout = setTimeout(() => {
+        imap.end();
+        resolve({
+          success: false,
+          message: 'IMAP connection timed out after 15 seconds'
+        });
+      }, 15000);
+
+      imap.once('ready', () => {
+        clearTimeout(timeout);
+        imap.end();
+        resolve({
+          success: true,
+          message: 'IMAP connection successful'
+        });
+      });
+
+      imap.once('error', (err) => {
+        clearTimeout(timeout);
+        resolve({
+          success: false,
+          message: err.message || 'IMAP connection failed'
+        });
+      });
+
+      try {
+        imap.connect();
+      } catch (error) {
+        clearTimeout(timeout);
+        resolve({
+          success: false,
+          message: error.message || 'Failed to connect to IMAP'
+        });
+      }
+    });
+
+    return res.json(imapResult);
+
+  } catch (error) {
+    console.error('Test endpoint error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Test failed'
+    });
+  }
+});
+
 module.exports = router;
