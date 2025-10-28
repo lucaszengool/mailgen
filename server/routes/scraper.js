@@ -3,6 +3,8 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const router = express.Router();
 
+const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+
 // 分析企业网站
 router.post('/analyze-website', async (req, res) => {
   try {
@@ -100,7 +102,7 @@ router.post('/analyze-website', async (req, res) => {
 
 请用中文回答，简洁明了。`;
 
-      const ollamaResponse = await axios.post('http://localhost:11434/api/generate', {
+      const ollamaResponse = await axios.post(`${OLLAMA_URL}/api/generate`, {
         model: 'qwen2.5:7b',
         prompt: analysisPrompt,
         stream: false,
