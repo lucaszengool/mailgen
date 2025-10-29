@@ -15,7 +15,8 @@ const BlogPage = () => {
     readTime: '8 min read',
     image: '🤖',
     author: 'Sarah Chen',
-    authorRole: 'Head of AI'
+    authorRole: 'Head of AI',
+    slug: 'ai-revolutionizing-cold-email-2025'
   };
 
   const posts = [
@@ -26,7 +27,8 @@ const BlogPage = () => {
       date: 'Jan 12, 2025',
       readTime: '6 min read',
       image: '✅',
-      author: 'Michael Torres'
+      author: 'Michael Torres',
+      slug: 'is-mailgen-legit'
     },
     {
       title: 'Success Stories from MailGen Users',
@@ -201,14 +203,15 @@ const BlogPage = () => {
                   <span>{featuredPost.readTime}</span>
                 </div>
               </div>
-              <button
+              <Link
+                to={`/blog/${featuredPost.slug}`}
                 className="px-8 py-3 font-semibold rounded-lg inline-flex items-center gap-2 transition-all"
                 style={{ backgroundColor: 'white', color: '#001529' }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
               >
                 Read Article <ArrowRight className="w-5 h-5" />
-              </button>
+              </Link>
             </div>
             <div className="flex items-center justify-center">
               <div className="text-9xl">{featuredPost.image}</div>
@@ -222,9 +225,10 @@ const BlogPage = () => {
         <div className="max-w-7xl mx-auto px-12">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPosts.map((post, index) => (
-              <article
+              <Link
                 key={index}
-                className="rounded-xl overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
+                to={post.slug ? `/blog/${post.slug}` : '/blog'}
+                className="block rounded-xl overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
                 style={{
                   backgroundColor: 'white',
                   border: '1px solid #f0f0f0',
@@ -269,7 +273,7 @@ const BlogPage = () => {
                                 style={{ color: '#00f0a0' }} />
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
 
