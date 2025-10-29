@@ -1,11 +1,20 @@
-import React, { useContext, useState } from 'react';
-import { TranslationContext } from 'react-auto-google-translate';
+import React, { useState, useEffect } from 'react';
 import { Globe } from 'lucide-react';
 
 const LanguageSwitcher = ({ position = 'bottom-right' }) => {
-  const { changeLanguage } = useContext(TranslationContext);
   const [isOpen, setIsOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
+
+  // Function to trigger Google Translate
+  const changeLanguage = (langCode) => {
+    if (window.google && window.google.translate) {
+      const selectElement = document.querySelector('.goog-te-combo');
+      if (selectElement) {
+        selectElement.value = langCode;
+        selectElement.dispatchEvent(new Event('change'));
+      }
+    }
+  };
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
