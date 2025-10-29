@@ -20,6 +20,7 @@
     "framer-motion": "^10.18.0",
     "lucide-react": "^0.539.0",
     "react": "^18.2.0",
+    "react-auto-google-translate": "^1.0.3",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
