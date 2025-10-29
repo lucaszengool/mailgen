@@ -156,19 +156,19 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                   </svg>
                 </button>
               </div>
-              <a href="#" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
+              <a href="/ai-agent" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
                 AI Agent
               </a>
-              <a href="#" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
-                Email AI
+              <a href="/features" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
+                Features
               </a>
-              <a href="#" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
+              <a href="/for-businesses" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
                 For Businesses
               </a>
-              <a href="#" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
+              <a href="/about" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
                 About Us
               </a>
-              <a href="#" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
+              <a href="/blog" className="font-medium text-gray-700 hover:text-black transition-all duration-300">
                 Blog
               </a>
             </div>

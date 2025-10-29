@@ -28,6 +28,12 @@ import EnhancedWorkflowDashboard from './components/EnhancedWorkflowDashboard';
 import ComprehensiveDashboard from './components/ComprehensiveDashboard';
 import RealTimeWorkflowDashboard from './components/RealTimeWorkflowDashboard';
 import GitHubStyleWorkflowDashboard from './components/GitHubStyleWorkflowDashboard';
+// New marketing pages
+import AIAgentPage from './pages/AIAgent';
+import FeaturesPage from './pages/Features';
+import ForBusinessesPage from './pages/ForBusinesses';
+import AboutPage from './pages/About';
+import BlogPage from './pages/Blog';
 import WorkflowStyleDashboard from './components/WorkflowStyleDashboard';
 import ClientDetailView from './components/ClientDetailView';
 import AgentControlPanel from './components/AgentControlPanel';
@@ -279,6 +285,12 @@ function App() {
           <Route path="/" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} />
           <Route path="/setup" element={<CampaignSetupWizard onComplete={handleSetupComplete} />} />
           <Route path="/smtp-setup" element={<AgentSetupWizard onComplete={handleSetupComplete} />} />
+          {/* Marketing Pages */}
+          <Route path="/ai-agent" element={<AIAgentPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/for-businesses" element={<ForBusinessesPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/blog" element={<BlogPage />} />
         </Routes>
       </div>
     );
@@ -391,6 +403,12 @@ function App() {
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route path="/start" element={<HeadAIStyleStartPage />} />
+          {/* Marketing Pages */}
+          <Route path="/ai-agent" element={<AIAgentPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/for-businesses" element={<ForBusinessesPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/blog" element={<BlogPage />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="home" element={<Home />} />
