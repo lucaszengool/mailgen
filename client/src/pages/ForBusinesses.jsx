@@ -230,7 +230,7 @@ const ForBusinessesPage = () => {
         </div>
       </div>
 
-      {/* Trust Section */}
+      {/* Testimonials Section */}
       <div className="py-20" style={{ backgroundColor: '#f5f5f5' }}>
         <div className="max-w-7xl mx-auto px-12">
           <div className="text-center mb-16">
@@ -244,45 +244,75 @@ const ForBusinessesPage = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {[
               {
-                quote: "This platform has transformed how we do outbound. We have 3x'd our pipeline in 6 months.",
-                author: "Sarah Chen",
-                role: "VP of Sales, TechCorp",
-                company: "Series B SaaS"
+                photo: '/assets/testimonials/michael-r.jpg',
+                name: 'Michael R.',
+                role: 'VP of Sales',
+                testimonial: 'I am able to find more relevant leads faster, since using this platform I have tripled my outreach response rate. I am truly impressed with the AI matching.'
               },
               {
-                quote: "The AI personalization is incredible. Our response rates jumped from 8% to 34%.",
-                author: "Michael Torres",
-                role: "Head of Marketing, GrowthCo",
-                company: "Fast-growing startup"
+                photo: '/assets/testimonials/sarah-c.jpg',
+                name: 'Sarah C.',
+                role: 'Marketing Director',
+                testimonial: 'Thanks to this platform I have landed 3 new clients within 2 weeks! The AI-powered prospect matching is absolutely incredible.'
+              },
+              {
+                photo: '/assets/testimonials/david-l.jpg',
+                name: 'David L.',
+                role: 'Business Development Manager',
+                testimonial: 'You must check out this platform. It has been saving me hours in prospecting! I am blown away at how easy it is to find qualified leads.'
+              },
+              {
+                photo: '/assets/testimonials/jennifer-w.jpg',
+                name: 'Jennifer W.',
+                role: 'Growth Marketing Lead',
+                testimonial: 'I have enjoyed seeing so many perfectly matched prospects. This has completely revamped my outreach process. Excited to keep exploring the features!'
+              },
+              {
+                photo: '/assets/testimonials/thomas-b.jpg',
+                name: 'Thomas B.',
+                role: 'Sales Manager',
+                testimonial: 'It is a 10/10! The email personalization feature helps me easily craft messages that resonate. The AI guidance has been game changing. Loving it so far!'
+              },
+              {
+                photo: '/assets/testimonials/amanda-l.jpg',
+                name: 'Amanda L.',
+                role: 'Account Executive',
+                testimonial: 'Not only does this platform show you the most relevant prospects, it ALSO helps you network and get warm introductions! The matching system is incredible. Definitely recommend!'
               }
             ].map((testimonial, index) => (
-              <div key={index} className="rounded-xl p-8"
+              <div key={index} className="rounded-xl p-6"
                    style={{
                      backgroundColor: 'white',
                      border: '1px solid #f0f0f0',
                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
                    }}>
-                <svg className="w-10 h-10 mb-4" style={{ color: '#00f0a0' }} fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                </svg>
-                <p className="text-lg mb-6 leading-relaxed"
-                   style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
-                  "{testimonial.quote}"
-                </p>
-                <div>
-                  <div className="font-bold" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
-                    {testimonial.author}
-                  </div>
-                  <div style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '14px' }}>
-                    {testimonial.role}
-                  </div>
-                  <div className="text-sm" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-                    {testimonial.company}
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src={testimonial.photo}
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                    style={{
+                      border: '2px solid #00f0a0'
+                    }}
+                  />
+                  <div>
+                    <div className="font-semibold"
+                         style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+                      {testimonial.name}
+                    </div>
+                    <div className="text-sm"
+                         style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+                      {testimonial.role}
+                    </div>
                   </div>
                 </div>
+                <p className="leading-relaxed"
+                   style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '15px', lineHeight: '1.7' }}>
+                  "{testimonial.testimonial}"
+                </p>
               </div>
             ))}
           </div>
