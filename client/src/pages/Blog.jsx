@@ -36,8 +36,9 @@ const BlogPage = () => {
       category: 'Case Studies',
       date: 'Jan 10, 2025',
       readTime: '10 min read',
-      image: '🏆',
-      author: 'Emily Rodriguez'
+      image: '💎',
+      author: 'Emily Rodriguez',
+      slug: 'success-stories'
     },
     {
       title: 'What Top AI Companies Are Looking For',
@@ -46,7 +47,8 @@ const BlogPage = () => {
       date: 'Jan 8, 2025',
       readTime: '12 min read',
       image: '🎯',
-      author: 'David Park'
+      author: 'David Park',
+      slug: 'ai-companies-hiring'
     },
     {
       title: 'MailGen AI Agent Launch',
@@ -55,7 +57,8 @@ const BlogPage = () => {
       date: 'Jan 5, 2025',
       readTime: '4 min read',
       image: '🚀',
-      author: 'Lisa Chen'
+      author: 'Lisa Chen',
+      slug: 'ai-agent-launch'
     },
     {
       title: 'Top Email Marketing Strategies',
@@ -64,7 +67,8 @@ const BlogPage = () => {
       date: 'Jan 3, 2025',
       readTime: '7 min read',
       image: '📧',
-      author: 'James Wilson'
+      author: 'James Wilson',
+      slug: 'top-email-strategies'
     },
     {
       title: '10 Email Templates That Convert 3x Better',
@@ -73,7 +77,8 @@ const BlogPage = () => {
       date: 'Dec 30, 2024',
       readTime: '6 min read',
       image: '📝',
-      author: 'Michael Torres'
+      author: 'Michael Torres',
+      slug: 'email-templates-convert'
     },
     {
       title: 'Case Study: How TechCorp Generated $2M in Pipeline',
@@ -82,7 +87,8 @@ const BlogPage = () => {
       date: 'Dec 28, 2024',
       readTime: '10 min read',
       image: '📊',
-      author: 'Emily Rodriguez'
+      author: 'Emily Rodriguez',
+      slug: 'techcorp-case-study'
     },
     {
       title: 'The Complete Guide to Email Deliverability',
@@ -91,7 +97,8 @@ const BlogPage = () => {
       date: 'Dec 25, 2024',
       readTime: '12 min read',
       image: '✉️',
-      author: 'David Park'
+      author: 'David Park',
+      slug: 'email-deliverability-guide'
     },
     {
       title: 'AI Personalization: Beyond First Names',
@@ -100,7 +107,8 @@ const BlogPage = () => {
       date: 'Dec 22, 2024',
       readTime: '9 min read',
       image: '🧠',
-      author: 'Sarah Chen'
+      author: 'Sarah Chen',
+      slug: 'ai-personalization'
     }
   ];
 
@@ -227,50 +235,50 @@ const BlogPage = () => {
             {filteredPosts.map((post, index) => (
               <Link
                 key={index}
-                to={post.slug ? `/blog/${post.slug}` : '/blog'}
-                className="block rounded-xl overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
+                to={`/blog/${post.slug}`}
+                className="block rounded-2xl overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
                 style={{
-                  backgroundColor: 'white',
-                  border: '1px solid #f0f0f0',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                  background: 'linear-gradient(135deg, #001529 0%, #00c98d 100%)',
+                  boxShadow: '0 6px 16px rgba(0, 0, 0, 0.08)'
                 }}
               >
-                <div className="p-12 flex items-center justify-center"
-                     style={{ backgroundColor: '#f5f5f5' }}>
-                  <div className="text-6xl">{post.image}</div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="px-3 py-1 rounded-full text-sm font-semibold"
-                          style={{ backgroundColor: 'rgba(0, 240, 160, 0.1)', color: '#00c98d' }}>
-                      {post.category}
-                    </span>
-                    <div className="flex items-center gap-1 text-sm"
-                         style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+                <div className="p-8">
+                  {/* Category Badge */}
+                  <div className="inline-flex px-3 py-1 rounded-full text-xs font-semibold mb-3"
+                       style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}>
+                    {post.category}
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-2xl font-semibold mb-3 leading-tight"
+                      style={{ color: 'white', fontWeight: 600 }}>
+                    {post.title}
+                  </h3>
+
+                  {/* Excerpt */}
+                  <p className="mb-4 leading-relaxed"
+                     style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '15px', lineHeight: '1.6' }}>
+                    {post.excerpt}
+                  </p>
+
+                  {/* Meta Info */}
+                  <div className="flex items-center gap-4 mb-4 text-sm"
+                       style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{post.date}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
                       <span>{post.readTime}</span>
                     </div>
                   </div>
-                  <h3 className="text-xl font-semibold mb-3 leading-tight group-hover:text-green-600 transition-colors"
-                      style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
-                    {post.title}
-                  </h3>
-                  <p className="mb-4 leading-relaxed"
-                     style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '15px', lineHeight: '1.7' }}>
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center justify-between pt-4"
-                       style={{ borderTop: '1px solid #f0f0f0' }}>
-                    <div>
-                      <div className="font-semibold text-sm" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
-                        {post.author}
-                      </div>
-                      <div className="text-xs" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-                        {post.date}
-                      </div>
-                    </div>
-                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1"
-                                style={{ color: '#00f0a0' }} />
+
+                  {/* Emoji Icon */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-5xl">{post.image}</div>
+                    <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1"
+                                style={{ color: 'white' }} />
                   </div>
                 </div>
               </Link>
