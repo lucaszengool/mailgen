@@ -19,35 +19,35 @@ const BlogPage = () => {
 
   const posts = [
     {
-      title: '10 Email Templates That Convert 3x Better',
-      excerpt: 'Proven templates used by top-performing sales teams to book more meetings and close more deals.',
-      category: 'Email Marketing',
+      title: 'Is MailGen Legit?',
+      excerpt: 'An honest review of MailGen\'s features, pricing, and performance. See real user testimonials and find out if MailGen is the right email marketing platform for your business.',
+      category: 'Product Updates',
       date: 'Jan 12, 2025',
       readTime: '6 min read',
-      image: '📧',
+      image: '✅',
       author: 'Michael Torres'
     },
     {
-      title: 'Case Study: How TechCorp Generated $2M in Pipeline',
-      excerpt: 'A deep dive into how one SaaS company used AI-powered outreach to transform their sales process.',
+      title: 'Success Stories from MailGen Users',
+      excerpt: 'Real results from real customers. Discover how companies are using MailGen to triple their response rates and generate millions in new pipeline.',
       category: 'Case Studies',
       date: 'Jan 10, 2025',
       readTime: '10 min read',
-      image: '📊',
+      image: '🏆',
       author: 'Emily Rodriguez'
     },
     {
-      title: 'The Complete Guide to Email Deliverability',
-      excerpt: 'Everything you need to know about landing in the inbox, avoiding spam filters, and maintaining sender reputation.',
-      category: 'Email Marketing',
+      title: 'What Top AI Companies Are Looking For',
+      excerpt: 'Industry insights on hiring trends and what leading AI companies prioritize when building their teams. Essential reading for tech professionals.',
+      category: 'AI & Automation',
       date: 'Jan 8, 2025',
       readTime: '12 min read',
-      image: '✉️',
+      image: '🎯',
       author: 'David Park'
     },
     {
-      title: 'Introducing: Multi-Channel Campaigns',
-      excerpt: 'New feature alert! Coordinate email, LinkedIn, and phone outreach from a single dashboard.',
+      title: 'MailGen AI Agent Launch',
+      excerpt: 'Introducing our revolutionary AI agent that handles prospecting, email generation, and follow-ups automatically. The future of email marketing is here.',
       category: 'Product Updates',
       date: 'Jan 5, 2025',
       readTime: '4 min read',
@@ -55,19 +55,46 @@ const BlogPage = () => {
       author: 'Lisa Chen'
     },
     {
-      title: 'How to Build a High-Converting Lead List',
-      excerpt: 'Step-by-step guide to finding, qualifying, and enriching prospects for your outbound campaigns.',
-      category: 'Lead Generation',
+      title: 'Top Email Marketing Strategies',
+      excerpt: 'Proven strategies from top-performing marketing teams. Learn the tactics that drive 40%+ response rates and consistent revenue growth.',
+      category: 'Email Marketing',
       date: 'Jan 3, 2025',
       readTime: '7 min read',
-      image: '🎯',
+      image: '📧',
       author: 'James Wilson'
     },
     {
-      title: 'AI Personalization: Beyond First Names',
-      excerpt: 'Learn how modern AI personalizes emails using company signals, recent news, and behavioral data.',
-      category: 'AI & Automation',
+      title: '10 Email Templates That Convert 3x Better',
+      excerpt: 'Proven templates used by top-performing sales teams to book more meetings and close more deals. Copy-paste ready for immediate results.',
+      category: 'Email Marketing',
+      date: 'Dec 30, 2024',
+      readTime: '6 min read',
+      image: '📝',
+      author: 'Michael Torres'
+    },
+    {
+      title: 'Case Study: How TechCorp Generated $2M in Pipeline',
+      excerpt: 'A deep dive into how one SaaS company used AI-powered outreach to transform their sales process and generate $2M in new business.',
+      category: 'Case Studies',
       date: 'Dec 28, 2024',
+      readTime: '10 min read',
+      image: '📊',
+      author: 'Emily Rodriguez'
+    },
+    {
+      title: 'The Complete Guide to Email Deliverability',
+      excerpt: 'Everything you need to know about landing in the inbox, avoiding spam filters, and maintaining sender reputation for maximum deliverability.',
+      category: 'Email Marketing',
+      date: 'Dec 25, 2024',
+      readTime: '12 min read',
+      image: '✉️',
+      author: 'David Park'
+    },
+    {
+      title: 'AI Personalization: Beyond First Names',
+      excerpt: 'Learn how modern AI personalizes emails using company signals, recent news, and behavioral data to create truly personalized outreach.',
+      category: 'AI & Automation',
+      date: 'Dec 22, 2024',
       readTime: '9 min read',
       image: '🧠',
       author: 'Sarah Chen'

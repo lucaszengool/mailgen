@@ -34,6 +34,7 @@ import FeaturesPage from './pages/Features';
 import ForBusinessesPage from './pages/ForBusinesses';
 import AboutPage from './pages/About';
 import BlogPage from './pages/Blog';
+import PartnersPage from './pages/Partners';
 import WorkflowStyleDashboard from './components/WorkflowStyleDashboard';
 import ClientDetailView from './components/ClientDetailView';
 import AgentControlPanel from './components/AgentControlPanel';
@@ -291,6 +292,7 @@ function App() {
           <Route path="/for-businesses" element={<ForBusinessesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/partners" element={<PartnersPage />} />
         </Routes>
       </div>
     );
@@ -409,6 +411,7 @@ function App() {
           <Route path="/for-businesses" element={<ForBusinessesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/partners" element={<PartnersPage />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="home" element={<Home />} />
