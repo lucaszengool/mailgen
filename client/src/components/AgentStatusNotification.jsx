@@ -47,7 +47,9 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
       bgClass: 'bg-white',
       borderClass: 'border-gray-200',
       title: 'Agent Working...',
-      progressColor: '#00f5a0'
+      progressColor: '#00f5a0',
+      estimatedTime: '2-3 minutes',
+      nextAction: 'Please wait while the agent completes the task'
     },
     searching: {
       icon: Search,
@@ -56,7 +58,31 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
       bgClass: 'bg-white',
       borderClass: 'border-gray-200',
       title: 'Searching Prospects...',
-      progressColor: '#00f5a0'
+      progressColor: '#00f5a0',
+      estimatedTime: '1-2 minutes',
+      nextAction: 'Results will appear in the Prospects tab'
+    },
+    analyzing_website: {
+      icon: Search,
+      iconClass: 'animate-pulse',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
+      title: 'Analyzing Website...',
+      progressColor: '#00f5a0',
+      estimatedTime: '30-45 seconds',
+      nextAction: 'AI is extracting company information and insights'
+    },
+    testing_smtp: {
+      icon: Mail,
+      iconClass: 'animate-pulse',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
+      title: 'Testing SMTP Connection...',
+      progressColor: '#00f5a0',
+      estimatedTime: '10-15 seconds',
+      nextAction: 'Verifying email server credentials'
     },
     generating: {
       icon: Mail,
@@ -65,7 +91,53 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
       bgClass: 'bg-white',
       borderClass: 'border-gray-200',
       title: 'Generating Emails...',
-      progressColor: '#00f5a0'
+      progressColor: '#00f5a0',
+      estimatedTime: '2-4 minutes',
+      nextAction: 'Check Email Campaign tab when complete'
+    },
+    sending_emails: {
+      icon: Mail,
+      iconClass: 'animate-spin',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
+      title: 'Sending Emails...',
+      progressColor: '#00f5a0',
+      estimatedTime: '1-3 minutes',
+      nextAction: 'Monitor progress in Analytics tab'
+    },
+    prospects_found: {
+      icon: CheckCircle,
+      iconClass: '',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
+      title: 'Prospects Found!',
+      progressColor: '#00f5a0',
+      estimatedTime: null,
+      nextAction: 'View results in the Prospects tab'
+    },
+    emails_generated: {
+      icon: CheckCircle,
+      iconClass: '',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
+      title: 'Emails Generated!',
+      progressColor: '#00f5a0',
+      estimatedTime: null,
+      nextAction: 'Review and send from Email Campaign tab'
+    },
+    smtp_configured: {
+      icon: CheckCircle,
+      iconClass: '',
+      iconColor: '#00f5a0',
+      bgClass: 'bg-white',
+      borderClass: 'border-gray-200',
+      title: 'SMTP Configured!',
+      progressColor: '#00f5a0',
+      estimatedTime: null,
+      nextAction: 'You can now send emails from the Email Campaign tab'
     },
     success: {
       icon: CheckCircle,
@@ -74,7 +146,9 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
       bgClass: 'bg-white',
       borderClass: 'border-gray-200',
       title: 'Success!',
-      progressColor: '#00f5a0'
+      progressColor: '#00f5a0',
+      estimatedTime: null,
+      nextAction: null
     },
     error: {
       icon: AlertCircle,
@@ -83,7 +157,9 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
       bgClass: 'bg-white',
       borderClass: 'border-gray-200',
       title: 'Error',
-      progressColor: '#ef4444'
+      progressColor: '#ef4444',
+      estimatedTime: null,
+      nextAction: 'Please check the error details and try again'
     }
   };
 
@@ -117,6 +193,11 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
               <div>
                 <h3 className="text-lg font-bold text-black">{config.title}</h3>
                 <p className="text-sm text-black">{message}</p>
+                {config.estimatedTime && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    ⏱ Estimated time: {config.estimatedTime}
+                  </p>
+                )}
               </div>
             </div>
             <button
@@ -126,6 +207,16 @@ const AgentStatusNotification = ({ status, message, details = [], onClose, autoC
               <X className="w-5 h-5 text-black" />
             </button>
           </div>
+
+          {/* Next Action */}
+          {config.nextAction && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-start space-x-2">
+                <span className="text-xs font-semibold text-black">→ Next:</span>
+                <span className="text-xs text-black">{config.nextAction}</span>
+              </div>
+            </div>
+          )}
 
           {/* Details */}
           {details && details.length > 0 && (
