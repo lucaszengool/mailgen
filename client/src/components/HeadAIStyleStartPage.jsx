@@ -1488,10 +1488,10 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
             <div>
               <h3 className="text-base font-semibold text-black mb-4">Information</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">About Us</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Privacy Policy</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Terms of Service</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Partners</a></li>
+                <li><Link to="/about" className="text-black hover:text-gray-600 transition-colors text-sm">About Us</Link></li>
+                <li><Link to="/privacy" className="text-black hover:text-gray-600 transition-colors text-sm">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="text-black hover:text-gray-600 transition-colors text-sm">Terms of Service</Link></li>
+                <li><Link to="/partners" className="text-black hover:text-gray-600 transition-colors text-sm">Partners</Link></li>
               </ul>
             </div>
           </div>
