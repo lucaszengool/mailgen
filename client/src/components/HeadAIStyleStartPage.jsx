@@ -17,7 +17,7 @@ const scrollingStyle = `
   }
 
   .animate-scroll-seamless {
-    animation: scroll-seamless 40s linear infinite;
+    animation: scroll-seamless 20s linear infinite;
   }
 
   .scroll-container {
@@ -340,22 +340,38 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
             {/* Continuous scrolling companies inside gray container - fully contained */}
             <div className="overflow-hidden relative" style={{ height: '120px' }}>
               <div className="flex items-center animate-scroll-seamless py-3" style={{ width: '300%', height: '100%' }}>
-                {/* Microsoft */}
+                {/* OpenAI */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z"/>
+                  <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365 2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/>
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Microsoft • 47 hours ago</div>
+                    <div className="text-sm text-gray-500">OpenAI • 1 hour ago</div>
+                    <div className="font-semibold text-black text-base">AI Product Manager</div>
+                  </div>
+                </div>
+
+                {/* Microsoft */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm border">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24">
+                      <rect fill="#F25022" width="11" height="11"/>
+                      <rect fill="#7FBA00" x="12.5" width="11" height="11"/>
+                      <rect fill="#00A4EF" y="12.5" width="11" height="11"/>
+                      <rect fill="#FFB900" x="12.5" y="12.5" width="11" height="11"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Microsoft • 2 hours ago</div>
                     <div className="font-semibold text-black text-base">Business Development Manager</div>
                   </div>
                 </div>
 
                 {/* Apple */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
                     </svg>
@@ -369,7 +385,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                 {/* Google */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
                   <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center border">
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24">
                       <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                       <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                       <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -377,48 +393,73 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Google • 1 hour ago</div>
+                    <div className="text-sm text-gray-500">Google • 30 min ago</div>
                     <div className="font-semibold text-black text-base">Growth Marketing Manager</div>
                   </div>
                 </div>
 
-                {/* Amazon */}
+                {/* Nvidia */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M13.84 22.13c3.59-.7 6.73-3.07 8.53-6.43.19-.37-.01-.8-.44-.8h-1.87c-.27 0-.51.15-.64.39a8.75 8.75 0 01-4.93 4.17c-.24.1-.32.38-.18.58l.96 1.37c.18.26.34.39.57.72zm-3.68 0c3.59-.7 6.73-3.07 8.53-6.43.19-.37-.01-.8-.44-.8h-1.87c-.27 0-.51.15-.64.39a8.75 8.75 0 01-4.93 4.17c-.24.1-.32.38-.18.58l.96 1.37c.18.26.34.39.57.72z"/>
-                      <path d="M20.88 19.44c-1.46 1.92-3.83 3.16-6.5 3.16-2.67 0-5.04-1.24-6.5-3.16-.13-.17-.35-.27-.58-.27-.24 0-.46.11-.58.29-.12.18-.15.4-.08.6.36.99.91 1.9 1.6 2.68.69.78 1.51 1.43 2.42 1.91.91.48 1.9.73 2.92.73s2.01-.25 2.92-.73c.91-.48 1.73-1.13 2.42-1.91.69-.78 1.24-1.69 1.6-2.68.07-.2.04-.42-.08-.6-.12-.18-.34-.29-.58-.29-.23 0-.45.1-.58.27z"/>
+                  <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12 12-5.383 12-12S18.617 0 12 0zm6.326 11.998c-.113-.564-.791-.79-2.235-.79h-.902v3.408h.902c1.444 0 2.122-.225 2.235-.79.113-.564.113-1.264 0-1.828zm-1.333 4.52h-2.104V7.482h2.104c1.782 0 2.895.339 3.234 1.468.226.677.226 1.807 0 2.598-.339 1.129-1.452 1.47-3.234 1.47zm-5.654-7.036h-2.55v7.036h.902v-2.825h1.648c1.217 0 1.782-.339 2.008-1.016.113-.339.113-.79 0-1.129-.226-.677-.791-1.066-2.008-1.066zm-.226 3.52h-1.421V8.547h1.421c.678 0 1.103.225 1.217.564.113.226.113.677 0 .903-.114.339-.539.564-1.217.564zm-4.523 3.516V7.482H5.688v7.036h.902z"/>
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Amazon • 5 hours ago</div>
-                    <div className="font-semibold text-black text-base">Marketing Director</div>
+                    <div className="text-sm text-gray-500">Nvidia • 4 hours ago</div>
+                    <div className="font-semibold text-black text-base">AI Solutions Engineer</div>
                   </div>
                 </div>
 
                 {/* Meta */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      <path d="M12.911 12.86v7.625h3.12v-7.616c0-2.393 1.273-3.605 3.459-3.605.205 0 .476.014.742.043V6.221c-.242-.029-.511-.043-.734-.043-1.945 0-3.141 1.016-3.588 2.522h-.057V6.357H12.91v6.503zM6.324 20.485h3.12v-14.128H6.324v14.128zM7.885 2.5a1.827 1.827 0 1 0 0 3.654 1.827 1.827 0 0 0 0-3.654z"/>
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Meta • 2 hours ago</div>
+                    <div className="text-sm text-gray-500">Meta • 5 hours ago</div>
                     <div className="font-semibold text-black text-base">Digital Marketing Specialist</div>
                   </div>
                 </div>
 
-                {/* Tesla */}
+                {/* Salesforce */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 3.848L7.154 1.539 2.308 3.848 7.154 6.157zm0 0l4.846-2.309L21.692 3.848 16.846 6.157zm-4.846 8.464l4.846 2.309 4.846-2.309-4.846-2.309zm0-4.156l4.846 2.309 4.846-2.309L12 5.847zm-4.846 8.465l4.846 2.309 4.846-2.309-4.846-2.309zm9.692-4.156l4.846 2.309 4.846-2.309-4.846-2.309z"/>
+                  <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10.006 5.413a4.905 4.905 0 0 1 5.223-1.283 5.346 5.346 0 0 1 7.28 2.974 4.236 4.236 0 0 1 1.49 8.058 5.036 5.036 0 0 1-5.728 4.925 5.814 5.814 0 0 1-7.974 1.513A4.893 4.893 0 0 1 3.5 18.843a4.634 4.634 0 0 1 1.912-8.09 5.186 5.186 0 0 1 4.594-5.34z"/>
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Tesla • 4 hours ago</div>
-                    <div className="font-semibold text-black text-base">Brand Manager</div>
+                    <div className="text-sm text-gray-500">Salesforce • 6 hours ago</div>
+                    <div className="font-semibold text-black text-base">CRM Solutions Manager</div>
+                  </div>
+                </div>
+
+                {/* Stripe */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.594-7.305h.003z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Stripe • 7 hours ago</div>
+                    <div className="font-semibold text-black text-base">Payments Partnerships Lead</div>
+                  </div>
+                </div>
+
+                {/* Shopify */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-green-700 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M15.337 2.543s-.296.232-.79.618c-.114-.352-.296-.788-.556-1.195-.662-.982-1.632-1.519-2.802-1.519h-.043c-.088 0-.177.012-.265.024-.474-.618-.97-.866-1.283-.866-3.221 0-4.772 4.025-5.261 6.066-.947.296-1.612.503-1.686.525-.556.177-.571.189-.643.708C1.93 7.447 0 20.94 0 20.94L13.23 23.5l8.77-1.856S15.337 2.543 15.337 2.543zm-3.865.76c-.428.13-.902.281-1.407.44-.39-1.519-1.117-2.256-1.883-2.669.662.21 1.61 1.117 2.15 2.669zm-2.472.044c-.662.207-1.389.43-2.121.659.408-1.568 1.177-2.333 1.845-2.641.525-.238.966-.34 1.329-.366-.284.395-.61.984-.884 2.349zm-2.012-2.543c.13 0 .265.036.407.103-.637.314-1.303 1.117-1.692 2.82l-1.889.589c.556-1.778 1.611-3.459 3.174-3.512z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Shopify • 8 hours ago</div>
+                    <div className="font-semibold text-black text-base">E-commerce Growth Lead</div>
                   </div>
                 </div>
 
@@ -430,39 +471,109 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Netflix • 6 hours ago</div>
+                    <div className="text-sm text-gray-500">Netflix • 9 hours ago</div>
                     <div className="font-semibold text-black text-base">Content Marketing Manager</div>
                   </div>
                 </div>
 
-                {/* Spotify */}
+                {/* LinkedIn */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Spotify • 8 hours ago</div>
-                    <div className="font-semibold text-black text-base">Music Marketing Lead</div>
+                    <div className="text-sm text-gray-500">LinkedIn • 10 hours ago</div>
+                    <div className="font-semibold text-black text-base">B2B Marketing Director</div>
                   </div>
                 </div>
 
-                {/* Duplicate set for seamless loop - exact same companies */}
+                {/* Airbnb */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z"/>
+                  <div className="w-12 h-12 bg-rose-500 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12zm0 22.16c-5.607 0-10.16-4.553-10.16-10.16S6.393 1.84 12 1.84 22.16 6.393 22.16 12 17.607 22.16 12 22.16zm0-15.6c-2.44 0-4.438 1.998-4.438 4.438S9.56 15.436 12 15.436s4.44-1.998 4.44-4.438S14.44 6.56 12 6.56zm0 7.084c-1.46 0-2.646-1.186-2.646-2.646S10.54 8.352 12 8.352s2.644 1.186 2.644 2.646-1.184 2.646-2.644 2.646z"/>
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Microsoft • 47 hours ago</div>
+                    <div className="text-sm text-gray-500">Airbnb • 12 hours ago</div>
+                    <div className="font-semibold text-black text-base">Community Growth Manager</div>
+                  </div>
+                </div>
+
+                {/* Adobe */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-red-700 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M13.966 22.624l-1.69-4.281H8.122l3.892-9.144 5.662 13.425zM8.884 1.376H0v21.248zm15.116 0h-8.884L24 22.624z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Adobe • 14 hours ago</div>
+                    <div className="font-semibold text-black text-base">Creative Marketing Lead</div>
+                  </div>
+                </div>
+
+                {/* Tesla */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 5.362l2.475-3.026s.245-.29.69-.29c.445 0 .69.29.69.29L12 10.162 8.145 2.336s.245-.29.69-.29c.445 0 .69.29.69.29L12 5.362zm-5.763 13.728c-.03-.27-.026-.54.012-.808.18-1.287.84-2.473 1.863-3.346.465-.397.992-.71 1.558-.928.207-.08.42-.143.635-.198-.326.726-.517 1.517-.555 2.33-.037.786.034 1.57.21 2.328h-3.723zm12.008 0c.176-.758.247-1.542.21-2.328-.038-.813-.23-1.604-.555-2.33.215.055.428.118.635.198.566.218 1.093.531 1.558.928 1.023.873 1.683 2.06 1.863 3.346.038.268.042.538.012.808h-3.723zm-2.726-10.33c.025-.073-.015-.155-.093-.178l-1.08-.31c-.037-.01-.06-.04-.05-.075l.002-.01c.013-.042.042-.087.087-.125.234-.197.51-.345.806-.432.073-.022.12-.086.113-.155-.01-.096-.105-.176-.225-.176h-.018c-.33.015-.65.114-.934.287-.308.187-.562.454-.74.773-.09.163.04.337.216.29l1.893-.543c.076-.022.135.03.123.095l-.027.165c-.013.076-.107.13-.214.116-.124-.015-.224-.05-.32-.096-.17-.082-.344-.157-.525-.212-.065-.02-.13.03-.134.094-.006.094.04.192.11.27.116.128.294.186.477.142.21-.05.413-.126.604-.224.072-.037.156-.01.18.063.022.068-.015.14-.082.155-.205.048-.417.07-.63.065-.265-.007-.53-.065-.772-.17-.237-.104-.45-.254-.618-.44-.102-.114-.187-.246-.247-.39-.02-.047-.055-.086-.097-.115-.01-.007-.023-.013-.038-.018-.06-.02-.128-.005-.16.043-.036.053-.054.114-.055.178-.003.267.085.527.25.736.347.44.857.723 1.416.79.55.065 1.108-.02 1.604-.248.31-.142.594-.337.84-.574.04-.038.06-.09.052-.143z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Tesla • 16 hours ago</div>
+                    <div className="font-semibold text-black text-base">Brand Marketing Manager</div>
+                  </div>
+                </div>
+
+                {/* Uber */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8.41 0L5.33 19.54h3.54l.97-6.42h3.42c3.99 0 6.48-2.34 7.14-5.94C21.05 2.88 18.84 0 14.97 0H8.41zm6.25 3.54c1.26 0 1.98.66 1.8 1.68-.21 1.26-1.26 1.68-2.52 1.68h-2.19l.63-3.36h2.28z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Uber • 18 hours ago</div>
+                    <div className="font-semibold text-black text-base">Growth Marketing Lead</div>
+                  </div>
+                </div>
+
+                {/* Duplicate set for seamless loop - exact same 15 companies */}
+                {/* OpenAI - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365 2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">OpenAI • 1 hour ago</div>
+                    <div className="font-semibold text-black text-base">AI Product Manager</div>
+                  </div>
+                </div>
+
+                {/* Microsoft - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm border">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24">
+                      <rect fill="#F25022" width="11" height="11"/>
+                      <rect fill="#7FBA00" x="12.5" width="11" height="11"/>
+                      <rect fill="#00A4EF" y="12.5" width="11" height="11"/>
+                      <rect fill="#FFB900" x="12.5" y="12.5" width="11" height="11"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Microsoft • 2 hours ago</div>
                     <div className="font-semibold text-black text-base">Business Development Manager</div>
                   </div>
                 </div>
 
+                {/* Apple - Duplicate */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
                     </svg>
@@ -473,9 +584,10 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                   </div>
                 </div>
 
+                {/* Google - Duplicate */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
                   <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center border">
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24">
                       <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                       <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                       <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -483,22 +595,296 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Google • 1 hour ago</div>
+                    <div className="text-sm text-gray-500">Google • 30 min ago</div>
                     <div className="font-semibold text-black text-base">Growth Marketing Manager</div>
                   </div>
                 </div>
 
+                {/* Nvidia - Duplicate */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M13.84 22.13c3.59-.7 6.73-3.07 8.53-6.43.19-.37-.01-.8-.44-.8h-1.87c-.27 0-.51.15-.64.39a8.75 8.75 0 01-4.93 4.17c-.24.1-.32.38-.18.58l.96 1.37c.18.26.34.39.57.72zm-3.68 0c3.59-.7 6.73-3.07 8.53-6.43.19-.37-.01-.8-.44-.8h-1.87c-.27 0-.51.15-.64.39a8.75 8.75 0 01-4.93 4.17c-.24.1-.32.38-.18.58l.96 1.37c.18.26.34.39.57.72z"/>
-                      <path d="M20.88 19.44c-1.46 1.92-3.83 3.16-6.5 3.16-2.67 0-5.04-1.24-6.5-3.16-.13-.17-.35-.27-.58-.27-.24 0-.46.11-.58.29-.12.18-.15.4-.08.6.36.99.91 1.9 1.6 2.68.69.78 1.51 1.43 2.42 1.91.91.48 1.9.73 2.92.73s2.01-.25 2.92-.73c.91-.48 1.73-1.13 2.42-1.91.69-.78 1.24-1.69 1.6-2.68.07-.2.04-.42-.08-.6-.12-.18-.34-.29-.58-.29-.23 0-.45.1-.58.27z"/>
+                  <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12 12-5.383 12-12S18.617 0 12 0zm6.326 11.998c-.113-.564-.791-.79-2.235-.79h-.902v3.408h.902c1.444 0 2.122-.225 2.235-.79.113-.564.113-1.264 0-1.828zm-1.333 4.52h-2.104V7.482h2.104c1.782 0 2.895.339 3.234 1.468.226.677.226 1.807 0 2.598-.339 1.129-1.452 1.47-3.234 1.47zm-5.654-7.036h-2.55v7.036h.902v-2.825h1.648c1.217 0 1.782-.339 2.008-1.016.113-.339.113-.79 0-1.129-.226-.677-.791-1.066-2.008-1.066zm-.226 3.52h-1.421V8.547h1.421c.678 0 1.103.225 1.217.564.113.226.113.677 0 .903-.114.339-.539.564-1.217.564zm-4.523 3.516V7.482H5.688v7.036h.902z"/>
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Amazon • 5 hours ago</div>
-                    <div className="font-semibold text-black text-base">Marketing Director</div>
+                    <div className="text-sm text-gray-500">Nvidia • 4 hours ago</div>
+                    <div className="font-semibold text-black text-base">AI Solutions Engineer</div>
                   </div>
+                </div>
+
+                {/* Meta - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12.911 12.86v7.625h3.12v-7.616c0-2.393 1.273-3.605 3.459-3.605.205 0 .476.014.742.043V6.221c-.242-.029-.511-.043-.734-.043-1.945 0-3.141 1.016-3.588 2.522h-.057V6.357H12.91v6.503zM6.324 20.485h3.12v-14.128H6.324v14.128zM7.885 2.5a1.827 1.827 0 1 0 0 3.654 1.827 1.827 0 0 0 0-3.654z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Meta • 5 hours ago</div>
+                    <div className="font-semibold text-black text-base">Digital Marketing Specialist</div>
+                  </div>
+                </div>
+
+                {/* Salesforce - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10.006 5.413a4.905 4.905 0 0 1 5.223-1.283 5.346 5.346 0 0 1 7.28 2.974 4.236 4.236 0 0 1 1.49 8.058 5.036 5.036 0 0 1-5.728 4.925 5.814 5.814 0 0 1-7.974 1.513A4.893 4.893 0 0 1 3.5 18.843a4.634 4.634 0 0 1 1.912-8.09 5.186 5.186 0 0 1 4.594-5.34z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Salesforce • 6 hours ago</div>
+                    <div className="font-semibold text-black text-base">CRM Solutions Manager</div>
+                  </div>
+                </div>
+
+                {/* Stripe - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.594-7.305h.003z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Stripe • 7 hours ago</div>
+                    <div className="font-semibold text-black text-base">Payments Partnerships Lead</div>
+                  </div>
+                </div>
+
+                {/* Shopify - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-green-700 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M15.337 2.543s-.296.232-.79.618c-.114-.352-.296-.788-.556-1.195-.662-.982-1.632-1.519-2.802-1.519h-.043c-.088 0-.177.012-.265.024-.474-.618-.97-.866-1.283-.866-3.221 0-4.772 4.025-5.261 6.066-.947.296-1.612.503-1.686.525-.556.177-.571.189-.643.708C1.93 7.447 0 20.94 0 20.94L13.23 23.5l8.77-1.856S15.337 2.543 15.337 2.543zm-3.865.76c-.428.13-.902.281-1.407.44-.39-1.519-1.117-2.256-1.883-2.669.662.21 1.61 1.117 2.15 2.669zm-2.472.044c-.662.207-1.389.43-2.121.659.408-1.568 1.177-2.333 1.845-2.641.525-.238.966-.34 1.329-.366-.284.395-.61.984-.884 2.349zm-2.012-2.543c.13 0 .265.036.407.103-.637.314-1.303 1.117-1.692 2.82l-1.889.589c.556-1.778 1.611-3.459 3.174-3.512z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Shopify • 8 hours ago</div>
+                    <div className="font-semibold text-black text-base">E-commerce Growth Lead</div>
+                  </div>
+                </div>
+
+                {/* Netflix - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M5.398 0v.006c3.028 8.556 5.37 15.175 8.348 23.596 2.344.058 4.85.398 4.854.398-2.8-7.924-5.923-16.747-8.487-24zm8.489 0v9.63L18.6 22.951c-.043-7.86-.004-15.284.002-22.95zM5.398 1.049V24c1.873-.225 2.81-.312 4.715-.398v-9.22z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Netflix • 9 hours ago</div>
+                    <div className="font-semibold text-black text-base">Content Marketing Manager</div>
+                  </div>
+                </div>
+
+                {/* LinkedIn - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">LinkedIn • 10 hours ago</div>
+                    <div className="font-semibold text-black text-base">B2B Marketing Director</div>
+                  </div>
+                </div>
+
+                {/* Airbnb - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-rose-500 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12zm0 22.16c-5.607 0-10.16-4.553-10.16-10.16S6.393 1.84 12 1.84 22.16 6.393 22.16 12 17.607 22.16 12 22.16zm0-15.6c-2.44 0-4.438 1.998-4.438 4.438S9.56 15.436 12 15.436s4.44-1.998 4.44-4.438S14.44 6.56 12 6.56zm0 7.084c-1.46 0-2.646-1.186-2.646-2.646S10.54 8.352 12 8.352s2.644 1.186 2.644 2.646-1.184 2.646-2.644 2.646z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Airbnb • 12 hours ago</div>
+                    <div className="font-semibold text-black text-base">Community Growth Manager</div>
+                  </div>
+                </div>
+
+                {/* Adobe - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-red-700 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M13.966 22.624l-1.69-4.281H8.122l3.892-9.144 5.662 13.425zM8.884 1.376H0v21.248zm15.116 0h-8.884L24 22.624z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Adobe • 14 hours ago</div>
+                    <div className="font-semibold text-black text-base">Creative Marketing Lead</div>
+                  </div>
+                </div>
+
+                {/* Tesla - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 5.362l2.475-3.026s.245-.29.69-.29c.445 0 .69.29.69.29L12 10.162 8.145 2.336s.245-.29.69-.29c.445 0 .69.29.69.29L12 5.362zm-5.763 13.728c-.03-.27-.026-.54.012-.808.18-1.287.84-2.473 1.863-3.346.465-.397.992-.71 1.558-.928.207-.08.42-.143.635-.198-.326.726-.517 1.517-.555 2.33-.037.786.034 1.57.21 2.328h-3.723zm12.008 0c.176-.758.247-1.542.21-2.328-.038-.813-.23-1.604-.555-2.33.215.055.428.118.635.198.566.218 1.093.531 1.558.928 1.023.873 1.683 2.06 1.863 3.346.038.268.042.538.012.808h-3.723zm-2.726-10.33c.025-.073-.015-.155-.093-.178l-1.08-.31c-.037-.01-.06-.04-.05-.075l.002-.01c.013-.042.042-.087.087-.125.234-.197.51-.345.806-.432.073-.022.12-.086.113-.155-.01-.096-.105-.176-.225-.176h-.018c-.33.015-.65.114-.934.287-.308.187-.562.454-.74.773-.09.163.04.337.216.29l1.893-.543c.076-.022.135.03.123.095l-.027.165c-.013.076-.107.13-.214.116-.124-.015-.224-.05-.32-.096-.17-.082-.344-.157-.525-.212-.065-.02-.13.03-.134.094-.006.094.04.192.11.27.116.128.294.186.477.142.21-.05.413-.126.604-.224.072-.037.156-.01.18.063.022.068-.015.14-.082.155-.205.048-.417.07-.63.065-.265-.007-.53-.065-.772-.17-.237-.104-.45-.254-.618-.44-.102-.114-.187-.246-.247-.39-.02-.047-.055-.086-.097-.115-.01-.007-.023-.013-.038-.018-.06-.02-.128-.005-.16.043-.036.053-.054.114-.055.178-.003.267.085.527.25.736.347.44.857.723 1.416.79.55.065 1.108-.02 1.604-.248.31-.142.594-.337.84-.574.04-.038.06-.09.052-.143z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Tesla • 16 hours ago</div>
+                    <div className="font-semibold text-black text-base">Brand Marketing Manager</div>
+                  </div>
+                </div>
+
+                {/* Uber - Duplicate */}
+                <div className="flex items-center space-x-4 px-8 flex-shrink-0">
+                  <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8.41 0L5.33 19.54h3.54l.97-6.42h3.42c3.99 0 6.48-2.34 7.14-5.94C21.05 2.88 18.84 0 14.97 0H8.41zm6.25 3.54c1.26 0 1.98.66 1.8 1.68-.21 1.26-1.26 1.68-2.52 1.68h-2.19l.63-3.36h2.28z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Uber • 18 hours ago</div>
+                    <div className="font-semibold text-black text-base">Growth Marketing Lead</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Testimonials Section - 520,000+ happy users */}
+      <div className="relative z-10 py-20 px-8 bg-white">
+        <div className="max-w-[1200px] mx-auto">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold text-black mb-4">
+              520,000+ happy users' love
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Thank you for your praise and suggestions. With your support, we can go further. We hope to accompany you throughout your marketing journey.
+            </p>
+          </div>
+
+          {/* Testimonials Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Testimonial 1 */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
+              </div>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                I am able to find more relevant leads faster, since using this platform I have tripled my outreach response rate. I am truly impressed with the AI matching.
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-semibold text-lg">
+                  MR
+                </div>
+                <div>
+                  <div className="font-semibold text-black">Michael R.</div>
+                  <div className="text-sm text-gray-600">VP of Sales</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 2 */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
+              </div>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                Thanks to this platform I've landed 3 new clients within 2 weeks! The AI-powered prospect matching is absolutely incredible.
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
+                  SC
+                </div>
+                <div>
+                  <div className="font-semibold text-black">Sarah C.</div>
+                  <div className="text-sm text-gray-600">Marketing Director</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 3 */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
+              </div>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                You must check out this platform. It has been saving me hours in prospecting! I'm blown away at how easy it is to find qualified leads.
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
+                  DL
+                </div>
+                <div>
+                  <div className="font-semibold text-black">David L.</div>
+                  <div className="text-sm text-gray-600">Business Development Manager</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 4 */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
+              </div>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                I've enjoyed seeing so many perfectly matched prospects. This has completely revamped my outreach process. Excited to keep exploring the features!
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white font-semibold text-lg">
+                  JW
+                </div>
+                <div>
+                  <div className="font-semibold text-black">Jennifer W.</div>
+                  <div className="text-sm text-gray-600">Growth Marketing Lead</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 5 */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
+              </div>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                It's a 10/10! The email personalization feature helps me easily craft messages that resonate. The AI guidance has been game changing. Loving it so far!
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-semibold text-lg">
+                  TB
+                </div>
+                <div>
+                  <div className="font-semibold text-black">Thomas B.</div>
+                  <div className="text-sm text-gray-600">Sales Manager</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 6 */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
+              <div className="mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                </svg>
+              </div>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                Not only does this platform show you the most relevant prospects, it ALSO helps you network and get warm introductions! The matching system is incredible. Definitely recommend!
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-semibold text-lg">
+                  AL
+                </div>
+                <div>
+                  <div className="font-semibold text-black">Amanda L.</div>
+                  <div className="text-sm text-gray-600">Account Executive</div>
                 </div>
               </div>
             </div>
