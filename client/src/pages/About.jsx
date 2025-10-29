@@ -4,18 +4,21 @@ import { Target, Heart, Zap, Users, TrendingUp, Globe } from 'lucide-react';
 
 const AboutPage = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-green-50 to-white py-24">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="py-20" style={{ backgroundColor: 'white' }}>
+        <div className="max-w-7xl mx-auto px-12">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-6">
+            <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold mb-6"
+                 style={{ backgroundColor: 'rgba(0, 240, 160, 0.1)', color: '#00c98d' }}>
               About MailGen
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-5xl font-semibold mb-6 leading-tight"
+                style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
               We are Building the Future of Email Marketing
             </h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
+            <p className="text-lg leading-relaxed"
+               style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '18px', lineHeight: '1.7' }}>
               Our mission is to empower every marketer with AI tools that make personalized outreach accessible, effective, and scalable.
             </p>
           </div>
@@ -23,14 +26,16 @@ const AboutPage = () => {
       </div>
 
       {/* Story Section */}
-      <div className="py-20">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="py-20" style={{ backgroundColor: '#f5f5f5' }}>
+        <div className="max-w-7xl mx-auto px-12">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+              <h2 className="text-4xl font-semibold mb-6"
+                  style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
                 Our Story
               </h2>
-              <div className="space-y-4 text-gray-600 leading-relaxed text-lg">
+              <div className="space-y-5 leading-relaxed"
+                   style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '16px', lineHeight: '1.7' }}>
                 <p>
                   Founded in 2023, MailGen was born from a simple frustration: email marketing was either too manual or too generic. We saw talented sales and marketing professionals spending hours personalizing emails, while automation tools sent robotic messages that nobody wanted to read.
                 </p>
@@ -38,26 +43,46 @@ const AboutPage = () => {
                   We knew there had to be a better way. By combining advanced AI with deep email marketing expertise, we created a platform that delivers the personalization of manual outreach with the scale of automation.
                 </p>
                 <p>
-                  Today, we're proud to help over 520,000 marketers worldwide send better emails, build stronger relationships, and grow their businesses faster.
+                  Today, we are proud to help over 520,000 marketers worldwide send better emails, build stronger relationships, and grow their businesses faster.
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 text-center">
-                <div className="text-5xl font-bold text-gray-900 mb-2">520K+</div>
-                <div className="text-gray-700">Active Users</div>
+              <div className="rounded-2xl p-8 text-center"
+                   style={{
+                     backgroundColor: 'white',
+                     border: '1px solid #f0f0f0',
+                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                   }}>
+                <div className="text-5xl font-bold mb-2" style={{ color: '#00f0a0' }}>520K+</div>
+                <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>Active Users</div>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 text-center">
-                <div className="text-5xl font-bold text-gray-900 mb-2">80M+</div>
-                <div className="text-gray-700">Prospects</div>
+              <div className="rounded-2xl p-8 text-center"
+                   style={{
+                     backgroundColor: 'white',
+                     border: '1px solid #f0f0f0',
+                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                   }}>
+                <div className="text-5xl font-bold mb-2" style={{ color: '#00f0a0' }}>80M+</div>
+                <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>Prospects</div>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 text-center">
-                <div className="text-5xl font-bold text-gray-900 mb-2">10M+</div>
-                <div className="text-gray-700">Emails/Month</div>
+              <div className="rounded-2xl p-8 text-center"
+                   style={{
+                     backgroundColor: 'white',
+                     border: '1px solid #f0f0f0',
+                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                   }}>
+                <div className="text-5xl font-bold mb-2" style={{ color: '#00f0a0' }}>10M+</div>
+                <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>Emails/Month</div>
               </div>
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-8 text-center">
-                <div className="text-5xl font-bold text-gray-900 mb-2">150+</div>
-                <div className="text-gray-700">Countries</div>
+              <div className="rounded-2xl p-8 text-center"
+                   style={{
+                     backgroundColor: 'white',
+                     border: '1px solid #f0f0f0',
+                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                   }}>
+                <div className="text-5xl font-bold mb-2" style={{ color: '#00f0a0' }}>150+</div>
+                <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>Countries</div>
               </div>
             </div>
           </div>
@@ -65,62 +90,73 @@ const AboutPage = () => {
       </div>
 
       {/* Values Section */}
-      <div className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="py-20" style={{ backgroundColor: 'white' }}>
+        <div className="max-w-7xl mx-auto px-12">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-semibold mb-4"
+                style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
               Our Values
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg max-w-3xl mx-auto"
+               style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
               The principles that guide everything we do
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                icon: <Target className="w-8 h-8" />,
-                color: 'green',
+                icon: <Target className="w-7 h-7" />,
                 title: 'Customer First',
                 description: 'Every decision starts with our customers. We build features they need, not ones we think are cool.'
               },
               {
-                icon: <Heart className="w-8 h-8" />,
-                color: 'red',
+                icon: <Heart className="w-7 h-7" />,
                 title: 'Human Connection',
                 description: 'AI should enhance human relationships, not replace them. We make technology that brings people together.'
               },
               {
-                icon: <Zap className="w-8 h-8" />,
-                color: 'yellow',
+                icon: <Zap className="w-7 h-7" />,
                 title: 'Move Fast',
                 description: 'Speed matters in business. We ship quickly, learn rapidly, and iterate constantly.'
               },
               {
-                icon: <Users className="w-8 h-8" />,
-                color: 'blue',
+                icon: <Users className="w-7 h-7" />,
                 title: 'Transparency',
                 description: 'We are honest about what works and what does not. Clear communication builds trust.'
               },
               {
-                icon: <TrendingUp className="w-8 h-8" />,
-                color: 'purple',
+                icon: <TrendingUp className="w-7 h-7" />,
                 title: 'Continuous Growth',
                 description: 'We never stop learning. Every day is an opportunity to improve and innovate.'
               },
               {
-                icon: <Globe className="w-8 h-8" />,
-                color: 'teal',
+                icon: <Globe className="w-7 h-7" />,
                 title: 'Global Impact',
                 description: 'Great ideas come from everywhere. We build for diverse teams across the world.'
               }
             ].map((value, index) => (
-              <div key={index} className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all">
-                <div className={`w-14 h-14 rounded-xl bg-${value.color}-100 text-${value.color}-600 flex items-center justify-center mb-6`}>
+              <div key={index} className="rounded-xl p-8 transition-all hover:shadow-lg"
+                   style={{
+                     backgroundColor: 'white',
+                     border: '1px solid #f0f0f0',
+                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                   }}>
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-6"
+                     style={{
+                       backgroundColor: index === 0 ? 'rgba(0, 240, 160, 0.1)' : '#f5f5f5',
+                       color: index === 0 ? '#00c98d' : 'rgba(0, 0, 0, 0.65)'
+                     }}>
                   {value.icon}
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{value.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{value.description}</p>
+                <h3 className="text-xl font-semibold mb-3"
+                    style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
+                  {value.title}
+                </h3>
+                <p className="leading-relaxed"
+                   style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '15px', lineHeight: '1.7' }}>
+                  {value.description}
+                </p>
               </div>
             ))}
           </div>
@@ -128,13 +164,15 @@ const AboutPage = () => {
       </div>
 
       {/* Team Section */}
-      <div className="py-20">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="py-20" style={{ backgroundColor: '#f5f5f5' }}>
+        <div className="max-w-7xl mx-auto px-12">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-semibold mb-4"
+                style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
               Meet Our Team
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg max-w-3xl mx-auto"
+               style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
               Passionate people building the future of marketing
             </p>
           </div>
@@ -151,11 +189,19 @@ const AboutPage = () => {
               { name: 'Maria Garcia', role: 'VP of Customer Success', image: 'MG' }
             ].map((member, index) => (
               <div key={index} className="text-center group">
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-2xl font-bold group-hover:scale-110 transition-transform">
+                <div className="w-32 h-32 mx-auto mb-4 rounded-full flex items-center justify-center text-white text-2xl font-bold transition-transform group-hover:scale-105"
+                     style={{
+                       background: 'linear-gradient(135deg, #00f0a0 0%, #00c98d 100%)'
+                     }}>
                   {member.image}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{member.name}</h3>
-                <p className="text-gray-600">{member.role}</p>
+                <h3 className="text-lg font-semibold mb-1"
+                    style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+                  {member.name}
+                </h3>
+                <p style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '14px' }}>
+                  {member.role}
+                </p>
               </div>
             ))}
           </div>
@@ -163,50 +209,74 @@ const AboutPage = () => {
       </div>
 
       {/* Investors Section */}
-      <div className="py-20 bg-gradient-to-br from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+      <div className="py-20" style={{ backgroundColor: 'white' }}>
+        <div className="max-w-7xl mx-auto px-12 text-center">
+          <h2 className="text-4xl font-semibold mb-4"
+              style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
             Backed by Leading Investors
           </h2>
-          <p className="text-xl text-gray-600 mb-12">
+          <p className="text-lg mb-12"
+             style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
             Series A funding to accelerate AI innovation
           </p>
-          <div className="flex flex-wrap justify-center gap-16 items-center grayscale opacity-60">
-            <div className="text-3xl font-bold text-gray-400">Sequoia Capital</div>
-            <div className="text-3xl font-bold text-gray-400">Andreessen Horowitz</div>
-            <div className="text-3xl font-bold text-gray-400">Y Combinator</div>
-            <div className="text-3xl font-bold text-gray-400">Tiger Global</div>
+          <div className="flex flex-wrap justify-center gap-16 items-center">
+            {['Sequoia Capital', 'Andreessen Horowitz', 'Y Combinator', 'Tiger Global'].map((investor, index) => (
+              <div key={index} className="text-3xl font-bold"
+                   style={{ color: 'rgba(0, 0, 0, 0.25)' }}>
+                {investor}
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Careers CTA */}
-      <div className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+      <div className="py-20" style={{ backgroundColor: '#f5f5f5' }}>
+        <div className="max-w-4xl mx-auto px-12 text-center">
+          <h2 className="text-4xl font-semibold mb-6"
+              style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
             Join Our Team
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="text-lg mb-8"
+             style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
             We are always looking for talented people who want to build the future of marketing
           </p>
-          <button className="px-10 py-4 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors shadow-lg shadow-green-600/30 text-lg">
+          <button
+            className="px-10 py-4 font-semibold rounded-lg transition-all text-lg"
+            style={{
+              backgroundColor: '#00f0a0',
+              color: '#001529',
+              borderRadius: '8px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#28fcaf'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#00f0a0'}
+          >
             View Open Positions
           </button>
         </div>
       </div>
 
       {/* Final CTA */}
-      <div className="py-20 bg-gradient-to-br from-green-600 to-blue-600">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+      <div className="py-24" style={{ backgroundColor: '#001529' }}>
+        <div className="max-w-4xl mx-auto px-12 text-center">
+          <h2 className="text-5xl font-semibold mb-6"
+              style={{ color: 'white', fontWeight: 600 }}>
             Ready to Transform Your Marketing?
           </h2>
-          <p className="text-xl text-green-100 mb-8">
+          <p className="text-xl mb-10"
+             style={{ color: 'rgba(255, 255, 255, 0.65)' }}>
             Join 520,000+ marketers using MailGen to scale their campaigns
           </p>
           <Link
             to="/start"
-            className="inline-block px-10 py-4 bg-white text-green-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-xl text-lg"
+            className="inline-block px-12 py-4 font-semibold rounded-lg transition-all text-lg"
+            style={{
+              backgroundColor: '#00f0a0',
+              color: '#001529',
+              borderRadius: '8px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#28fcaf'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#00f0a0'}
           >
             Start Free Trial →
           </Link>
