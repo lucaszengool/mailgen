@@ -60,8 +60,23 @@ const JobRightEmailCard = ({ email, index, onClick, onEdit, onSend, showFilters 
   // Generate logo color
   const logoColor = getMultiColorRainbowPattern(email.to || 'default');
 
-  // Quality score
-  const qualityScore = email.quality_score || Math.floor(Math.random() * 20) + 80;
+  // Quality score - generate consistent score based on email hash
+  const getConsistentQualityScore = (emailAddress) => {
+    if (!emailAddress) return 85;
+
+    // Create hash from email address
+    let hash = 0;
+    for (let i = 0; i < emailAddress.length; i++) {
+      hash = ((hash << 5) - hash) + emailAddress.charCodeAt(i);
+      hash = hash & hash; // Convert to 32bit integer
+    }
+
+    // Generate score between 72-98%
+    const variance = Math.abs(hash) % 27; // 0-26
+    return 72 + variance;
+  };
+
+  const qualityScore = email.quality_score || getConsistentQualityScore(email.to);
 
   // Extract domain from email
   const getCompanyDomain = () => {
