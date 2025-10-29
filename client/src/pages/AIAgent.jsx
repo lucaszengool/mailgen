@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Target, Zap, Shield, TrendingUp, Users, Mail, BarChart3, Clock, Check } from 'lucide-react';
 import FloatingTestimonials from '../components/FloatingTestimonials';
+import LiveProspectBanner from '../components/LiveProspectBanner';
 
 const AIAgentPage = () => {
   return (
@@ -251,6 +252,9 @@ const AIAgentPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Prospect Finding Banner */}
+      <LiveProspectBanner />
 
       {/* Stats Section */}
       <div className="py-20" style={{ backgroundColor: '#001529' }}>

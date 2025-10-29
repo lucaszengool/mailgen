@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Sparkles, Target, BarChart3, Clock, Shield, Globe, Zap, Check, X } from 'lucide-react';
 import FloatingTestimonials from '../components/FloatingTestimonials';
+import LiveProspectBanner from '../components/LiveProspectBanner';
 
 const FeaturesPage = () => {
   const features = [
@@ -236,6 +237,9 @@ const FeaturesPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Prospect Finding Banner */}
+      <LiveProspectBanner />
 
       {/* Floating Testimonials Section */}
       <FloatingTestimonials />
