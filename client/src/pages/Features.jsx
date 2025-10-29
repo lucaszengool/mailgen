@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Sparkles, Target, BarChart3, Clock, Shield, Globe, Zap, Check, X } from 'lucide-react';
+import FloatingTestimonials from '../components/FloatingTestimonials';
 
 const FeaturesPage = () => {
   const features = [
@@ -236,94 +237,8 @@ const FeaturesPage = () => {
         </div>
       </div>
 
-      {/* Testimonials Section */}
-      <div className="py-20" style={{ backgroundColor: '#f5f5f5' }}>
-        <div className="max-w-7xl mx-auto px-12">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-semibold mb-4"
-                style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
-              What Our Customers Say
-            </h2>
-            <p className="text-lg"
-               style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
-              Real results from real customers
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                photo: '/assets/testimonials/michael-r.jpg',
-                name: 'Michael R.',
-                role: 'VP of Sales',
-                testimonial: 'I am able to find more relevant leads faster, since using this platform I have tripled my outreach response rate. I am truly impressed with the AI matching.'
-              },
-              {
-                photo: '/assets/testimonials/sarah-c.jpg',
-                name: 'Sarah C.',
-                role: 'Marketing Director',
-                testimonial: 'Thanks to this platform I have landed 3 new clients within 2 weeks! The AI-powered prospect matching is absolutely incredible.'
-              },
-              {
-                photo: '/assets/testimonials/david-l.jpg',
-                name: 'David L.',
-                role: 'Business Development Manager',
-                testimonial: 'You must check out this platform. It has been saving me hours in prospecting! I am blown away at how easy it is to find qualified leads.'
-              },
-              {
-                photo: '/assets/testimonials/jennifer-w.jpg',
-                name: 'Jennifer W.',
-                role: 'Growth Marketing Lead',
-                testimonial: 'I have enjoyed seeing so many perfectly matched prospects. This has completely revamped my outreach process. Excited to keep exploring the features!'
-              },
-              {
-                photo: '/assets/testimonials/thomas-b.jpg',
-                name: 'Thomas B.',
-                role: 'Sales Manager',
-                testimonial: 'It is a 10/10! The email personalization feature helps me easily craft messages that resonate. The AI guidance has been game changing. Loving it so far!'
-              },
-              {
-                photo: '/assets/testimonials/amanda-l.jpg',
-                name: 'Amanda L.',
-                role: 'Account Executive',
-                testimonial: 'Not only does this platform show you the most relevant prospects, it ALSO helps you network and get warm introductions! The matching system is incredible. Definitely recommend!'
-              }
-            ].map((testimonial, index) => (
-              <div key={index} className="rounded-xl p-6"
-                   style={{
-                     backgroundColor: 'white',
-                     border: '1px solid #f0f0f0',
-                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-                   }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <img
-                    src={testimonial.photo}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                    style={{
-                      border: '2px solid #00f0a0'
-                    }}
-                  />
-                  <div>
-                    <div className="font-semibold"
-                         style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
-                      {testimonial.name}
-                    </div>
-                    <div className="text-sm"
-                         style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-                      {testimonial.role}
-                    </div>
-                  </div>
-                </div>
-                <p className="leading-relaxed"
-                   style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '15px', lineHeight: '1.7' }}>
-                  "{testimonial.testimonial}"
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Floating Testimonials Section */}
+      <FloatingTestimonials />
 
       {/* CTA */}
       <div className="py-24" style={{ backgroundColor: '#001529' }}>
