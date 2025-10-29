@@ -88,7 +88,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           '100% Compliance',
           'Global Scalability'
         ],
-        customMedia: []  // 📸 Array of { id, url, position: 'top'|'middle'|'bottom', width }
+        customMedia: []  // 📸 Array of { id, url, insertAfter: 'component-id' | 'start' | 'end', width, alignment }
       }
     });
   };
@@ -1874,7 +1874,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                                       {
                                         id: Date.now() + Math.random(),
                                         url: reader.result,
-                                        position: 'middle',
+                                        insertAfter: 'end',  // Default to end of email
                                         width: '400px',
                                         alignment: 'center'
                                       }
@@ -1948,10 +1948,10 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                               <div className="flex-1 space-y-2">
                                 <div className="flex gap-2">
                                   <select
-                                    value={media.position}
+                                    value={media.insertAfter || 'end'}
                                     onChange={(e) => {
                                       const newMedia = [...customTemplateData.customizations.customMedia];
-                                      newMedia[index].position = e.target.value;
+                                      newMedia[index].insertAfter = e.target.value;
                                       setCustomTemplateData(prev => ({
                                         ...prev,
                                         customizations: {
@@ -1962,9 +1962,16 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                                     }}
                                     className="text-xs px-2 py-1 border border-gray-300 rounded"
                                   >
-                                    <option value="top">Top</option>
-                                    <option value="middle">Middle</option>
-                                    <option value="bottom">Bottom</option>
+                                    <option value="start">Before Email</option>
+                                    <option value="logo">After Logo</option>
+                                    <option value="greeting">After Greeting</option>
+                                    <option value="paragraph-1">After Para 1</option>
+                                    <option value="paragraph-2">After Para 2</option>
+                                    <option value="paragraph-3">After Para 3</option>
+                                    <option value="cta">After CTA Button</option>
+                                    <option value="testimonial">After Testimonial</option>
+                                    <option value="signature">After Signature</option>
+                                    <option value="end">End of Email</option>
                                   </select>
 
                                   <select
@@ -2009,7 +2016,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                                   </select>
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  Drag to reorder • Position: {media.position}
+                                  Drag to reorder • Insert after: {media.insertAfter || 'end'}
                                 </div>
                               </div>
 

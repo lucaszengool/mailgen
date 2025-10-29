@@ -2081,6 +2081,60 @@ const EmailTemplateRenderer = ({
           </div>
         );
 
+      case 'custom_template':
+        // Custom template - empty canvas
+        return (
+          <div style={{
+            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            maxWidth: '600px',
+            margin: '0 auto',
+            background: 'transparent'
+          }}>
+            <div id="custom-email-content" style={{
+              padding: '40px',
+              background: 'transparent',
+              minHeight: '400px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+                background: 'transparent',
+                border: '2px dashed #dee2e6',
+                borderRadius: '8px'
+              }}>
+                <div style={{
+                  fontSize: '48px',
+                  color: '#6c757d',
+                  marginBottom: '20px'
+                }}>+</div>
+                <h3 style={{
+                  color: '#343a40',
+                  margin: '0 0 10px',
+                  fontSize: '20px'
+                }}>Start Building Your Custom Email</h3>
+                <p style={{
+                  color: '#6c757d',
+                  margin: 0,
+                  fontSize: '14px'
+                }}>Upload images and add your content using the controls on the left</p>
+              </div>
+            </div>
+
+            <div style={{
+              padding: '25px 40px',
+              background: 'transparent',
+              borderTop: '1px solid #dee2e6',
+              textAlign: 'center'
+            }}>
+              <p style={{
+                margin: 0,
+                color: '#6c757d',
+                fontSize: '14px'
+              }}>Build your perfect email template with custom components</p>
+            </div>
+          </div>
+        );
+
       default:
         // No fallback template - require explicit template selection
         throw new Error(`Unknown template: ${templateId}. Please select a valid template.`);
