@@ -104,11 +104,11 @@ const FloatingTestimonials = () => {
         <div className="text-center mb-4">
           <h2 className="text-4xl font-semibold mb-4"
               style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
-            520,000+ Happy Users Love Us
+            Ready to Get Started
           </h2>
           <p className="text-lg"
              style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
-            Thank you for your praise and suggestions. With your support, we can go further. We hope to accompany you throughout your marketing journey.
+            What our users are saying
           </p>
         </div>
       </div>
