@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react';
 import WebsiteAnalysisReview from './WebsiteAnalysisReview';
 import WorkflowAnimation from './WorkflowAnimation';
