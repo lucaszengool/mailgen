@@ -318,17 +318,32 @@ function App() {
             }
           }}
         />
-        <SimpleWorkflowDashboard
-          agentConfig={agentConfig}
-          onReset={handleReset}
-        />
 
-        {/* 🎯 Onboarding Tour - shown after initial setup */}
-        <OnboardingTour
-          isOpen={showOnboardingTour}
-          onComplete={handleOnboardingComplete}
-          startStep={0}
-        />
+        {/* Add Routes for marketing pages */}
+        <Routes>
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/ai-agent" element={<AIAgentPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/for-businesses" element={<ForBusinessesPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/partners" element={<PartnersPage />} />
+          <Route path="*" element={
+            <>
+              <SimpleWorkflowDashboard
+                agentConfig={agentConfig}
+                onReset={handleReset}
+              />
+
+              {/* 🎯 Onboarding Tour - shown after initial setup */}
+              <OnboardingTour
+                isOpen={showOnboardingTour}
+                onComplete={handleOnboardingComplete}
+                startStep={0}
+              />
+            </>
+          } />
+        </Routes>
       </div>
     );
   }
