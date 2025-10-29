@@ -40,6 +40,7 @@
     "node-cron": "^3.0.2",
     "nodemailer": "^6.9.7",
     "rate-limiter-flexible": "^4.0.1",
+    "react-auto-google-translate": "^1.0.3",
     "recharts": "^3.3.0",
     "redis": "^5.8.1",
     "socket.io": "^4.8.1",
