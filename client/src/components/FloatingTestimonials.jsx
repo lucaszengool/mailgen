@@ -125,7 +125,7 @@ const FloatingTestimonials = () => {
             }
           }
           .scroll-left {
-            animation: scroll-left 60s linear infinite;
+            animation: scroll-left 20s linear infinite;
           }
           .scroll-left:hover {
             animation-play-state: paused;
@@ -184,7 +184,7 @@ const FloatingTestimonials = () => {
             }
           }
           .scroll-right {
-            animation: scroll-right 60s linear infinite;
+            animation: scroll-right 20s linear infinite;
           }
           .scroll-right:hover {
             animation-play-state: paused;
