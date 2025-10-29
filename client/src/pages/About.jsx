@@ -163,51 +163,6 @@ const AboutPage = () => {
         </div>
       </div>
 
-      {/* Team Section */}
-      <div className="py-20" style={{ backgroundColor: '#f5f5f5' }}>
-        <div className="max-w-7xl mx-auto px-12">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-semibold mb-4"
-                style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
-              Meet Our Team
-            </h2>
-            <p className="text-lg max-w-3xl mx-auto"
-               style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
-              Passionate people building the future of marketing
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              { name: 'Alex Chen', role: 'CEO & Co-Founder', image: 'AC' },
-              { name: 'Sarah Johnson', role: 'CTO & Co-Founder', image: 'SJ' },
-              { name: 'Michael Kim', role: 'Head of AI', image: 'MK' },
-              { name: 'Emily Rodriguez', role: 'VP of Product', image: 'ER' },
-              { name: 'David Park', role: 'Head of Engineering', image: 'DP' },
-              { name: 'Lisa Chen', role: 'VP of Sales', image: 'LC' },
-              { name: 'James Wilson', role: 'Head of Marketing', image: 'JW' },
-              { name: 'Maria Garcia', role: 'VP of Customer Success', image: 'MG' }
-            ].map((member, index) => (
-              <div key={index} className="text-center group">
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full flex items-center justify-center text-white text-2xl font-bold transition-transform group-hover:scale-105"
-                     style={{
-                       background: 'linear-gradient(135deg, #00f0a0 0%, #00c98d 100%)'
-                     }}>
-                  {member.image}
-                </div>
-                <h3 className="text-lg font-semibold mb-1"
-                    style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
-                  {member.name}
-                </h3>
-                <p style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '14px' }}>
-                  {member.role}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Investors Section */}
       <div className="py-20" style={{ backgroundColor: 'white' }}>
         <div className="max-w-7xl mx-auto px-12 text-center">
