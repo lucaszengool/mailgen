@@ -45,6 +45,7 @@ import SignUpPage from './pages/SignUp';
 import OnboardingTour from './components/OnboardingTour';
 import SimpleWorkflowDashboard from './components/SimpleWorkflowDashboard';
 import ProcessNotificationsDemo from './components/ProcessNotificationsDemo';
+import BlogPost from './pages/BlogPost';
 
 function App() {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
@@ -293,6 +294,7 @@ function App() {
           <Route path="/for-businesses" element={<ForBusinessesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="/notifications-demo" element={<ProcessNotificationsDemo />} />
         </Routes>
@@ -413,6 +415,7 @@ function App() {
           <Route path="/for-businesses" element={<ForBusinessesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="/notifications-demo" element={<ProcessNotificationsDemo />} />
           <Route path="/" element={<Layout />}>
