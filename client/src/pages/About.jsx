@@ -13,7 +13,7 @@ const AboutPage = () => {
               About MailGen
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              We're Building the Future of Email Marketing
+              We are Building the Future of Email Marketing
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
               Our mission is to empower every marketer with AI tools that make personalized outreach accessible, effective, and scalable.
@@ -100,7 +100,7 @@ const AboutPage = () => {
                 icon: <Users className="w-8 h-8" />,
                 color: 'blue',
                 title: 'Transparency',
-                description: 'We're honest about what works and what doesn't. Clear communication builds trust.'
+                description: 'We are honest about what works and what does not. Clear communication builds trust.'
               },
               {
                 icon: <TrendingUp className="w-8 h-8" />,
@@ -187,7 +187,7 @@ const AboutPage = () => {
             Join Our Team
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            We're always looking for talented people who want to build the future of marketing
+            We are always looking for talented people who want to build the future of marketing
           </p>
           <button className="px-10 py-4 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors shadow-lg shadow-green-600/30 text-lg">
             View Open Positions
