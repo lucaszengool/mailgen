@@ -2760,7 +2760,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       // Handle prospects data and trigger micro-steps
       if (data.prospects) {
         setProspects(data.prospects);
-        
+
+        // Show notification: Prospects found!
+        setAgentStatus('prospects_found');
+        setAgentMessage(`${data.prospects.length} Prospects Found!`);
+        setAgentDetails([
+          `${data.prospects.length} verified prospects ready`,
+          'AI will personalize emails for each prospect',
+          'Preview before sending'
+        ]);
+
         // Create real micro-steps from backend data
         const realMicroSteps = [
           {
@@ -2811,7 +2820,26 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           totalClicked: data.emailCampaign.totalClicked || 0
         });
         setGeneratedEmails(data.emailCampaign.emails || []);
-        
+
+        // Show notification: Generating emails
+        if (data.emailCampaign.emails && data.emailCampaign.emails.length > 0) {
+          setAgentStatus('emails_generated');
+          setAgentMessage(`${data.emailCampaign.emails.length} Emails Generated Successfully!`);
+          setAgentDetails([
+            `${data.emailCampaign.emails.length} personalized emails ready`,
+            'AI-powered content for each prospect',
+            'Ready to review and send'
+          ]);
+        } else {
+          setAgentStatus('generating');
+          setAgentMessage('Generating personalized emails...');
+          setAgentDetails([
+            'AI analyzing prospect profiles',
+            'Creating customized content',
+            'Applying best practices'
+          ]);
+        }
+
         // Create email generation micro-steps
         const emailMicroSteps = [
           {
@@ -3962,6 +3990,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         console.log('Workflow started:', result);
         setWorkflowStatus('running');
 
+        // Show notification: Starting to find prospects
+        setAgentStatus('searching');
+        setAgentMessage('Finding qualified prospects for your campaign...');
+        setAgentDetails([
+          'Searching 80M+ prospect database',
+          'Matching your target criteria',
+          'Verifying contact information'
+        ]);
+
         // Start checking for workflow updates immediately
         setTimeout(() => {
           console.log('🚀 Starting immediate workflow checks after workflow start');
@@ -5013,6 +5050,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           }
         }}
       />
+
+      {/* 🔔 Agent Status Notification - Shows backend process status */}
+      {agentStatus && (
+        <AgentStatusNotification
+          status={agentStatus}
+          message={agentMessage}
+          details={agentDetails}
+          onClose={() => {
+            setAgentStatus(null);
+            setAgentMessage('');
+            setAgentDetails([]);
+          }}
+          autoClose={agentStatus === 'success' || agentStatus === 'prospects_found' || agentStatus === 'emails_generated'}
+        />
+      )}
 
       {/* 🎓 Onboarding Tour - Shows after clicking START CAMPAIGN for first time */}
       <OnboardingTour
