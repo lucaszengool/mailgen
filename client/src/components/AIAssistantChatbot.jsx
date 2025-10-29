@@ -5,7 +5,7 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Great! You\'ve just unlocked your Chat with me, MailGen!\n\nI\'m your AI copilot for email marketing automation. Here\'s what I can help you with:\n\n**Home Dashboard** - Overview of your campaigns and system status\n\n**Prospects Management** - Add and manage your contact list for email campaigns\n\n**Email Campaign** - Create, send, and track your email campaigns\n\n**Email Editor** - Design and customize professional email templates\n\n**Analytics** - Monitor campaign performance and engagement metrics\n\n**Market Research** - Research your target market and competitors\n\n**Settings** - Configure SMTP/IMAP email servers and system preferences\n\nWhat would you like to explore first?',
+      content: 'Great! You\'ve just unlocked your Chat with me, MailGen!\n\nI\'m your AI copilot for email marketing automation. Here\'s what I can help you with:\n\nHome Dashboard - Overview of your campaigns and system status\n\nProspects Management - Add and manage your contact list for email campaigns\n\nEmail Campaign - Create, send, and track your email campaigns\n\nEmail Editor - Design and customize professional email templates\n\nAnalytics - Monitor campaign performance and engagement metrics\n\nMarket Research - Research your target market and competitors\n\nSettings - Configure SMTP/IMAP email servers and system preferences\n\nWhat would you like to explore first?',
       timestamp: new Date().toISOString(),
       suggestions: [
         { text: 'View Home Dashboard', action: 'goto_home' },

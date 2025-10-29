@@ -738,6 +738,57 @@ Write the complete email now (without subject line or email headers):`,
         </div>
       </div>
     `
+  },
+
+  // Template 7: Custom Template - Build Your Own
+  custom_template: {
+    id: 'custom_template',
+    name: 'Custom Template',
+    description: 'Start from scratch and build your own custom email template',
+    preview: 'Empty canvas for creating personalized email designs with custom components and media',
+    structure: {
+      paragraphs: 0,
+      components: []
+    },
+    ollamaPrompt: `Write a custom email from {senderName} at {companyName} to {recipientName} at {company}.
+
+Write a SINGLE coherent business email that flows naturally from beginning to end.
+
+STRUCTURE:
+1. Opening: Brief, warm greeting and introduction (1-2 sentences)
+2. Main body: Your custom message (2-3 sentences)
+3. Closing: Clear next steps and call to action (1-2 sentences)
+
+RULES:
+- Write as ONE flowing message, NOT separate sections
+- Each paragraph should naturally lead to the next
+- Use proper paragraph breaks for readability
+- Professional yet conversational tone
+- Be concise but compelling
+
+Write the complete email now (without subject line or email headers):`,
+
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: transparent;">
+        <!-- Empty Template - User can add components -->
+        <div id="custom-email-content" style="padding: 40px; background: transparent; min-height: 400px;">
+          <div style="text-align: center; padding: 60px 20px; background: transparent; border: 2px dashed #dee2e6; border-radius: 8px;">
+            <svg style="width: 48px; height: 48px; color: #6c757d; margin-bottom: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <h3 style="color: #343a40; margin: 0 0 10px; font-size: 20px;">Start Building Your Custom Email</h3>
+            <p style="color: #6c757d; margin: 0; font-size: 14px;">Click 'Customize' to add your own components, text, images, and styling</p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding: 25px 40px; background: transparent; border-top: 1px solid #dee2e6; text-align: center;">
+          <p style="margin: 0; color: #6c757d; font-size: 14px;">
+            Build your perfect email template with custom components
+          </p>
+        </div>
+      </div>
+    `
   }
 };
 

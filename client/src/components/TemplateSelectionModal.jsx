@@ -85,7 +85,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           '10x Faster Processing',
           '100% Compliance',
           'Global Scalability'
-        ]
+        ],
+        customMedia: []  // 📸 Array of { id, url, position: 'top'|'middle'|'bottom', width }
       }
     });
   };
@@ -1824,6 +1825,209 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                       rows="3"
                       placeholder="Email signature..."
                     />
+                  </div>
+
+                  {/* Custom Media Upload & Positioning */}
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <h5 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Custom Media Gallery
+                    </h5>
+                    <p className="text-xs text-gray-600 mb-3">Upload images and drag to position them in your email</p>
+
+                    {/* Upload Button */}
+                    <label className="block mb-4">
+                      <div className="flex items-center justify-center w-full px-4 py-3 bg-white border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 hover:border-green-500 transition-all">
+                        <div className="text-center">
+                          <svg className="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          <p className="mt-1 text-sm text-gray-600">
+                            <span className="font-semibold text-green-600">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          multiple
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files);
+                            files.forEach(file => {
+                              if (file.size > 5 * 1024 * 1024) {
+                                alert('File size must be less than 5MB');
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setCustomTemplateData(prev => ({
+                                  ...prev,
+                                  customizations: {
+                                    ...prev.customizations,
+                                    customMedia: [
+                                      ...(prev.customizations?.customMedia || []),
+                                      {
+                                        id: Date.now() + Math.random(),
+                                        url: reader.result,
+                                        position: 'middle',
+                                        width: '400px',
+                                        alignment: 'center'
+                                      }
+                                    ]
+                                  }
+                                }));
+                              };
+                              reader.readAsDataURL(file);
+                            });
+                          }}
+                        />
+                      </div>
+                    </label>
+
+                    {/* Uploaded Media List with Positioning */}
+                    {customTemplateData.customizations?.customMedia?.length > 0 && (
+                      <div className="space-y-3">
+                        {customTemplateData.customizations.customMedia.map((media, index) => (
+                          <div
+                            key={media.id}
+                            className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm"
+                            draggable="true"
+                            onDragStart={(e) => {
+                              e.dataTransfer.effectAllowed = 'move';
+                              e.dataTransfer.setData('mediaIndex', index.toString());
+                            }}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.dataTransfer.dropEffect = 'move';
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              const draggedIndex = parseInt(e.dataTransfer.getData('mediaIndex'));
+                              if (draggedIndex === index) return;
+
+                              const newMedia = [...customTemplateData.customizations.customMedia];
+                              const [draggedItem] = newMedia.splice(draggedIndex, 1);
+                              newMedia.splice(index, 0, draggedItem);
+
+                              setCustomTemplateData(prev => ({
+                                ...prev,
+                                customizations: {
+                                  ...prev.customizations,
+                                  customMedia: newMedia
+                                }
+                              }));
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              {/* Drag Handle */}
+                              <div className="cursor-move text-gray-400 hover:text-gray-600">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"></path>
+                                </svg>
+                              </div>
+
+                              {/* Preview */}
+                              <img
+                                src={media.url}
+                                alt={`Media ${index + 1}`}
+                                className="h-16 w-16 object-cover rounded"
+                              />
+
+                              {/* Controls */}
+                              <div className="flex-1 space-y-2">
+                                <div className="flex gap-2">
+                                  <select
+                                    value={media.position}
+                                    onChange={(e) => {
+                                      const newMedia = [...customTemplateData.customizations.customMedia];
+                                      newMedia[index].position = e.target.value;
+                                      setCustomTemplateData(prev => ({
+                                        ...prev,
+                                        customizations: {
+                                          ...prev.customizations,
+                                          customMedia: newMedia
+                                        }
+                                      }));
+                                    }}
+                                    className="text-xs px-2 py-1 border border-gray-300 rounded"
+                                  >
+                                    <option value="top">Top</option>
+                                    <option value="middle">Middle</option>
+                                    <option value="bottom">Bottom</option>
+                                  </select>
+
+                                  <select
+                                    value={media.width}
+                                    onChange={(e) => {
+                                      const newMedia = [...customTemplateData.customizations.customMedia];
+                                      newMedia[index].width = e.target.value;
+                                      setCustomTemplateData(prev => ({
+                                        ...prev,
+                                        customizations: {
+                                          ...prev.customizations,
+                                          customMedia: newMedia
+                                        }
+                                      }));
+                                    }}
+                                    className="text-xs px-2 py-1 border border-gray-300 rounded"
+                                  >
+                                    <option value="200px">Small</option>
+                                    <option value="400px">Medium</option>
+                                    <option value="600px">Large</option>
+                                    <option value="100%">Full Width</option>
+                                  </select>
+
+                                  <select
+                                    value={media.alignment}
+                                    onChange={(e) => {
+                                      const newMedia = [...customTemplateData.customizations.customMedia];
+                                      newMedia[index].alignment = e.target.value;
+                                      setCustomTemplateData(prev => ({
+                                        ...prev,
+                                        customizations: {
+                                          ...prev.customizations,
+                                          customMedia: newMedia
+                                        }
+                                      }));
+                                    }}
+                                    className="text-xs px-2 py-1 border border-gray-300 rounded"
+                                  >
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                  </select>
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Drag to reorder • Position: {media.position}
+                                </div>
+                              </div>
+
+                              {/* Delete Button */}
+                              <button
+                                onClick={() => {
+                                  const newMedia = customTemplateData.customizations.customMedia.filter((_, i) => i !== index);
+                                  setCustomTemplateData(prev => ({
+                                    ...prev,
+                                    customizations: {
+                                      ...prev.customizations,
+                                      customMedia: newMedia
+                                    }
+                                  }));
+                                }}
+                                className="text-red-500 hover:text-red-700 p-1"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Text Styling Controls */}
