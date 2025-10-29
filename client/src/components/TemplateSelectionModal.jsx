@@ -88,7 +88,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           '100% Compliance',
           'Global Scalability'
         ],
-        customMedia: []  // 📸 Array of { id, url, insertAfter: 'component-id' | 'start' | 'end', width, alignment }
+        customMedia: [],  // 📸 Array of { id, url, insertAfter: 'component-id' | 'start' | 'end', width, alignment }
+        customComponents: []  // 🧩 For custom_template: Array of { id, type: 'logo'|'greeting'|'paragraph'|'cta'|'testimonial', properties: {} }
       }
     });
   };
@@ -111,6 +112,287 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
         [field]: value
       };
     });
+  };
+
+  // 🧩 Helper: Get default properties for component type
+  const getDefaultPropertiesForComponent = (type) => {
+    switch (type) {
+      case 'logo':
+        return { logoUrl: '', subtitle: 'Your Company Name' };
+      case 'greeting':
+        return { text: 'Hi {name},' };
+      case 'paragraph':
+        return { text: 'Enter your text here...', alignment: 'left' };
+      case 'cta':
+        return { text: 'Get Started', url: 'https://your-website.com', color: '#10b981' };
+      case 'testimonial':
+        return { quote: '"This product changed our business forever."', author: 'Jane Doe, CEO at Company' };
+      case 'features':
+        return {
+          feature1Title: 'Feature 1', feature1Description: 'Description',
+          feature2Title: 'Feature 2', feature2Description: 'Description',
+          feature3Title: 'Feature 3', feature3Description: 'Description',
+          feature4Title: 'Feature 4', feature4Description: 'Description'
+        };
+      case 'stats':
+        return {
+          stat1Value: '500+', stat1Label: 'Happy Clients',
+          stat2Value: '99.9%', stat2Label: 'Uptime',
+          stat3Value: '24/7', stat3Label: 'Support'
+        };
+      case 'countdown':
+        return { eventDate: '2025-12-31', eventName: 'Special Event' };
+      case 'banner':
+        return { title: 'Welcome!', subtitle: 'Discover our amazing products', color: '#10b981' };
+      default:
+        return {};
+    }
+  };
+
+  // 🧩 Helper: Render property editor for component
+  const renderComponentPropertiesEditor = (component, index) => {
+    const updateProperty = (key, value) => {
+      const newComponents = [...customTemplateData.customizations.customComponents];
+      newComponents[index].properties[key] = value;
+      setCustomTemplateData(prev => ({
+        ...prev,
+        customizations: { ...prev.customizations, customComponents: newComponents }
+      }));
+    };
+
+    switch (component.type) {
+      case 'logo':
+        return (
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-600">Logo URL</label>
+            <input
+              type="text"
+              value={component.properties.logoUrl || ''}
+              onChange={(e) => updateProperty('logoUrl', e.target.value)}
+              placeholder="https://example.com/logo.png"
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+            <label className="block text-xs font-medium text-gray-600">Subtitle</label>
+            <input
+              type="text"
+              value={component.properties.subtitle || ''}
+              onChange={(e) => updateProperty('subtitle', e.target.value)}
+              placeholder="Your Company Name"
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+          </div>
+        );
+
+      case 'greeting':
+        return (
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Greeting Text</label>
+            <input
+              type="text"
+              value={component.properties.text || ''}
+              onChange={(e) => updateProperty('text', e.target.value)}
+              placeholder="Hi {name},"
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+          </div>
+        );
+
+      case 'paragraph':
+        return (
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-600">Text Content</label>
+            <textarea
+              value={component.properties.text || ''}
+              onChange={(e) => updateProperty('text', e.target.value)}
+              placeholder="Enter your text here..."
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+              rows="3"
+            />
+            <label className="block text-xs font-medium text-gray-600">Alignment</label>
+            <select
+              value={component.properties.alignment || 'left'}
+              onChange={(e) => updateProperty('alignment', e.target.value)}
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            >
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </div>
+        );
+
+      case 'cta':
+        return (
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-600">Button Text</label>
+            <input
+              type="text"
+              value={component.properties.text || ''}
+              onChange={(e) => updateProperty('text', e.target.value)}
+              placeholder="Get Started"
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+            <label className="block text-xs font-medium text-gray-600">Button URL</label>
+            <input
+              type="text"
+              value={component.properties.url || ''}
+              onChange={(e) => updateProperty('url', e.target.value)}
+              placeholder="https://your-website.com"
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+            <label className="block text-xs font-medium text-gray-600">Button Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.color || '#10b981'}
+                onChange={(e) => updateProperty('color', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded"
+              />
+              <input
+                type="text"
+                value={component.properties.color || '#10b981'}
+                onChange={(e) => updateProperty('color', e.target.value)}
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
+          </div>
+        );
+
+      case 'testimonial':
+        return (
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-600">Quote</label>
+            <textarea
+              value={component.properties.quote || ''}
+              onChange={(e) => updateProperty('quote', e.target.value)}
+              placeholder='"This product changed our business forever."'
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+              rows="2"
+            />
+            <label className="block text-xs font-medium text-gray-600">Author</label>
+            <input
+              type="text"
+              value={component.properties.author || ''}
+              onChange={(e) => updateProperty('author', e.target.value)}
+              placeholder="Jane Doe, CEO at Company"
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+          </div>
+        );
+
+      case 'features':
+        return (
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map(num => (
+              <div key={num} className="p-2 bg-gray-50 rounded">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Feature {num} Title</label>
+                <input
+                  type="text"
+                  value={component.properties[`feature${num}Title`] || ''}
+                  onChange={(e) => updateProperty(`feature${num}Title`, e.target.value)}
+                  placeholder={`Feature ${num}`}
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded mb-1"
+                />
+                <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                <input
+                  type="text"
+                  value={component.properties[`feature${num}Description`] || ''}
+                  onChange={(e) => updateProperty(`feature${num}Description`, e.target.value)}
+                  placeholder="Description"
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                />
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'stats':
+        return (
+          <div className="space-y-3">
+            {[1, 2, 3].map(num => (
+              <div key={num} className="p-2 bg-gray-50 rounded">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Stat {num} Value</label>
+                <input
+                  type="text"
+                  value={component.properties[`stat${num}Value`] || ''}
+                  onChange={(e) => updateProperty(`stat${num}Value`, e.target.value)}
+                  placeholder={num === 1 ? '500+' : num === 2 ? '99.9%' : '24/7'}
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded mb-1"
+                />
+                <label className="block text-xs font-medium text-gray-600 mb-1">Label</label>
+                <input
+                  type="text"
+                  value={component.properties[`stat${num}Label`] || ''}
+                  onChange={(e) => updateProperty(`stat${num}Label`, e.target.value)}
+                  placeholder={num === 1 ? 'Happy Clients' : num === 2 ? 'Uptime' : 'Support'}
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                />
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'countdown':
+        return (
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-600">Event Date</label>
+            <input
+              type="date"
+              value={component.properties.eventDate || ''}
+              onChange={(e) => updateProperty('eventDate', e.target.value)}
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+            <label className="block text-xs font-medium text-gray-600">Event Name</label>
+            <input
+              type="text"
+              value={component.properties.eventName || ''}
+              onChange={(e) => updateProperty('eventName', e.target.value)}
+              placeholder="Special Event"
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+          </div>
+        );
+
+      case 'banner':
+        return (
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-600">Title</label>
+            <input
+              type="text"
+              value={component.properties.title || ''}
+              onChange={(e) => updateProperty('title', e.target.value)}
+              placeholder="Welcome!"
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+            <label className="block text-xs font-medium text-gray-600">Subtitle</label>
+            <input
+              type="text"
+              value={component.properties.subtitle || ''}
+              onChange={(e) => updateProperty('subtitle', e.target.value)}
+              placeholder="Discover our amazing products"
+              className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+            />
+            <label className="block text-xs font-medium text-gray-600">Background Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.color || '#10b981'}
+                onChange={(e) => updateProperty('color', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded"
+              />
+              <input
+                type="text"
+                value={component.properties.color || '#10b981'}
+                onChange={(e) => updateProperty('color', e.target.value)}
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
   };
 
   const renderTemplateSpecificFields = (templateId) => {
@@ -2045,6 +2327,154 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                     )}
                   </div>
 
+                  {/* 🧩 Component Builder (Custom Template Only) */}
+                  <div className="mb-6 p-4 bg-purple-50 rounded-lg border-2 border-dashed border-purple-300">
+                    <h5 className="text-sm font-semibold text-purple-700 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                      Component Builder
+                    </h5>
+                    <p className="text-xs text-purple-600 mb-3">Drag components into your email to build your custom template</p>
+
+                    {/* Component Library */}
+                    <div className="mb-4">
+                      <label className="block text-xs font-medium text-purple-700 mb-2">Available Components</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { type: 'logo', icon: '🏢', label: 'Logo Header' },
+                          { type: 'greeting', icon: '👋', label: 'Greeting' },
+                          { type: 'paragraph', icon: '📝', label: 'Text Block' },
+                          { type: 'cta', icon: '🔘', label: 'CTA Button' },
+                          { type: 'testimonial', icon: '💬', label: 'Testimonial' },
+                          { type: 'features', icon: '⭐', label: 'Feature Grid' },
+                          { type: 'stats', icon: '📊', label: 'Stats' },
+                          { type: 'countdown', icon: '⏱️', label: 'Countdown' },
+                          { type: 'banner', icon: '🎨', label: 'Header Banner' }
+                        ].map(comp => (
+                          <button
+                            key={comp.type}
+                            draggable="true"
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('componentType', comp.type);
+                            }}
+                            onClick={() => {
+                              // Add component on click
+                              const newComponent = {
+                                id: Date.now() + Math.random(),
+                                type: comp.type,
+                                properties: getDefaultPropertiesForComponent(comp.type)
+                              };
+                              setCustomTemplateData(prev => ({
+                                ...prev,
+                                customizations: {
+                                  ...prev.customizations,
+                                  customComponents: [...(prev.customizations?.customComponents || []), newComponent]
+                                }
+                              }));
+                            }}
+                            className="p-3 bg-white border-2 border-purple-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-all cursor-grab active:cursor-grabbing text-center"
+                          >
+                            <div className="text-2xl mb-1">{comp.icon}</div>
+                            <div className="text-xs font-medium text-gray-700">{comp.label}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Added Components List */}
+                    {customTemplateData.customizations?.customComponents?.length > 0 && (
+                      <div className="space-y-2">
+                        <label className="block text-xs font-medium text-purple-700 mb-2">
+                          Your Components ({customTemplateData.customizations.customComponents.length})
+                        </label>
+                        {customTemplateData.customizations.customComponents.map((component, index) => (
+                          <div
+                            key={component.id}
+                            className="bg-white p-3 rounded-lg border border-purple-200 shadow-sm hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-lg">
+                                {component.type === 'logo' ? '🏢' :
+                                 component.type === 'greeting' ? '👋' :
+                                 component.type === 'paragraph' ? '📝' :
+                                 component.type === 'cta' ? '🔘' :
+                                 component.type === 'testimonial' ? '💬' :
+                                 component.type === 'features' ? '⭐' :
+                                 component.type === 'stats' ? '📊' :
+                                 component.type === 'countdown' ? '⏱️' :
+                                 component.type === 'banner' ? '🎨' : '🧩'}
+                              </span>
+                              <span className="text-sm font-medium text-gray-700 flex-1">
+                                {component.type.charAt(0).toUpperCase() + component.type.slice(1)}
+                              </span>
+
+                              {/* Move Up/Down Buttons */}
+                              <div className="flex gap-1">
+                                {index > 0 && (
+                                  <button
+                                    onClick={() => {
+                                      const newComponents = [...customTemplateData.customizations.customComponents];
+                                      [newComponents[index - 1], newComponents[index]] = [newComponents[index], newComponents[index - 1]];
+                                      setCustomTemplateData(prev => ({
+                                        ...prev,
+                                        customizations: { ...prev.customizations, customComponents: newComponents }
+                                      }));
+                                    }}
+                                    className="text-purple-500 hover:text-purple-700 p-1"
+                                    title="Move up"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                    </svg>
+                                  </button>
+                                )}
+                                {index < customTemplateData.customizations.customComponents.length - 1 && (
+                                  <button
+                                    onClick={() => {
+                                      const newComponents = [...customTemplateData.customizations.customComponents];
+                                      [newComponents[index], newComponents[index + 1]] = [newComponents[index + 1], newComponents[index]];
+                                      setCustomTemplateData(prev => ({
+                                        ...prev,
+                                        customizations: { ...prev.customizations, customComponents: newComponents }
+                                      }));
+                                    }}
+                                    className="text-purple-500 hover:text-purple-700 p-1"
+                                    title="Move down"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </button>
+                                )}
+
+                                {/* Delete Button */}
+                                <button
+                                  onClick={() => {
+                                    const newComponents = customTemplateData.customizations.customComponents.filter((_, i) => i !== index);
+                                    setCustomTemplateData(prev => ({
+                                      ...prev,
+                                      customizations: { ...prev.customizations, customComponents: newComponents }
+                                    }));
+                                  }}
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                  title="Delete"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Component Properties Editor */}
+                            {renderComponentPropertiesEditor(component, index)}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Text Styling Controls */}
                   <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                     <h5 className="text-sm font-semibold text-gray-700 mb-4">Text Styling</h5>
@@ -2234,34 +2664,20 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                         </div>
                       );
 
-                      const renderMediaAt = (insertPoint) => {
-                        return customTemplateData.customizations?.customMedia
-                          ?.filter(m => m.insertAfter === insertPoint)
-                          .map((media, idx) => (
-                            <div key={media.id} className="my-3" style={{ textAlign: media.alignment || 'center' }}>
-                              <img
-                                src={media.url}
-                                alt={`Custom ${idx}`}
-                                style={{
-                                  width: media.width || '400px',
-                                  maxWidth: '100%',
-                                  display: 'block',
-                                  margin: media.alignment === 'center' ? '0 auto' : media.alignment === 'right' ? '0 0 0 auto' : '0'
-                                }}
-                              />
-                            </div>
-                          ));
-                      };
-
                       return (
                         <>
                           {renderDropZone('start', 'Before Email')}
-                          {renderMediaAt('start')}
-
                           {renderDropZone('logo', 'After Logo')}
-                          {renderMediaAt('logo')}
+                          {renderDropZone('greeting', 'After Greeting')}
+                          {renderDropZone('paragraph-1', 'After Para 1')}
+                          {renderDropZone('paragraph-2', 'After Para 2')}
+                          {renderDropZone('paragraph-3', 'After Para 3')}
+                          {renderDropZone('cta', 'After CTA')}
+                          {renderDropZone('testimonial', 'After Testimonial')}
+                          {renderDropZone('signature', 'After Signature')}
+                          {renderDropZone('end', 'End of Email')}
 
-                          {/* Render Email Template */}
+                          {/* Render Email Template - images now rendered inside */}
                           <div className="email-body-content">
                             <EmailTemplateRenderer
                               templateId={selectedTemplate}
@@ -2276,30 +2692,6 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                               }}
                             />
                           </div>
-
-                          {renderDropZone('greeting', 'After Greeting')}
-                          {renderMediaAt('greeting')}
-
-                          {renderDropZone('paragraph-1', 'After Para 1')}
-                          {renderMediaAt('paragraph-1')}
-
-                          {renderDropZone('paragraph-2', 'After Para 2')}
-                          {renderMediaAt('paragraph-2')}
-
-                          {renderDropZone('paragraph-3', 'After Para 3')}
-                          {renderMediaAt('paragraph-3')}
-
-                          {renderDropZone('cta', 'After CTA')}
-                          {renderMediaAt('cta')}
-
-                          {renderDropZone('testimonial', 'After Testimonial')}
-                          {renderMediaAt('testimonial')}
-
-                          {renderDropZone('signature', 'After Signature')}
-                          {renderMediaAt('signature')}
-
-                          {renderDropZone('end', 'End of Email')}
-                          {renderMediaAt('end')}
                         </>
                       );
                     })()}

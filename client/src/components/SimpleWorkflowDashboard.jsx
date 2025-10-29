@@ -1614,11 +1614,17 @@ const SettingsView = () => {
 
 const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [activeView, setActiveView] = useState('workflow');
-  const [showChatbot, setShowChatbot] = useState(() => {
-    // Always show chatbot by default, but check if user manually closed it
-    const chatbotClosed = sessionStorage.getItem('mailgenChatbotClosed');
-    return chatbotClosed !== 'true';
-  });
+  const [showChatbot, setShowChatbot] = useState(true); // Always show on initial load
+
+  // Open chatbot on component mount (first time landing on dashboard)
+  useEffect(() => {
+    // Check if this is first visit to dashboard in this session
+    const hasSeenChatbot = sessionStorage.getItem('mailgenChatbotSeen');
+    if (!hasSeenChatbot) {
+      setShowChatbot(true);
+      sessionStorage.setItem('mailgenChatbotSeen', 'true');
+    }
+  }, []);
   
   // Enhanced workflow history persistence system
   const [workflowHistory, setWorkflowHistory] = useState(() => {
@@ -5028,7 +5034,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         isOpen={showChatbot}
         onClose={() => {
           setShowChatbot(false);
-          sessionStorage.setItem('mailgenChatbotClosed', 'true');
         }}
         activeView={activeView}
         setActiveView={setActiveView}
@@ -5041,7 +5046,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         <button
           onClick={() => {
             setShowChatbot(true);
-            sessionStorage.removeItem('mailgenChatbotClosed');
           }}
           className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all z-40"
           title="Open MailGen AI Assistant"

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import WebsiteAnalysisStep from './WebsiteAnalysisStep';
+import ProspectsFoundStep from './ProspectsFoundStep';
 import EnhancedSMTPSetup from './EnhancedSMTPSetup';
 import { CheckCircle, Sparkles } from 'lucide-react';
 
@@ -17,6 +18,11 @@ const CampaignSetupWizard = ({ onComplete }) => {
       id: 'analysis',
       title: 'Website Analysis',
       component: WebsiteAnalysisStep
+    },
+    {
+      id: 'prospects',
+      title: 'Prospects Found',
+      component: ProspectsFoundStep
     },
     {
       id: 'smtp',

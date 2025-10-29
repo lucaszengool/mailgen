@@ -25,6 +25,30 @@ const EmailTemplateRenderer = ({
     return <div className="text-red-500">Template not found: {templateId}</div>;
   }
 
+  // Helper to render custom media at a specific insertion point
+  const renderCustomMediaAt = (insertPoint) => {
+    const customMedia = getCustomization('customMedia', []);
+    return customMedia
+      ?.filter(m => m.insertAfter === insertPoint)
+      .map((media, idx) => (
+        <div key={media.id || idx} style={{
+          margin: '20px 0',
+          textAlign: media.alignment || 'center'
+        }}>
+          <img
+            src={media.url}
+            alt={`Custom media ${idx + 1}`}
+            style={{
+              width: media.width || '400px',
+              maxWidth: '100%',
+              display: 'block',
+              margin: media.alignment === 'center' ? '0 auto' : media.alignment === 'right' ? '0 0 0 auto' : '0'
+            }}
+          />
+        </div>
+      ));
+  };
+
   // Replace placeholders with sample data - define early
   const replacePlaceholders = (text) => {
     if (typeof text !== 'string') return text;
@@ -186,6 +210,9 @@ const EmailTemplateRenderer = ({
       case 'professional_partnership':
         return (
           <div style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", maxWidth: '600px', margin: '0 auto', background: '#ffffff' }}>
+            {/* Custom Media: Start of Email */}
+            {renderCustomMediaAt('start')}
+
             {/* Logo Component */}
             <div style={{ textAlign: 'center', padding: '30px 20px', background: '#f8f9fa', borderBottom: '2px solid #e9ecef' }}>
               {config.logo ? (
@@ -214,6 +241,9 @@ const EmailTemplateRenderer = ({
               </p>
             </div>
 
+            {/* Custom Media: After Logo */}
+            {renderCustomMediaAt('logo')}
+
             <div style={{ padding: '40px 30px' }}>
               {/* Greeting */}
               <h2 style={{ color: '#343a40', margin: '0 0 30px', fontSize: '24px' }}>
@@ -223,6 +253,9 @@ const EmailTemplateRenderer = ({
                   </EditableText>
                 ) : replacePlaceholders(config.greeting)}
               </h2>
+
+              {/* Custom Media: After Greeting */}
+              {renderCustomMediaAt('greeting')}
 
               {/* Generated Paragraph 1 */}
               <div style={{ marginBottom: '25px' }}>
@@ -234,6 +267,9 @@ const EmailTemplateRenderer = ({
                   ) : `I noticed that ${sampleData.company} is leading innovation in your industry. Our strategic partnership could unlock significant value for both organizations.`}
                 </p>
               </div>
+
+              {/* Custom Media: After Paragraph 1 */}
+              {renderCustomMediaAt('paragraph-1')}
 
               {/* CTA Button Component */}
               <div style={{ textAlign: 'center', margin: '35px 0' }}>
@@ -263,6 +299,9 @@ const EmailTemplateRenderer = ({
                 <p style={{ margin: '12px 0 0', color: '#6c757d', fontSize: '14px' }}>15-minute introductory call</p>
               </div>
 
+              {/* Custom Media: After CTA */}
+              {renderCustomMediaAt('cta')}
+
               {/* Generated Paragraph 2 */}
               <div style={{ margin: '25px 0' }}>
                 <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#343a40', margin: 0 }}>
@@ -273,6 +312,9 @@ const EmailTemplateRenderer = ({
                   ) : `Our complementary strengths create a powerful opportunity for mutual growth. We bring proven expertise in AI-powered solutions, while ${sampleData.company} offers deep market insights and customer relationships.`}
                 </p>
               </div>
+
+              {/* Custom Media: After Paragraph 2 */}
+              {renderCustomMediaAt('paragraph-2')}
 
               {/* Testimonial Component */}
               <div style={{ background: '#f8f9fa', borderLeft: '4px solid ' + config.primaryColor, padding: '20px', margin: '30px 0', borderRadius: '0 6px 6px 0' }}>
@@ -292,6 +334,9 @@ const EmailTemplateRenderer = ({
                 </cite>
               </div>
 
+              {/* Custom Media: After Testimonial */}
+              {renderCustomMediaAt('testimonial')}
+
               {/* Generated Paragraph 3 */}
               <div style={{ margin: '25px 0 0' }}>
                 <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#343a40', margin: 0 }}>
@@ -302,6 +347,9 @@ const EmailTemplateRenderer = ({
                   ) : `Would you be available for a strategic discussion next week? I'd love to explore how we can create value together.`}
                 </p>
               </div>
+
+              {/* Custom Media: After Paragraph 3 */}
+              {renderCustomMediaAt('paragraph-3')}
             </div>
 
             {/* Footer/Signature Section */}
@@ -322,6 +370,10 @@ const EmailTemplateRenderer = ({
                 ) : replacePlaceholders(config.signature)}
               </p>
             </div>
+
+            {/* Custom Media: After Signature / End of Email */}
+            {renderCustomMediaAt('signature')}
+            {renderCustomMediaAt('end')}
           </div>
         );
 
@@ -2093,43 +2145,261 @@ const EmailTemplateRenderer = ({
         );
 
       case 'custom_template':
-        // Custom template - empty canvas
+        // 🧩 Custom template - component-based builder
+        const customComponents = getCustomization('customComponents', []);
+
+        // Helper to render a single custom component
+        const renderCustomComponent = (component) => {
+          const props = component.properties || {};
+
+          switch (component.type) {
+            case 'logo':
+              return (
+                <div key={component.id} style={{ textAlign: 'center', padding: '30px 40px' }}>
+                  {props.logoUrl && (
+                    <img src={props.logoUrl} alt="Logo" style={{ maxWidth: '200px', marginBottom: '10px' }} />
+                  )}
+                  {props.subtitle && (
+                    <p style={{ margin: 0, color: '#6c757d', fontSize: '14px' }}>{replacePlaceholders(props.subtitle)}</p>
+                  )}
+                </div>
+              );
+
+            case 'greeting':
+              return (
+                <div key={component.id} style={{ padding: '0 40px', marginBottom: '20px' }}>
+                  <p style={{ margin: 0, fontSize: '16px', color: '#000' }}>{replacePlaceholders(props.text)}</p>
+                </div>
+              );
+
+            case 'paragraph':
+              return (
+                <div key={component.id} style={{ padding: '0 40px', marginBottom: '20px' }}>
+                  <p style={{
+                    margin: 0,
+                    fontSize: '16px',
+                    color: '#333',
+                    textAlign: props.alignment || 'left',
+                    whiteSpace: 'pre-wrap'
+                  }}>
+                    {replacePlaceholders(props.text)}
+                  </p>
+                </div>
+              );
+
+            case 'cta':
+              return (
+                <div key={component.id} style={{ textAlign: 'center', padding: '30px 40px' }}>
+                  <a href={props.url} style={{
+                    display: 'inline-block',
+                    padding: '14px 32px',
+                    background: props.color || '#10b981',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '6px',
+                    fontWeight: '600',
+                    fontSize: '16px'
+                  }}>
+                    {props.text || 'Get Started'}
+                  </a>
+                </div>
+              );
+
+            case 'testimonial':
+              return (
+                <div key={component.id} style={{
+                  padding: '30px 40px',
+                  background: '#f8f9fa',
+                  borderLeft: '4px solid #10b981',
+                  margin: '20px 0'
+                }}>
+                  <p style={{
+                    fontSize: '18px',
+                    fontStyle: 'italic',
+                    color: '#495057',
+                    margin: '0 0 10px'
+                  }}>
+                    {props.quote}
+                  </p>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#6c757d',
+                    margin: 0
+                  }}>
+                    — {props.author}
+                  </p>
+                </div>
+              );
+
+            case 'features':
+              return (
+                <div key={component.id} style={{ padding: '30px 40px' }}>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '20px'
+                  }}>
+                    {[1, 2, 3, 4].map(num => (
+                      props[`feature${num}Title`] && (
+                        <div key={num} style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
+                          <h4 style={{
+                            margin: '0 0 8px',
+                            color: '#10b981',
+                            fontSize: '16px',
+                            fontWeight: '600'
+                          }}>
+                            {props[`feature${num}Title`]}
+                          </h4>
+                          <p style={{ margin: 0, fontSize: '14px', color: '#6c757d' }}>
+                            {props[`feature${num}Description`]}
+                          </p>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              );
+
+            case 'stats':
+              return (
+                <div key={component.id} style={{
+                  padding: '40px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr 1fr',
+                    gap: '30px'
+                  }}>
+                    {[1, 2, 3].map(num => (
+                      props[`stat${num}Value`] && (
+                        <div key={num}>
+                          <div style={{
+                            fontSize: '32px',
+                            fontWeight: 'bold',
+                            color: 'white',
+                            marginBottom: '8px'
+                          }}>
+                            {props[`stat${num}Value`]}
+                          </div>
+                          <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)' }}>
+                            {props[`stat${num}Label`]}
+                          </div>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              );
+
+            case 'countdown':
+              const eventDate = new Date(props.eventDate || '2025-12-31');
+              const now = new Date();
+              const daysLeft = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
+
+              return (
+                <div key={component.id} style={{
+                  padding: '40px',
+                  background: '#fff3cd',
+                  textAlign: 'center',
+                  borderRadius: '8px',
+                  margin: '20px 40px'
+                }}>
+                  <h3 style={{
+                    margin: '0 0 15px',
+                    color: '#856404',
+                    fontSize: '24px'
+                  }}>
+                    {props.eventName || 'Special Event'}
+                  </h3>
+                  <div style={{
+                    fontSize: '48px',
+                    fontWeight: 'bold',
+                    color: '#856404',
+                    marginBottom: '10px'
+                  }}>
+                    {daysLeft > 0 ? daysLeft : 0}
+                  </div>
+                  <p style={{ margin: 0, fontSize: '16px', color: '#856404' }}>
+                    Days Remaining
+                  </p>
+                </div>
+              );
+
+            case 'banner':
+              return (
+                <div key={component.id} style={{
+                  padding: '60px 40px',
+                  background: props.color || '#10b981',
+                  textAlign: 'center'
+                }}>
+                  <h1 style={{
+                    margin: '0 0 15px',
+                    color: 'white',
+                    fontSize: '36px',
+                    fontWeight: 'bold'
+                  }}>
+                    {props.title || 'Welcome!'}
+                  </h1>
+                  <p style={{
+                    margin: 0,
+                    color: 'rgba(255,255,255,0.95)',
+                    fontSize: '18px'
+                  }}>
+                    {props.subtitle || 'Discover our amazing products'}
+                  </p>
+                </div>
+              );
+
+            default:
+              return null;
+          }
+        };
+
+        // Render custom template
         return (
           <div style={{
             fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
             maxWidth: '600px',
             margin: '0 auto',
-            background: 'transparent'
+            background: 'white'
           }}>
-            <div id="custom-email-content" style={{
-              padding: '40px',
-              background: 'transparent',
-              minHeight: '400px'
-            }}>
-              <div style={{
-                textAlign: 'center',
-                padding: '60px 20px',
+            {customComponents.length > 0 ? (
+              <div id="custom-email-content">
+                {customComponents.map(component => renderCustomComponent(component))}
+              </div>
+            ) : (
+              <div id="custom-email-content" style={{
+                padding: '40px',
                 background: 'transparent',
-                border: '2px dashed #dee2e6',
-                borderRadius: '8px'
+                minHeight: '400px'
               }}>
                 <div style={{
-                  fontSize: '48px',
-                  color: '#6c757d',
-                  marginBottom: '20px'
-                }}>+</div>
-                <h3 style={{
-                  color: '#343a40',
-                  margin: '0 0 10px',
-                  fontSize: '20px'
-                }}>Start Building Your Custom Email</h3>
-                <p style={{
-                  color: '#6c757d',
-                  margin: 0,
-                  fontSize: '14px'
-                }}>Upload images and add your content using the controls on the left</p>
+                  textAlign: 'center',
+                  padding: '60px 20px',
+                  background: 'transparent',
+                  border: '2px dashed #dee2e6',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{
+                    fontSize: '48px',
+                    color: '#6c757d',
+                    marginBottom: '20px'
+                  }}>+</div>
+                  <h3 style={{
+                    color: '#343a40',
+                    margin: '0 0 10px',
+                    fontSize: '20px'
+                  }}>Start Building Your Custom Email</h3>
+                  <p style={{
+                    color: '#6c757d',
+                    margin: 0,
+                    fontSize: '14px'
+                  }}>Add components using the Component Builder on the left</p>
+                </div>
               </div>
-            </div>
+            )}
 
             <div style={{
               padding: '25px 40px',
@@ -2141,7 +2411,9 @@ const EmailTemplateRenderer = ({
                 margin: 0,
                 color: '#6c757d',
                 fontSize: '14px'
-              }}>Build your perfect email template with custom components</p>
+              }}>
+                {replacePlaceholders(config.signature)}
+              </p>
             </div>
           </div>
         );
