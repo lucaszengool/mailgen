@@ -22,6 +22,7 @@ import ProfessionalEmailEditor from './ProfessionalEmailEditor';
 import TemplateSelectionModal from './TemplateSelectionModal';
 import AgentStatusNotification, { AgentActivityPanel } from './AgentStatusNotification';
 import UserActionReminder from './UserActionReminder';
+import ProcessNotifications from './ProcessNotifications';
 import OnboardingTour from './OnboardingTour';
 import MarketResearch from './MarketResearch';
 import AIAssistantChatbot from './AIAssistantChatbot';
@@ -2010,6 +2011,44 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [hasShownFirstEmailModal, setHasShownFirstEmailModal] = useState(false);
   const [templateApproved, setTemplateApproved] = useState(false); // Track if user approved template usage
   const [approvedTemplate, setApprovedTemplate] = useState(null); // Store approved template data
+
+  // 🎯 Process Notifications State
+  const [notificationStage, setNotificationStage] = useState(null);
+  const [showProcessNotification, setShowProcessNotification] = useState(false);
+
+  // 🔔 Watch for workflow status changes and show notifications
+  useEffect(() => {
+    console.log('🔔 Workflow status changed:', workflowStatus);
+
+    if (workflowStatus === 'starting') {
+      setNotificationStage('prospectSearchStarting');
+      setShowProcessNotification(true);
+    } else if (workflowStatus === 'running') {
+      // Check what step we're on
+      const currentStep = steps[steps.length - 1];
+      if (currentStep?.title?.includes('Prospect Search') || currentStep?.title?.includes('Finding')) {
+        setNotificationStage('prospectSearchInProgress');
+        setShowProcessNotification(true);
+      }
+    } else if (workflowStatus === 'paused_for_review') {
+      // Prospects found
+      if (prospects.length > 0 && generatedEmails.length === 0) {
+        setNotificationStage('prospectSearchComplete');
+        setShowProcessNotification(true);
+      }
+    } else if (workflowStatus === 'generating_emails') {
+      setNotificationStage('emailGenerationStarting');
+      setShowProcessNotification(true);
+    }
+  }, [workflowStatus, steps, prospects.length, generatedEmails.length]);
+
+  // 🔔 Watch for generated emails and show notifications
+  useEffect(() => {
+    if (generatedEmails.length > 0 && workflowStatus === 'paused_for_editing') {
+      setNotificationStage('emailGenerationComplete');
+      setShowProcessNotification(true);
+    }
+  }, [generatedEmails.length, workflowStatus]);
 
   // 🎨 Template Selection State
   const [showTemplateSelection, setShowTemplateSelection] = useState(false);
@@ -5050,6 +5089,36 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           }
         }}
       />
+
+      {/* 🔔 Process Notifications - Shows workflow stage popups */}
+      {showProcessNotification && notificationStage && (
+        <ProcessNotifications
+          workflowStatus={notificationStage}
+          prospectCount={prospects.length}
+          emailCount={generatedEmails.length}
+          progress={0}
+          onDismiss={() => {
+            setShowProcessNotification(false);
+            setNotificationStage(null);
+          }}
+          onAction={(action) => {
+            console.log('🎯 Process notification action:', action);
+            if (action === 'selectTemplate') {
+              setShowTemplateSelection(true);
+              setShowProcessNotification(false);
+            } else if (action === 'viewProspects') {
+              setActiveView('prospects');
+              setShowProcessNotification(false);
+            } else if (action === 'reviewEmails') {
+              setActiveView('email-campaign');
+              setShowProcessNotification(false);
+            } else if (action === 'viewProgress') {
+              setActiveView('home');
+              setShowProcessNotification(false);
+            }
+          }}
+        />
+      )}
 
       {/* 🔔 Agent Status Notification - Shows backend process status */}
       {agentStatus && (

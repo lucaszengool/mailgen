@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const EmailService = require('../services/EmailService');
+const analyticsRoutes = require('./analytics');
+const trackEmailSent = analyticsRoutes.trackEmailSent;
+const trackEmailDelivered = analyticsRoutes.trackEmailDelivered;
 
 // Initialize email service
 const emailService = new EmailService();
@@ -79,6 +82,14 @@ router.post('/', async (req, res) => {
       trackingId
     });
 
+    // Track analytics
+    try {
+      trackEmailSent(campaignId, { email: to, name: to }, subject, html || text);
+      trackEmailDelivered(campaignId, to, result.messageId);
+    } catch (analyticsError) {
+      console.error('Analytics tracking error:', analyticsError);
+    }
+
     res.json({
       success: true,
       message: 'Email sent successfully',
@@ -127,6 +138,14 @@ router.post('/send', async (req, res) => {
       from,
       trackingId
     });
+
+    // Track analytics
+    try {
+      trackEmailSent(campaignId, { email: to, name: to }, subject, html || text);
+      trackEmailDelivered(campaignId, to, result.messageId);
+    } catch (analyticsError) {
+      console.error('Analytics tracking error:', analyticsError);
+    }
 
     res.json({
       success: true,
@@ -179,17 +198,41 @@ router.post('/send-bulk', async (req, res) => {
       totalEmails: recipients.length
     });
 
-    // Process bulk emails in background
+    // Process bulk emails in background with analytics tracking
     const emailTemplate = { subject, html, text };
     const options = { delay, campaignId };
-    
-    emailService.sendBulkEmails(recipients, emailTemplate, options)
-      .then(results => {
-        console.log(`✅ Bulk campaign ${campaignId} completed:`, results);
-      })
-      .catch(error => {
-        console.error(`❌ Bulk campaign ${campaignId} failed:`, error.message);
-      });
+
+    // Custom bulk sending with analytics tracking
+    (async () => {
+      for (let i = 0; i < recipients.length; i++) {
+        const recipient = recipients[i];
+        try {
+          const result = await emailService.sendEmail({
+            to: recipient.email || recipient,
+            subject,
+            html,
+            text,
+            trackingId: `${campaignId}_${i}`
+          });
+
+          // Track analytics for each email
+          try {
+            trackEmailSent(campaignId, { email: recipient.email || recipient, name: recipient.name || '' }, subject, html || text);
+            trackEmailDelivered(campaignId, recipient.email || recipient, result.messageId);
+          } catch (analyticsError) {
+            console.error('Analytics tracking error:', analyticsError);
+          }
+
+          // Add delay between emails
+          if (i < recipients.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+        } catch (error) {
+          console.error(`❌ Failed to send to ${recipient.email || recipient}:`, error.message);
+        }
+      }
+      console.log(`✅ Bulk campaign ${campaignId} completed`);
+    })();
 
   } catch (error) {
     console.error('❌ Bulk email initialization failed:', error.message);
@@ -258,6 +301,14 @@ router.post('/quick-send', async (req, res) => {
         text: isHtml ? null : message,
         trackingId: `${campaignName}_${Date.now()}`
       });
+
+      // Track analytics
+      try {
+        trackEmailSent(campaignName, { email: recipientList[0], name: recipientList[0] }, subject, message);
+        trackEmailDelivered(campaignName, recipientList[0], result.messageId);
+      } catch (analyticsError) {
+        console.error('Analytics tracking error:', analyticsError);
+      }
 
       res.json({
         success: true,

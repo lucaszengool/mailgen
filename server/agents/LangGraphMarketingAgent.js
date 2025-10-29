@@ -2523,6 +2523,10 @@ Communication Style: ${prospect.aiProfile?.communicationStyle || 'professional'}
 7. Keep the email 150-250 words
 8. NEVER use placeholders like [Company], [Name], etc.
 9. If information is missing, just skip that element naturally
+10. DO NOT include any notes like "Note: Make sure to replace..." or instructions
+11. DO NOT use subtitles or section headers like "Our partnership offers:"
+12. DO NOT use bullet points with colons like "Shared Expertise:" or "Enhanced Collaboration:"
+13. Write as a simple, flowing message without meta-commentary
 
 Generate email in this exact format:
 Subject: [write a compelling subject line]
@@ -6016,8 +6020,12 @@ DO NOT include:
 - Disconnected sections
 - Repetitive content
 - Generic filler text
+- Any notes like "Note: Make sure to replace..." or placeholder instructions
+- Subtitles or section headers like "Our partnership offers several benefits:"
+- Bullet points with colons like "Shared Expertise:" or "Enhanced Collaboration:"
+- Any meta-commentary or instructions to the reader
 
-Write the complete email now (without subject line or email headers):`;
+Write the complete email now as a simple, flowing message (without subject line or email headers):`;
 
     return prompt;
   }
@@ -6485,7 +6493,8 @@ ${isLongContent ?
   '- Write 3-5 detailed, engaging paragraphs\n- Include specific value propositions\n- Make it comprehensive and professional' :
   '- Write 2-3 well-developed sentences\n- Be concise but compelling\n- Focus on partnership benefits'
 }
-- Output ONLY the content text, no greetings or signatures`;
+- Output ONLY the content text, no greetings, signatures, notes, or instructions
+- DO NOT include subtitles, section headers, or bullet points with colons`;
 
           try {
             const aiContent = await this.callOllamaAPI(prompt, 'qwen2.5:0.5b');

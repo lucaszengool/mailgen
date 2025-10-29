@@ -387,6 +387,99 @@ export default function Analytics() {
         />
       </div>
 
+      {/* Advanced Tracking Setup Banner */}
+      {(displayEmailMetrics.openRate === 0 || displayEmailMetrics.replyRate === 0) && displayEmailMetrics.totalSent > 0 && (
+        <div className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-green-200 rounded-lg p-6">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <EyeIcon className="h-8 w-8 text-green-600" />
+            </div>
+            <div className="ml-4 flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Enable Advanced Email Tracking
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Get detailed insights into your email campaigns by enabling advanced tracking features. Track opens, clicks, replies, and bounces automatically.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center mb-2">
+                    <EyeIcon className="h-5 w-5 text-blue-600 mr-2" />
+                    <h4 className="font-semibold text-gray-900">Open Tracking</h4>
+                  </div>
+                  <p className="text-sm text-gray-600">Track when recipients open your emails with invisible tracking pixels</p>
+                </div>
+
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center mb-2">
+                    <CursorArrowRaysIcon className="h-5 w-5 text-green-600 mr-2" />
+                    <h4 className="font-semibold text-gray-900">Click Tracking</h4>
+                  </div>
+                  <p className="text-sm text-gray-600">Monitor link clicks and measure engagement with your content</p>
+                </div>
+
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div className="flex items-center mb-2">
+                    <ChatBubbleLeftRightIcon className="h-5 w-5 text-purple-600 mr-2" />
+                    <h4 className="font-semibold text-gray-900">Reply & Bounce Detection</h4>
+                  </div>
+                  <p className="text-sm text-gray-600">Automatically detect replies and bounced emails via IMAP monitoring</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/analytics/start-imap-monitoring', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                      });
+                      const data = await response.json();
+                      if (data.success) {
+                        alert('✅ IMAP monitoring started successfully! Checking inbox every 5 minutes for replies and bounces.');
+                      } else {
+                        alert('❌ ' + data.error);
+                      }
+                    } catch (error) {
+                      alert('❌ Failed to start monitoring: ' + error.message);
+                    }
+                  }}
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                >
+                  <CheckCircleIcon className="h-5 w-5 mr-2" />
+                  Enable IMAP Monitoring
+                </button>
+
+                <a
+                  href="/settings"
+                  className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                >
+                  <BuildingOfficeIcon className="h-5 w-5 mr-2" />
+                  Configure Email Settings
+                </a>
+
+                <button
+                  onClick={() => window.open('https://support.google.com/mail/answer/7126229', '_blank')}
+                  className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                >
+                  <GlobeAltIcon className="h-5 w-5 mr-2" />
+                  Setup Guide
+                </button>
+              </div>
+
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-900">
+                  <strong>💡 Note:</strong> IMAP monitoring requires your email configuration to be set up.
+                  If you haven't configured your email yet, click "Configure Email Settings" to set up SMTP and IMAP access.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Engagement Trends */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Email Performance Over Time */}

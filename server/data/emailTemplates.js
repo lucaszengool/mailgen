@@ -60,8 +60,8 @@ Write the complete email now (without subject line or email headers):`,
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: white;">
 
         <!-- Logo Component -->
-        <div id="component-logo" style="text-align: center; padding: 30px 20px; background: #f8f9fa; border-bottom: 2px solid #e9ecef;">
-          <img src="https://via.placeholder.com/180x60/28a745/ffffff?text=COMPANY+LOGO" alt="Company Logo" style="max-width: 180px;">
+        <div id="component-logo" style="text-align: center; padding: 20px; background: white; border-bottom: 2px solid #e9ecef;">
+          <img src="https://via.placeholder.com/120x40/28a745/ffffff?text=COMPANY+LOGO" alt="Company Logo" style="max-width: 120px; height: auto;">
           <p style="margin: 10px 0 0; color: #6c757d; font-size: 14px;">Building Strategic Partnerships</p>
         </div>
 
@@ -92,7 +92,7 @@ Write the complete email now (without subject line or email headers):`,
           </div>
 
           <!-- Testimonial Component -->
-          <div id="component-testimonial" style="background: #f8f9fa; border-left: 4px solid #28a745; padding: 20px; margin: 30px 0; border-radius: 0 6px 6px 0;">
+          <div id="component-testimonial" style="background: white; border-left: 4px solid #28a745; padding: 20px; margin: 30px 0; border-radius: 0 6px 6px 0; border: 1px solid #e5e7eb;">
             <blockquote style="margin: 0; font-style: italic; color: #495057; font-size: 15px; line-height: 1.5;">
               "This partnership exceeded our expectations. We saw immediate results in market expansion and lead quality."
             </blockquote>
@@ -109,7 +109,7 @@ Write the complete email now (without subject line or email headers):`,
           </div>
         </div>
 
-        <div style="padding: 25px 30px; background: #f8f9fa; border-top: 1px solid #e9ecef;">
+        <div style="padding: 25px 30px; background: white; border-top: 1px solid #e9ecef;">
           <p style="margin: 0; color: #6c757d; font-size: 14px;">
             Best regards,<br>
             <strong>Partnership Development Team</strong>
@@ -175,9 +175,9 @@ Write the complete email now (without subject line or email headers):`,
       <div style="font-family: 'Inter', -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: white;">
 
         <!-- Header Banner Component -->
-        <div id="component-header-banner" style="background: #343a40; padding: 40px 30px; text-align: center; color: white;">
-          <h1 style="margin: 0 0 10px; font-size: 28px; font-weight: 700;">Innovation Awaits</h1>
-          <p style="margin: 0; font-size: 18px; opacity: 0.9;">Accelerating Tech Excellence for {company}</p>
+        <div id="component-header-banner" style="background: white; padding: 40px 30px; text-align: center; color: #343a40; border-bottom: 2px solid #e9ecef;">
+          <h1 style="margin: 0 0 10px; font-size: 28px; font-weight: 700; color: #343a40;">Innovation Awaits</h1>
+          <p style="margin: 0; font-size: 18px; color: #6c757d;">Accelerating Tech Excellence for {company}</p>
         </div>
 
         <div style="padding: 40px 30px;">
@@ -220,12 +220,12 @@ Write the complete email now (without subject line or email headers):`,
         </div>
 
         <!-- Social Proof Component -->
-        <div id="component-social-proof" style="background: #343a40; color: white; padding: 30px; text-align: center;">
-          <p style="margin: 0 0 20px; font-size: 16px;">Trusted by 500+ tech companies</p>
-          <div style="display: flex; justify-content: center; align-items: center; gap: 30px; opacity: 0.7;">
-            <span style="font-size: 14px; font-weight: 500;">TechCorp</span>
-            <span style="font-size: 14px; font-weight: 500;">InnovateAI</span>
-            <span style="font-size: 14px; font-weight: 500;">ScaleUp</span>
+        <div id="component-social-proof" style="background: white; color: #343a40; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+          <p style="margin: 0 0 20px; font-size: 16px; color: #343a40;">Trusted by 500+ tech companies</p>
+          <div style="display: flex; justify-content: center; align-items: center; gap: 30px;">
+            <span style="font-size: 14px; font-weight: 500; color: #6c757d;">TechCorp</span>
+            <span style="font-size: 14px; font-weight: 500; color: #6c757d;">InnovateAI</span>
+            <span style="font-size: 14px; font-weight: 500; color: #6c757d;">ScaleUp</span>
           </div>
         </div>
       </div>
@@ -337,7 +337,7 @@ Write the complete email now (without subject line or email headers):`,
           </div>
 
           <!-- Testimonial Component -->
-          <div id="component-testimonial" style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 25px; margin: 35px 0; border-radius: 4px;">
+          <div id="component-testimonial" style="background: white; border: 1px solid #e5e7eb; padding: 25px; margin: 35px 0; border-radius: 4px;">
             <blockquote style="margin: 0 0 15px; font-style: italic; color: #495057; font-size: 16px; line-height: 1.6;">
               "This strategic partnership transformed our market position. The executive team was impressed with both the strategic vision and execution capabilities."
             </blockquote>
@@ -663,9 +663,9 @@ Write the complete email now (without subject line or email headers):`,
           </div>
 
           <!-- CTA Consultation Component -->
-          <div id="component-cta-consultation" style="background: #343a40; color: white; padding: 25px; text-align: center; margin: 35px 0; border-radius: 5px;">
-            <h3 style="margin: 0 0 15px; font-size: 18px;">Complimentary Strategic Assessment</h3>
-            <p style="margin: 0 0 20px; font-size: 14px; opacity: 0.9;">No obligation • 30-minute expert consultation</p>
+          <div id="component-cta-consultation" style="background: white; color: #343a40; padding: 25px; text-align: center; margin: 35px 0; border-radius: 5px; border: 2px solid #e5e7eb;">
+            <h3 style="margin: 0 0 15px; font-size: 18px; color: #343a40;">Complimentary Strategic Assessment</h3>
+            <p style="margin: 0 0 20px; font-size: 14px; color: #6c757d;">No obligation • 30-minute expert consultation</p>
             <a href="https://consultation.company.com"
                style="display: inline-block; background: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: 600;">
               Schedule Assessment

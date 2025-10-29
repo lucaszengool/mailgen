@@ -136,6 +136,20 @@ class EmailTrackingService {
       });
 
       await this.saveDb(db);
+
+      // Also track in analytics
+      try {
+        const analyticsRoutes = require('../routes/analytics');
+        const email = db.emails[trackingId];
+        analyticsRoutes.trackEmailOpened(
+          email.campaignId || 'unknown',
+          email.recipientEmail,
+          email.subject
+        );
+      } catch (analyticsError) {
+        console.error('[Tracking] Analytics error:', analyticsError.message);
+      }
+
       console.log(`[Tracking] ✅ Email opened: ${trackingId}`);
       return true;
     } catch (error) {
@@ -175,6 +189,20 @@ class EmailTrackingService {
       });
 
       await this.saveDb(db);
+
+      // Also track in analytics
+      try {
+        const analyticsRoutes = require('../routes/analytics');
+        const email = db.emails[trackingId];
+        analyticsRoutes.trackEmailClicked(
+          email.campaignId || 'unknown',
+          email.recipientEmail,
+          metadata.targetUrl
+        );
+      } catch (analyticsError) {
+        console.error('[Tracking] Analytics error:', analyticsError.message);
+      }
+
       console.log(`[Tracking] ✅ Link clicked: ${trackingId}, link ${linkIndex}`);
       return metadata.targetUrl;
     } catch (error) {

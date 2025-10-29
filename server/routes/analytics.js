@@ -272,6 +272,40 @@ function trackEmailClicked(campaignId, recipientEmail, linkUrl, timestamp = new 
   console.log(`📊 Analytics: Tracked email clicked by ${recipientEmail} for campaign ${campaignId}`);
 }
 
+// Track email replied
+function trackEmailReplied(campaignId, recipientEmail, timestamp = new Date()) {
+  const dateKey = timestamp.toISOString().split('T')[0];
+
+  // Update campaign
+  if (emailAnalytics.campaigns.has(campaignId)) {
+    emailAnalytics.campaigns.get(campaignId).replies += 1;
+  }
+
+  // Update daily stats
+  if (emailAnalytics.dailyStats.has(dateKey)) {
+    emailAnalytics.dailyStats.get(dateKey).replies += 1;
+  }
+
+  console.log(`📊 Analytics: Tracked email reply from ${recipientEmail} for campaign ${campaignId}`);
+}
+
+// Track email bounced
+function trackEmailBounced(campaignId, recipientEmail, timestamp = new Date()) {
+  const dateKey = timestamp.toISOString().split('T')[0];
+
+  // Update campaign
+  if (emailAnalytics.campaigns.has(campaignId)) {
+    emailAnalytics.campaigns.get(campaignId).bounces += 1;
+  }
+
+  // Update daily stats
+  if (emailAnalytics.dailyStats.has(dateKey)) {
+    emailAnalytics.dailyStats.get(dateKey).bounces += 1;
+  }
+
+  console.log(`📊 Analytics: Tracked email bounce for ${recipientEmail} in campaign ${campaignId}`);
+}
+
 // API Routes
 
 // Get email metrics overview
@@ -645,11 +679,167 @@ function trackEmailClickedWithWS(campaignId, recipientEmail, linkUrl, timestamp 
   broadcastAnalyticsUpdate();
 }
 
+function trackEmailRepliedWithWS(campaignId, recipientEmail, timestamp = new Date()) {
+  trackEmailReplied(campaignId, recipientEmail, timestamp);
+  broadcastAnalyticsUpdate();
+}
+
+function trackEmailBouncedWithWS(campaignId, recipientEmail, timestamp = new Date()) {
+  trackEmailBounced(campaignId, recipientEmail, timestamp);
+  broadcastAnalyticsUpdate();
+}
+
+// Backfill analytics from database
+router.post('/backfill-from-database', async (req, res) => {
+  try {
+    const db = require('../models/database');
+
+    // Get all email logs from database
+    db.db.all('SELECT * FROM email_logs WHERE status = "sent" ORDER BY sent_at ASC', (err, rows) => {
+      if (err) {
+        console.error('Error reading email logs:', err);
+        return res.status(500).json({ success: false, error: err.message });
+      }
+
+      console.log(`📊 Backfilling analytics with ${rows.length} emails from database`);
+
+      // Track each email in analytics
+      rows.forEach(row => {
+        const campaignId = row.campaign_id || 'historical';
+        const recipient = { email: row.to_email, name: row.to_email };
+        const subject = row.subject || 'Email Campaign';
+        const timestamp = new Date(row.sent_at);
+
+        trackEmailSent(campaignId, recipient, subject, '', timestamp);
+        if (row.message_id) {
+          trackEmailDelivered(campaignId, row.to_email, row.message_id, timestamp);
+        }
+      });
+
+      res.json({
+        success: true,
+        message: `Backfilled ${rows.length} emails into analytics`,
+        totalEmails: rows.length
+      });
+    });
+  } catch (error) {
+    console.error('Error backfilling analytics:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Manual tracking endpoint for historical emails
+router.post('/track-manual-emails', (req, res) => {
+  try {
+    const { emails } = req.body;
+
+    if (!emails || !Array.isArray(emails)) {
+      return res.status(400).json({ success: false, error: 'emails array is required' });
+    }
+
+    console.log(`📊 Manually tracking ${emails.length} emails`);
+
+    emails.forEach(email => {
+      const campaignId = email.campaignId || 'manual';
+      const recipient = { email: email.to, name: email.to, company: email.company || '' };
+      const subject = email.subject;
+      const timestamp = email.sentAt ? new Date(email.sentAt) : new Date();
+
+      trackEmailSent(campaignId, recipient, subject, email.body || '', timestamp);
+      trackEmailDelivered(campaignId, email.to, email.messageId || `manual_${Date.now()}`, timestamp);
+    });
+
+    res.json({
+      success: true,
+      message: `Manually tracked ${emails.length} emails`,
+      totalEmails: emails.length
+    });
+  } catch (error) {
+    console.error('Error manually tracking emails:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// IMAP monitoring endpoints
+let imapTracker = null;
+
+router.post('/start-imap-monitoring', async (req, res) => {
+  try {
+    const db = require('../models/database');
+    const IMAPEmailTracker = require('../services/IMAPEmailTracker');
+
+    // Get IMAP config from database
+    const imapConfig = await db.getSMTPConfig('anonymous'); // Use same config for IMAP
+
+    if (!imapConfig) {
+      return res.status(400).json({
+        success: false,
+        error: 'No email configuration found. Please configure SMTP/IMAP first.'
+      });
+    }
+
+    // Stop existing monitoring if any
+    if (imapTracker) {
+      imapTracker.disconnect();
+    }
+
+    // Create new IMAP tracker
+    imapTracker = new IMAPEmailTracker();
+
+    // Convert SMTP config to IMAP config
+    const imapConnection = {
+      user: imapConfig.username,
+      password: imapConfig.password,
+      host: imapConfig.host.replace('smtp', 'imap'),
+      port: 993
+    };
+
+    await imapTracker.connect(imapConnection);
+    await imapTracker.startMonitoring(5); // Check every 5 minutes
+
+    res.json({
+      success: true,
+      message: 'IMAP monitoring started successfully',
+      checkInterval: '5 minutes'
+    });
+  } catch (error) {
+    console.error('Error starting IMAP monitoring:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/stop-imap-monitoring', (req, res) => {
+  try {
+    if (imapTracker) {
+      imapTracker.disconnect();
+      imapTracker = null;
+    }
+
+    res.json({
+      success: true,
+      message: 'IMAP monitoring stopped'
+    });
+  } catch (error) {
+    console.error('Error stopping IMAP monitoring:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get('/imap-monitoring-status', (req, res) => {
+  res.json({
+    success: true,
+    monitoring: imapTracker !== null && imapTracker.isMonitoring,
+    lastCheck: imapTracker?.lastCheckTime || null
+  });
+});
+
 // Export the router as default and tracking functions as named exports
 module.exports = router;
 module.exports.trackEmailSent = trackEmailSentWithWS;
 module.exports.trackEmailDelivered = trackEmailDeliveredWithWS;
 module.exports.trackEmailOpened = trackEmailOpenedWithWS;
 module.exports.trackEmailClicked = trackEmailClickedWithWS;
+module.exports.trackEmailReplied = trackEmailRepliedWithWS;
+module.exports.trackEmailBounced = trackEmailBouncedWithWS;
 module.exports.realtimeData = realtimeData;
 module.exports.setWebSocketManager = setWebSocketManager;

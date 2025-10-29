@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle, Clock, Sparkles, Mail, Users, Zap, AlertCircle } from 'lucide-react';
 
-const ProcessNotifications = ({ workflowStatus = 'idle', onDismiss, onAction }) => {
+const ProcessNotifications = ({
+  workflowStatus = 'idle',
+  onDismiss,
+  onAction,
+  prospectCount = 0,
+  emailCount = 0,
+  progress = 0
+}) => {
   const [currentNotification, setCurrentNotification] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -44,10 +51,10 @@ const ProcessNotifications = ({ workflowStatus = 'idle', onDismiss, onAction }) 
     // Stage 3: Prospects Found (Complete)
     prospectSearchComplete: {
       icon: <CheckCircle className="w-8 h-8" style={{ color: '#00f0a0' }} />,
-      title: '50 Prospects Found!',
+      title: `${prospectCount || 50} Prospects Found!`,
       message: 'Your AI agent has found qualified prospects. Select an email template to continue.',
       details: [
-        '50 verified prospects ready',
+        `${prospectCount || 50} verified prospects ready`,
         'AI will personalize emails for each prospect',
         'Preview before sending'
       ],
@@ -78,11 +85,11 @@ const ProcessNotifications = ({ workflowStatus = 'idle', onDismiss, onAction }) 
     emailGenerationStarting: {
       icon: <Zap className="w-8 h-8" style={{ color: '#00f0a0' }} />,
       title: 'Generating Personalized Emails...',
-      message: 'AI is creating custom emails for 50 prospects',
+      message: `AI is creating custom emails for ${prospectCount || 50} prospects`,
       details: [
         'Using selected template',
         'Personalizing with company data',
-        'Estimated time: 3-4 minutes'
+        `Processing ${prospectCount || 50} prospects`
       ],
       type: 'info',
       showProgress: false,
@@ -112,10 +119,10 @@ const ProcessNotifications = ({ workflowStatus = 'idle', onDismiss, onAction }) 
     // Stage 7: Emails Generated (Ready to Review)
     emailGenerationComplete: {
       icon: <CheckCircle className="w-8 h-8" style={{ color: '#00f0a0' }} />,
-      title: '50 Emails Ready!',
+      title: `${emailCount || 50} Emails Ready!`,
       message: 'All personalized emails have been generated',
       details: [
-        '50 unique emails created',
+        `${emailCount || 50} unique emails created`,
         'Personalized with AI insights',
         'Review and approve before sending'
       ],
