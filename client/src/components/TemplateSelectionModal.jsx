@@ -2178,12 +2178,12 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                     Live Preview
                     {draggedMedia && (
                       <span className="text-xs text-green-600 font-normal">
-                        (Drag image to position)
+                        (Drop between components)
                       </span>
                     )}
                   </h4>
 
-                  <div className="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="border-2 border-gray-200 rounded-lg p-4 bg-white">
                     {/* Subject Line */}
                     <div className="mb-4 pb-4 border-b border-gray-300">
                       <div className="text-xs text-gray-500 mb-1">Subject:</div>
@@ -2192,172 +2192,117 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                       </div>
                     </div>
 
-                    {/* Drop Zone: Top */}
-                    <div
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = 'move';
-                        setDropZoneActive('top');
-                      }}
-                      onDragLeave={() => setDropZoneActive(null)}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const mediaIndex = parseInt(e.dataTransfer.getData('mediaIndex'));
-                        if (draggedMedia) {
-                          const newMedia = [...(customTemplateData.customizations?.customMedia || [])];
-                          newMedia[mediaIndex] = { ...newMedia[mediaIndex], position: 'top' };
-                          setCustomTemplateData(prev => ({
-                            ...prev,
-                            customizations: { ...prev.customizations, customMedia: newMedia }
-                          }));
-                        }
-                        setDropZoneActive(null);
-                        setDraggedMedia(null);
-                      }}
-                      className={`transition-all ${
-                        dropZoneActive === 'top'
-                          ? 'h-24 bg-green-100 border-2 border-dashed border-green-500 rounded-lg flex items-center justify-center'
-                          : draggedMedia
-                          ? 'h-12 bg-green-50 border border-dashed border-green-300 rounded flex items-center justify-center opacity-50 hover:opacity-100'
-                          : 'h-0'
-                      }`}
-                    >
-                      {draggedMedia && (
-                        <div className="text-sm text-green-600 font-medium">
-                          {dropZoneActive === 'top' ? '⬇ Drop here (TOP)' : 'Drop zone: Top'}
-                        </div>
-                      )}
-                    </div>
 
-                    {/* Show top images */}
-                    {customTemplateData.customizations?.customMedia
-                      ?.filter(m => m.position === 'top')
-                      .map((media, idx) => (
-                        <div key={media.id} className={`my-3 text-${media.alignment}`}>
-                          <img
-                            src={media.url}
-                            alt={`Custom ${idx}`}
-                            style={{ width: media.width, maxWidth: '100%' }}
-                            className={`inline-block ${media.alignment === 'center' ? 'mx-auto' : ''} ${media.alignment === 'right' ? 'ml-auto' : ''}`}
-                          />
+                    {/* Component-by-Component rendering with drop zones */}
+                    {(() => {
+                      const renderDropZone = (insertPoint, label) => (
+                        <div
+                          key={`drop-${insertPoint}`}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = 'move';
+                            setDropZoneActive(insertPoint);
+                          }}
+                          onDragLeave={() => setDropZoneActive(null)}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            const mediaIndex = parseInt(e.dataTransfer.getData('mediaIndex'));
+                            if (draggedMedia) {
+                              const newMedia = [...(customTemplateData.customizations?.customMedia || [])];
+                              newMedia[mediaIndex] = { ...newMedia[mediaIndex], insertAfter: insertPoint };
+                              setCustomTemplateData(prev => ({
+                                ...prev,
+                                customizations: { ...prev.customizations, customMedia: newMedia }
+                              }));
+                            }
+                            setDropZoneActive(null);
+                            setDraggedMedia(null);
+                          }}
+                          className={`transition-all ${
+                            dropZoneActive === insertPoint
+                              ? 'h-16 bg-green-100 border-2 border-dashed border-green-500 rounded-lg flex items-center justify-center my-2'
+                              : draggedMedia
+                              ? 'h-8 bg-green-50 border border-dashed border-green-300 rounded flex items-center justify-center opacity-50 hover:opacity-100 my-1'
+                              : 'h-0'
+                          }`}
+                        >
+                          {draggedMedia && (
+                            <div className="text-xs text-green-600 font-medium">
+                              {dropZoneActive === insertPoint ? `⬇ Drop here (${label})` : label}
+                            </div>
+                          )}
                         </div>
-                      ))}
+                      );
 
-                    {/* Email Content Preview */}
-                    <EmailTemplateRenderer
-                      templateId={selectedTemplate}
-                      customizations={customTemplateData}
-                      isEditable={true}
-                      onEdit={handleInlineEdit}
-                      sampleData={{
-                        name: 'Sarah',
-                        company: 'TechCorp',
-                        senderName: 'James Wilson',
-                        senderCompany: 'Your Company'
-                      }}
-                    />
+                      const renderMediaAt = (insertPoint) => {
+                        return customTemplateData.customizations?.customMedia
+                          ?.filter(m => m.insertAfter === insertPoint)
+                          .map((media, idx) => (
+                            <div key={media.id} className="my-3" style={{ textAlign: media.alignment || 'center' }}>
+                              <img
+                                src={media.url}
+                                alt={`Custom ${idx}`}
+                                style={{
+                                  width: media.width || '400px',
+                                  maxWidth: '100%',
+                                  display: 'block',
+                                  margin: media.alignment === 'center' ? '0 auto' : media.alignment === 'right' ? '0 0 0 auto' : '0'
+                                }}
+                              />
+                            </div>
+                          ));
+                      };
 
-                    {/* Drop Zone: Middle */}
-                    <div
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = 'move';
-                        setDropZoneActive('middle');
-                      }}
-                      onDragLeave={() => setDropZoneActive(null)}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const mediaIndex = parseInt(e.dataTransfer.getData('mediaIndex'));
-                        if (draggedMedia) {
-                          const newMedia = [...(customTemplateData.customizations?.customMedia || [])];
-                          newMedia[mediaIndex] = { ...newMedia[mediaIndex], position: 'middle' };
-                          setCustomTemplateData(prev => ({
-                            ...prev,
-                            customizations: { ...prev.customizations, customMedia: newMedia }
-                          }));
-                        }
-                        setDropZoneActive(null);
-                        setDraggedMedia(null);
-                      }}
-                      className={`transition-all my-3 ${
-                        dropZoneActive === 'middle'
-                          ? 'h-24 bg-green-100 border-2 border-dashed border-green-500 rounded-lg flex items-center justify-center'
-                          : draggedMedia
-                          ? 'h-12 bg-green-50 border border-dashed border-green-300 rounded flex items-center justify-center opacity-50 hover:opacity-100'
-                          : 'h-0'
-                      }`}
-                    >
-                      {draggedMedia && (
-                        <div className="text-sm text-green-600 font-medium">
-                          {dropZoneActive === 'middle' ? '⬇ Drop here (MIDDLE)' : 'Drop zone: Middle'}
-                        </div>
-                      )}
-                    </div>
+                      return (
+                        <>
+                          {renderDropZone('start', 'Before Email')}
+                          {renderMediaAt('start')}
 
-                    {/* Show middle images */}
-                    {customTemplateData.customizations?.customMedia
-                      ?.filter(m => m.position === 'middle')
-                      .map((media, idx) => (
-                        <div key={media.id} className={`my-3 text-${media.alignment}`}>
-                          <img
-                            src={media.url}
-                            alt={`Custom ${idx}`}
-                            style={{ width: media.width, maxWidth: '100%' }}
-                            className={`inline-block ${media.alignment === 'center' ? 'mx-auto' : ''} ${media.alignment === 'right' ? 'ml-auto' : ''}`}
-                          />
-                        </div>
-                      ))}
+                          {renderDropZone('logo', 'After Logo')}
+                          {renderMediaAt('logo')}
 
-                    {/* Drop Zone: Bottom */}
-                    <div
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = 'move';
-                        setDropZoneActive('bottom');
-                      }}
-                      onDragLeave={() => setDropZoneActive(null)}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const mediaIndex = parseInt(e.dataTransfer.getData('mediaIndex'));
-                        if (draggedMedia) {
-                          const newMedia = [...(customTemplateData.customizations?.customMedia || [])];
-                          newMedia[mediaIndex] = { ...newMedia[mediaIndex], position: 'bottom' };
-                          setCustomTemplateData(prev => ({
-                            ...prev,
-                            customizations: { ...prev.customizations, customMedia: newMedia }
-                          }));
-                        }
-                        setDropZoneActive(null);
-                        setDraggedMedia(null);
-                      }}
-                      className={`transition-all mt-3 ${
-                        dropZoneActive === 'bottom'
-                          ? 'h-24 bg-green-100 border-2 border-dashed border-green-500 rounded-lg flex items-center justify-center'
-                          : draggedMedia
-                          ? 'h-12 bg-green-50 border border-dashed border-green-300 rounded flex items-center justify-center opacity-50 hover:opacity-100'
-                          : 'h-0'
-                      }`}
-                    >
-                      {draggedMedia && (
-                        <div className="text-sm text-green-600 font-medium">
-                          {dropZoneActive === 'bottom' ? '⬇ Drop here (BOTTOM)' : 'Drop zone: Bottom'}
-                        </div>
-                      )}
-                    </div>
+                          {/* Render Email Template */}
+                          <div className="email-body-content">
+                            <EmailTemplateRenderer
+                              templateId={selectedTemplate}
+                              customizations={customTemplateData}
+                              isEditable={true}
+                              onEdit={handleInlineEdit}
+                              sampleData={{
+                                name: 'Sarah',
+                                company: 'TechCorp',
+                                senderName: 'James Wilson',
+                                senderCompany: 'Your Company'
+                              }}
+                            />
+                          </div>
 
-                    {/* Show bottom images */}
-                    {customTemplateData.customizations?.customMedia
-                      ?.filter(m => m.position === 'bottom')
-                      .map((media, idx) => (
-                        <div key={media.id} className={`my-3 text-${media.alignment}`}>
-                          <img
-                            src={media.url}
-                            alt={`Custom ${idx}`}
-                            style={{ width: media.width, maxWidth: '100%' }}
-                            className={`inline-block ${media.alignment === 'center' ? 'mx-auto' : ''} ${media.alignment === 'right' ? 'ml-auto' : ''}`}
-                          />
-                        </div>
-                      ))}
+                          {renderDropZone('greeting', 'After Greeting')}
+                          {renderMediaAt('greeting')}
+
+                          {renderDropZone('paragraph-1', 'After Para 1')}
+                          {renderMediaAt('paragraph-1')}
+
+                          {renderDropZone('paragraph-2', 'After Para 2')}
+                          {renderMediaAt('paragraph-2')}
+
+                          {renderDropZone('paragraph-3', 'After Para 3')}
+                          {renderMediaAt('paragraph-3')}
+
+                          {renderDropZone('cta', 'After CTA')}
+                          {renderMediaAt('cta')}
+
+                          {renderDropZone('testimonial', 'After Testimonial')}
+                          {renderMediaAt('testimonial')}
+
+                          {renderDropZone('signature', 'After Signature')}
+                          {renderMediaAt('signature')}
+
+                          {renderDropZone('end', 'End of Email')}
+                          {renderMediaAt('end')}
+                        </>
+                      );
+                    })()}
 
                     <div className="text-xs text-gray-500 mt-4 p-3 bg-white rounded border border-gray-200">
                       Click on any text to edit it directly. Your changes will be applied to all generated emails.

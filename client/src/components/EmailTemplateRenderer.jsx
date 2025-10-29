@@ -843,7 +843,7 @@ const EmailTemplateRenderer = ({
               background: '#f8f9fa',
               padding: '50px 30px',
               textAlign: 'center',
-              color: '#343a40'
+              color: config.textColor
             }}>
               <div style={{
                 background: 'white',
@@ -855,9 +855,10 @@ const EmailTemplateRenderer = ({
                 <div style={{ fontSize: '48px', marginBottom: '10px' }}>🚀</div>
                 <h1 style={{
                   margin: '0 0 10px',
-                  fontSize: '24px',
-                  fontWeight: '700',
-                  color: '#343a40'
+                  fontSize: config.textSize || '24px',
+                  fontWeight: config.fontWeight || '700',
+                  fontStyle: config.fontStyle,
+                  color: config.textColor
                 }}>
                   {isEditable ? (
                     <EditableText field="headerTitle">
@@ -867,8 +868,10 @@ const EmailTemplateRenderer = ({
                 </h1>
                 <p style={{
                   margin: '0',
-                  color: '#6c757d',
-                  fontSize: '16px'
+                  color: config.textColor,
+                  fontSize: config.textSize || '16px',
+                  fontWeight: config.fontWeight,
+                  fontStyle: config.fontStyle
                 }}>
                   {isEditable ? (
                     <EditableText field="heroSubtitle">
@@ -883,9 +886,11 @@ const EmailTemplateRenderer = ({
               {/* Generated Paragraph 1 */}
               <div style={{ marginBottom: '30px' }}>
                 <p style={{
-                  fontSize: '17px',
+                  fontSize: config.textSize || '17px',
                   lineHeight: '1.7',
-                  color: '#343a40',
+                  color: config.textColor,
+                  fontWeight: config.fontWeight,
+                  fontStyle: config.fontStyle,
                   margin: '0'
                 }}>
                   {isEditable ? (
@@ -1010,9 +1015,11 @@ const EmailTemplateRenderer = ({
               {/* Generated Paragraph 2 */}
               <div style={{ margin: '30px 0' }}>
                 <p style={{
-                  fontSize: '17px',
+                  fontSize: config.textSize || '17px',
                   lineHeight: '1.7',
-                  color: '#343a40',
+                  color: config.textColor,
+                  fontWeight: config.fontWeight,
+                  fontStyle: config.fontStyle,
                   margin: '0'
                 }}>
                   {isEditable ? (
@@ -1025,7 +1032,7 @@ const EmailTemplateRenderer = ({
 
               {/* Countdown Timer Component */}
               <div style={{
-                background: '#6c757d',
+                background: config.accentColor || '#6c757d',
                 color: 'white',
                 padding: '25px',
                 textAlign: 'center',
@@ -1103,9 +1110,11 @@ const EmailTemplateRenderer = ({
               {/* Generated Paragraph 3 */}
               <div style={{ margin: '30px 0' }}>
                 <p style={{
-                  fontSize: '17px',
+                  fontSize: config.textSize || '17px',
                   lineHeight: '1.7',
-                  color: '#343a40',
+                  color: config.textColor,
+                  fontWeight: config.fontWeight,
+                  fontStyle: config.fontStyle,
                   margin: '0'
                 }}>
                   {isEditable ? (
@@ -1146,8 +1155,10 @@ const EmailTemplateRenderer = ({
                 </a>
                 <p style={{
                   margin: '15px 0 0',
-                  color: '#6c757d',
-                  fontSize: '14px'
+                  color: config.textColor,
+                  fontSize: config.textSize || '14px',
+                  fontWeight: config.fontWeight,
+                  fontStyle: config.fontStyle
                 }}>
                   🎁 Includes exclusive launch bonuses worth $500
                 </p>
