@@ -4,6 +4,7 @@ import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react';
 import WebsiteAnalysisReview from './WebsiteAnalysisReview';
 import WorkflowAnimation from './WorkflowAnimation';
 import JobRightProspectCard from './JobRightProspectCard';
+import FloatingTestimonials from './FloatingTestimonials';
 
 // CSS for scrolling animation
 const scrollingStyle = `
@@ -748,149 +749,8 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
         </div>
       </div>
 
-      {/* Testimonials Section - 520,000+ happy users */}
-      <div className="relative z-10 py-20 px-8 bg-white">
-        <div className="max-w-[1200px] mx-auto">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-black mb-4">
-              520,000+ happy users' love
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Thank you for your praise and suggestions. With your support, we can go further. We hope to accompany you throughout your marketing journey.
-            </p>
-          </div>
-
-          {/* Testimonials Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Testimonial 1 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
-              <div className="mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                </svg>
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                I am able to find more relevant leads faster, since using this platform I have tripled my outreach response rate. I am truly impressed with the AI matching.
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-semibold text-lg">
-                  MR
-                </div>
-                <div>
-                  <div className="font-semibold text-black">Michael R.</div>
-                  <div className="text-sm text-gray-600">VP of Sales</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 2 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
-              <div className="mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                </svg>
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                Thanks to this platform I've landed 3 new clients within 2 weeks! The AI-powered prospect matching is absolutely incredible.
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
-                  SC
-                </div>
-                <div>
-                  <div className="font-semibold text-black">Sarah C.</div>
-                  <div className="text-sm text-gray-600">Marketing Director</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
-              <div className="mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                </svg>
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                You must check out this platform. It has been saving me hours in prospecting! I'm blown away at how easy it is to find qualified leads.
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
-                  DL
-                </div>
-                <div>
-                  <div className="font-semibold text-black">David L.</div>
-                  <div className="text-sm text-gray-600">Business Development Manager</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 4 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
-              <div className="mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                </svg>
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                I've enjoyed seeing so many perfectly matched prospects. This has completely revamped my outreach process. Excited to keep exploring the features!
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white font-semibold text-lg">
-                  JW
-                </div>
-                <div>
-                  <div className="font-semibold text-black">Jennifer W.</div>
-                  <div className="text-sm text-gray-600">Growth Marketing Lead</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 5 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
-              <div className="mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                </svg>
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                It's a 10/10! The email personalization feature helps me easily craft messages that resonate. The AI guidance has been game changing. Loving it so far!
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-semibold text-lg">
-                  TB
-                </div>
-                <div>
-                  <div className="font-semibold text-black">Thomas B.</div>
-                  <div className="text-sm text-gray-600">Sales Manager</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 6 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-xl transition-all duration-300">
-              <div className="mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                </svg>
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                Not only does this platform show you the most relevant prospects, it ALSO helps you network and get warm introductions! The matching system is incredible. Definitely recommend!
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-semibold text-lg">
-                  AL
-                </div>
-                <div>
-                  <div className="font-semibold text-black">Amanda L.</div>
-                  <div className="text-sm text-gray-600">Account Executive</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Floating Testimonials Section */}
+      <FloatingTestimonials />
 
       {/* How Your AI Agent Works Section - White Background */}
       <div className="relative z-10 py-12 px-8 bg-white">
