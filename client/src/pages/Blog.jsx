@@ -26,7 +26,7 @@ const BlogPage = () => {
       category: 'Product Updates',
       date: 'Jan 12, 2025',
       readTime: '6 min read',
-      image: '✅',
+      image: '🌟',
       author: 'Michael Torres',
       slug: 'is-mailgen-legit'
     },
@@ -66,7 +66,7 @@ const BlogPage = () => {
       category: 'Email Marketing',
       date: 'Jan 3, 2025',
       readTime: '7 min read',
-      image: '📧',
+      image: '⚡',
       author: 'James Wilson',
       slug: 'top-email-strategies'
     },
@@ -76,7 +76,7 @@ const BlogPage = () => {
       category: 'Email Marketing',
       date: 'Dec 30, 2024',
       readTime: '6 min read',
-      image: '📝',
+      image: '📋',
       author: 'Michael Torres',
       slug: 'email-templates-convert'
     },
@@ -86,7 +86,7 @@ const BlogPage = () => {
       category: 'Case Studies',
       date: 'Dec 28, 2024',
       readTime: '10 min read',
-      image: '📊',
+      image: '📈',
       author: 'Emily Rodriguez',
       slug: 'techcorp-case-study'
     },
@@ -96,7 +96,7 @@ const BlogPage = () => {
       category: 'Email Marketing',
       date: 'Dec 25, 2024',
       readTime: '12 min read',
-      image: '✉️',
+      image: '🔐',
       author: 'David Park',
       slug: 'email-deliverability-guide'
     },
@@ -106,7 +106,7 @@ const BlogPage = () => {
       category: 'AI & Automation',
       date: 'Dec 22, 2024',
       readTime: '9 min read',
-      image: '🧠',
+      image: '🤖',
       author: 'Sarah Chen',
       slug: 'ai-personalization'
     }
