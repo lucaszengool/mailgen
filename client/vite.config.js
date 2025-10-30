@@ -38,7 +38,10 @@ export default defineConfig({
     allowedHosts: [
       'mailgen-production.up.railway.app',
       '.railway.app',
-      'localhost'
+      'localhost',
+      'mailgen.org',
+      'www.mailgen.org',
+      'winmrryd.up.railway.app'
     ]
   }
 })
