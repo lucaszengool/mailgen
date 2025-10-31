@@ -2016,6 +2016,18 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [notificationStage, setNotificationStage] = useState(null);
   const [showProcessNotification, setShowProcessNotification] = useState(false);
 
+  // 🔥 FIX: Declare steps, prospects, generatedEmails BEFORE useEffect that uses them
+  const [steps, setSteps] = useState([]);
+  const [prospects, setProspects] = useState([]);
+  const [generatedEmails, setGeneratedEmails] = useState([]);
+  const [emailCampaignStats, setEmailCampaignStats] = useState({
+    emails: [],
+    totalSent: 0,
+    totalOpened: 0,
+    totalClicked: 0
+  });
+  const [selectedLogStep, setSelectedLogStep] = useState(null);
+
   // 🔔 Watch for workflow status changes and show notifications
   useEffect(() => {
     console.log('🔔 Workflow status changed:', workflowStatus);
@@ -2056,17 +2068,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [isSubmittingTemplate, setIsSubmittingTemplate] = useState(false);
   const templateAlreadySubmittedRef = useRef(false); // 🔥 FIX: Use ref to persist across re-renders
-
-  const [steps, setSteps] = useState([]);
-  const [prospects, setProspects] = useState([]);
-  const [emailCampaignStats, setEmailCampaignStats] = useState({
-    emails: [],
-    totalSent: 0,
-    totalOpened: 0,
-    totalClicked: 0
-  });
-  const [selectedLogStep, setSelectedLogStep] = useState(null);
-  const [generatedEmails, setGeneratedEmails] = useState([]);
   const [selectedFilters, setSelectedFilters] = useState(new Set());
 
   const menuItems = [
