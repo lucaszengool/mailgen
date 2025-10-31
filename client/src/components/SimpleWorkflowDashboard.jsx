@@ -1930,6 +1930,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [showEmailReview, setShowEmailReview] = useState(false);
   const [emailForReview, setEmailForReview] = useState(null);
 
+  // 🔥 FIX: Move all useState hooks BEFORE useEffect hooks
+  const [userIsScrolling, setUserIsScrolling] = useState(false);
+  const [scrollTimeout, setScrollTimeout] = useState(null);
+  const [microSteps, setMicroSteps] = useState([]);
+  const [currentMicroStepIndex, setCurrentMicroStepIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState(new Set());
+  const [backgroundWorkflowRunning, setBackgroundWorkflowRunning] = useState(false);
+
   // Timeout to prevent getting stuck in waitingForDetailedWindow state
   useEffect(() => {
     if (waitingForDetailedWindow) {
@@ -1947,15 +1956,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       return () => clearTimeout(timeout);
     }
   }, [waitingForDetailedWindow, showEmailReview, emailForReview]);
-  const [userIsScrolling, setUserIsScrolling] = useState(false);
-  const [scrollTimeout, setScrollTimeout] = useState(null);
-  
-  // Micro-step animation system - persistent background workflow
-  const [microSteps, setMicroSteps] = useState([]);
-  const [currentMicroStepIndex, setCurrentMicroStepIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState(new Set());
-  const [backgroundWorkflowRunning, setBackgroundWorkflowRunning] = useState(false);
 
   // Fallback mechanism: Poll workflow status when WebSocket seems stuck
   useEffect(() => {
