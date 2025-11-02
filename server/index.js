@@ -125,6 +125,9 @@ app.use('/api/langgraph-agent', require('./routes/langgraph-agent'));
 // Ollama + SearxNG Integration API routes
 app.use('/api/ollama-searxng', require('./routes/ollama-searxng'));
 
+// Prospects API routes (simple prospect search)
+app.use('/api/prospects', require('./routes/prospects'));
+
 // Marketing Research API routes
 app.use('/api/marketing-research', require('./routes/marketing-research')(marketingResearchAgent));
 
