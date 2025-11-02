@@ -2033,12 +2033,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     console.log('🔔 Workflow status changed:', workflowStatus);
 
     if (workflowStatus === 'starting') {
-      setNotificationStage('prospectSearchStarting');
+      // Show website analysis starting notification
+      setNotificationStage('websiteAnalysisStarting');
       setShowProcessNotification(true);
     } else if (workflowStatus === 'running') {
       // Check what step we're on
       const currentStep = steps[steps.length - 1];
-      if (currentStep?.title?.includes('Prospect Search') || currentStep?.title?.includes('Finding')) {
+      if (currentStep?.title?.includes('Website Analysis') || currentStep?.title?.includes('analyzing')) {
+        // Currently analyzing website
+        setNotificationStage('websiteAnalysisStarting');
+        setShowProcessNotification(true);
+      } else if (currentStep?.title?.includes('Marketing Strategy') || currentStep?.title?.includes('strategy')) {
+        // Currently generating strategy
+        setNotificationStage('strategyGenerationStarting');
+        setShowProcessNotification(true);
+      } else if (currentStep?.title?.includes('Prospect Search') || currentStep?.title?.includes('Finding')) {
         setNotificationStage('prospectSearchInProgress');
         setShowProcessNotification(true);
       }
@@ -2061,6 +2070,26 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       setShowProcessNotification(true);
     }
   }, [generatedEmails.length, workflowStatus]);
+
+  // 🔔 Watch for completed workflow steps and show completion notifications
+  useEffect(() => {
+    if (steps.length > 0) {
+      const latestStep = steps[steps.length - 1];
+
+      // Check if latest step is completed
+      if (latestStep.status === 'completed') {
+        if (latestStep.title?.includes('Website Analysis') || latestStep.id?.includes('website')) {
+          console.log('✅ Website analysis completed - showing notification');
+          setNotificationStage('websiteAnalysisComplete');
+          setShowProcessNotification(true);
+        } else if (latestStep.title?.includes('Marketing Strategy') || latestStep.id?.includes('strategy')) {
+          console.log('✅ Marketing strategy completed - showing notification');
+          setNotificationStage('strategyGenerationComplete');
+          setShowProcessNotification(true);
+        }
+      }
+    }
+  }, [steps]);
 
   // 🎨 Template Selection State
   const [showTemplateSelection, setShowTemplateSelection] = useState(false);
@@ -5110,11 +5139,32 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
             } else if (action === 'viewProspects') {
               setActiveView('prospects');
               setShowProcessNotification(false);
+            } else if (action === 'continueToEmails') {
+              setActiveView('emails');
+              setShowProcessNotification(false);
             } else if (action === 'reviewEmails') {
-              setActiveView('email-campaign');
+              setActiveView('email_editor');
+              setShowProcessNotification(false);
+            } else if (action === 'viewCampaign') {
+              setActiveView('emails');
+              setShowProcessNotification(false);
+            } else if (action === 'viewAnalytics') {
+              setActiveView('analytics');
+              setShowProcessNotification(false);
+            } else if (action === 'viewAnalysis') {
+              setActiveView('dashboard');
+              setShowProcessNotification(false);
+            } else if (action === 'viewStrategy') {
+              setActiveView('dashboard');
+              setShowProcessNotification(false);
+            } else if (action === 'findProspects') {
+              // Auto-proceed to prospect search
               setShowProcessNotification(false);
             } else if (action === 'viewProgress') {
-              setActiveView('home');
+              setActiveView('workflow');
+              setShowProcessNotification(false);
+            } else if (action === 'continue') {
+              // Just dismiss and continue
               setShowProcessNotification(false);
             }
           }}

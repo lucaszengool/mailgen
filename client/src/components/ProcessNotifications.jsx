@@ -14,15 +14,81 @@ const ProcessNotifications = ({
 
   // Notification configurations for each stage
   const notifications = {
+    // Stage 0A: Website Analysis Starting
+    websiteAnalysisStarting: {
+      icon: <Sparkles className="w-8 h-8" style={{ color: '#00f0a0' }} />,
+      title: 'Analyzing Your Website...',
+      message: 'AI is analyzing your business to understand your offering',
+      details: [
+        'Scanning website content and structure',
+        'Identifying your value proposition',
+        'Estimated time: 5-10 seconds'
+      ],
+      type: 'info',
+      actions: [
+        { label: 'View Progress', action: 'viewProgress', primary: true }
+      ]
+    },
+
+    // Stage 0B: Website Analysis Complete
+    websiteAnalysisComplete: {
+      icon: <CheckCircle className="w-8 h-8" style={{ color: '#00f0a0' }} />,
+      title: 'Website Analysis Complete!',
+      message: 'AI successfully analyzed your business',
+      details: [
+        'Business model identified',
+        'Target audiences discovered',
+        'Ready to find prospects'
+      ],
+      type: 'success',
+      actions: [
+        { label: 'View Analysis', action: 'viewAnalysis', primary: true },
+        { label: 'Continue', action: 'continue', primary: false }
+      ]
+    },
+
+    // Stage 0C: Marketing Strategy Starting
+    strategyGenerationStarting: {
+      icon: <Zap className="w-8 h-8" style={{ color: '#00f0a0' }} />,
+      title: 'Creating Marketing Strategy...',
+      message: 'AI is generating a personalized marketing strategy',
+      details: [
+        'Analyzing your target market',
+        'Identifying key pain points',
+        'Estimated time: 10-15 seconds'
+      ],
+      type: 'info',
+      actions: [
+        { label: 'View Progress', action: 'viewProgress', primary: true }
+      ]
+    },
+
+    // Stage 0D: Marketing Strategy Complete
+    strategyGenerationComplete: {
+      icon: <CheckCircle className="w-8 h-8" style={{ color: '#00f0a0' }} />,
+      title: 'Marketing Strategy Ready!',
+      message: 'Your personalized marketing strategy has been generated',
+      details: [
+        'Target personas identified',
+        'Messaging framework created',
+        'View in Dashboard'
+      ],
+      type: 'success',
+      actions: [
+        { label: 'View Strategy', action: 'viewStrategy', primary: true },
+        { label: 'Find Prospects', action: 'findProspects', primary: false }
+      ]
+    },
+
     // Stage 1: Starting Prospect Search
     prospectSearchStarting: {
       icon: <Users className="w-8 h-8" style={{ color: '#00f0a0' }} />,
-      title: 'AI Agent Starting...',
-      message: 'Your AI agent is initializing prospect search',
+      title: 'Finding Prospects...',
+      message: 'Your AI agent is searching for qualified leads',
       details: [
-        'Analyzing your target criteria',
-        'Accessing 80M+ prospect database',
-        'Estimated time: 2-3 minutes'
+        'Searching across multiple sources',
+        'Matching your ideal customer profile',
+        'Estimated time: Just a few seconds'
       ],
       type: 'info',
       actions: [
@@ -51,17 +117,17 @@ const ProcessNotifications = ({
     // Stage 3: Prospects Found (Complete)
     prospectSearchComplete: {
       icon: <CheckCircle className="w-8 h-8" style={{ color: '#00f0a0' }} />,
-      title: `${prospectCount || 50} Prospects Found!`,
-      message: 'Your AI agent has found qualified prospects. Select an email template to continue.',
+      title: `${prospectCount || 7} Prospects Found!`,
+      message: 'Your AI agent has found qualified prospects',
       details: [
-        `${prospectCount || 50} verified prospects ready`,
+        `${prospectCount || 7} verified prospects ready`,
         'AI will personalize emails for each prospect',
-        'Preview before sending'
+        'Check "Prospects" tab to review'
       ],
       type: 'success',
       actions: [
-        { label: 'Select Template', action: 'selectTemplate', primary: true },
-        { label: 'View Prospects', action: 'viewProspects', primary: false }
+        { label: 'View Prospects', action: 'viewProspects', primary: true },
+        { label: 'Continue to Emails', action: 'continueToEmails', primary: false }
       ]
     },
 
@@ -85,11 +151,11 @@ const ProcessNotifications = ({
     emailGenerationStarting: {
       icon: <Zap className="w-8 h-8" style={{ color: '#00f0a0' }} />,
       title: 'Generating Personalized Emails...',
-      message: `AI is creating custom emails for ${prospectCount || 50} prospects`,
+      message: `AI is creating custom emails for ${prospectCount || 7} prospects`,
       details: [
-        'Using selected template',
-        'Personalizing with company data',
-        `Processing ${prospectCount || 50} prospects`
+        'Personalizing with prospect data',
+        'Crafting unique messages',
+        `Estimated time: ${Math.ceil((prospectCount || 7) * 2 / 60)} minute${(prospectCount || 7) > 30 ? 's' : ''}`
       ],
       type: 'info',
       showProgress: false,
@@ -119,17 +185,17 @@ const ProcessNotifications = ({
     // Stage 7: Emails Generated (Ready to Review)
     emailGenerationComplete: {
       icon: <CheckCircle className="w-8 h-8" style={{ color: '#00f0a0' }} />,
-      title: `${emailCount || 50} Emails Ready!`,
+      title: `${emailCount || 7} Emails Ready!`,
       message: 'All personalized emails have been generated',
       details: [
-        `${emailCount || 50} unique emails created`,
+        `${emailCount || 7} unique emails created`,
         'Personalized with AI insights',
-        'Review and approve before sending'
+        'Check "Email Editor" tab to review and send'
       ],
       type: 'success',
       actions: [
         { label: 'Review Emails', action: 'reviewEmails', primary: true },
-        { label: 'Send All', action: 'sendAll', primary: false }
+        { label: 'View Campaign', action: 'viewCampaign', primary: false }
       ]
     },
 
@@ -155,11 +221,11 @@ const ProcessNotifications = ({
     campaignComplete: {
       icon: <CheckCircle className="w-8 h-8" style={{ color: '#00f0a0' }} />,
       title: 'Campaign Launched Successfully!',
-      message: 'All 50 emails have been sent to prospects',
+      message: `All ${emailCount || 7} emails have been sent to prospects`,
       details: [
-        '50 emails delivered',
+        `${emailCount || 7} emails delivered`,
         'Now tracking opens and replies',
-        'Check analytics dashboard for results'
+        'Check "Analytics" tab for results'
       ],
       type: 'success',
       actions: [
