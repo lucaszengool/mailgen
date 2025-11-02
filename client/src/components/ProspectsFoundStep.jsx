@@ -20,15 +20,15 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
       const targetWebsite = initialData?.targetWebsite || '';
 
       // Build search query from analysis
-      const businessType = websiteAnalysis.productServiceType || 'business';
       const targetAudiences = websiteAnalysis.audiences || websiteAnalysis.targetAudiences || [];
       const audienceDescription = targetAudiences[0]?.title || 'decision makers';
 
-      const searchQuery = `${businessType} ${audienceDescription}`;
+      // Clean search query - just use the audience description
+      const searchQuery = audienceDescription.trim();
 
       console.log('🔍 Searching for prospects:', searchQuery);
 
-      // Call backend API to search for 10 prospects
+      // Call backend API to search for 7 prospects (faster results)
       const response = await fetch('/api/prospects/search', {
         method: 'POST',
         headers: {
@@ -36,7 +36,7 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
         },
         body: JSON.stringify({
           query: searchQuery,
-          limit: 10,
+          limit: 7,
           websiteAnalysis: websiteAnalysis
         })
       });
@@ -166,7 +166,7 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
             <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
           </div>
           <p className="text-sm text-gray-500">
-            This usually takes 10-15 seconds
+            This usually takes just a few seconds...
           </p>
         </div>
       </div>
