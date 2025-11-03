@@ -5607,14 +5607,30 @@ Return ONLY the JSON object, no other text.`;
       for (const prospect of prospects) {
         try {
           console.log(`🔧 DEBUG: Starting email generation for ${prospect.email}`);
+
+          // 🔥 SEND START NOTIFICATION
+          if (this.wsManager) {
+            this.wsManager.sendNotification(
+              'info',
+              `Start generating email ${emailsGenerated + 1}/${prospects.length} for ${prospect.name || prospect.email}`,
+              {
+                type: 'email_generation_start',
+                prospectEmail: prospect.email,
+                prospectName: prospect.name,
+                current: emailsGenerated + 1,
+                total: prospects.length
+              }
+            );
+          }
+
           const emailContent = await this.generateOptimizedEmailContent(
-            prospect, 
-            marketingStrategy, 
-            { style: 'professional' }, 
+            prospect,
+            marketingStrategy,
+            { style: 'professional' },
             { businessName: marketingStrategy.company_name, industry: marketingStrategy.industry }
           );
           console.log(`🔧 DEBUG: Email generation completed for ${prospect.email}`);
-          
+
           // Store in pending emails for preview
           const emailKey = `${campaignId}_${prospect.email}`;
           this.pendingEmails.set(emailKey, {
@@ -5629,6 +5645,21 @@ Return ONLY the JSON object, no other text.`;
 
           emailsGenerated++;
           console.log(`   📧 Generated preview email ${emailsGenerated}/${prospects.length} for ${prospect.email}`);
+
+          // 🔥 SEND COMPLETION NOTIFICATION
+          if (this.wsManager) {
+            this.wsManager.sendNotification(
+              'success',
+              `Finished generating email ${emailsGenerated}/${prospects.length} for ${prospect.name || prospect.email}`,
+              {
+                type: 'email_generation_complete',
+                prospectEmail: prospect.email,
+                prospectName: prospect.name,
+                current: emailsGenerated,
+                total: prospects.length
+              }
+            );
+          }
         } catch (error) {
           console.error(`Failed to generate email for ${prospect.email}:`, error.message);
           console.error('Full error stack:', error.stack);
