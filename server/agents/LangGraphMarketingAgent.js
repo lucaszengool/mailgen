@@ -5602,19 +5602,45 @@ Return ONLY the JSON object, no other text.`;
 
       console.log(`   📊 Found ${prospects.length} prospects for preview`);
 
+      // 🔥 SET WORKFLOW STATUS TO GENERATING EMAILS (triggers ProcessNotifications)
+      if (this.wsManager) {
+        this.wsManager.updateWorkflowStatus(campaignId, 'generating_emails', {
+          step: 'email_generation',
+          total: prospects.length,
+          progress: 0
+        });
+      }
+
       // Generate emails for each prospect but don't send
       let emailsGenerated = 0;
       for (const prospect of prospects) {
         try {
           console.log(`🔧 DEBUG: Starting email generation for ${prospect.email}`);
 
-          // 🔥 SEND START NOTIFICATION
+          // 🔥 SEND START NOTIFICATION + UPDATE PROGRESS
           if (this.wsManager) {
+            const progress = Math.round(((emailsGenerated) / prospects.length) * 100);
+
+            // Update workflow step with current progress
+            this.wsManager.updateStepData(
+              'email_generation',
+              {
+                status: 'in_progress',
+                progress: progress,
+                message: `Generating email ${emailsGenerated + 1}/${prospects.length} for ${prospect.name || prospect.email}`,
+                currentProspect: prospect.name || prospect.email,
+                current: emailsGenerated + 1,
+                total: prospects.length
+              },
+              `Generating email ${emailsGenerated + 1}/${prospects.length}`
+            );
+
+            // Also send a notification for toast/popup
             this.wsManager.sendNotification(
               'info',
               `Start generating email ${emailsGenerated + 1}/${prospects.length} for ${prospect.name || prospect.email}`,
               {
-                type: 'email_generation_start',
+                type: 'email_generation_progress',
                 prospectEmail: prospect.email,
                 prospectName: prospect.name,
                 current: emailsGenerated + 1,
@@ -5667,6 +5693,15 @@ Return ONLY the JSON object, no other text.`;
       }
 
       console.log(`✅ Preview workflow completed: ${emailsGenerated} emails generated and ready for review`);
+
+      // 🔥 UPDATE WORKFLOW STATUS TO PAUSED FOR EDITING (triggers emailGenerationComplete notification)
+      if (this.wsManager) {
+        this.wsManager.updateWorkflowStatus(campaignId, 'paused_for_editing', {
+          step: 'email_review',
+          emailsGenerated: emailsGenerated,
+          ready_for_review: true
+        });
+      }
 
       return {
         success: true,
