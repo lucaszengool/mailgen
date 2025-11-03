@@ -2544,7 +2544,6 @@ ${senderName || senderCompany}
 
 NOW WRITE THE EMAIL:`;
     }
-    }
 
     try {
       console.log('🧠 使用Ollama生成完全真实数据的邮件...');
