@@ -44,7 +44,7 @@ Write the complete email now (without subject line or email headers):`,
 
         <!-- Logo Component -->
         <div id="component-logo" style="text-align: center; padding: 30px 20px; background: transparent; border-bottom: 2px solid #e9ecef;">
-          <img src="https://via.placeholder.com/180x60/28a745/ffffff?text=COMPANY+LOGO" alt="Company Logo" style="max-width: 180px;">
+          <img src="https://via.placeholder.com/180x60/28a745/ffffff?text=COMPANY+LOGO" alt="Company Logo" style="max-width: 180px; height: auto; display: block; margin: 0 auto;">
           <p style="margin: 10px 0 0; color: #6c757d; font-size: 14px;">Building Strategic Partnerships</p>
         </div>
 

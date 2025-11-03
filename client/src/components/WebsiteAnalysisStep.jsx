@@ -17,6 +17,11 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
     setLoading(true);
     setError(null);
 
+    // Dispatch notification event for website analysis starting
+    window.dispatchEvent(new CustomEvent('workflow-notification', {
+      detail: { stage: 'websiteAnalysisStarting' }
+    }));
+
     try {
       const response = await fetch('/api/website-analysis/analyze', {
         method: 'POST',
@@ -47,6 +52,11 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
 
       console.log('✅ Formatted analysis:', formattedAnalysis);
       setAnalysis(formattedAnalysis);
+
+      // Dispatch notification event for website analysis complete
+      window.dispatchEvent(new CustomEvent('workflow-notification', {
+        detail: { stage: 'websiteAnalysisComplete' }
+      }));
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err.message);

@@ -2157,7 +2157,7 @@ const EmailTemplateRenderer = ({
               return (
                 <div key={component.id} style={{ textAlign: 'center', padding: '30px 40px' }}>
                   {props.logoUrl && (
-                    <img src={props.logoUrl} alt="Logo" style={{ maxWidth: '200px', marginBottom: '10px' }} />
+                    <img src={props.logoUrl} alt="Logo" style={{ maxWidth: '180px', height: 'auto', display: 'block', margin: '0 auto 10px auto', objectFit: 'contain' }} />
                   )}
                   {props.subtitle && (
                     <p style={{ margin: 0, color: '#6c757d', fontSize: '14px' }}>{replacePlaceholders(props.subtitle)}</p>

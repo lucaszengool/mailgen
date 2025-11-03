@@ -390,43 +390,39 @@ Best,
   // 构建AI增强邮件正文
   buildAIEnhancedEmailBody(lead, strategy, productInfo) {
     const parts = [];
-    
+
     // 1. 个性化开场
     parts.push(strategy.openingLine || `Hi ${lead.name || 'there'},`);
-    parts.push('');
-    
+
     // 2. 业务连接
     if (strategy.businessConnection) {
       parts.push(strategy.businessConnection);
-      parts.push('');
     }
-    
+
     // 3. 价值主张
     if (strategy.valueProposition) {
       parts.push(strategy.valueProposition);
-      parts.push('');
     }
-    
+
     // 4. 具体利益
     if (strategy.specificBenefits && strategy.specificBenefits.length > 0) {
       parts.push('Specifically for businesses like yours, this could mean:');
       strategy.specificBenefits.forEach(benefit => {
         parts.push(`• ${benefit}`);
       });
-      parts.push('');
     }
-    
+
     // 5. 号召性用语
     if (strategy.callToAction) {
       parts.push(strategy.callToAction);
     }
-    
+
     // 6. 签名
-    parts.push('');
     parts.push('Best regards,');
     parts.push(productInfo.senderName || 'The Team');
-    
-    return parts.join('\n');
+
+    // Join with double newlines for proper paragraph spacing
+    return parts.join('\n\n');
   }
 
   // AI生成号召性用语

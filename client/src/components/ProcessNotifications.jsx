@@ -11,6 +11,7 @@ const ProcessNotifications = ({
 }) => {
   const [currentNotification, setCurrentNotification] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
 
   // Notification configurations for each stage
   const notifications = {
@@ -254,12 +255,27 @@ const ProcessNotifications = ({
   // Update notification based on workflow status
   useEffect(() => {
     if (workflowStatus && notifications[workflowStatus]) {
+      // Check if user has disabled this notification type
+      const disabledNotifications = JSON.parse(localStorage.getItem('disabledNotifications') || '{}');
+      if (disabledNotifications[workflowStatus]) {
+        console.log(`🔕 Notification "${workflowStatus}" is disabled by user`);
+        return; // Don't show if disabled
+      }
+
       setCurrentNotification(notifications[workflowStatus]);
       setIsVisible(true);
     }
   }, [workflowStatus]);
 
   const handleClose = () => {
+    // If "don't show again" is checked, save preference
+    if (dontShowAgain && workflowStatus) {
+      const disabledNotifications = JSON.parse(localStorage.getItem('disabledNotifications') || '{}');
+      disabledNotifications[workflowStatus] = true;
+      localStorage.setItem('disabledNotifications', JSON.stringify(disabledNotifications));
+      console.log(`🔕 Disabled notification: ${workflowStatus}`);
+    }
+
     setIsVisible(false);
     setTimeout(() => {
       onDismiss && onDismiss();
@@ -267,6 +283,14 @@ const ProcessNotifications = ({
   };
 
   const handleAction = (actionType) => {
+    // If "don't show again" is checked, save preference
+    if (dontShowAgain && workflowStatus) {
+      const disabledNotifications = JSON.parse(localStorage.getItem('disabledNotifications') || '{}');
+      disabledNotifications[workflowStatus] = true;
+      localStorage.setItem('disabledNotifications', JSON.stringify(disabledNotifications));
+      console.log(`🔕 Disabled notification: ${workflowStatus}`);
+    }
+
     onAction && onAction(actionType);
   };
 
@@ -393,8 +417,23 @@ const ProcessNotifications = ({
             ))}
           </div>
 
+          {/* Don't Show Again Checkbox */}
+          <div className="flex items-center justify-center mt-4">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={dontShowAgain}
+                onChange={(e) => setDontShowAgain(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500"
+              />
+              <span className="ml-2 text-sm" style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+                Don't show this notification again
+              </span>
+            </label>
+          </div>
+
           {/* Footer Note */}
-          <p className="text-center mt-4 text-xs" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+          <p className="text-center mt-2 text-xs" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
             This reminder is based on your campaign's current status
           </p>
         </div>

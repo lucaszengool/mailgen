@@ -3,17 +3,16 @@ const router = express.Router();
 
 /**
  * POST /api/prospects/search
- * Fast prospect search endpoint for frontend components
- * Returns mock data immediately for better UX
+ * Real prospect search endpoint using Ollama SearxNG
  *
  * Accepts:
  * - query: search query string
- * - limit: number of prospects to return (default 10)
+ * - limit: number of prospects to return (default 7)
  * - websiteAnalysis: optional website analysis data
  */
 router.post('/search', async (req, res) => {
   try {
-    const { query, limit = 10, websiteAnalysis } = req.body;
+    const { query, limit = 7, websiteAnalysis } = req.body;
 
     if (!query || query.trim() === '') {
       return res.status(400).json({
@@ -23,132 +22,96 @@ router.post('/search', async (req, res) => {
       });
     }
 
-    console.log(`🔍 Fast prospect search for query: "${query}" (limit: ${limit})`);
+    console.log(`🔍 REAL prospect search for query: "${query}" (limit: ${limit})`);
+    console.log(`📊 Website analysis data:`, websiteAnalysis);
 
-    // Generate realistic mock prospects based on the query
-    const mockProspects = [
-      {
-        name: 'Sarah Chen',
-        email: 'sarah.chen@techcorp.com',
-        company: 'TechCorp Industries',
-        role: 'VP of Operations',
-        title: 'VP of Operations',
-        location: 'San Francisco, CA',
-        score: 95,
-        source: 'linkedin',
-        verified: true
-      },
-      {
-        name: 'Michael Rodriguez',
-        email: 'm.rodriguez@innovateai.com',
-        company: 'InnovateAI Solutions',
-        role: 'Chief Technology Officer',
-        title: 'Chief Technology Officer',
-        location: 'Austin, TX',
-        score: 92,
-        source: 'linkedin',
-        verified: true
-      },
-      {
-        name: 'Emily Thompson',
-        email: 'emily.t@futuresystems.io',
-        company: 'Future Systems Inc',
-        role: 'Director of Product',
-        title: 'Director of Product',
-        location: 'Seattle, WA',
-        score: 90,
-        source: 'company_website',
-        verified: true
-      },
-      {
-        name: 'David Kim',
-        email: 'david.kim@cloudscale.com',
-        company: 'CloudScale Technologies',
-        role: 'VP of Engineering',
-        title: 'VP of Engineering',
-        location: 'New York, NY',
-        score: 88,
-        source: 'linkedin',
-        verified: true
-      },
-      {
-        name: 'Jennifer Martinez',
-        email: 'jen.martinez@datawise.com',
-        company: 'DataWise Analytics',
-        role: 'Head of Business Development',
-        title: 'Head of Business Development',
-        location: 'Boston, MA',
-        score: 87,
-        source: 'linkedin',
-        verified: true
-      },
-      {
-        name: 'Robert Lee',
-        email: 'r.lee@smartflow.io',
-        company: 'SmartFlow Systems',
-        role: 'Chief Operating Officer',
-        title: 'Chief Operating Officer',
-        location: 'Chicago, IL',
-        score: 85,
-        source: 'company_website',
-        verified: true
-      },
-      {
-        name: 'Lisa Anderson',
-        email: 'l.anderson@nexustech.com',
-        company: 'Nexus Technologies',
-        role: 'VP of Sales',
-        title: 'VP of Sales',
-        location: 'Los Angeles, CA',
-        score: 84,
-        source: 'linkedin',
-        verified: true
-      },
-      {
-        name: 'James Wilson',
-        email: 'james.w@alphaventures.com',
-        company: 'Alpha Ventures',
-        role: 'Managing Director',
-        title: 'Managing Director',
-        location: 'Miami, FL',
-        score: 82,
-        source: 'linkedin',
-        verified: true
-      },
-      {
-        name: 'Amanda Foster',
-        email: 'amanda.foster@brightpath.io',
-        company: 'BrightPath Solutions',
-        role: 'Head of Strategy',
-        title: 'Head of Strategy',
-        location: 'Denver, CO',
-        score: 80,
-        source: 'company_website',
-        verified: true
-      },
-      {
-        name: 'Christopher Taylor',
-        email: 'c.taylor@visionlabs.com',
-        company: 'Vision Labs Inc',
-        role: 'VP of Innovation',
-        title: 'VP of Innovation',
-        location: 'Portland, OR',
-        score: 78,
-        source: 'linkedin',
-        verified: true
-      }
-    ];
+    // Get the Ollama SearxNG service
+    const ollamaSearxngService = req.app.locals.ollamaSearxngEmailDiscovery;
 
-    // Return only the requested number of prospects
-    const prospects = mockProspects.slice(0, Math.min(limit, 10));
+    if (!ollamaSearxngService) {
+      console.error('❌ Ollama SearxNG service not available');
+      return res.status(503).json({
+        success: false,
+        error: 'Prospect search service not available',
+        prospects: []
+      });
+    }
 
-    console.log(`✅ Returning ${prospects.length} mock prospects`);
+    // Extract industry and business info from website analysis
+    const industry = websiteAnalysis?.productType || websiteAnalysis?.industry || '';
+    const businessName = websiteAnalysis?.businessName || '';
+    const targetAudience = websiteAnalysis?.audiences?.[0]?.title || query;
+    const businessIntro = websiteAnalysis?.businessIntro || websiteAnalysis?.valueProposition || '';
+
+    console.log(`🎯 Generating AI-powered search keywords for: ${industry} / ${targetAudience}`);
+
+    // 🤖 Use Ollama to generate targeted search keywords based on website analysis
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+
+    const prompt = `Based on this business information, generate 3-5 short, specific search keywords to find potential customers/buyers:
+
+Business: ${businessName}
+Industry: ${industry}
+Target Audience: ${targetAudience}
+Value Proposition: ${businessIntro}
+
+Generate ONLY short search keywords (2-4 words each), one per line. Focus on buyer types and decision makers in the ${industry} industry.
+
+Examples for food technology:
+- grocery store buyer
+- produce manager contact
+- food retail decision maker
+- supermarket procurement
+
+Generate similar keywords for this business:`;
+
+    let searchKeywords = [];
+    try {
+      console.log('🤖 Calling Ollama to generate search keywords...');
+      const ollamaCommand = `ollama run qwen2.5:0.5b "${prompt.replace(/"/g, '\\"')}"`;
+      const { stdout } = await execAsync(ollamaCommand, { timeout: 10000 }); // 10 second timeout for fast response
+
+      // Parse Ollama response to extract keywords
+      searchKeywords = stdout
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0 && line.length < 50 && !line.includes(':') && !line.includes('?'))
+        .slice(0, 5); // Take top 5 keywords
+
+      console.log(`✅ Generated ${searchKeywords.length} AI keywords:`, searchKeywords);
+    } catch (error) {
+      console.error('⚠️ Ollama keyword generation failed, using fallback:', error.message);
+      // Fallback keywords if Ollama fails
+      searchKeywords = [
+        `${industry} buyer`,
+        `${targetAudience} contact`,
+        `${industry} decision maker`
+      ];
+    }
+
+    // Use the first generated keyword for search (or combine multiple)
+    const enhancedQuery = searchKeywords.length > 0
+      ? searchKeywords[0]
+      : `${industry} ${targetAudience} buyer`;
+
+    console.log(`🎯 Using AI-generated search query: "${enhancedQuery}"`);
+
+    // Search for REAL prospects using the Ollama SearxNG service
+    console.log('🔍 Calling Ollama SearxNG service with AI-generated keywords...');
+    const prospects = await ollamaSearxngService.searchForProspectsWithEmails(enhancedQuery, limit);
+
+    console.log(`✅ Found ${prospects.length} REAL prospects from Ollama SearxNG`);
 
     res.json({
       success: true,
       prospects: prospects,
       query: query,
-      isMockData: true,
+      aiGeneratedKeywords: searchKeywords,
+      usedKeyword: enhancedQuery,
+      industry: industry,
+      isRealData: true,
       timestamp: new Date().toISOString()
     });
 

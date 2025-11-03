@@ -2491,46 +2491,59 @@ Return ONLY a JSON array of REAL search queries, for example:
       console.log(`✨ Template prompt customized with real data`);
     } else {
       console.log(`📝 Using default Ollama email prompt`);
-      emailPrompt = `Write a professional business email using the provided real information. If specific information is missing, gracefully omit that detail rather than using placeholders.
+      emailPrompt = `You are writing a highly personalized business email. Write ONLY the email content with natural, conversational language.
 
-=== SENDER INFORMATION ===
+=== SENDER (WHO YOU ARE) ===
 Company: ${senderCompany}
-Website: ${senderWebsite || 'Not available'}
 Industry: ${senderIndustry}
-Service/Product: ${senderService}
-${senderProducts.length > 0 ? `Main Products: ${senderProducts.join(', ')}` : ''}
-${senderKeyFeatures.length > 0 ? `Key Features: ${senderKeyFeatures.join(', ')}` : ''}
-Value Proposition: ${valueProposition}
-${keyMessages.length > 0 ? `Key Messages: ${keyMessages.join(', ')}` : ''}
+What you offer: ${senderService}
+${senderProducts.length > 0 ? `Products: ${senderProducts.join(', ')}` : ''}
+Value: ${valueProposition}
 Campaign Goal: ${campaignGoal}
 
-=== RECIPIENT INFORMATION ===
+=== RECIPIENT (WHO YOU'RE WRITING TO) ===
 Name: ${recipientName}
 ${recipientRole ? `Role: ${recipientRole}` : ''}
 ${recipientCompany ? `Company: ${recipientCompany}` : ''}
-Email: ${recipientEmail}
 ${recipientIndustry ? `Industry: ${recipientIndustry}` : ''}
-${recipientPainPoints.length > 0 ? `Pain Points: ${recipientPainPoints.join(', ')}` : ''}
-Communication Style: ${prospect.aiProfile?.communicationStyle || 'professional'}
 
-=== WRITING GUIDELINES ===
-1. Write a natural, engaging email using available information
-2. If recipient company is unknown, use a general greeting
-3. If specific pain points aren't available, reference common industry challenges
-4. Be specific about ${senderCompany} when possible
-5. Use a ${prospect.aiProfile?.communicationStyle || 'professional'} tone
-6. Focus on the ${campaignGoal} goal
-7. Keep the email 150-250 words
-8. NEVER use placeholders like [Company], [Name], etc.
-9. If information is missing, just skip that element naturally
-10. DO NOT include any notes like "Note: Make sure to replace..." or instructions
-11. DO NOT use subtitles or section headers like "Our partnership offers:"
-12. DO NOT use bullet points with colons like "Shared Expertise:" or "Enhanced Collaboration:"
-13. Write as a simple, flowing message without meta-commentary
+=== IMPORTANT WRITING RULES ===
+✓ Start with a warm, personal greeting using ${recipientName}
+✓ Open with WHY you're reaching out (be specific, not generic)
+✓ Connect ${senderCompany}'s solution to ${recipientCompany}'s likely needs
+✓ Focus on BENEFITS to ${recipientName}, not features
+✓ Be conversational and authentic - write like a real person
+✓ Keep it concise: 120-180 words maximum
+✓ End with ONE clear, simple call-to-action
+✓ Use proper paragraph spacing (blank lines between paragraphs)
 
-Generate email in this exact format:
-Subject: [write a compelling subject line]
-Body: [write the complete email body]`;
+✗ NEVER use placeholder text like [Company], [Name], or [INSERT]
+✗ NEVER write generic phrases like "I hope this email finds you well"
+✗ NEVER use bullet points or section headers
+✗ NEVER include multiple signatures or closing lines
+✗ NEVER write "Best regards" more than once
+✗ NEVER include meta-commentary or instructions
+✗ NEVER use markdown formatting (**, __, *, etc.)
+
+=== EMAIL FORMAT ===
+Subject: [Write ONE compelling, specific subject line referencing ${recipientCompany}]
+
+Body: [Write a natural, flowing email with proper paragraphs]
+
+Example structure:
+Hello ${recipientName},
+
+[Opening: Why you're reaching out - be specific and relevant]
+
+[Middle: One key benefit that solves their problem]
+
+[Closing: Simple call-to-action + signature]
+
+Best regards,
+${senderName || senderCompany}
+
+NOW WRITE THE EMAIL:`;
+    }
     }
 
     try {
@@ -2916,12 +2929,41 @@ ${senderCompany}`;
         .replace(/`([^`]+)`/g, '$1')            // Remove inline code `text`
         .replace(/~~([^~]+)~~/g, '$1')          // Remove strikethrough ~~text~~
         .trim();
-      
+
+      // 🔥 FIX MALFORMED GREETINGS: "Dear ," -> proper greeting
+      cleanedBody = cleanedBody
+        .replace(/^(Dear|Hello|Hi)\s*,\s*/mi, `Hello ${recipientName || recipientCompany || 'there'},\n\n`) // Fix "Dear ," at start
+        .replace(/\n(Dear|Hello|Hi)\s*,\s*/gi, `\n\nHello ${recipientName || recipientCompany || 'there'},\n\n`) // Fix in middle
+        .replace(/^(Dear|Hello|Hi)\s+$/mi, `Hello ${recipientName || recipientCompany || 'there'},\n\n`) // Fix "Dear" alone
+        .trim();
+
+      // 🔥 REMOVE DUPLICATE "Best regards" SIGNATURES
+      // Count how many times "Best regards" appears
+      const bestRegardsMatches = cleanedBody.match(/(Best regards|Sincerely|Kind regards|Warm regards|Regards)/gi);
+      if (bestRegardsMatches && bestRegardsMatches.length > 1) {
+        console.log(`   🔧 Found ${bestRegardsMatches.length} signatures, removing duplicates...`);
+
+        // Remove all signatures except the last one
+        const lines = cleanedBody.split('\n');
+        const lastSignatureIndex = cleanedBody.lastIndexOf('Best regards');
+
+        // Keep content before last signature, remove earlier signatures
+        const beforeLastSignature = cleanedBody.substring(0, lastSignatureIndex);
+        const afterAndIncludingLast = cleanedBody.substring(lastSignatureIndex);
+
+        // Remove any earlier signatures from the first part
+        const cleanedBefore = beforeLastSignature
+          .replace(/(Best regards|Sincerely|Kind regards|Warm regards|Regards)[,\s]*\n?.*?(Partnership Development Team|Team|FruitAI.*?|Fruitai.*?)?\n*/gi, '')
+          .replace(/\n{3,}/g, '\n\n'); // Remove excessive blank lines
+
+        cleanedBody = (cleanedBefore + '\n\n' + afterAndIncludingLast).trim();
+      }
+
       // 确保ALL邮件都有正确的签名（不管是否有占位符）
       const wrongSignaturePattern = new RegExp(`Best regards,?\\s*\\n?\\s*${recipientCompany}`, 'gi');
       const correctSignature = `Best regards,\n${senderName || senderCompany}`;
       cleanedBody = cleanedBody.replace(wrongSignaturePattern, correctSignature);
-      
+
       // 如果没有签名，添加一个
       if (!cleanedBody.includes('Best regards')) {
         cleanedBody += `\n\nBest regards,\n${senderName || senderCompany}`;
@@ -2933,6 +2975,12 @@ ${senderCompany}`;
         // 处理悬挂的 "Best regards," 后面没有名字的情况
         cleanedBody = cleanedBody.replace(/Best regards,\s*$/gi, `Best regards,\n${senderName || senderCompany}`);
       }
+
+      // 🔥 FINAL CLEANUP: Remove "Partnership Development Team" duplicates and other generic signatures
+      cleanedBody = cleanedBody
+        .replace(/Partnership Development Team\s*$/gi, '')
+        .replace(/\n{3,}/g, '\n\n') // Clean up excessive blank lines
+        .trim();
       
       // Convert text to HTML format with proper structure
       htmlBody = cleanedBody

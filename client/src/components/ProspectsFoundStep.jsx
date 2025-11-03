@@ -14,6 +14,11 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
     setLoading(true);
     setError(null);
 
+    // Dispatch notification event for prospect search starting
+    window.dispatchEvent(new CustomEvent('workflow-notification', {
+      detail: { stage: 'prospectSearchStarting' }
+    }));
+
     try {
       // Get the website analysis data
       const websiteAnalysis = initialData?.websiteAnalysis || {};

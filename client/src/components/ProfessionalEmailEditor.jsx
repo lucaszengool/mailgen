@@ -457,6 +457,13 @@ export default function ProfessionalEmailEditor(props) {
   const [showEmailList, setShowEmailList] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTemplateConfirmation, setShowTemplateConfirmation] = useState(false);
+
+  // 🔄 Pause/Resume Email Generation State
+  const [isPaused, setIsPaused] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [lastProcessedIndex, setLastProcessedIndex] = useState(0);
+  const [totalToProcess, setTotalToProcess] = useState(0);
+  const pauseRef = useRef(false); // Use ref for immediate pause detection
   // REMOVED: true state - not needed with stable hook
 
   // Moved above to prevent hoisting issues
@@ -3568,6 +3575,10 @@ export default function ProfessionalEmailEditor(props) {
             icon: 'ℹ️',
             duration: 3000
           });
+
+          // 🔄 Save template data for pause/resume functionality
+          localStorage.setItem('current_template_data', JSON.stringify(templateData));
+
           await sendTemplateEmailsDirectly(templateData, smtpConfig);
           
           // Optionally close the email editor
@@ -3576,24 +3587,32 @@ export default function ProfessionalEmailEditor(props) {
           }
         } else {
           toast.error(result.message || 'Failed to apply template to backend');
-          
+
           // If backend fails, automatically try direct sending
           console.log('📧 Backend failed, automatically trying direct sending');
           toast('📧 Backend failed, sending emails directly...', {
             icon: 'ℹ️',
             duration: 3000
           });
+
+          // 🔄 Save template data for pause/resume functionality
+          localStorage.setItem('current_template_data', JSON.stringify(templateData));
+
           await sendTemplateEmailsDirectly(templateData, smtpConfig);
         }
       } else {
         toast.error('Failed to communicate with backend');
-        
+
         // Automatically try direct sending if backend communication fails
         console.log('📧 Backend communication failed, automatically trying direct sending');
         toast('📧 Backend communication failed, sending emails directly...', {
           icon: 'ℹ️',
           duration: 3000
         });
+
+        // 🔄 Save template data for pause/resume functionality
+        localStorage.setItem('current_template_data', JSON.stringify(templateData));
+
         await sendTemplateEmailsDirectly(templateData, smtpConfig);
       }
     } catch (error) {
@@ -3793,11 +3812,31 @@ export default function ProfessionalEmailEditor(props) {
     const currentRecipient = remainingEmails[currentEmailIndex]?.to || remainingEmails[currentEmailIndex]?.email;
 
     console.log(`📧 Found ${remainingEmails.length} total recipients from availableEmails(${availableEmails?.length}), pendingEmails(${pendingEmails?.length}), current: ${currentRecipient}`);
-    
+
+    // 🔄 Set generation state
+    setIsGenerating(true);
+    setTotalToProcess(remainingEmails.length);
+    pauseRef.current = false; // Reset pause state
+
     let successCount = 0;
     let failureCount = 0;
-    
-    for (let i = 0; i < remainingEmails.length; i++) {
+
+    // Start from last processed index if resuming
+    const startIndex = isPaused ? lastProcessedIndex : 0;
+    console.log(`🔄 ${isPaused ? 'Resuming' : 'Starting'} from index ${startIndex}`);
+
+    for (let i = startIndex; i < remainingEmails.length; i++) {
+      // 🔄 Check if paused
+      if (pauseRef.current) {
+        console.log(`⏸️ Email generation paused at index ${i}`);
+        setLastProcessedIndex(i);
+        setIsPaused(true);
+        setIsGenerating(false);
+        toast('⏸️ Email generation paused', { icon: 'ℹ️' });
+        return; // Exit the function
+      }
+
+      setLastProcessedIndex(i);
       const recipient = remainingEmails[i];
       const recipientEmail = recipient?.to || recipient?.email || recipient?.recipient_email;
       
@@ -3898,8 +3937,13 @@ export default function ProfessionalEmailEditor(props) {
     } else {
       toast.error(`❌ Failed to send emails. ${failureCount} failures.`);
     }
-    
+
     console.log(`📧 Direct sending completed: ${successCount} success, ${failureCount} failures`);
+
+    // 🔄 Reset generation state when complete
+    setIsGenerating(false);
+    setIsPaused(false);
+    setLastProcessedIndex(0);
   };
 
   const handleSend = async () => {
@@ -5263,6 +5307,10 @@ export default function ProfessionalEmailEditor(props) {
     if (campaignId && selectedTemplate) {
       localStorage.setItem(`campaign_${campaignId}_template`, selectedTemplate.id);
     }
+
+    // Show template confirmation modal again after selecting new template
+    // This allows user to decide whether to apply to all emails
+    setShowTemplateConfirmation(true);
   };
 
   return (
@@ -6494,34 +6542,52 @@ export default function ProfessionalEmailEditor(props) {
                   <p className="text-base text-black">
                     ⚡ <strong>Batch Processing:</strong> This will apply your current email design and content structure to all remaining prospects in the campaign.
                   </p>
+                  <p className="text-sm text-gray-600 mt-3">
+                    💡 <strong>Not satisfied?</strong> You can choose a different template to regenerate this email.
+                  </p>
                 </div>
-                
+
                 {/* Buttons */}
-                <div className="flex justify-center space-x-4">
-                  <button
-                    onClick={() => handleTemplateConfirmation(false)}
-                    className="px-8 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
-                  >
-                    Send Single Email
-                  </button>
-                  <button
-                    onClick={() => handleTemplateConfirmation(true)}
-                    className="px-12 py-4 rounded-2xl font-semibold text-lg text-white transition-colors"
-                    style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.transform = 'translateY(-1px)';
-                      e.target.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
-                    }}
-                  >
-                    Yes, Use Template
-                  </button>
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-center space-x-3">
+                    <button
+                      onClick={() => handleTemplateConfirmation(false)}
+                      className="px-6 py-3 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                    >
+                      Send Single Email
+                    </button>
+                    <button
+                      onClick={() => handleTemplateConfirmation(true)}
+                      className="px-10 py-3 rounded-xl font-semibold text-white transition-colors"
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-1px)';
+                        e.target.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                      }}
+                    >
+                      Yes, Use Template
+                    </button>
+                  </div>
+
+                  {/* Choose Different Template Button */}
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => {
+                        setShowTemplateConfirmation(false);
+                        setShowTemplateModal(true);
+                      }}
+                      className="px-8 py-3 border-2 border-blue-500 bg-blue-50 rounded-xl text-blue-700 hover:bg-blue-100 transition-colors font-medium"
+                    >
+                      🎨 Choose Different Template
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -6536,6 +6602,62 @@ export default function ProfessionalEmailEditor(props) {
         onSelectTemplate={handleTemplateSelect}
         onConfirm={handleTemplateConfirm}
       />
+
+      {/* 🔄 Pause/Resume Email Generation Button - Fixed at Bottom */}
+      {isGenerating && (
+        <div className="fixed bottom-8 right-8 z-50">
+          <div className="bg-white rounded-xl shadow-2xl border-2 border-gray-200 p-4 min-w-[300px]">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="font-semibold text-gray-900">
+                  {isPaused ? '⏸️ Email Generation Paused' : '🔄 Generating Emails'}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {lastProcessedIndex} / {totalToProcess} emails processed
+                </p>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+              <div
+                className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(lastProcessedIndex / totalToProcess) * 100}%` }}
+              />
+            </div>
+
+            {/* Pause/Resume Button */}
+            <button
+              onClick={() => {
+                if (isPaused) {
+                  // Resume generation
+                  setIsPaused(false);
+                  pauseRef.current = false;
+                  // Re-trigger the generation with saved template and config
+                  const savedTemplate = localStorage.getItem('current_template_data');
+                  const savedSmtp = localStorage.getItem('smtpConfig');
+                  if (savedTemplate && savedSmtp) {
+                    sendTemplateEmailsDirectly(JSON.parse(savedTemplate), JSON.parse(savedSmtp));
+                  }
+                } else {
+                  // Pause generation
+                  pauseRef.current = true;
+                  toast('⏸️ Pausing after current email...', { icon: 'ℹ️' });
+                }
+              }}
+              className="w-full py-2 px-4 rounded-lg font-semibold text-white transition-colors"
+              style={{
+                background: isPaused
+                  ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                  : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+              }}
+            >
+              {isPaused ? '▶️ Resume Generation' : '⏸️ Pause Generation'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Properties Panel Overlay - Full Screen when component is selected */}
       {selectedComponent && renderPropertiesPanel()}
     </div>

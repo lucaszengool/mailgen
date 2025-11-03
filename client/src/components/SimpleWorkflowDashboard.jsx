@@ -2091,6 +2091,32 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     }
   }, [steps]);
 
+  // 🔔 NEW: Watch for prospects being found and show notification
+  const [hasShownProspectNotification, setHasShownProspectNotification] = useState(false);
+  useEffect(() => {
+    if (prospects.length > 0 && !hasShownProspectNotification) {
+      console.log(`✅ ${prospects.length} prospects found - showing notification`);
+      setNotificationStage('prospectSearchComplete');
+      setShowProcessNotification(true);
+      setHasShownProspectNotification(true);
+    }
+  }, [prospects.length, hasShownProspectNotification]);
+
+  // 🔔 NEW: Listen for global workflow notification events from other components
+  useEffect(() => {
+    const handleWorkflowNotification = (event) => {
+      const { stage } = event.detail;
+      console.log('🔔 Received workflow notification event:', stage);
+      setNotificationStage(stage);
+      setShowProcessNotification(true);
+    };
+
+    window.addEventListener('workflow-notification', handleWorkflowNotification);
+    return () => {
+      window.removeEventListener('workflow-notification', handleWorkflowNotification);
+    };
+  }, []);
+
   // 🎨 Template Selection State
   const [showTemplateSelection, setShowTemplateSelection] = useState(false);
   const [templateRequest, setTemplateRequest] = useState(null);
