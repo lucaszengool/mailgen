@@ -264,6 +264,48 @@ class UserStorageService {
   }
 
   /**
+   * SELECTED TEMPLATE PREFERENCE
+   */
+  async saveSelectedTemplate(templateId, templateName) {
+    await this.ensureUserDirectory();
+    const filePath = path.join(this.basePath, 'selected-template.json');
+    const data = {
+      templateId,
+      templateName,
+      selectedAt: new Date().toISOString(),
+      userId: this.userId
+    };
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+    console.log(`💾 Selected template saved for user: ${this.userId} - ${templateName}`);
+    return data;
+  }
+
+  async getSelectedTemplate() {
+    try {
+      const filePath = path.join(this.basePath, 'selected-template.json');
+      const data = await fs.readFile(filePath, 'utf8');
+      return JSON.parse(data);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return null; // No template selected yet
+      }
+      throw error;
+    }
+  }
+
+  async clearSelectedTemplate() {
+    const filePath = path.join(this.basePath, 'selected-template.json');
+    try {
+      await fs.unlink(filePath);
+      console.log(`🗑️ Selected template cleared for user: ${this.userId}`);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+  }
+
+  /**
    * UTILITY METHODS
    */
   async getUserStats() {

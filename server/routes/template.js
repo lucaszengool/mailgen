@@ -131,7 +131,7 @@ router.post('/preview', async (req, res) => {
 });
 
 // Handle template selection for campaign
-router.post('/select', optionalAuth, (req, res) => {
+router.post('/select', optionalAuth, async (req, res) => {
   try {
     console.log('🔥🔥🔥 ===============================================');
     console.log('🔥 POST /api/template/select ENDPOINT HIT!');
@@ -178,6 +178,17 @@ router.post('/select', optionalAuth, (req, res) => {
     };
 
     console.log(`✅ Template ${template.name} selected for ${key}`);
+
+    // 💾 Save user's template selection to persist across sessions
+    const UserStorageService = require('../services/UserStorageService');
+    const userStorage = new UserStorageService(userId);
+    try {
+      await userStorage.saveSelectedTemplate(templateId, template.name);
+      console.log(`💾 [User: ${userId}] Template preference saved: ${template.name}`);
+    } catch (error) {
+      console.error(`❌ Failed to save template preference for user ${userId}:`, error);
+      // Don't fail the request if storage fails
+    }
 
     // Broadcast template selection to continue workflow
     if (router.wsManager) {
@@ -380,6 +391,42 @@ router.get('/selection/:campaignId', (req, res) => {
 
   } catch (error) {
     console.error('❌ Failed to get template selection:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get user's selected template preference
+router.get('/user-selected', optionalAuth, async (req, res) => {
+  try {
+    const userId = req.userId || 'anonymous';
+    console.log(`🔍 [User: ${userId}] Checking for saved template preference...`);
+
+    const UserStorageService = require('../services/UserStorageService');
+    const userStorage = new UserStorageService(userId);
+
+    const selectedTemplate = await userStorage.getSelectedTemplate();
+
+    if (!selectedTemplate) {
+      return res.json({
+        success: true,
+        hasTemplate: false,
+        template: null
+      });
+    }
+
+    console.log(`✅ [User: ${userId}] Found saved template: ${selectedTemplate.templateName}`);
+
+    res.json({
+      success: true,
+      hasTemplate: true,
+      template: selectedTemplate
+    });
+
+  } catch (error) {
+    console.error('❌ Failed to get user template preference:', error);
     res.status(500).json({
       success: false,
       error: error.message
