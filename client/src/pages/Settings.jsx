@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import WebsiteAnalysisHistory from '../components/WebsiteAnalysisHistory'
+import GmailOAuthButton from '../components/GmailOAuthButton'
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -585,6 +586,21 @@ export default function Settings() {
               <div className="flex items-center mb-6">
                 <EnvelopeIcon className="h-6 w-6 text-primary-600 mr-3" />
                 <h2 className="text-xl font-semibold text-primary-900">SMTP邮件服务器设置</h2>
+              </div>
+
+              {/* Gmail OAuth Section */}
+              <div className="mb-8">
+                <GmailOAuthButton />
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-gray-500">OR use manual SMTP configuration</span>
+                </div>
               </div>
 
               <div className="space-y-6">
