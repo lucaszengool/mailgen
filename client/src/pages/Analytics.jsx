@@ -441,7 +441,19 @@ export default function Analytics() {
                       if (data.success) {
                         alert('✅ IMAP monitoring started successfully! Checking inbox every 5 minutes for replies and bounces.');
                       } else {
-                        alert('❌ ' + (data.error || 'Failed to start monitoring'));
+                        // Better error handling for missing SMTP config
+                        if (data.error && data.error.includes('No email configuration')) {
+                          const shouldRedirect = window.confirm(
+                            '❌ Email not configured yet!\n\n' +
+                            'You need to set up SMTP/IMAP settings first to enable monitoring.\n\n' +
+                            'Would you like to go to Email Settings now?'
+                          );
+                          if (shouldRedirect) {
+                            window.location.href = '/settings';
+                          }
+                        } else {
+                          alert('❌ ' + (data.error || 'Failed to start monitoring'));
+                        }
                       }
                     } catch (error) {
                       alert('❌ Failed to start monitoring: ' + error.message);
