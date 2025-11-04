@@ -1446,10 +1446,10 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
             <h2 className="text-2xl font-semibold text-gray-800">Choose Email Template</h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 mt-1 font-medium">
               {templateRequest ?
-                `Select a template for ${templateRequest.prospectsFound} prospects found. You can customize components and switch templates anytime.` :
-                'Select a template for all emails in this campaign. You can customize components and switch templates anytime.'
+                `⚡ Found ${templateRequest.prospectsFound} prospects! Select a template to start generating personalized emails. (Template selection is required)` :
+                '⚡ Select a template to continue. (Template selection is required to start email generation)'
               }
             </p>
             {templateRequest && templateRequest.sampleProspects && (
@@ -1458,12 +1458,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
               </div>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={24} />
-          </button>
+          {/* ❌ X button REMOVED - Template selection is REQUIRED to continue workflow */}
         </div>
 
         {/* Content */}
@@ -1558,24 +1553,19 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
             )}
           </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
+          <div className="flex justify-center">
+            {/* ❌ Cancel button REMOVED - Template selection is REQUIRED */}
             <button
               onClick={handleConfirm}
               disabled={!selectedTemplate || isSubmitting}
-              className={`flex items-center gap-2 px-6 py-2 rounded-md font-medium transition-colors ${
+              className={`flex items-center gap-2 px-8 py-3 rounded-md font-medium transition-colors ${
                 selectedTemplate && !isSubmitting
                   ? 'bg-green-500 text-white hover:bg-green-600'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
               <Zap size={16} />
-              {isSubmitting ? 'Applying Template...' : 'Use This Template'}
+              {isSubmitting ? 'Applying Template...' : 'Use This Template & Start Generating Emails'}
             </button>
           </div>
         </div>
