@@ -158,6 +158,9 @@ app.use('/api/template', templateRoutes);
 // SMTP Test endpoint for Railway diagnostics
 app.use('/api/test-smtp', require('./routes/test-smtp'));
 
+// Gmail OAuth endpoints
+app.use('/api/gmail-oauth', require('./routes/gmailOAuth'));
+
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   // Serve static assets with cache control

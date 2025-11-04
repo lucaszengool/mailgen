@@ -306,6 +306,57 @@ class UserStorageService {
   }
 
   /**
+   * GMAIL OAUTH TOKENS
+   */
+  async saveOAuthTokens(tokens) {
+    await this.ensureUserDirectory();
+    const filePath = path.join(this.basePath, 'gmail-oauth.json');
+    const data = {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      scope: tokens.scope,
+      token_type: tokens.token_type,
+      expiry_date: tokens.expiry_date,
+      email: tokens.email, // User's Gmail address
+      savedAt: new Date().toISOString(),
+      userId: this.userId
+    };
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+    console.log(`🔐 OAuth tokens saved for user: ${this.userId} (${tokens.email})`);
+    return data;
+  }
+
+  async getOAuthTokens() {
+    try {
+      const filePath = path.join(this.basePath, 'gmail-oauth.json');
+      const data = await fs.readFile(filePath, 'utf8');
+      return JSON.parse(data);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return null; // No OAuth tokens saved
+      }
+      throw error;
+    }
+  }
+
+  async clearOAuthTokens() {
+    const filePath = path.join(this.basePath, 'gmail-oauth.json');
+    try {
+      await fs.unlink(filePath);
+      console.log(`🗑️ OAuth tokens cleared for user: ${this.userId}`);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+  }
+
+  async hasOAuthTokens() {
+    const tokens = await this.getOAuthTokens();
+    return !!tokens && !!tokens.access_token;
+  }
+
+  /**
    * UTILITY METHODS
    */
   async getUserStats() {
