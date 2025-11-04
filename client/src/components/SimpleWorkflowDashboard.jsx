@@ -4041,6 +4041,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         setHasShownInitialAnimation(false);
         setCompletedSteps(new Set());
         setSteps([]);
+        setHasShownFirstEmailModal(false); // 🔥 CRITICAL FIX: Reset first email modal flag for new workflow
       }
 
       // Start via API endpoint
@@ -4148,6 +4149,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         setCurrentMicroStepIndex(0);
         setHasShownInitialAnimation(false);
         setSteps([]);
+        setHasShownFirstEmailModal(false); // 🔥 CRITICAL FIX: Reset first email modal flag on workflow reset
 
         // NUCLEAR OPTION: Clear ALL localStorage except essential keys
         const essentialKeys = ['justReset', 'smtpConfig', 'targetWebsite', 'companyName'];
