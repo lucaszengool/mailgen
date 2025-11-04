@@ -674,11 +674,18 @@ class LangGraphMarketingAgent {
     console.log('🔄 Background prospect search started...');
 
     // 🔥 SET WORKFLOW STATUS TO FINDING PROSPECTS (triggers prospectSearchStarting popup)
+    console.log('🔥 DEBUG: About to set workflow status to finding_prospects');
+    console.log(`🔥 DEBUG: wsManager exists? ${!!this.wsManager}`);
+    console.log(`🔥 DEBUG: campaignId = ${campaignId}`);
     if (this.wsManager) {
+      console.log('🔥 CALLING updateWorkflowStatus for finding_prospects');
       this.wsManager.updateWorkflowStatus(campaignId, 'finding_prospects', {
         step: 'prospect_search',
         message: 'Finding qualified prospects...'
       });
+      console.log('🔥 DONE calling updateWorkflowStatus');
+    } else {
+      console.log('❌ wsManager is null/undefined - cannot update workflow status!');
     }
 
     try {
@@ -719,12 +726,17 @@ class LangGraphMarketingAgent {
       console.log(`📧 Sample emails: ${prospects.slice(0, 3).map(p => p.email).join(', ')}`);
 
       // 🔥 SET WORKFLOW STATUS TO PAUSED FOR REVIEW (triggers prospectSearchComplete popup)
+      console.log(`🔥 DEBUG: About to set workflow status to paused_for_review for ${prospects.length} prospects`);
       if (this.wsManager) {
+        console.log('🔥 CALLING updateWorkflowStatus for paused_for_review');
         this.wsManager.updateWorkflowStatus(campaignId, 'paused_for_review', {
           step: 'prospects_found',
           prospectsCount: prospects.length,
           message: `Found ${prospects.length} qualified prospects!`
         });
+        console.log('🔥 DONE calling updateWorkflowStatus for paused_for_review');
+      } else {
+        console.log('❌ wsManager is null - cannot update workflow status to paused_for_review!');
       }
 
       // Step 2: Check if we need to pause for template selection
