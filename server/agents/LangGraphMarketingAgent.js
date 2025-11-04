@@ -5046,20 +5046,41 @@ Return ONLY the JSON object, no other text.`;
   async sendEmail({ to, subject, body, prospect, campaignId, smtpConfig = null }) {
     try {
       console.log(`📧 Sending email to ${to}: "${subject}"`);
-      
-      // Use provided SMTP config or fall back to environment variables
-      let emailConfig = smtpConfig || {
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
+
+      // 🎯 NEW: Check for Gmail OAuth first
+      const userId = this.userId || 'anonymous';
+      let emailConfig = null;
+      let usingOAuth = false;
+
+      try {
+        const GmailOAuthService = require('../services/GmailOAuthService');
+        const oauthConfig = await GmailOAuthService.getSMTPConfigWithOAuth(userId);
+
+        if (oauthConfig) {
+          console.log('🔐 Using Gmail OAuth for email sending');
+          emailConfig = oauthConfig;
+          usingOAuth = true;
         }
-      };
-      
-      // Fix common SMTP configuration issues from frontend
-      if (smtpConfig) {
+      } catch (oauthError) {
+        console.log(`⚠️ OAuth not available: ${oauthError.message}`);
+        // Continue to use password auth
+      }
+
+      // Use provided SMTP config or fall back to environment variables (if no OAuth)
+      if (!emailConfig) {
+        emailConfig = smtpConfig || {
+          host: process.env.SMTP_HOST || 'smtp.gmail.com',
+          port: parseInt(process.env.SMTP_PORT || '587'),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+          }
+        };
+      }
+
+      // Fix common SMTP configuration issues from frontend (only for non-OAuth configs)
+      if (!usingOAuth && smtpConfig) {
         console.log('🔧 Processing frontend SMTP config...');
         console.log('   Raw smtpConfig keys:', Object.keys(smtpConfig));
         
@@ -5099,12 +5120,13 @@ Return ONLY the JSON object, no other text.`;
         }
       }
       
-      console.log(`📧 Using SMTP config: ${smtpConfig ? 'Frontend provided' : 'Environment variables'}`);
+      console.log(`📧 Using SMTP config: ${usingOAuth ? 'Gmail OAuth' : (smtpConfig ? 'Frontend provided' : 'Environment variables')}`);
       console.log(`📧 SMTP Host: ${emailConfig.host}`);
       console.log(`📧 SMTP User: ${emailConfig.auth?.user || 'Not configured'}`);
-      
-      // Additional validation for common issues
-      if (emailConfig.auth?.user) {
+      console.log(`📧 Auth Type: ${emailConfig.auth?.type || 'password'}`);
+
+      // Additional validation for common issues (skip for OAuth)
+      if (!usingOAuth && emailConfig.auth?.user) {
         if (emailConfig.auth.user.startsWith('http')) {
           console.warn('⚠️  SMTP username looks like a URL - this will cause authentication to fail');
         } else if (!emailConfig.auth.user.includes('@')) {
@@ -5113,28 +5135,41 @@ Return ONLY the JSON object, no other text.`;
           console.log('✅ SMTP username format looks correct');
         }
       }
-      
-      // Validate SMTP configuration
-      if (!emailConfig.auth || !emailConfig.auth.user || !emailConfig.auth.pass) {
-        console.warn('⚠️ SMTP credentials not configured, email sending disabled');
-        console.log('🔑 To fix this:');
-        console.log('   1. Enable 2-Factor Authentication on Gmail');
-        console.log('   2. Generate App Password: https://myaccount.google.com/apppasswords');
-        console.log('   3. Set GMAIL_APP_PASSWORD environment variable with the App Password');
-        return {
-          success: false,
-          error: 'SMTP credentials not configured - Need Gmail App Password',
-          mode: 'disabled'
-        };
+
+      // Validate SMTP configuration (skip password check for OAuth)
+      if (!usingOAuth) {
+        if (!emailConfig.auth || !emailConfig.auth.user || !emailConfig.auth.pass) {
+          console.warn('⚠️ SMTP credentials not configured, email sending disabled');
+          console.log('🔑 To fix this:');
+          console.log('   1. Enable 2-Factor Authentication on Gmail');
+          console.log('   2. Generate App Password: https://myaccount.google.com/apppasswords');
+          console.log('   3. Set GMAIL_APP_PASSWORD environment variable with the App Password');
+          console.log('   OR: Connect Gmail with OAuth in Settings');
+          return {
+            success: false,
+            error: 'SMTP credentials not configured - Need Gmail App Password or OAuth',
+            mode: 'disabled'
+          };
+        }
       }
       
       // Create a hash of SMTP config to check if we have a cached transporter
-      // 🔥 FIX: Include password hash in cache key to detect credential changes
+      // 🔥 FIX: Include password/token hash in cache key to detect credential changes
       const crypto = require('crypto');
-      const passwordHash = emailConfig.auth?.pass ?
-        crypto.createHash('md5').update(emailConfig.auth.pass).digest('hex').substring(0, 8) :
-        'nopass';
-      const configHash = `${emailConfig.host}:${emailConfig.port}:${emailConfig.auth?.user}:${passwordHash}`;
+      let configHash;
+      if (usingOAuth) {
+        // For OAuth, use accessToken hash as cache key
+        const tokenHash = emailConfig.auth?.accessToken ?
+          crypto.createHash('md5').update(emailConfig.auth.accessToken).digest('hex').substring(0, 8) :
+          'notoken';
+        configHash = `oauth:${emailConfig.host}:${emailConfig.auth?.user}:${tokenHash}`;
+      } else {
+        // For password auth, use password hash as cache key
+        const passwordHash = emailConfig.auth?.pass ?
+          crypto.createHash('md5').update(emailConfig.auth.pass).digest('hex').substring(0, 8) :
+          'nopass';
+        configHash = `${emailConfig.host}:${emailConfig.port}:${emailConfig.auth?.user}:${passwordHash}`;
+      }
       const now = Date.now();
 
       // Get or create transporter

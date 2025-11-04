@@ -1,12 +1,14 @@
 /**
  * Unified Email Service
  * Automatically uses the best available email sending method:
- * 1. Try SMTP (Gmail, etc.) if configured
- * 2. Fall back to SendGrid API if SMTP fails or is blocked
+ * 1. Try Gmail OAuth if configured
+ * 2. Try SMTP (Gmail, etc.) if configured
+ * 3. Fall back to SendGrid API if SMTP fails or is blocked
  */
 
 const nodemailer = require('nodemailer');
 const sgMail = require('@sendgrid/mail');
+const GmailOAuthService = require('./GmailOAuthService');
 
 class UnifiedEmailService {
   constructor() {
@@ -35,12 +37,42 @@ class UnifiedEmailService {
       subject,
       html,
       text,
-      smtpConfig
+      smtpConfig,
+      userId // 🎯 NEW: userId to check for OAuth tokens
     } = options;
 
     console.log(`📧 Sending email to ${to}...`);
 
-    // Try SMTP first if configured
+    // 🎯 NEW: Try Gmail OAuth first if userId is provided
+    if (userId) {
+      try {
+        const oauthConfig = await GmailOAuthService.getSMTPConfigWithOAuth(userId);
+        if (oauthConfig) {
+          console.log('🔐 Attempting Gmail OAuth send...');
+          const result = await this.sendViaSMTP({
+            from,
+            to,
+            subject,
+            html,
+            text
+          }, oauthConfig);
+
+          console.log('✅ Email sent via Gmail OAuth');
+          return {
+            success: true,
+            method: 'gmail-oauth',
+            messageId: result.messageId,
+            response: result.response
+          };
+        }
+      } catch (oauthError) {
+        console.error(`⚠️ Gmail OAuth failed: ${oauthError.message}`);
+        console.log('🔄 Falling back to SMTP password auth...');
+        // Continue to try SMTP with password
+      }
+    }
+
+    // Try SMTP password auth if configured
     if (smtpConfig && smtpConfig.host) {
       try {
         console.log('🔄 Attempting SMTP send...');
