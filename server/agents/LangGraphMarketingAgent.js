@@ -1115,13 +1115,19 @@ class LangGraphMarketingAgent {
    */
   async continueWithSelectedTemplate(templateId, waitingState, enhancedTemplate = null) {
     try {
+      console.log('🔥🔥🔥 ===============================================');
+      console.log('🔥 continueWithSelectedTemplate CALLED!');
+      console.log('🔥🔥🔥 ===============================================');
       console.log(`🎨 Continuing workflow with template: ${templateId}`);
       console.log(`📊 Processing ${waitingState.prospects.length} prospects`);
       console.log(`📧 SMTP Config from waitingState: ${waitingState.smtpConfig ? 'Found ✅' : 'Missing ❌'}`);
+      console.log(`🔍 waitingState keys: ${Object.keys(waitingState).join(', ')}`);
+      console.log(`🔍 enhancedTemplate provided: ${!!enhancedTemplate}`);
 
       // Clear the waiting flag
       this.state.isWaitingForTemplate = false;
       this.state.waitingForTemplateSelection = null;
+      console.log('✅ Cleared waiting flags');
 
       // Get campaign information
       const campaignId = waitingState.campaignId || `template_campaign_${Date.now()}`;

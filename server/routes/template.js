@@ -133,6 +133,10 @@ router.post('/preview', async (req, res) => {
 // Handle template selection for campaign
 router.post('/select', optionalAuth, (req, res) => {
   try {
+    console.log('🔥🔥🔥 ===============================================');
+    console.log('🔥 POST /api/template/select ENDPOINT HIT!');
+    console.log('🔥🔥🔥 ===============================================');
+
     const userId = req.userId || 'anonymous';
     const { templateId, campaignId, workflowId, components, isCustomized, customizations: userCustomizations, subject, greeting, signature, html: userEditedHtml, ...restCustomizations } = req.body;
 
