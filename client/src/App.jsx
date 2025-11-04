@@ -131,13 +131,24 @@ function App() {
           console.log('Normal load - switching to dashboard');
           setCurrentView('dashboard'); // Show workflow dashboard by default
         } else {
-          console.log('Config missing targetWebsite');
+          console.log('Config missing targetWebsite - showing setup wizard');
+          setIsSetupComplete(false);
+          setAgentConfig(null);
+          setCurrentView('setup'); // Show setup wizard when config is missing
         }
       } else {
         console.log('Response not ok:', response.status);
+        // Also show setup on error
+        setIsSetupComplete(false);
+        setAgentConfig(null);
+        setCurrentView('setup');
       }
     } catch (error) {
       console.log('Error fetching config:', error);
+      // Show setup wizard on error
+      setIsSetupComplete(false);
+      setAgentConfig(null);
+      setCurrentView('setup');
     }
   };
 
