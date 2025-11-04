@@ -10,6 +10,7 @@ const EmailContentGenerator = require('./EmailContentGenerator');
 const SelfHealingLangGraphAgent = require('./SelfHealingLangGraphAgent');
 const EmailValidator = require('../services/EmailValidator');
 const TemplatePromptService = require('../services/TemplatePromptService');
+const UserStorageService = require('../services/UserStorageService');
 // const SMTPEmailVerifier = require('../services/SMTPEmailVerifier'); // Disabled - use DNS validation only
 const nodemailer = require('nodemailer');
 
@@ -159,7 +160,66 @@ class LangGraphMarketingAgent {
       };
     }
   }
-  
+
+  /**
+   * Check if user has saved template preference and auto-apply it
+   * Returns true if template was auto-applied, false if user needs to select
+   */
+  async checkAndApplySavedTemplate(userId, campaignId) {
+    try {
+      console.log(`🔍 [Campaign: ${campaignId}] Checking if user ${userId} has saved template...`);
+
+      const userStorage = new UserStorageService(userId);
+      const savedTemplate = await userStorage.getSelectedTemplate();
+
+      if (!savedTemplate) {
+        console.log(`⏸️ [Campaign: ${campaignId}] No saved template found - showing modal to user`);
+        return false;
+      }
+
+      console.log(`✅ [Campaign: ${campaignId}] Found saved template: ${savedTemplate.templateName}`);
+      console.log(`🚀 [Campaign: ${campaignId}] Auto-applying template ${savedTemplate.templateId}`);
+
+      // Get the actual template from TemplatePromptService
+      const template = TemplatePromptService.getTemplateById(savedTemplate.templateId);
+
+      if (!template) {
+        console.error(`❌ [Campaign: ${campaignId}] Saved template ${savedTemplate.templateId} not found in TemplatePromptService!`);
+        return false;
+      }
+
+      // Store template in workflow state (same as when user selects manually)
+      const workflowState = this.wsManager?.workflowStates?.get(campaignId);
+      if (workflowState) {
+        workflowState.data.selectedTemplate = {
+          id: savedTemplate.templateId,
+          name: template.name,
+          autoApplied: true // Flag to indicate this was auto-applied
+        };
+        console.log(`💾 [Campaign: ${campaignId}] Template stored in workflow state`);
+      }
+
+      // Broadcast auto-applied template notification
+      if (this.wsManager) {
+        this.wsManager.broadcast({
+          type: 'template_auto_applied',
+          data: {
+            campaignId,
+            templateId: savedTemplate.templateId,
+            templateName: template.name,
+            message: `Using your saved template: ${template.name}`
+          }
+        });
+      }
+
+      return true; // Template auto-applied successfully
+
+    } catch (error) {
+      console.error(`❌ [Campaign: ${campaignId}] Error checking saved template:`, error);
+      return false; // Fall back to showing modal
+    }
+  }
+
   /**
    * 广播工作流状态更新
    */
@@ -788,46 +848,54 @@ class LangGraphMarketingAgent {
 
           console.log(`✅ VERIFICATION: Workflow ${campaignId} now has ${workflowState.data.prospects.length} prospects stored`);
 
-          // Trigger template selection popup
-          console.log('🎨🎨🎨 BROADCASTING TEMPLATE SELECTION REQUIRED MESSAGE (LOCATION 1) 🎨🎨🎨');
-          console.log('🎨 Prospects found:', prospects.length);
-          const message = {
-            type: 'template_selection_required',
-            data: {
-              campaignId: campaignId,
-              prospectsCount: prospects.length,
-              prospectsFound: prospects.length,  // Add this for consistency
-              sampleProspects: prospects.slice(0, 5).map(p => ({
-                email: p.email,
-                name: p.name || 'Unknown',
-                company: p.company || 'Unknown'
-              })),
-              message: `Found ${prospects.length} prospects! Please select an email template to continue.`,
-              canProceed: false,
-              status: 'waiting_for_template'
-            }
-          };
-          console.log('🎨 Broadcasting message:', JSON.stringify(message, null, 2));
-          this.wsManager.broadcast(message);
-          console.log('✅ Template selection broadcast completed!');
+          // 🎯 NEW: Check if user has saved template preference first
+          const userId = this.userId || 'anonymous';
+          const hasAutoAppliedTemplate = await this.checkAndApplySavedTemplate(userId, campaignId);
 
-          // Also broadcast prospects data directly
-          this.wsManager.broadcast({
-            type: 'prospect_list',
-            workflowId: campaignId,
-            prospects: prospects,
-            total: prospects.length,
-            timestamp: new Date().toISOString()
-          });
+          if (hasAutoAppliedTemplate) {
+            console.log(`✅ [LOCATION 1] Template auto-applied for user ${userId} - continuing workflow`);
+            // Don't return - let workflow continue to email generation
+          } else {
+            // No saved template - show modal to user
+            console.log('🎨🎨🎨 BROADCASTING TEMPLATE SELECTION REQUIRED MESSAGE (LOCATION 1) 🎨🎨🎨');
+            console.log('🎨 Prospects found:', prospects.length);
+            const message = {
+              type: 'template_selection_required',
+              data: {
+                campaignId: campaignId,
+                prospectsCount: prospects.length,
+                prospectsFound: prospects.length,  // Add this for consistency
+                sampleProspects: prospects.slice(0, 5).map(p => ({
+                  email: p.email,
+                  name: p.name || 'Unknown',
+                  company: p.company || 'Unknown'
+                })),
+                message: `Found ${prospects.length} prospects! Please select an email template to continue.`,
+                canProceed: false,
+                status: 'waiting_for_template'
+              }
+            };
+            console.log('🎨 Broadcasting message:', JSON.stringify(message, null, 2));
+            this.wsManager.broadcast(message);
+            console.log('✅ Template selection broadcast completed!');
 
-          console.log('🎨 Template selection popup triggered - workflow paused');
-          console.log(`📡 Broadcast prospect_list with ${prospects.length} prospects`);
-          console.log('⏸️ Waiting for user to select template...');
+            // Also broadcast prospects data directly
+            this.wsManager.broadcast({
+              type: 'prospect_list',
+              workflowId: campaignId,
+              prospects: prospects,
+              total: prospects.length,
+              timestamp: new Date().toISOString()
+            });
+
+            console.log('🎨 Template selection popup triggered - workflow paused');
+            console.log(`📡 Broadcast prospect_list with ${prospects.length} prospects`);
+            console.log('⏸️ Waiting for user to select template...');
+
+            // Workflow pauses here - will resume when user selects template via resumeWorkflow()
+            return;
+          }
         }
-
-        // Workflow pauses here - will resume when user selects template
-        // via the resumeWorkflow() method
-        return;
       }
 
       // Step 3: If template is provided, continue with email generation
@@ -1028,31 +1096,6 @@ class LangGraphMarketingAgent {
       if (prospects.length > 0) {
         console.log('🚀 Real emails discovered! Starting immediate email generation...');
 
-        // 🎨 NEW: Trigger template selection popup for user
-        if (this.wsManager) {
-          console.log('🎨🎨🎨 BROADCASTING TEMPLATE SELECTION REQUIRED MESSAGE 🎨🎨🎨');
-          console.log('🎨 Prospects found:', prospects.length);
-          const message = {
-            type: 'template_selection_required',
-            data: {
-              prospectsFound: prospects.length,
-              sampleProspects: prospects.slice(0, 3).map(p => ({
-                name: p.name || 'Unknown',
-                company: p.company || 'Unknown',
-                email: p.email
-              })),
-              availableTemplates: TemplatePromptService.getAllTemplates(),
-              defaultTemplate: null,
-              websiteAnalysis: this.campaignConfig?.websiteAnalysis || null,  // Include websiteAnalysis (logo, etc.)
-              message: `Found ${prospects.length} prospects! Please select an email template to use for all emails in this campaign.`
-            }
-          };
-          console.log('🎨 Broadcasting message:', JSON.stringify(message, null, 2));
-          this.wsManager.broadcast(message);
-
-          console.log('✅ Template selection popup triggered - waiting for user selection');
-        }
-
         // LOG ALL FOUND EMAILS WITH DETAILS
         console.log('\n📧 FOUND EMAILS LOG:');
         console.log('='.repeat(50));
@@ -1069,31 +1112,68 @@ class LangGraphMarketingAgent {
           console.log('   ' + '-'.repeat(40));
         });
         console.log('='.repeat(50));
-        
+
         // Store prospects for later use
         this.foundProspects = prospects;
 
-        // 🛑 CRITICAL PAUSE: Wait for template selection before proceeding
-        console.log('🛑 PAUSING WORKFLOW: Waiting for user to select email template...');
+        // 🎯 NEW: Check if user has saved template preference first
+        const userId = this.userId || 'anonymous';
+        const campaignId = this.state.currentCampaign?.id;
+        const hasAutoAppliedTemplate = await this.checkAndApplySavedTemplate(userId, campaignId);
 
-        // Set workflow state to waiting for template selection
-        this.state.waitingForTemplateSelection = {
-          prospects: prospects,
-          campaignId: this.state.currentCampaign?.id,
-          businessAnalysis: this.businessAnalysisData || this.state.currentCampaign?.businessAnalysis,
-          marketingStrategy: this.marketingStrategyData || this.state.currentCampaign?.marketingStrategy,
-          smtpConfig: this.campaignConfig?.smtpConfig || null, // 🔥 CRITICAL FIX: Include SMTP config
-          timestamp: new Date().toISOString()
-        };
+        if (hasAutoAppliedTemplate) {
+          console.log(`✅ [LOCATION 2] Template auto-applied for user ${userId} - continuing without pause`);
+          // Don't set waitingForTemplate flags - let workflow continue normally
+          this.state.isWaitingForTemplate = false;
+          return prospects;
+        } else {
+          // No saved template - show modal and pause workflow
+          if (this.wsManager) {
+            console.log('🎨🎨🎨 BROADCASTING TEMPLATE SELECTION REQUIRED MESSAGE (LOCATION 2) 🎨🎨🎨');
+            console.log('🎨 Prospects found:', prospects.length);
+            const message = {
+              type: 'template_selection_required',
+              data: {
+                prospectsFound: prospects.length,
+                sampleProspects: prospects.slice(0, 3).map(p => ({
+                  name: p.name || 'Unknown',
+                  company: p.company || 'Unknown',
+                  email: p.email
+                })),
+                availableTemplates: TemplatePromptService.getAllTemplates(),
+                defaultTemplate: null,
+                websiteAnalysis: this.campaignConfig?.websiteAnalysis || null,  // Include websiteAnalysis (logo, etc.)
+                message: `Found ${prospects.length} prospects! Please select an email template to use for all emails in this campaign.`
+              }
+            };
+            console.log('🎨 Broadcasting message:', JSON.stringify(message, null, 2));
+            this.wsManager.broadcast(message);
 
-        // DO NOT proceed to email generation until template is selected
-        console.log('⏸️ Workflow PAUSED - Template selection required before email generation can begin');
+            console.log('✅ Template selection popup triggered - waiting for user selection');
+          }
 
-        // 🛑 IMPORTANT: Return prospects but mark workflow as waiting
-        console.log('✅ Returning prospects but workflow is PAUSED for template selection');
-        // Mark workflow as waiting - this will prevent executeEmailCampaignWithLearning from running
-        this.state.isWaitingForTemplate = true;
-        return prospects;
+          // 🛑 CRITICAL PAUSE: Wait for template selection before proceeding
+          console.log('🛑 PAUSING WORKFLOW: Waiting for user to select email template...');
+
+          // Set workflow state to waiting for template selection
+          this.state.waitingForTemplateSelection = {
+            prospects: prospects,
+            campaignId: campaignId,
+            businessAnalysis: this.businessAnalysisData || this.state.currentCampaign?.businessAnalysis,
+            marketingStrategy: this.marketingStrategyData || this.state.currentCampaign?.marketingStrategy,
+            smtpConfig: this.campaignConfig?.smtpConfig || null, // 🔥 CRITICAL FIX: Include SMTP config
+            timestamp: new Date().toISOString()
+          };
+
+          // DO NOT proceed to email generation until template is selected
+          console.log('⏸️ Workflow PAUSED - Template selection required before email generation can begin');
+
+          // 🛑 IMPORTANT: Return prospects but mark workflow as waiting
+          console.log('✅ Returning prospects but workflow is PAUSED for template selection');
+          // Mark workflow as waiting - this will prevent executeEmailCampaignWithLearning from running
+          this.state.isWaitingForTemplate = true;
+          return prospects;
+        }
       } else {
         console.log('⚠️ No real emails found - email generation will not start');
 
