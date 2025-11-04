@@ -2051,6 +2051,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         setNotificationStage('prospectSearchInProgress');
         setShowProcessNotification(true);
       }
+    } else if (workflowStatus === 'finding_prospects') {
+      // 🔥 NEW: Show prospect search starting notification
+      setNotificationStage('prospectSearchStarting');
+      setShowProcessNotification(true);
     } else if (workflowStatus === 'paused_for_review') {
       // Prospects found
       if (prospects.length > 0 && generatedEmails.length === 0) {
@@ -3504,6 +3508,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       } else if (data.type === 'data_update' || data.message?.includes('Broadcasting workflow update')) {
         // Handle data update messages from backend
         console.log('📊 Received data_update or workflow broadcast message');
+
+        // 🔥 UPDATE WORKFLOW STATUS from data_update messages
+        if (data.data && data.data.status) {
+          console.log(`🔔 Updating workflowStatus to: ${data.data.status}`);
+          setWorkflowStatus(data.data.status);
+        }
+
         fetchAndTriggerWorkflowSteps();
       } else if (data.type === 'template_selection_required') {
         // 🎨 NEW: Handle template selection required

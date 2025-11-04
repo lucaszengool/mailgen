@@ -673,6 +673,14 @@ class LangGraphMarketingAgent {
   async executeProspectSearchInBackground(marketingStrategy, campaignId, businessAnalysis, campaignConfig) {
     console.log('🔄 Background prospect search started...');
 
+    // 🔥 SET WORKFLOW STATUS TO FINDING PROSPECTS (triggers prospectSearchStarting popup)
+    if (this.wsManager) {
+      this.wsManager.updateWorkflowStatus(campaignId, 'finding_prospects', {
+        step: 'prospect_search',
+        message: 'Finding qualified prospects...'
+      });
+    }
+
     try {
       // Step 1: Find prospects (this may take time)
       console.log('🔍 Starting executeProspectSearchWithLearning...');
@@ -709,6 +717,15 @@ class LangGraphMarketingAgent {
       console.log(`🎉 PROSPECT SEARCH COMPLETE: Found ${prospects.length} prospects`);
       console.log('='.repeat(80));
       console.log(`📧 Sample emails: ${prospects.slice(0, 3).map(p => p.email).join(', ')}`);
+
+      // 🔥 SET WORKFLOW STATUS TO PAUSED FOR REVIEW (triggers prospectSearchComplete popup)
+      if (this.wsManager) {
+        this.wsManager.updateWorkflowStatus(campaignId, 'paused_for_review', {
+          step: 'prospects_found',
+          prospectsCount: prospects.length,
+          message: `Found ${prospects.length} qualified prospects!`
+        });
+      }
 
       // Step 2: Check if we need to pause for template selection
       console.log(`🔍 [RAILWAY DEBUG] Checking template selection condition:`);
