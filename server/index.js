@@ -10,6 +10,7 @@ require('dotenv').config();
 const MarketingResearchAgent = require('./agents/MarketingResearchAgent');
 const EmailAutomationAgent = require('./agents/EmailAutomationAgent');
 const LangGraphMarketingAgent = require('./agents/LangGraphMarketingAgent');
+const OllamaSearxNGEmailDiscovery = require('./agents/OllamaSearxNGEmailDiscovery');
 
 // Import WebSocket manager
 const WorkflowWebSocketManager = require('./websocket/WorkflowWebSocketManager');
@@ -27,6 +28,7 @@ const wsManager = new WorkflowWebSocketManager(server);
 const marketingAgent = new MarketingResearchAgent();
 const emailAgent = new EmailAutomationAgent();
 const langGraphAgent = new LangGraphMarketingAgent({ wsManager });
+const ollamaSearxngEmailDiscovery = new OllamaSearxNGEmailDiscovery();
 
 // Initialize Marketing Research Agent with WebSocket support
 const marketingResearchAgent = marketingAgent.initialize(wsManager);
@@ -35,6 +37,7 @@ const marketingResearchAgent = marketingAgent.initialize(wsManager);
 app.locals.wsManager = wsManager;
 app.locals.langGraphAgent = langGraphAgent;
 app.locals.marketingResearchAgent = marketingResearchAgent;
+app.locals.ollamaSearxngEmailDiscovery = ollamaSearxngEmailDiscovery;
 
 // Set up analytics WebSocket integration
 const analyticsRoutes = require('./routes/analytics');

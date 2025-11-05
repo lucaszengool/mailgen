@@ -86,8 +86,8 @@ export default function Home({ onNavigate }) {
             icon={CpuChipIcon}
             title="AI Agent Workflow"
             description="Let AI agents handle your entire outreach workflow - from research and lead discovery to personalized email generation and campaign management."
-            buttonText="Launch"
-            onClick={() => handleNavigation('workflow')}
+            buttonText="Launch Dashboard"
+            onClick={() => handleNavigation('/dashboard')}
           />
 
           {/* Find Prospects */}

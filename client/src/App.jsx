@@ -370,8 +370,8 @@ function App() {
         <Routes>
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
-          <Route path="/" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} />
-          <Route path="/setup" element={<CampaignSetupWizard onComplete={handleSetupComplete} />} />
+          <Route path="/" element={<Home />} /> {/* Default: Show marketing home page */}
+          <Route path="/setup" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} />
           <Route path="/smtp-setup" element={<AgentSetupWizard onComplete={handleSetupComplete} />} />
           {/* Marketing Pages */}
           <Route path="/ai-agent" element={<AIAgentPage />} />
@@ -406,6 +406,7 @@ function App() {
 
         {/* Add Routes for marketing pages */}
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/ai-agent" element={<AIAgentPage />} />
@@ -413,7 +414,7 @@ function App() {
           <Route path="/for-businesses" element={<ForBusinessesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/partners" element={<PartnersPage />} />
-          <Route path="*" element={
+          <Route path="/dashboard" element={
             <>
               {showCampaignOnboarding ? (
                 <CampaignOnboardingWizard
@@ -445,6 +446,7 @@ function App() {
               )}
             </>
           } />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </div>
     );

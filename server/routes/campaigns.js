@@ -130,7 +130,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// 更新营销活动
+// 更新营销活动 (UPSERT - create if doesn't exist)
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -141,25 +141,35 @@ router.put('/:id', async (req, res) => {
     const campaigns = await db.getCampaigns(userId);
     const existingCampaign = campaigns.find(c => c.id === id);
 
+    let campaignToSave;
+
     if (!existingCampaign) {
-      return res.status(404).json({
-        success: false,
-        error: '营销活动不存在'
-      });
+      // Campaign doesn't exist - create it (useful for onboarding flow)
+      console.log(`📝 Creating new campaign during onboarding: ${id}`);
+      campaignToSave = {
+        id: id,
+        name: updateData.campaignName || updateData.name || 'New Campaign',
+        description: updateData.description || '',
+        targetAudience: updateData.targetAudience || {},
+        emailTemplate: updateData.emailTemplate || {},
+        status: updateData.status || 'draft',
+        created_at: new Date().toISOString(),
+        ...updateData
+      };
+    } else {
+      // Campaign exists - merge updates
+      campaignToSave = {
+        ...existingCampaign,
+        ...updateData,
+        id: id // 确保ID不被覆盖
+      };
     }
 
-    // 合并更新数据
-    const updatedCampaign = {
-      ...existingCampaign,
-      ...updateData,
-      id: id // 确保ID不被覆盖
-    };
-
-    await db.saveCampaign(updatedCampaign, userId);
+    await db.saveCampaign(campaignToSave, userId);
 
     res.json({
       success: true,
-      data: updatedCampaign
+      data: campaignToSave
     });
 
   } catch (error) {
