@@ -9,10 +9,10 @@ const UserStorageService = require('./UserStorageService');
 class GmailOAuthService {
   constructor() {
     // OAuth2 credentials from Google Cloud Console
-    // TODO: User needs to create these in Google Cloud Console
-    this.CLIENT_ID = process.env.GOOGLE_OAUTH_CLIENT_ID || '';
-    this.CLIENT_SECRET = process.env.GOOGLE_OAUTH_CLIENT_SECRET || '';
-    this.REDIRECT_URI = process.env.GOOGLE_OAUTH_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback';
+    // Support both GOOGLE_OAUTH_CLIENT_ID and GOOGLE_CLIENT_ID for backwards compatibility
+    this.CLIENT_ID = process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '';
+    this.CLIENT_SECRET = process.env.GOOGLE_OAUTH_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET || '';
+    this.REDIRECT_URI = process.env.GOOGLE_OAUTH_REDIRECT_URI || 'http://localhost:3333/api/gmail-oauth/callback';
 
     if (!this.CLIENT_ID || !this.CLIENT_SECRET) {
       console.warn('⚠️ Google OAuth credentials not configured. Set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET');

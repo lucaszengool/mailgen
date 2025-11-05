@@ -59,13 +59,19 @@ router.get('/callback', async (req, res) => {
     console.log(`✅ OAuth tokens saved for user: ${userId} (${tokens.email})`);
 
     // Redirect to frontend with success message
-    // In production, redirect to your frontend success page
-    res.redirect(`http://localhost:3000/settings?oauth=success&email=${encodeURIComponent(tokens.email)}`);
+    // Detect frontend URL from environment or request origin
+    const frontendUrl = process.env.FRONTEND_URL ||
+                       (req.headers.referer ? new URL(req.headers.referer).origin : 'http://localhost:3000');
+
+    res.redirect(`${frontendUrl}/settings?oauth=success&email=${encodeURIComponent(tokens.email)}`);
 
   } catch (error) {
     console.error('❌ OAuth callback error:', error);
     // Redirect to frontend with error
-    res.redirect(`http://localhost:3000/settings?oauth=error&message=${encodeURIComponent(error.message)}`);
+    const frontendUrl = process.env.FRONTEND_URL ||
+                       (req.headers.referer ? new URL(req.headers.referer).origin : 'http://localhost:3000');
+
+    res.redirect(`${frontendUrl}/settings?oauth=error&message=${encodeURIComponent(error.message)}`);
   }
 });
 
