@@ -1622,8 +1622,20 @@ const ConfirmationModal = ({ isOpen, title, message, confirmText, cancelText, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full shadow-xl">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="bg-white rounded-lg max-w-md w-full shadow-xl"
+      >
         <div className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
           <p className="text-gray-600 whitespace-pre-line">{message}</p>
@@ -1647,8 +1659,8 @@ const ConfirmationModal = ({ isOpen, title, message, confirmText, cancelText, on
             {confirmText}
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -4358,15 +4370,18 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                   isHighlighted || item.isHome ? 'border-l-4 shadow-sm' : ''
                 }`}
                 style={{
-                  ':hover': {
-                    backgroundColor: 'rgba(0, 245, 160, 0.1)'
-                  }
+                  transform: 'scale(1)',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'rgba(0, 245, 160, 0.1)';
+                  e.currentTarget.style.backgroundColor = 'rgba(0, 245, 160, 0.1)';
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'white';
+                  e.currentTarget.style.backgroundColor = 'white';
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '';
                 }}
               >
                 <Icon className="w-5 h-5 mr-3 flex-shrink-0 text-black" />
@@ -4908,14 +4923,20 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                   ) : (
                     <>
                       {filterProspects(prospects).map((prospect, index) => (
-                        <JobRightProspectCard
+                        <motion.div
                           key={prospect.email || index}
-                          prospect={prospect}
-                          isGenerating={false}
-                          showFilters={false} // Filters now shown separately above
-                          selectedFilters={prospectFilters}
-                          onFilterChange={handleProspectFilterChange}
-                        />
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                        >
+                          <JobRightProspectCard
+                            prospect={prospect}
+                            isGenerating={false}
+                            showFilters={false} // Filters now shown separately above
+                            selectedFilters={prospectFilters}
+                            onFilterChange={handleProspectFilterChange}
+                          />
+                        </motion.div>
                       ))}
                       {filterProspects(prospects).length === 0 && prospectSearchQuery && (
                         <div className="text-center py-8 text-gray-600">
@@ -4975,14 +4996,19 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                       ))}
                     </>
                   ) : generatedEmails.length > 0 ? filterEmails(generatedEmails).map((email, index) => (
-                    <JobRightEmailCard
+                    <motion.div
                       key={email.id || index}
-                      email={email}
-                      index={index}
-                      showFilters={false} // Filters now shown separately above
-                      selectedFilters={emailFilters}
-                      onFilterChange={handleEmailFilterChange}
-                      onSend={(emailToSend) => {
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                    >
+                      <JobRightEmailCard
+                        email={email}
+                        index={index}
+                        showFilters={false} // Filters now shown separately above
+                        selectedFilters={emailFilters}
+                        onFilterChange={handleEmailFilterChange}
+                        onSend={(emailToSend) => {
                         console.log('🚀 Attempting to send email:', emailToSend);
                         
                         // Validate email object before sending
@@ -5051,6 +5077,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         sendEmail();
                       }}
                     />
+                    </motion.div>
                   )) : (
                     <div className="text-center py-16 px-4">
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
