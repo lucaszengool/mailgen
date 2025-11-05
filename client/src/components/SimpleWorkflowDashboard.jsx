@@ -4468,12 +4468,26 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                 ⚠️
               </button>
               <button
-                onClick={onReset}
+                onClick={() => {
+                  setConfirmationModal({
+                    isOpen: true,
+                    title: 'Reset to Setup Page?',
+                    message: 'This will return you to the initial setup page.\n\nYour campaign data will not be affected.',
+                    confirmText: 'Go to Setup',
+                    cancelText: 'Cancel',
+                    danger: false,
+                    onConfirm: () => {
+                      setConfirmationModal(prev => ({ ...prev, isOpen: false }));
+                      toast.success('Returning to setup page...');
+                      setTimeout(() => onReset(), 300);
+                    }
+                  });
+                }}
                 className="text-xs p-2 rounded transition-colors"
                 style={{color: '#ef4444'}}
                 onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                title="Reset Config"
+                title="Reset to Setup Page"
               >
                 🔄
               </button>

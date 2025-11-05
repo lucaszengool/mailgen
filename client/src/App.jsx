@@ -74,21 +74,20 @@ function App() {
   useEffect(() => {
     console.log('App mounted, checking setup status...');
 
-    // AGGRESSIVE CLEANUP: Clear justReset flag if user is navigating to dashboard
-    const currentPath = window.location.pathname;
+    // Check for justReset flag first
     const justReset = sessionStorage.getItem('justReset');
+    const currentPath = window.location.pathname;
 
-    if (currentPath === '/dashboard' || currentPath === '/setup') {
-      if (justReset) {
-        const resetTimestamp = sessionStorage.getItem('resetTimestamp');
-        const age = resetTimestamp ? Date.now() - parseInt(resetTimestamp) : 999999;
+    // If just reset, only clear flag if navigating away from root
+    if (justReset && currentPath !== '/' && currentPath !== '') {
+      const resetTimestamp = sessionStorage.getItem('resetTimestamp');
+      const age = resetTimestamp ? Date.now() - parseInt(resetTimestamp) : 999999;
 
-        // If navigating to dashboard OR flag is older than 3 seconds, clear it
-        if (currentPath === '/dashboard' || age > 3000) {
-          console.log(`🧹 Clearing justReset flag (path: ${currentPath}, age: ${age}ms)`);
-          sessionStorage.removeItem('justReset');
-          sessionStorage.removeItem('resetTimestamp');
-        }
+      // Clear flag if navigating away OR if older than 5 seconds
+      if (age > 5000) {
+        console.log(`🧹 Clearing old justReset flag (age: ${age}ms)`);
+        sessionStorage.removeItem('justReset');
+        sessionStorage.removeItem('resetTimestamp');
       }
     }
 
@@ -242,8 +241,12 @@ function App() {
   const handleReset = async () => {
     console.log('🔄 App.jsx - handleReset called');
 
+    // Set flag BEFORE clearing server config to ensure it persists
+    sessionStorage.setItem('justReset', 'true');
+    sessionStorage.setItem('resetTimestamp', Date.now().toString());
+
     try {
-      // Clear server-side configuration first
+      // Clear server-side configuration
       const response = await fetch('/api/agent/reset', {
         method: 'POST'
       });
@@ -253,7 +256,7 @@ function App() {
       console.log('⚠️ Could not clear server config:', error.message);
     }
 
-    // Clear all client-side configuration and reset to setup wizard
+    // Clear all client-side configuration
     setAgentConfig(null);
     setIsSetupComplete(false);
     setCurrentView('setup');
@@ -261,19 +264,15 @@ function App() {
 
     // Clear localStorage
     localStorage.removeItem('agentConfig');
+    localStorage.removeItem('hasSeenOnboarding');
 
-    console.log('🔄 App.jsx - State reset complete:', {
-      agentConfig: null,
-      isSetupComplete: false,
-      currentView: 'setup',
-      selectedClient: null
-    });
+    // Clear all workflow-related storage
+    localStorage.removeItem('workflowHistory');
+    localStorage.removeItem('workflowMessages');
 
-    // Set flag JUST BEFORE reload to prevent auto-navigation
-    sessionStorage.setItem('justReset', 'true');
-    sessionStorage.setItem('resetTimestamp', Date.now().toString());
+    console.log('🔄 App.jsx - State reset complete, redirecting to setup page');
 
-    // Force page reload to reset to initial setup
+    // Force page reload to setup page
     setTimeout(() => {
       window.location.href = '/';
     }, 100);
