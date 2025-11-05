@@ -1553,8 +1553,17 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
             )}
           </div>
 
-          <div className="flex justify-center">
-            {/* ❌ Cancel button REMOVED - Template selection is REQUIRED */}
+          <div className="flex justify-center gap-3">
+            {/* Back/Cancel button - allows user to go back without selecting */}
+            <button
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={16} />
+              {isSubmitting ? 'Please wait...' : 'Go Back'}
+            </button>
+
             <button
               onClick={handleConfirm}
               disabled={!selectedTemplate || isSubmitting}
