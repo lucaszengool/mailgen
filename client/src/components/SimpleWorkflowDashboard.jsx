@@ -1733,6 +1733,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [expandedSteps, setExpandedSteps] = useState(new Set());
   const [isLoadingProspects, setIsLoadingProspects] = useState(false);
   const [isLoadingEmails, setIsLoadingEmails] = useState(false);
+  const [hasInitiallyLoadedProspects, setHasInitiallyLoadedProspects] = useState(false);
+  const [hasInitiallyLoadedEmails, setHasInitiallyLoadedEmails] = useState(false);
 
   // Search query states
   const [prospectSearchQuery, setProspectSearchQuery] = useState('');
@@ -3310,8 +3312,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
     try {
       setIsProcessingWorkflowResults(true);
-      setIsLoadingProspects(true);
-      setIsLoadingEmails(true);
+      // Only show loading skeleton on initial load, not during background polling
+      if (!hasInitiallyLoadedProspects) {
+        setIsLoadingProspects(true);
+      }
+      if (!hasInitiallyLoadedEmails) {
+        setIsLoadingEmails(true);
+      }
       setLastWorkflowFetchTime(now);
       console.log('🔄 Fetching workflow results with authentication...');
       const result = await apiGet('/api/workflow/results');
@@ -3461,8 +3468,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       console.error('❌ Failed to fetch workflow results:', error);
     } finally {
       setIsProcessingWorkflowResults(false);
+      // Always clear loading states and mark as initially loaded
       setIsLoadingProspects(false);
       setIsLoadingEmails(false);
+      setHasInitiallyLoadedProspects(true);
+      setHasInitiallyLoadedEmails(true);
     }
   };
 
@@ -3510,7 +3520,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         checkForEmailUpdates();
         // Always fetch workflow steps to get newly generated emails
         fetchAndTriggerWorkflowSteps();
-      }, 1000); // Check every 1 second for fast updates (changed from 3000ms)
+      }, 3000); // Check every 3 seconds for balanced performance
 
       return () => clearInterval(interval);
     }
