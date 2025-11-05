@@ -2,8 +2,26 @@ import { useState, useEffect } from 'react';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
-// Get API URL - use VITE_API_URL in production, relative path in dev
-const API_URL = import.meta.env.VITE_API_URL || '';
+// Get API URL - use VITE_API_URL in production, or detect from window
+// If frontend is at mailgen.org, backend is at honest-hope-production.up.railway.app
+const getApiUrl = () => {
+  // Try environment variable first
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // In production, use the backend URL
+  if (window.location.hostname === 'mailgen.org' ||
+      window.location.hostname === 'www.mailgen.org' ||
+      window.location.hostname === 'mailgen-production.up.railway.app') {
+    return 'https://honest-hope-production.up.railway.app';
+  }
+
+  // In development, use relative path (Vite proxy)
+  return '';
+};
+
+const API_URL = getApiUrl();
 
 export default function GmailOAuthButton() {
   const [oauthStatus, setOauthStatus] = useState(null);
