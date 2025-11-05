@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const KnowledgeBase = require('../models/KnowledgeBase');
+const GmailOAuthService = require('./GmailOAuthService');
 require('dotenv').config();
 
 class EmailService {
@@ -40,11 +41,29 @@ class EmailService {
         text,
         from,
         attachments = [],
-        trackingId = null
+        trackingId = null,
+        userId = null // Add userId parameter for OAuth support
       } = options;
 
       if (!to || !subject || (!html && !text)) {
         throw new Error('Missing required email parameters: to, subject, and content');
+      }
+
+      // Try to use Gmail OAuth if userId is provided
+      let transporter = this.transporter;
+      let senderEmail = process.env.SMTP_USERNAME;
+
+      if (userId) {
+        try {
+          const oauthConfig = await GmailOAuthService.getSMTPConfigWithOAuth(userId);
+          if (oauthConfig) {
+            console.log('✅ Using Gmail OAuth for email sending');
+            transporter = nodemailer.createTransport(oauthConfig);
+            senderEmail = oauthConfig.auth.user;
+          }
+        } catch (error) {
+          console.log('⚠️ Gmail OAuth not available, falling back to SMTP:', error.message);
+        }
       }
 
       // Add tracking pixel if trackingId provided
@@ -60,7 +79,7 @@ class EmailService {
         try {
           const senderInfo = await this.knowledgeBase.getSenderInfo(options.targetWebsite);
           if (senderInfo && senderInfo.sender_name) {
-            senderFrom = `"${senderInfo.sender_name}" <${process.env.SMTP_USERNAME}>`;
+            senderFrom = `"${senderInfo.sender_name}" <${senderEmail}>`;
           }
         } catch (error) {
           console.log('Using default sender name as knowledge base lookup failed');
@@ -68,7 +87,7 @@ class EmailService {
       }
 
       const mailOptions = {
-        from: senderFrom || `"${process.env.SENDER_NAME || 'Partnership Team'}" <${process.env.SMTP_USERNAME}>`,
+        from: senderFrom || `"${process.env.SENDER_NAME || 'Partnership Team'}" <${senderEmail}>`,
         to: to,
         subject: subject,
         html: finalHtml,
@@ -76,7 +95,7 @@ class EmailService {
         attachments: attachments
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      const info = await transporter.sendMail(mailOptions);
       
       console.log(`✅ Email sent successfully to ${to}`);
       console.log(`📬 Message ID: ${info.messageId}`);

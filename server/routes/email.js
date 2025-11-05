@@ -49,44 +49,33 @@ router.post('/send', async (req, res) => {
       });
     }
 
-    // 创建SMTP传输器
-    const transporter = nodemailer.createTransport({
-      host: smtpConfig.host,
-      port: smtpConfig.port,
-      secure: smtpConfig.secure, // true for 465, false for other ports
-      auth: {
-        user: smtpConfig.username,
-        pass: smtpConfig.password
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
+    // Generate tracking ID if enabled
+    const trackingId = trackingEnabled ? `${campaignId || 'manual'}_${Date.now()}` : null;
 
-    // 生成跟踪像素（如果启用跟踪）
-    const trackingPixel = trackingEnabled ? 
-      `<img src="http://localhost:3333/api/email/track/open/${Date.now()}" width="1" height="1" style="display:none;">` : '';
+    // Try to use OAuth first, then fall back to provided SMTP config
+    // EmailService will check OAuth if userId is provided
+    const userId = req.userId || 'anonymous';
 
-    // 邮件内容
-    const mailOptions = {
-      from: from || smtpConfig.username,
-      to: to,
-      subject: subject,
+    // Add tracking pixel to body
+    const trackingPixel = trackingEnabled && trackingId ?
+      `<img src="http://localhost:3333/api/email/track/open/${trackingId}" width="1" height="1" style="display:none;">` : '';
+
+    // Send email using EmailService (supports OAuth)
+    const result = await emailService.sendEmail({
+      to,
+      subject,
       html: `${body}${trackingPixel}`,
-      headers: {
-        'X-Campaign-ID': campaignId || 'manual'
-      }
-    };
-
-    // 发送邮件
-    const info = await transporter.sendMail(mailOptions);
+      from,
+      trackingId,
+      userId
+    });
 
     // 记录发送日志
     db.logEmailSent({
       to: to,
       subject: subject,
       campaignId: campaignId,
-      messageId: info.messageId,
+      messageId: result.messageId,
       status: 'sent',
       sentAt: new Date().toISOString()
     });
@@ -95,7 +84,7 @@ router.post('/send', async (req, res) => {
     try {
       trackEmailSent(campaignId || 'manual', { email: to }, subject, body);
       // For simplicity, assume email is delivered immediately (in reality you'd need webhooks)
-      trackEmailDelivered(campaignId || 'manual', to, info.messageId);
+      trackEmailDelivered(campaignId || 'manual', to, result.messageId);
     } catch (analyticsError) {
       console.error('Analytics tracking error:', analyticsError);
     }
@@ -103,8 +92,8 @@ router.post('/send', async (req, res) => {
     res.json({
       success: true,
       data: {
-        messageId: info.messageId,
-        sentAt: new Date().toISOString()
+        messageId: result.messageId,
+        sentAt: result.sentAt || new Date().toISOString()
       }
     });
 
@@ -161,8 +150,9 @@ router.post('/send-bulk', async (req, res) => {
       taskId: campaignId
     });
 
-    // 异步处理批量发送
-    processBulkSend(recipients, subject, body, smtpConfig, campaignId, delayBetweenEmails, results);
+    // 异步处理批量发送 (pass userId for OAuth support)
+    const userId = req.userId || 'anonymous';
+    processBulkSend(recipients, subject, body, smtpConfig, campaignId, delayBetweenEmails, results, userId);
 
   } catch (error) {
     console.error('批量发送初始化错误:', error);
@@ -174,19 +164,8 @@ router.post('/send-bulk', async (req, res) => {
 });
 
 // 异步批量发送处理函数
-async function processBulkSend(recipients, subject, body, smtpConfig, campaignId, delay, results) {
-  const transporter = nodemailer.createTransport({
-    host: smtpConfig.host,
-    port: smtpConfig.port,
-    secure: smtpConfig.secure,
-    auth: {
-      user: smtpConfig.username,
-      pass: smtpConfig.password
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
+async function processBulkSend(recipients, subject, body, smtpConfig, campaignId, delay, results, userId) {
+  // Use EmailService which supports OAuth
 
   for (let i = 0; i < recipients.length; i++) {
     const recipient = recipients[i];
@@ -206,21 +185,19 @@ async function processBulkSend(recipients, subject, body, smtpConfig, campaignId
         personalizedSubject = personalizedSubject.replace(/\{company\}/g, recipient.company);
       }
 
-      // 添加跟踪像素
-      const trackingPixel = `<img src="http://localhost:3333/api/email/track/open/${campaignId}_${i}" width="1" height="1" style="display:none;">`;
+      // Generate tracking ID
+      const trackingId = `${campaignId}_${i}`;
+      const trackingPixel = `<img src="http://localhost:3333/api/email/track/open/${trackingId}" width="1" height="1" style="display:none;">`;
 
-      const mailOptions = {
-        from: smtpConfig.username,
+      // Send email using EmailService (supports OAuth)
+      const result = await emailService.sendEmail({
         to: recipient.email,
         subject: personalizedSubject,
         html: `${personalizedBody}${trackingPixel}`,
-        headers: {
-          'X-Campaign-ID': campaignId,
-          'X-Recipient-Index': i.toString()
-        }
-      };
-
-      const info = await transporter.sendMail(mailOptions);
+        from: smtpConfig.username,
+        trackingId,
+        userId
+      });
 
       results.sent++;
 
@@ -229,7 +206,7 @@ async function processBulkSend(recipients, subject, body, smtpConfig, campaignId
         to: recipient.email,
         subject: personalizedSubject,
         campaignId: campaignId,
-        messageId: info.messageId,
+        messageId: result.messageId,
         status: 'sent',
         recipientIndex: i,
         sentAt: new Date().toISOString()
@@ -238,7 +215,7 @@ async function processBulkSend(recipients, subject, body, smtpConfig, campaignId
       // Track analytics
       try {
         trackEmailSent(campaignId, recipient, personalizedSubject, personalizedBody);
-        trackEmailDelivered(campaignId, recipient.email, info.messageId);
+        trackEmailDelivered(campaignId, recipient.email, result.messageId);
       } catch (analyticsError) {
         console.error('Analytics tracking error:', analyticsError);
       }

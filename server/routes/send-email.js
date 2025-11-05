@@ -72,14 +72,15 @@ router.post('/', async (req, res) => {
     // Generate tracking ID if enabled
     const trackingId = trackingEnabled ? `${campaignId}_${Date.now()}` : null;
 
-    // Send email
+    // Send email (pass userId if available from auth middleware)
     const result = await emailServiceInstance.sendEmail({
       to,
       subject,
       html,
       text,
       from,
-      trackingId
+      trackingId,
+      userId: req.userId || 'anonymous' // Include userId for OAuth support
     });
 
     // Track analytics
@@ -129,14 +130,15 @@ router.post('/send', async (req, res) => {
     // Generate tracking ID if enabled
     const trackingId = trackingEnabled ? `${campaignId}_${Date.now()}` : null;
 
-    // Send email
+    // Send email (pass userId if available from auth middleware)
     const result = await emailService.sendEmail({
       to,
       subject,
       html,
       text,
       from,
-      trackingId
+      trackingId,
+      userId: req.userId || 'anonymous' // Include userId for OAuth support
     });
 
     // Track analytics
@@ -203,6 +205,7 @@ router.post('/send-bulk', async (req, res) => {
     const options = { delay, campaignId };
 
     // Custom bulk sending with analytics tracking
+    const userId = req.userId || 'anonymous'; // Capture userId for async context
     (async () => {
       for (let i = 0; i < recipients.length; i++) {
         const recipient = recipients[i];
@@ -212,7 +215,8 @@ router.post('/send-bulk', async (req, res) => {
             subject,
             html,
             text,
-            trackingId: `${campaignId}_${i}`
+            trackingId: `${campaignId}_${i}`,
+            userId // Include userId for OAuth support
           });
 
           // Track analytics for each email
