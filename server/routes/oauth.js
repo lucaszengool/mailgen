@@ -73,10 +73,15 @@ router.get('/gmail/callback', async (req, res) => {
       expiresAt: Date.now() + (tokens.expires_in * 1000)
     }));
 
-    res.redirect(`/settings?oauth=success&tokens=${tokenData}`);
+    // Redirect to frontend URL (not backend)
+    const frontendUrl = process.env.FRONTEND_URL ||
+                       (req.headers.origin || 'https://mailgen.org');
+    res.redirect(`${frontendUrl}/settings?oauth=success&tokens=${tokenData}`);
   } catch (error) {
     console.error('Gmail OAuth error:', error);
-    res.redirect(`/settings?oauth=error&message=${encodeURIComponent(error.message)}`);
+    const frontendUrl = process.env.FRONTEND_URL ||
+                       (req.headers.origin || 'https://mailgen.org');
+    res.redirect(`${frontendUrl}/settings?oauth=error&message=${encodeURIComponent(error.message)}`);
   }
 });
 
@@ -110,9 +115,10 @@ router.get('/outlook', (req, res) => {
  */
 router.get('/outlook/callback', async (req, res) => {
   const { code, error } = req.query;
+  const frontendUrl = process.env.FRONTEND_URL || (req.headers.origin || 'https://mailgen.org');
 
   if (error) {
-    return res.redirect(`/settings?oauth=error&message=${encodeURIComponent(error)}`);
+    return res.redirect(`${frontendUrl}/settings?oauth=error&message=${encodeURIComponent(error)}`);
   }
 
   try {
@@ -144,10 +150,10 @@ router.get('/outlook/callback', async (req, res) => {
       expiresAt: Date.now() + (tokens.expires_in * 1000)
     }));
 
-    res.redirect(`/settings?oauth=success&tokens=${tokenData}`);
+    res.redirect(`${frontendUrl}/settings?oauth=success&tokens=${tokenData}`);
   } catch (error) {
     console.error('Outlook OAuth error:', error);
-    res.redirect(`/settings?oauth=error&message=${encodeURIComponent(error.message)}`);
+    res.redirect(`${frontendUrl}/settings?oauth=error&message=${encodeURIComponent(error.message)}`);
   }
 });
 
@@ -175,9 +181,10 @@ router.get('/yahoo', (req, res) => {
  */
 router.get('/yahoo/callback', async (req, res) => {
   const { code, error } = req.query;
+  const frontendUrl = process.env.FRONTEND_URL || (req.headers.origin || 'https://mailgen.org');
 
   if (error) {
-    return res.redirect(`/settings?oauth=error&message=${encodeURIComponent(error)}`);
+    return res.redirect(`${frontendUrl}/settings?oauth=error&message=${encodeURIComponent(error)}`);
   }
 
   try {
@@ -210,10 +217,10 @@ router.get('/yahoo/callback', async (req, res) => {
       expiresAt: Date.now() + (tokens.expires_in * 1000)
     }));
 
-    res.redirect(`/settings?oauth=success&tokens=${tokenData}`);
+    res.redirect(`${frontendUrl}/settings?oauth=success&tokens=${tokenData}`);
   } catch (error) {
     console.error('Yahoo OAuth error:', error);
-    res.redirect(`/settings?oauth=error&message=${encodeURIComponent(error.message)}`);
+    res.redirect(`${frontendUrl}/settings?oauth=error&message=${encodeURIComponent(error.message)}`);
   }
 });
 
