@@ -44,6 +44,7 @@ import SignInPage from './pages/SignIn';
 import SignUpPage from './pages/SignUp';
 import OnboardingTour from './components/OnboardingTour';
 import SimpleWorkflowDashboard from './components/SimpleWorkflowDashboard';
+import CampaignSelector from './components/CampaignSelector';
 import ProcessNotificationsDemo from './components/ProcessNotificationsDemo';
 import BlogPost from './pages/BlogPost';
 import LanguageSwitcher from './components/LanguageSwitcher';
@@ -54,6 +55,10 @@ function App() {
   const [currentView, setCurrentView] = useState('setup');
   const [selectedClient, setSelectedClient] = useState(null);
   const [showOnboardingTour, setShowOnboardingTour] = useState(false);
+
+  // Campaign management state
+  const [currentCampaign, setCurrentCampaign] = useState(null);
+  const [showCampaignSelector, setShowCampaignSelector] = useState(true);
 
   // Debug current view state
   // console.log('🔍 App.jsx render - Current state:', { currentView, isSetupComplete });
@@ -196,6 +201,19 @@ function App() {
       setIsSetupComplete(true);
       setCurrentView('dashboard');
     }
+  };
+
+  // Campaign management handlers
+  const handleSelectCampaign = (campaign) => {
+    console.log('📁 Selected campaign:', campaign.name);
+    setCurrentCampaign(campaign);
+    setShowCampaignSelector(false);
+  };
+
+  const handleBackToCampaigns = () => {
+    console.log('🔙 Returning to campaign selector');
+    setCurrentCampaign(null);
+    setShowCampaignSelector(true);
   };
 
   const handleOnboardingComplete = () => {
@@ -354,17 +372,28 @@ function App() {
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="*" element={
             <>
-              <SimpleWorkflowDashboard
-                agentConfig={agentConfig}
-                onReset={handleReset}
-              />
+              {showCampaignSelector ? (
+                <CampaignSelector
+                  onSelectCampaign={handleSelectCampaign}
+                  onCreateCampaign={handleSelectCampaign}
+                />
+              ) : (
+                <>
+                  <SimpleWorkflowDashboard
+                    agentConfig={agentConfig}
+                    onReset={handleReset}
+                    campaign={currentCampaign}
+                    onBackToCampaigns={handleBackToCampaigns}
+                  />
 
-              {/* 🎯 Onboarding Tour - shown after initial setup */}
-              <OnboardingTour
-                isOpen={showOnboardingTour}
-                onComplete={handleOnboardingComplete}
-                startStep={0}
-              />
+                  {/* 🎯 Onboarding Tour - shown after initial setup */}
+                  <OnboardingTour
+                    isOpen={showOnboardingTour}
+                    onComplete={handleOnboardingComplete}
+                    startStep={0}
+                  />
+                </>
+              )}
             </>
           } />
         </Routes>

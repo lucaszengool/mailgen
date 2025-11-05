@@ -4419,6 +4419,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           </div>
         </div>
 
+        {/* Back to Campaigns Button */}
+        {onBackToCampaigns && (
+          <div className="px-4 pb-4">
+            <button
+              onClick={onBackToCampaigns}
+              className="w-full flex items-center px-4 py-3 rounded-lg transition-all duration-200 text-sm bg-white text-black border border-gray-200 hover:bg-gray-50"
+            >
+              <ArrowRight className="w-5 h-5 mr-3 flex-shrink-0 text-black transform rotate-180" />
+              <span className="truncate font-medium text-black">
+                Back to Campaigns
+              </span>
+            </button>
+          </div>
+        )}
+
         {/* Navigation */}
         <nav className="flex-1 px-4 pb-4 space-y-2">
           {menuItems.map((item) => {
