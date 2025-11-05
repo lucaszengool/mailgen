@@ -1620,6 +1620,7 @@ const SettingsView = () => {
 const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [activeView, setActiveView] = useState('workflow');
   const [showChatbot, setShowChatbot] = useState(true); // Always show on initial load
+  const [wsConnectionStatus, setWsConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'disconnected', 'error'
 
   // Open chatbot on component mount (first time landing on dashboard)
   useEffect(() => {
@@ -3448,6 +3449,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       console.log('✅✅✅ WEBSOCKET CONNECTED SUCCESSFULLY! ✅✅✅');
       console.log('✅ WebSocket readyState:', wsInstance.readyState);
       console.log('✅ Connection established to:', wsUrl);
+      setWsConnectionStatus('connected');
     };
 
     wsInstance.onerror = (error) => {
@@ -3459,6 +3461,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       console.error('❌ WebSocket readyState:', wsInstance.readyState);
       console.error('❌ Protocol:', protocol);
       console.error('❌ Host:', window.location.host);
+      setWsConnectionStatus('error');
     };
 
     wsInstance.onclose = (event) => {
@@ -3483,6 +3486,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         1015: 'TLS handshake failure'
       };
       console.log('🔌 Close code meaning:', closeCodes[event.code] || 'Unknown');
+      setWsConnectionStatus('disconnected');
     };
 
     wsInstance.onmessage = (event) => {
@@ -4295,7 +4299,32 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                 />
                 <div className="ml-3 flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" style={{color: '#000000'}}>My Account</p>
-                  <p className="text-xs truncate" style={{color: '#00f0a0'}}>Active</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs truncate" style={{color: '#00f0a0'}}>Active</p>
+                    {/* WebSocket Connection Status */}
+                    <div className="flex items-center gap-1">
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{
+                          backgroundColor: wsConnectionStatus === 'connected' ? '#00f0a0' :
+                                         wsConnectionStatus === 'error' ? '#ef4444' :
+                                         wsConnectionStatus === 'disconnected' ? '#f59e0b' : '#9ca3af'
+                        }}
+                        title={wsConnectionStatus === 'connected' ? 'Connected' :
+                               wsConnectionStatus === 'error' ? 'Connection Error' :
+                               wsConnectionStatus === 'disconnected' ? 'Disconnected' : 'Connecting...'}
+                      />
+                      <span className="text-xs" style={{
+                        color: wsConnectionStatus === 'connected' ? '#00f0a0' :
+                               wsConnectionStatus === 'error' ? '#ef4444' :
+                               wsConnectionStatus === 'disconnected' ? '#f59e0b' : '#9ca3af'
+                      }}>
+                        {wsConnectionStatus === 'connected' ? 'Live' :
+                         wsConnectionStatus === 'error' ? 'Error' :
+                         wsConnectionStatus === 'disconnected' ? 'Offline' : 'Connecting'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </SignedIn>
