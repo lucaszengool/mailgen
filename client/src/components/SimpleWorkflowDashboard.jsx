@@ -5344,24 +5344,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                       }}
                     />
                     </motion.div>
-                  )) : (
-                    <div className="text-center py-16 px-4">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                        <Mail className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Emails Yet</h3>
-                      <p className="text-gray-600 mb-4">
-                        Start a workflow to generate personalized emails for your prospects
-                      </p>
-                      <button
-                        onClick={() => setActiveView('workflow')}
-                        className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                        style={{ backgroundColor: '#00f0a0', color: '#000' }}
-                      >
-                        Go to Workflow
-                      </button>
-                    </div>
-                  )}
+                  ))}
                   {generatedEmails.length > 0 && filterEmails(generatedEmails).length === 0 && emailSearchQuery && (
                     <div className="text-center py-8 text-gray-600">
                       No emails match "{emailSearchQuery}". <button
