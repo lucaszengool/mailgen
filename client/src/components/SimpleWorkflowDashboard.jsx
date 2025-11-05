@@ -1695,7 +1695,7 @@ const EmailCardSkeleton = () => (
   </div>
 );
 
-const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
+const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampaigns }) => {
   const [activeView, setActiveView] = useState('workflow');
   const [showChatbot, setShowChatbot] = useState(true); // Always show on initial load
   const [wsConnectionStatus, setWsConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'disconnected', 'error'
@@ -2021,9 +2021,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const clearAllUserData = () => {
     setConfirmationModal({
       isOpen: true,
-      title: 'Clear All Data?',
-      message: 'This will permanently delete:\n\n• All prospects\n• All campaigns  \n• All email drafts\n\nThis action cannot be undone!',
-      confirmText: 'Clear All Data',
+      title: 'Clear This Campaign Data?',
+      message: `This will permanently delete all data for "${campaign?.name || 'this campaign'}":\n\n• All prospects\n• All emails\n• All drafts\n\nThis action cannot be undone!`,
+      confirmText: 'Clear Campaign Data',
       cancelText: 'Cancel',
       danger: true,
       onConfirm: async () => {
@@ -2039,8 +2039,18 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         // Also clear workflow history
         clearWorkflowHistory();
 
-        // Reload the page to reset all state
-        window.location.reload();
+        // Clear campaign-specific data
+        if (campaign) {
+          localStorage.removeItem(`campaign_${campaign.id}_data`);
+        }
+
+        // Go back to campaign selector
+        toast.success('Campaign data cleared');
+        if (onBackToCampaigns) {
+          onBackToCampaigns();
+        } else {
+          window.location.reload();
+        }
       } else {
         console.error('Failed to clear user data:', response.error);
         toast.error(`Could not clear all data: ${response.error}. Try clearing your browser cache or contact support.`, { duration: 6000 });
