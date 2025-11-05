@@ -6,7 +6,8 @@ const router = express.Router();
  * Redirects user to Google's OAuth consent page for email access
  */
 router.get('/gmail', (req, res) => {
-  const clientId = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
+  // Support both GOOGLE_OAUTH_CLIENT_ID and GOOGLE_CLIENT_ID for backwards compatibility
+  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
 
   // Use HTTPS in production (Railway/Heroku use reverse proxy)
   const protocol = req.get('x-forwarded-proto') || req.protocol;
@@ -41,8 +42,9 @@ router.get('/gmail/callback', async (req, res) => {
 
   try {
     // Exchange code for tokens
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    // Support both GOOGLE_OAUTH_CLIENT_ID and GOOGLE_CLIENT_ID for backwards compatibility
+    const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
 
     // Use HTTPS in production (Railway/Heroku use reverse proxy)
     const protocol = req.get('x-forwarded-proto') || req.protocol;
