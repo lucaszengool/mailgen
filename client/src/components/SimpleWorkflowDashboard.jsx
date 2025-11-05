@@ -3520,7 +3520,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         checkForEmailUpdates();
         // Always fetch workflow steps to get newly generated emails
         fetchAndTriggerWorkflowSteps();
-      }, 30000); // Check every 30 seconds for optimal performance
+      }, 60000); // Check every 60 seconds (WebSocket provides real-time updates)
 
       return () => clearInterval(interval);
     }
