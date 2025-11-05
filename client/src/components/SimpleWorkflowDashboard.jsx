@@ -1617,6 +1617,37 @@ const SettingsView = () => {
   );
 };
 
+// Loading Skeleton Components for Professional UX
+const ProspectCardSkeleton = () => (
+  <div className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
+    <div className="flex items-start gap-3">
+      <div className="w-12 h-12 bg-gray-200 rounded-full flex-shrink-0"></div>
+      <div className="flex-1">
+        <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+        <div className="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
+        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      </div>
+    </div>
+  </div>
+);
+
+const EmailCardSkeleton = () => (
+  <div className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
+    <div className="flex items-start justify-between mb-3">
+      <div className="flex-1">
+        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
+      </div>
+      <div className="w-16 h-6 bg-gray-200 rounded"></div>
+    </div>
+    <div className="space-y-2">
+      <div className="h-3 bg-gray-200 rounded w-full"></div>
+      <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+      <div className="h-3 bg-gray-200 rounded w-4/6"></div>
+    </div>
+  </div>
+);
+
 const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [activeView, setActiveView] = useState('workflow');
   const [showChatbot, setShowChatbot] = useState(true); // Always show on initial load
@@ -1653,6 +1684,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState(null);
   const [expandedSteps, setExpandedSteps] = useState(new Set());
+  const [isLoadingProspects, setIsLoadingProspects] = useState(false);
+  const [isLoadingEmails, setIsLoadingEmails] = useState(false);
 
   // Search query states
   const [prospectSearchQuery, setProspectSearchQuery] = useState('');
@@ -3199,6 +3232,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
     try {
       setIsProcessingWorkflowResults(true);
+      setIsLoadingProspects(true);
+      setIsLoadingEmails(true);
       setLastWorkflowFetchTime(now);
       console.log('🔄 Fetching workflow results with authentication...');
       const result = await apiGet('/api/workflow/results');
@@ -3348,6 +3383,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       console.error('❌ Failed to fetch workflow results:', error);
     } finally {
       setIsProcessingWorkflowResults(false);
+      setIsLoadingProspects(false);
+      setIsLoadingEmails(false);
     }
   };
 
@@ -4778,25 +4815,36 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                 )}
 
                 <div className="space-y-3">
-                  {filterProspects(prospects).map((prospect, index) => (
-                    <JobRightProspectCard
-                      key={prospect.email || index}
-                      prospect={prospect}
-                      isGenerating={false}
-                      showFilters={false} // Filters now shown separately above
-                      selectedFilters={prospectFilters}
-                      onFilterChange={handleProspectFilterChange}
-                    />
-                  ))}
-                  {filterProspects(prospects).length === 0 && prospectSearchQuery && (
-                    <div className="text-center py-8 text-gray-600">
-                      No prospects match "{prospectSearchQuery}". <button
-                        onClick={() => setProspectSearchQuery('')}
-                        className="text-gray-900 hover:underline font-medium"
-                      >
-                        Clear search
-                      </button> to see all prospects.
-                    </div>
+                  {isLoadingProspects ? (
+                    // Show loading skeletons
+                    <>
+                      {[...Array(3)].map((_, i) => (
+                        <ProspectCardSkeleton key={i} />
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {filterProspects(prospects).map((prospect, index) => (
+                        <JobRightProspectCard
+                          key={prospect.email || index}
+                          prospect={prospect}
+                          isGenerating={false}
+                          showFilters={false} // Filters now shown separately above
+                          selectedFilters={prospectFilters}
+                          onFilterChange={handleProspectFilterChange}
+                        />
+                      ))}
+                      {filterProspects(prospects).length === 0 && prospectSearchQuery && (
+                        <div className="text-center py-8 text-gray-600">
+                          No prospects match "{prospectSearchQuery}". <button
+                            onClick={() => setProspectSearchQuery('')}
+                            className="text-gray-900 hover:underline font-medium"
+                          >
+                            Clear search
+                          </button> to see all prospects.
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -4836,7 +4884,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                 )}
 
                 <div className="space-y-3">
-                  {generatedEmails.length > 0 ? filterEmails(generatedEmails).map((email, index) => (
+                  {isLoadingEmails ? (
+                    // Show loading skeletons
+                    <>
+                      {[...Array(3)].map((_, i) => (
+                        <EmailCardSkeleton key={i} />
+                      ))}
+                    </>
+                  ) : generatedEmails.length > 0 ? filterEmails(generatedEmails).map((email, index) => (
                     <JobRightEmailCard
                       key={email.id || index}
                       email={email}
