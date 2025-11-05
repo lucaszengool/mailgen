@@ -5028,22 +5028,72 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                       ))}
                     </>
                   ) : prospects.length === 0 ? (
-                    <div className="text-center py-16 px-4">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                        <Users className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Prospects Yet</h3>
-                      <p className="text-gray-600 mb-4">
-                        Start a workflow to discover potential prospects for your campaign
-                      </p>
-                      <button
-                        onClick={() => setActiveView('workflow')}
-                        className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                        style={{ backgroundColor: '#00f0a0', color: '#000' }}
+                    workflowStatus === 'running' || workflowStatus === 'starting' ? (
+                      // Show searching animation when workflow is active
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-center py-16 px-4"
                       >
-                        Start Workflow
-                      </button>
-                    </div>
+                        <motion.div
+                          animate={{
+                            scale: [1, 1.1, 1],
+                            rotate: [0, 360]
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                          className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                          style={{ backgroundColor: 'rgba(0, 240, 160, 0.1)' }}
+                        >
+                          <Search className="w-8 h-8 text-green-600" />
+                        </motion.div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Searching for Prospects...
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          AI is analyzing websites and discovering potential prospects for your campaign
+                        </p>
+                        <div className="flex items-center justify-center gap-2">
+                          <motion.div
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                            className="w-2 h-2 rounded-full bg-green-500"
+                          />
+                          <motion.div
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                            className="w-2 h-2 rounded-full bg-green-500"
+                          />
+                          <motion.div
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+                            className="w-2 h-2 rounded-full bg-green-500"
+                          />
+                        </div>
+                        <p className="text-sm text-gray-500 mt-4">This usually takes 1-2 minutes</p>
+                      </motion.div>
+                    ) : (
+                      // Show empty state when workflow is stopped
+                      <div className="text-center py-16 px-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                          <Users className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Prospects Yet</h3>
+                        <p className="text-gray-600 mb-4">
+                          Start a workflow to discover potential prospects for your campaign
+                        </p>
+                        <button
+                          onClick={() => setActiveView('workflow')}
+                          className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                          style={{ backgroundColor: '#00f0a0', color: '#000' }}
+                        >
+                          Start Workflow
+                        </button>
+                      </div>
+                    )
                   ) : (
                     <>
                       {filterProspects(prospects).map((prospect, index) => (
@@ -5119,7 +5169,74 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         <EmailCardSkeleton key={i} />
                       ))}
                     </>
-                  ) : generatedEmails.length > 0 ? filterEmails(generatedEmails).map((email, index) => (
+                  ) : generatedEmails.length === 0 ? (
+                    workflowStatus === 'running' || workflowStatus === 'starting' ? (
+                      // Show generating animation when workflow is active
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-center py-16 px-4"
+                      >
+                        <motion.div
+                          animate={{
+                            scale: [1, 1.1, 1],
+                            rotate: [0, 360]
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                          className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                          style={{ backgroundColor: 'rgba(0, 240, 160, 0.1)' }}
+                        >
+                          <Sparkles className="w-8 h-8 text-green-600" />
+                        </motion.div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Generating Emails...
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          AI is crafting personalized emails for each prospect
+                        </p>
+                        <div className="flex items-center justify-center gap-2">
+                          <motion.div
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                            className="w-2 h-2 rounded-full bg-green-500"
+                          />
+                          <motion.div
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                            className="w-2 h-2 rounded-full bg-green-500"
+                          />
+                          <motion.div
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+                            className="w-2 h-2 rounded-full bg-green-500"
+                          />
+                        </div>
+                        <p className="text-sm text-gray-500 mt-4">This usually takes 1-2 minutes</p>
+                      </motion.div>
+                    ) : (
+                      // Show empty state when workflow is stopped
+                      <div className="text-center py-16 px-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                          <Mail className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Emails Yet</h3>
+                        <p className="text-gray-600 mb-4">
+                          Start a workflow to generate personalized emails for your prospects
+                        </p>
+                        <button
+                          onClick={() => setActiveView('workflow')}
+                          className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                          style={{ backgroundColor: '#00f0a0', color: '#000' }}
+                        >
+                          Go to Workflow
+                        </button>
+                      </div>
+                    )
+                  ) : filterEmails(generatedEmails).map((email, index) => (
                     <motion.div
                       key={email.id || index}
                       initial={{ opacity: 0, y: 20 }}
