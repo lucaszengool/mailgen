@@ -45,6 +45,7 @@ import SignUpPage from './pages/SignUp';
 import OnboardingTour from './components/OnboardingTour';
 import SimpleWorkflowDashboard from './components/SimpleWorkflowDashboard';
 import CampaignSelector from './components/CampaignSelector';
+import CampaignOnboardingWizard from './components/CampaignOnboardingWizard';
 import ProcessNotificationsDemo from './components/ProcessNotificationsDemo';
 import BlogPost from './pages/BlogPost';
 import LanguageSwitcher from './components/LanguageSwitcher';
@@ -59,6 +60,8 @@ function App() {
   // Campaign management state
   const [currentCampaign, setCurrentCampaign] = useState(null);
   const [showCampaignSelector, setShowCampaignSelector] = useState(true);
+  const [showCampaignOnboarding, setShowCampaignOnboarding] = useState(false);
+  const [campaignBeingSetup, setCampaignBeingSetup] = useState(null);
 
   // Debug current view state
   // console.log('🔍 App.jsx render - Current state:', { currentView, isSetupComplete });
@@ -206,8 +209,48 @@ function App() {
   // Campaign management handlers
   const handleSelectCampaign = (campaign) => {
     console.log('📁 Selected campaign:', campaign.name);
-    setCurrentCampaign(campaign);
+
+    // Check if campaign has been set up
+    const campaignConfig = localStorage.getItem(`campaign_${campaign.id}_config`);
+    if (!campaignConfig || !campaign.setupComplete) {
+      // Campaign needs setup - show onboarding wizard
+      console.log('🔧 Campaign needs setup, showing onboarding wizard');
+      setCampaignBeingSetup(campaign);
+      setShowCampaignOnboarding(true);
+      setShowCampaignSelector(false);
+    } else {
+      // Campaign is ready - open it
+      console.log('✅ Campaign ready, opening workflow dashboard');
+      setCurrentCampaign(campaign);
+      setShowCampaignSelector(false);
+    }
+  };
+
+  const handleCreateCampaign = (campaign) => {
+    console.log('🆕 Creating new campaign:', campaign.name);
+    // New campaigns always need setup
+    setCampaignBeingSetup(campaign);
+    setShowCampaignOnboarding(true);
     setShowCampaignSelector(false);
+  };
+
+  const handleCampaignOnboardingComplete = (data) => {
+    console.log('✅ Campaign onboarding complete:', data);
+    setShowCampaignOnboarding(false);
+    setCampaignBeingSetup(null);
+
+    // Load the campaign config and open the workflow dashboard
+    setCurrentCampaign(data.campaign);
+
+    // Set as current agentConfig for the dashboard
+    setAgentConfig(data);
+  };
+
+  const handleCampaignOnboardingCancel = () => {
+    console.log('❌ Campaign onboarding cancelled');
+    setShowCampaignOnboarding(false);
+    setCampaignBeingSetup(null);
+    setShowCampaignSelector(true);
   };
 
   const handleBackToCampaigns = () => {
@@ -372,10 +415,16 @@ function App() {
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="*" element={
             <>
-              {showCampaignSelector ? (
+              {showCampaignOnboarding ? (
+                <CampaignOnboardingWizard
+                  campaign={campaignBeingSetup}
+                  onComplete={handleCampaignOnboardingComplete}
+                  onCancel={handleCampaignOnboardingCancel}
+                />
+              ) : showCampaignSelector ? (
                 <CampaignSelector
                   onSelectCampaign={handleSelectCampaign}
-                  onCreateCampaign={handleSelectCampaign}
+                  onCreateCampaign={handleCreateCampaign}
                 />
               ) : (
                 <>

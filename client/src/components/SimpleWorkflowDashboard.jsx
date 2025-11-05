@@ -1699,6 +1699,32 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const [activeView, setActiveView] = useState('workflow');
   const [showChatbot, setShowChatbot] = useState(true); // Always show on initial load
   const [wsConnectionStatus, setWsConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'disconnected', 'error'
+  const [campaignConfig, setCampaignConfig] = useState(null);
+
+  // Load campaign-specific configuration
+  useEffect(() => {
+    if (campaign && campaign.id) {
+      console.log('📁 Loading campaign-specific configuration for:', campaign.name);
+
+      // Load campaign config from localStorage
+      const campaignStorageKey = `campaign_${campaign.id}_config`;
+      const storedConfig = localStorage.getItem(campaignStorageKey);
+
+      if (storedConfig) {
+        const config = JSON.parse(storedConfig);
+        setCampaignConfig(config);
+        console.log('✅ Loaded campaign config:', config);
+
+        // Also set it as the main agentConfig and smtpConfig for backwards compatibility
+        localStorage.setItem('agentConfig', JSON.stringify(config));
+        if (config.smtpConfig) {
+          localStorage.setItem('smtpConfig', JSON.stringify(config.smtpConfig));
+        }
+      } else {
+        console.warn('⚠️ No configuration found for campaign:', campaign.id);
+      }
+    }
+  }, [campaign]);
 
   // Open chatbot on component mount (first time landing on dashboard)
   useEffect(() => {
@@ -4261,6 +4287,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         console.log('🔍 DEBUG - Extracted senderEmail:', smtpConfig?.auth?.user);
 
         const result = await apiPost('/api/workflow/start', {
+          // Include campaign ID if available
+          campaignId: campaign?.id || null,
+          campaignName: campaign?.name || 'Default Campaign',
           // Include all saved configuration including SMTP
           targetWebsite: config.targetWebsite || 'https://example.com',
           businessType: config.businessType || 'technology',

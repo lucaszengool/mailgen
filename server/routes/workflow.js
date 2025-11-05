@@ -217,9 +217,17 @@ router.post('/start', optionalAuth, async (req, res) => {
   console.log('🚀 WORKFLOW START ENDPOINT CALLED!');
   console.log('🔍 Request body:', req.body);
   console.log('👤 User ID:', req.userId);
+  console.log('📁 Campaign ID:', req.body.campaignId);
   try {
     // Get user-specific workflow state
     const workflowState = getUserWorkflowState(req.userId);
+
+    // Store campaign ID in workflow state
+    if (req.body.campaignId) {
+      workflowState.campaignId = req.body.campaignId;
+      workflowState.campaignName = req.body.campaignName;
+      console.log(`📁 Workflow associated with campaign: ${req.body.campaignName} (${req.body.campaignId})`);
+    }
 
     if (workflowState.isRunning) {
       return res.status(400).json({
@@ -308,6 +316,8 @@ router.post('/start', optionalAuth, async (req, res) => {
 
     // Execute real campaign in background
     const campaignConfig = {
+      campaignId: req.body.campaignId || null,  // 📁 Include campaign ID
+      campaignName: req.body.campaignName || 'Default Campaign',  // 📁 Include campaign name
       targetWebsite: req.body.targetWebsite || savedConfig?.targetWebsite || 'https://example.com',
       campaignGoal: req.body.campaignGoal || savedConfig?.campaignGoal || 'partnership',
       businessType: req.body.businessType || savedConfig?.businessType || 'technology',
