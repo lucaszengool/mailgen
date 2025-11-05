@@ -131,6 +131,87 @@ router.get('/status', optionalAuth, (req, res) => {
   });
 });
 
+// Get workflow statistics (prospects, emails, rate limits, timers)
+router.get('/stats', optionalAuth, (req, res) => {
+  try {
+    const agent = getMarketingAgent(req);
+    const stats = {
+      prospects: {
+        total: 0,
+        new: 0
+      },
+      emails: {
+        generated: 0,
+        sent: 0,
+        pending: 0
+      },
+      rateLimit: {
+        current: 0,
+        max: 100,
+        resetTime: null,
+        timeUntilReset: 0,
+        isLimited: false
+      },
+      workflow: {
+        isRunning: false,
+        isPaused: false,
+        currentStep: null
+      }
+    };
+
+    // Get rate limit info from agent
+    if (agent && agent.prospectSearchAgent && agent.prospectSearchAgent.autonomousSearch) {
+      const rateLimit = agent.prospectSearchAgent.autonomousSearch.rateLimit;
+      const now = Date.now();
+      const timeUntilReset = Math.max(0, rateLimit.resetTime - now);
+
+      stats.rateLimit = {
+        current: rateLimit.countThisHour,
+        max: rateLimit.maxPerHour,
+        resetTime: rateLimit.resetTime,
+        timeUntilReset: timeUntilReset,
+        isLimited: rateLimit.countThisHour >= rateLimit.maxPerHour
+      };
+
+      // Get prospect stats
+      if (agent.prospectSearchAgent.autonomousSearch.stats) {
+        stats.prospects.total = agent.prospectSearchAgent.autonomousSearch.emailPool.size;
+        stats.prospects.new = agent.prospectSearchAgent.autonomousSearch.stats.totalEmailsFound;
+      }
+    }
+
+    // Get workflow state
+    const wsManager = req.app.locals.wsManager;
+    if (wsManager && wsManager.workflowStates.size > 0) {
+      for (const [workflowId, state] of wsManager.workflowStates) {
+        if (state.data) {
+          if (state.data.prospects) {
+            stats.prospects.total = state.data.prospects.length;
+          }
+          if (state.data.generatedEmails) {
+            stats.emails.generated = state.data.generatedEmails.length;
+          }
+        }
+        stats.workflow.isRunning = state.status === 'running';
+        stats.workflow.isPaused = state.status === 'paused';
+        stats.workflow.currentStep = state.currentStep;
+        break;
+      }
+    }
+
+    res.json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    console.error('Error getting workflow stats:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Start workflow
 router.post('/start', optionalAuth, async (req, res) => {
   console.log('🚀 WORKFLOW START ENDPOINT CALLED!');

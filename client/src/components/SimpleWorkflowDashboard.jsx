@@ -7,7 +7,7 @@ import {
   FileText, Sparkles, ArrowRight, Clock, Activity,
   Target, Users, BarChart3, Link, Shield, Zap, Edit, Settings,
   Radar, Network, BarChart, PlayCircle, CheckSquare, AlertTriangle,
-  Server, Eye, Cpu, Layers, Workflow, Gauge, Home
+  Server, Eye, Cpu, Layers, Workflow, Gauge, Home, RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SignedIn, UserButton } from '@clerk/clerk-react';
@@ -1735,6 +1735,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
   const [isLoadingEmails, setIsLoadingEmails] = useState(false);
   const [hasInitiallyLoadedProspects, setHasInitiallyLoadedProspects] = useState(false);
   const [hasInitiallyLoadedEmails, setHasInitiallyLoadedEmails] = useState(false);
+
+  // Workflow stats state
+  const [workflowStats, setWorkflowStats] = useState({
+    prospects: { total: 0, new: 0 },
+    emails: { generated: 0, sent: 0, pending: 0 },
+    rateLimit: { current: 0, max: 100, resetTime: null, timeUntilReset: 0, isLimited: false },
+    workflow: { isRunning: false, isPaused: false, currentStep: null }
+  });
+  const [timeUntilReset, setTimeUntilReset] = useState('');
 
   // Search query states
   const [prospectSearchQuery, setProspectSearchQuery] = useState('');
@@ -3500,6 +3509,41 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
     }
   };
 
+  // Fetch workflow stats
+  const fetchWorkflowStats = async () => {
+    try {
+      const result = await apiGet('/api/workflow/stats');
+      if (result && result.data) {
+        setWorkflowStats(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch workflow stats:', error);
+    }
+  };
+
+  // Update time until reset countdown every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (workflowStats.rateLimit.timeUntilReset > 0) {
+        const remaining = workflowStats.rateLimit.timeUntilReset;
+        const minutes = Math.floor(remaining / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
+        setTimeUntilReset(`${minutes}m ${seconds}s`);
+      } else {
+        setTimeUntilReset('');
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [workflowStats.rateLimit.timeUntilReset]);
+
+  // Fetch workflow stats periodically
+  useEffect(() => {
+    fetchWorkflowStats(); // Initial fetch
+    const interval = setInterval(fetchWorkflowStats, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   // Poll for workflow updates periodically
   useEffect(() => {
     // IMPORTANT: Keep polling even when paused for email approval
@@ -4538,8 +4582,64 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
               </button>
             </div>
           </div>
+
+          {/* Workflow Stats Banner - Only show when workflow is running */}
+          {workflowStatus === 'running' && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-blue-600 font-medium uppercase">Prospects Found</p>
+                    <p className="text-2xl font-bold text-blue-900 mt-1">{workflowStats.prospects.total}</p>
+                  </div>
+                  <Users className="w-8 h-8 text-blue-500 opacity-50" />
+                </div>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-green-600 font-medium uppercase">Emails Generated</p>
+                    <p className="text-2xl font-bold text-green-900 mt-1">{workflowStats.emails.generated}</p>
+                  </div>
+                  <Mail className="w-8 h-8 text-green-500 opacity-50" />
+                </div>
+              </div>
+
+              <div className={`${workflowStats.rateLimit.isLimited ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'} border rounded-lg p-4`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-xs font-medium uppercase ${workflowStats.rateLimit.isLimited ? 'text-orange-600' : 'text-gray-600'}`}>
+                      API Rate Limit
+                    </p>
+                    <p className={`text-2xl font-bold mt-1 ${workflowStats.rateLimit.isLimited ? 'text-orange-900' : 'text-gray-900'}`}>
+                      {workflowStats.rateLimit.current}/{workflowStats.rateLimit.max}
+                    </p>
+                  </div>
+                  <Clock className={`w-8 h-8 opacity-50 ${workflowStats.rateLimit.isLimited ? 'text-orange-500' : 'text-gray-500'}`} />
+                </div>
+              </div>
+
+              <div className={`${workflowStats.rateLimit.isLimited ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'} border rounded-lg p-4`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-xs font-medium uppercase ${workflowStats.rateLimit.isLimited ? 'text-orange-600' : 'text-gray-600'}`}>
+                      {workflowStats.rateLimit.isLimited ? 'Resumes In' : 'Time to Reset'}
+                    </p>
+                    <p className={`text-2xl font-bold mt-1 ${workflowStats.rateLimit.isLimited ? 'text-orange-900' : 'text-gray-900'}`}>
+                      {timeUntilReset || '--'}
+                    </p>
+                  </div>
+                  <RefreshCw className={`w-8 h-8 opacity-50 ${workflowStats.rateLimit.isLimited ? 'text-orange-500 animate-spin' : 'text-gray-500'}`} />
+                </div>
+                {workflowStats.rateLimit.isLimited && (
+                  <p className="text-xs text-orange-600 mt-2">⏳ Workflow will auto-resume</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-        
+
         <div className="flex-1 p-6 overflow-y-auto">
           {activeView === 'workflow' && (
             <div className="h-full -m-6 flex flex-col bg-white">
