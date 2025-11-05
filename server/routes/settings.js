@@ -95,10 +95,44 @@ router.post('/smtp', async (req, res) => {
 
     console.log(`✅ [User: ${userId}] SMTP配置已保存并广播更新`);
 
+    // 🔥 AUTO-START IMAP MONITORING for email tracking
+    try {
+      const IMAPEmailTracker = require('../services/IMAPEmailTracker');
+
+      // Check if IMAP tracker already exists
+      if (!req.app.locals.imapTracker) {
+        console.log('📬 Starting IMAP monitoring automatically...');
+
+        const imapTracker = new IMAPEmailTracker();
+
+        // Convert SMTP config to IMAP config
+        const imapConnection = {
+          user: smtpConfig.username,
+          password: smtpConfig.password,
+          host: smtpConfig.host.replace('smtp', 'imap'),
+          port: 993
+        };
+
+        await imapTracker.connect(imapConnection);
+        await imapTracker.startMonitoring(5); // Check every 5 minutes
+
+        // Store globally so it persists
+        req.app.locals.imapTracker = imapTracker;
+
+        console.log('✅ IMAP monitoring started successfully');
+      } else {
+        console.log('📬 IMAP monitoring already active');
+      }
+    } catch (imapError) {
+      console.error('⚠️ Failed to start IMAP monitoring:', imapError.message);
+      // Continue anyway - IMAP is optional
+    }
+
     res.json({
       success: true,
       message: 'SMTP配置更新成功',
-      data: userSettings.smtp
+      data: userSettings.smtp,
+      imapMonitoring: req.app.locals.imapTracker ? 'active' : 'inactive'
     });
 
   } catch (error) {

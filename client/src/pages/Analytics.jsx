@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import '../styles/jobright-colors.css'
 import {
   ChartBarIcon,
@@ -48,20 +49,42 @@ export default function Analytics() {
   const [realtimeStats, setRealtimeStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [wsConnection, setWsConnection] = useState(null)
+  const [imapMonitoring, setImapMonitoring] = useState(false)
+  const [checkingImapStatus, setCheckingImapStatus] = useState(true)
 
   useEffect(() => {
     fetchAnalyticsData()
     setupRealtimeConnection()
+    checkImapStatus()
 
     // Refresh every 30 seconds
     const interval = setInterval(fetchAnalyticsData, 30000)
+    // Check IMAP status every 60 seconds
+    const imapInterval = setInterval(checkImapStatus, 60000)
+
     return () => {
       clearInterval(interval)
+      clearInterval(imapInterval)
       if (wsConnection) {
         wsConnection.close()
       }
     }
   }, [timeRange, selectedCampaign])
+
+  const checkImapStatus = async () => {
+    try {
+      const response = await fetch('/api/analytics/imap-monitoring-status')
+      const data = await response.json()
+      if (data.success) {
+        setImapMonitoring(data.monitoring)
+        console.log('📬 IMAP Monitoring Status:', data.monitoring ? 'Active' : 'Inactive')
+      }
+    } catch (error) {
+      console.error('Failed to check IMAP status:', error)
+    } finally {
+      setCheckingImapStatus(false)
+    }
+  }
 
   const setupRealtimeConnection = () => {
     try {
@@ -395,11 +418,25 @@ export default function Analytics() {
               <EyeIcon className="h-8 w-8" style={{ color: '#00f0a0' }} />
             </div>
             <div className="ml-4 flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Enable Advanced Email Tracking
-              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Advanced Email Tracking
+                </h3>
+                {!checkingImapStatus && (
+                  <div className="flex items-center">
+                    <div
+                      className={`w-2 h-2 rounded-full mr-2 ${imapMonitoring ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}
+                    />
+                    <span className={`text-sm font-medium ${imapMonitoring ? 'text-green-600' : 'text-gray-500'}`}>
+                      {imapMonitoring ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                )}
+              </div>
               <p className="text-gray-600 mb-4">
-                Get detailed insights into your email campaigns by enabling advanced tracking features. Track opens, clicks, replies, and bounces automatically.
+                {imapMonitoring
+                  ? 'IMAP monitoring is active and checking your inbox every 5 minutes for replies and bounces.'
+                  : 'Enable tracking to get detailed insights into opens, clicks, replies, and bounces.'}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
