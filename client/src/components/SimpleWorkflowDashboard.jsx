@@ -1643,16 +1643,16 @@ const ConfirmationModal = ({ isOpen, title, message, confirmText, cancelText, on
         <div className="flex gap-3 px-6 pb-6 justify-end">
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 active:scale-95 transition-all duration-150 font-medium focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
           >
             {cancelText}
           </button>
           <button
             onClick={onConfirm}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
               danger
-                ? 'bg-red-600 text-white hover:bg-red-700'
-                : 'text-white hover:opacity-90'
+                ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+                : 'text-white hover:opacity-90 focus:ring-green-500'
             }`}
             style={danger ? {} : { backgroundColor: '#00f0a0', color: '#000' }}
           >
@@ -4914,7 +4914,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                       </p>
                       <button
                         onClick={() => setActiveView('workflow')}
-                        className="px-4 py-2 rounded-lg font-medium transition-colors hover:opacity-90"
+                        className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                         style={{ backgroundColor: '#00f0a0', color: '#000' }}
                       >
                         Start Workflow
@@ -5089,7 +5089,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                       </p>
                       <button
                         onClick={() => setActiveView('workflow')}
-                        className="px-4 py-2 rounded-lg font-medium transition-colors hover:opacity-90"
+                        className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                         style={{ backgroundColor: '#00f0a0', color: '#000' }}
                       >
                         Go to Workflow
