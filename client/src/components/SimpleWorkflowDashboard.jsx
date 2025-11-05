@@ -1221,7 +1221,7 @@ const SettingsView = () => {
 
   const testSmtpConnection = async () => {
     if (!smtpConfig.host || !smtpConfig.username || !smtpConfig.password) {
-      alert('Please fill in all required SMTP fields');
+      toast.error('Please fill in all required SMTP fields');
       return;
     }
     setTestingConnection(true);
@@ -1232,9 +1232,13 @@ const SettingsView = () => {
         body: JSON.stringify({ smtpConfig }),
       });
       const data = await response.json();
-      alert(data.success ? 'SMTP Connection Successful!' : `Test Failed: ${data.error}`);
+      if (data.success) {
+        toast.success('SMTP Connection Successful!');
+      } else {
+        toast.error(`Test Failed: ${data.error}`);
+      }
     } catch (error) {
-      alert('Network error, please try again');
+      toast.error('Network error, please try again');
     } finally {
       setTestingConnection(false);
     }
@@ -1249,9 +1253,9 @@ const SettingsView = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ smtpConfig }),
       });
-      alert('SMTP Configuration Updated Successfully!');
+      toast.success('SMTP Configuration Updated Successfully!');
     } catch (error) {
-      alert(`Update Failed: ${error.message}`);
+      toast.error(`Update Failed: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -1909,7 +1913,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
       if (response.success) {
         console.log('✅ All user data cleared successfully');
-        alert('All data has been cleared successfully!');
+        toast.success('All data has been cleared successfully!');
 
         // Also clear workflow history
         clearWorkflowHistory();
@@ -1918,11 +1922,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         window.location.reload();
       } else {
         console.error('Failed to clear user data:', response.error);
-        alert('Failed to clear data: ' + response.error);
+        toast.error('Failed to clear data: ' + response.error);
       }
     } catch (error) {
       console.error('Error clearing user data:', error);
-      alert('Error clearing data: ' + error.message);
+      toast.error('Error clearing data: ' + error.message);
     }
   };
 
@@ -4817,13 +4821,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         // Validate email object before sending
                         if (!emailToSend) {
                           console.error('❌ Email object is undefined');
-                          alert('Error: Email data is missing');
+                          toast.error('Email data is missing');
                           return;
                         }
 
                         if (!emailToSend.to) {
                           console.error('❌ Email recipient is missing');
-                          alert('Error: Email recipient is required');
+                          toast.error('Email recipient is required');
                           return;
                         }
 
@@ -4854,22 +4858,26 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                               const result = await response.json();
                               if (result.success) {
                                 console.log('✅ Email sent successfully via API');
-                                alert('Email sent successfully!');
+                                toast.success('Email sent successfully!');
                               } else {
                                 console.error('❌ API returned error:', result.error);
-                                alert(`Failed to send email: ${result.error}`);
+                                toast.error(`Failed to send email: ${result.error}`);
                               }
                             } else if (response.status === 404) {
                               // API endpoint doesn't exist - show alternative
                               console.log('⚠️ Backend API not available');
-                              alert(`Email prepared for sending:\nTo: ${emailData.to}\nSubject: ${emailData.subject}\n\nBackend API not configured. Please set up email sending backend.`);
+                              toast.error(`Backend API not configured. Email prepared for: ${emailData.to}`, {
+                                duration: 5000
+                              });
                             } else {
                               throw new Error(`HTTP ${response.status}`);
                             }
                           } catch (error) {
                             console.error('❌ Network error:', error);
                             // Fallback - show email details instead of error
-                            alert(`Email ready to send:\nTo: ${emailData.to}\nSubject: ${emailData.subject}\n\nPlease configure email backend to enable sending.`);
+                            toast.error(`Please configure email backend. Email ready for: ${emailData.to}`, {
+                              duration: 5000
+                            });
                           }
                         };
 
