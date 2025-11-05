@@ -74,13 +74,13 @@ router.get('/gmail/callback', async (req, res) => {
     }));
 
     // Redirect to frontend URL (not backend)
-    const frontendUrl = process.env.FRONTEND_URL ||
-                       (req.headers.origin || 'https://mailgen.org');
+    // Always use mailgen.org unless FRONTEND_URL is explicitly set
+    const frontendUrl = process.env.FRONTEND_URL || 'https://mailgen.org';
+    console.log(`🔄 Redirecting to frontend: ${frontendUrl}/settings?oauth=success`);
     res.redirect(`${frontendUrl}/settings?oauth=success&tokens=${tokenData}`);
   } catch (error) {
     console.error('Gmail OAuth error:', error);
-    const frontendUrl = process.env.FRONTEND_URL ||
-                       (req.headers.origin || 'https://mailgen.org');
+    const frontendUrl = process.env.FRONTEND_URL || 'https://mailgen.org';
     res.redirect(`${frontendUrl}/settings?oauth=error&message=${encodeURIComponent(error.message)}`);
   }
 });
@@ -115,7 +115,7 @@ router.get('/outlook', (req, res) => {
  */
 router.get('/outlook/callback', async (req, res) => {
   const { code, error } = req.query;
-  const frontendUrl = process.env.FRONTEND_URL || (req.headers.origin || 'https://mailgen.org');
+  const frontendUrl = process.env.FRONTEND_URL || 'https://mailgen.org';
 
   if (error) {
     return res.redirect(`${frontendUrl}/settings?oauth=error&message=${encodeURIComponent(error)}`);
@@ -181,7 +181,7 @@ router.get('/yahoo', (req, res) => {
  */
 router.get('/yahoo/callback', async (req, res) => {
   const { code, error } = req.query;
-  const frontendUrl = process.env.FRONTEND_URL || (req.headers.origin || 'https://mailgen.org');
+  const frontendUrl = process.env.FRONTEND_URL || 'https://mailgen.org';
 
   if (error) {
     return res.redirect(`${frontendUrl}/settings?oauth=error&message=${encodeURIComponent(error)}`);
