@@ -1235,10 +1235,10 @@ const SettingsView = () => {
       if (data.success) {
         toast.success('SMTP Connection Successful!');
       } else {
-        toast.error(`Test Failed: ${data.error}`);
+        toast.error(`SMTP Test Failed: ${data.error}. Check your credentials and try again.`, { duration: 5000 });
       }
     } catch (error) {
-      toast.error('Network error, please try again');
+      toast.error('Cannot reach server. Check your internet connection and ensure the backend is running.', { duration: 5000 });
     } finally {
       setTestingConnection(false);
     }
@@ -1255,7 +1255,7 @@ const SettingsView = () => {
       });
       toast.success('SMTP Configuration Updated Successfully!');
     } catch (error) {
-      toast.error(`Update Failed: ${error.message}`);
+      toast.error(`Could not save SMTP settings. ${error.message}. Your settings are saved locally but may not sync with the server.`, { duration: 6000 });
     } finally {
       setIsSaving(false);
     }
@@ -1956,11 +1956,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
         window.location.reload();
       } else {
         console.error('Failed to clear user data:', response.error);
-        toast.error('Failed to clear data: ' + response.error);
+        toast.error(`Could not clear all data: ${response.error}. Try clearing your browser cache or contact support.`, { duration: 6000 });
       }
     } catch (error) {
       console.error('Error clearing user data:', error);
-      toast.error('Error clearing data: ' + error.message);
+      toast.error(`Network error while clearing data: ${error.message}. Check your connection and try again.`, { duration: 6000 });
     }
   };
 
@@ -4945,7 +4945,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                                 toast.success('Email sent successfully!');
                               } else {
                                 console.error('❌ API returned error:', result.error);
-                                toast.error(`Failed to send email: ${result.error}`);
+                                toast.error(`Could not send email: ${result.error}. Check your SMTP settings in the Settings tab.`, { duration: 6000 });
                               }
                             } else if (response.status === 404) {
                               // API endpoint doesn't exist - show alternative
