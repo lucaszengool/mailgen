@@ -58,6 +58,19 @@ function App() {
   // Debug current view state
   // console.log('🔍 App.jsx render - Current state:', { currentView, isSetupComplete });
 
+  // Handle legal pages (Privacy/Terms) - these should always be accessible
+  const currentPath = window.location.pathname;
+  if (currentPath === '/privacy' || currentPath === '/terms') {
+    return (
+      <div className="App bg-white min-h-screen">
+        <Routes>
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+        </Routes>
+      </div>
+    );
+  }
+
   useEffect(() => {
     console.log('App mounted, checking setup status...');
 
