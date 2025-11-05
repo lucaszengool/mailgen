@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
+// Get API URL - use VITE_API_URL in production, relative path in dev
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 export default function GmailOAuthButton() {
   const [oauthStatus, setOauthStatus] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -31,7 +34,7 @@ export default function GmailOAuthButton() {
   const checkOAuthStatus = async () => {
     setChecking(true);
     try {
-      const response = await fetch('/api/gmail-oauth/status');
+      const response = await fetch(`${API_URL}/api/gmail-oauth/status`);
       const data = await response.json();
 
       if (data.success) {
@@ -47,7 +50,7 @@ export default function GmailOAuthButton() {
   const handleConnectGmail = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/gmail-oauth/authorize');
+      const response = await fetch(`${API_URL}/api/gmail-oauth/authorize`);
       const data = await response.json();
 
       if (data.success && data.authUrl) {
@@ -90,7 +93,7 @@ export default function GmailOAuthButton() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/gmail-oauth/disconnect', {
+      const response = await fetch(`${API_URL}/api/gmail-oauth/disconnect`, {
         method: 'POST'
       });
 
@@ -113,7 +116,7 @@ export default function GmailOAuthButton() {
   const handleTestConnection = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/gmail-oauth/test');
+      const response = await fetch(`${API_URL}/api/gmail-oauth/test`);
       const data = await response.json();
 
       if (data.success) {
