@@ -445,6 +445,10 @@ function App() {
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="/notifications-demo" element={<ProcessNotificationsDemo />} />
+          {/* Legal Pages - Standalone without Layout */}
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          {/* App Pages with Layout */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="home" element={<Home />} />
@@ -459,8 +463,6 @@ function App() {
             <Route path="editor" element={<ProfessionalEmailEditorPage />} />
             <Route path="research" element={<WebsiteAnalyzer />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="privacy" element={<Privacy />} />
-            <Route path="terms" element={<Terms />} />
             <Route path="compose" element={<EmailComposer />} />
             <Route path="professional-email-editor" element={<ProfessionalEmailEditorPage />} />
             <Route path="email-editor" element={<ProfessionalEmailEditorPage />} />
