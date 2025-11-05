@@ -1,0 +1,36 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <rect width="120" height="120" rx="24" fill="#1a1a1a"/>
+
+  <!-- Envelope body -->
+  <path d="M25 42C25 39.2386 27.2386 37 30 37H90C92.7614 37 95 39.2386 95 42V78C95 80.7614 92.7614 83 90 83H30C27.2386 83 25 80.7614 25 78V42Z" fill="#2d3748"/>
+
+  <!-- Envelope flap (glowing green) -->
+  <path d="M25 42L60 62L95 42" stroke="#00f5a0" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Bottom fold line -->
+  <path d="M25 78L45 62M95 78L75 62" stroke="#00f5a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+
+  <!-- AI Sparkle elements -->
+  <circle cx="85" cy="28" r="6" fill="#00f5a0">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <line x1="85" y1="18" x2="85" y2="22" stroke="#00f5a0" stroke-width="3" stroke-linecap="round"/>
+  <line x1="85" y1="34" x2="85" y2="38" stroke="#00f5a0" stroke-width="3" stroke-linecap="round"/>
+  <line x1="75" y1="28" x2="79" y2="28" stroke="#00f5a0" stroke-width="3" stroke-linecap="round"/>
+  <line x1="91" y1="28" x2="95" y2="28" stroke="#00f5a0" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Secondary sparkles -->
+  <circle cx="35" cy="25" r="3" fill="#00f5a0" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;0.3;0.7" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="72" cy="90" r="3" fill="#00f5a0" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Envelope outline -->
+  <rect x="25" y="37" width="70" height="46" rx="5" stroke="#00f5a0" stroke-width="3" fill="none"/>
+
+  <!-- Brand name -->
+  <text x="60" y="105" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#00f5a0" text-anchor="middle">MAILGEN</text>
+</svg>

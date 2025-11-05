@@ -1,0 +1,14 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark background -->
+  <rect width="32" height="32" rx="8" fill="#1a1a1a"/>
+
+  <!-- Mail envelope - simplified shape -->
+  <path d="M7 10C7 9.44772 7.44772 9 8 9H24C24.5523 9 25 9.44772 25 10V22C25 22.5523 24.5523 23 24 23H8C7.44772 23 7 22.5523 7 22V10Z" fill="#2d3748"/>
+
+  <!-- Mail flap line (brighter green) -->
+  <path d="M7 10L16 16.5L25 10" stroke="#00f5a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- AI sparkle accent -->
+  <circle cx="23" cy="7" r="2" fill="#00f5a0"/>
+  <path d="M23 4V7M23 7V10M23 7H20M23 7H26" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
