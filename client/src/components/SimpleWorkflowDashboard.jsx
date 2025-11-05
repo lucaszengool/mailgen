@@ -1617,6 +1617,41 @@ const SettingsView = () => {
   );
 };
 
+// Confirmation Modal Component for Destructive Actions
+const ConfirmationModal = ({ isOpen, title, message, confirmText, cancelText, onConfirm, onCancel, danger }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-md w-full shadow-xl">
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+          <p className="text-gray-600 whitespace-pre-line">{message}</p>
+        </div>
+        <div className="flex gap-3 px-6 pb-6 justify-end">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+          >
+            {cancelText}
+          </button>
+          <button
+            onClick={onConfirm}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              danger
+                ? 'bg-red-600 text-white hover:bg-red-700'
+                : 'text-white hover:opacity-90'
+            }`}
+            style={danger ? {} : { backgroundColor: '#00f0a0', color: '#000' }}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Loading Skeleton Components for Professional UX
 const ProspectCardSkeleton = () => (
   <div className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
@@ -1706,6 +1741,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
   // 🎯 Onboarding tour state
   const [showOnboardingTour, setShowOnboardingTour] = useState(false);
+
+  // 🎯 Confirmation modal state
+  const [confirmationModal, setConfirmationModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
+    onConfirm: () => {},
+    danger: false
+  });
 
   // Filter handlers
   const handleProspectFilterChange = (filterType, value) => {
@@ -1911,36 +1957,54 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
 
   // Function to clear all workflow history
   const clearWorkflowHistory = () => {
-    const freshHistory = {
-      messages: [],
-      completedAnimations: [],
-      detailedWindows: [],
-      workflowStates: {},
-      lastUpdate: null,
-      sessionId: Date.now().toString()
-    };
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Clear Workflow History?',
+      message: 'This will clear your workflow conversation history.\n\nYour prospects and emails will not be affected.',
+      confirmText: 'Clear History',
+      cancelText: 'Cancel',
+      danger: false,
+      onConfirm: () => {
+        setConfirmationModal(prev => ({ ...prev, isOpen: false }));
 
-    setWorkflowHistory(freshHistory);
-    setMessages([]);
-    setHistoryRestored(false);
+        const freshHistory = {
+          messages: [],
+          completedAnimations: [],
+          detailedWindows: [],
+          workflowStates: {},
+          lastUpdate: null,
+          sessionId: Date.now().toString()
+        };
 
-    // Clear from localStorage
-    try {
-      localStorage.removeItem('workflowHistory');
-      localStorage.removeItem('workflowMessages'); // Clear old format too
-      console.log('🗑️ Cleared all workflow history');
-    } catch (error) {
-      console.error('Failed to clear workflow history:', error);
-    }
+        setWorkflowHistory(freshHistory);
+        setMessages([]);
+        setHistoryRestored(false);
+
+        // Clear from localStorage
+        try {
+          localStorage.removeItem('workflowHistory');
+          localStorage.removeItem('workflowMessages'); // Clear old format too
+          console.log('🗑️ Cleared all workflow history');
+          toast.success('Workflow history cleared');
+        } catch (error) {
+          console.error('Failed to clear workflow history:', error);
+          toast.error('Failed to clear history');
+        }
+      }
+    });
   };
 
   // Function to clear all user data (prospects, campaigns, email drafts)
-  const clearAllUserData = async () => {
-    const confirmed = window.confirm(
-      'Are you sure you want to clear ALL data?\n\nThis will delete:\n• All prospects\n• All campaigns\n• All email drafts\n\nThis action cannot be undone!'
-    );
-
-    if (!confirmed) return;
+  const clearAllUserData = () => {
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Clear All Data?',
+      message: 'This will permanently delete:\n\n• All prospects\n• All campaigns  \n• All email drafts\n\nThis action cannot be undone!',
+      confirmText: 'Clear All Data',
+      cancelText: 'Cancel',
+      danger: true,
+      onConfirm: async () => {
+        setConfirmationModal(prev => ({ ...prev, isOpen: false }));
 
     try {
       const response = await apiPost('/api/email-editor/clear-all-data', {});
@@ -1962,6 +2026,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
       console.error('Error clearing user data:', error);
       toast.error(`Network error while clearing data: ${error.message}. Check your connection and try again.`, { duration: 6000 });
     }
+      }
+    });
   };
 
   const [waitingForDetailedWindow, setWaitingForDetailedWindow] = useState(false);
@@ -4822,6 +4888,23 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                         <ProspectCardSkeleton key={i} />
                       ))}
                     </>
+                  ) : prospects.length === 0 ? (
+                    <div className="text-center py-16 px-4">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                        <Users className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Prospects Yet</h3>
+                      <p className="text-gray-600 mb-4">
+                        Start a workflow to discover potential prospects for your campaign
+                      </p>
+                      <button
+                        onClick={() => setActiveView('workflow')}
+                        className="px-4 py-2 rounded-lg font-medium transition-colors hover:opacity-90"
+                        style={{ backgroundColor: '#00f0a0', color: '#000' }}
+                      >
+                        Start Workflow
+                      </button>
+                    </div>
                   ) : (
                     <>
                       {filterProspects(prospects).map((prospect, index) => (
@@ -4969,8 +5052,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
                       }}
                     />
                   )) : (
-                    <div className="text-center py-8 text-gray-700">
-                      No emails available. Generated emails: {generatedEmails.length}
+                    <div className="text-center py-16 px-4">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                        <Mail className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Emails Yet</h3>
+                      <p className="text-gray-600 mb-4">
+                        Start a workflow to generate personalized emails for your prospects
+                      </p>
+                      <button
+                        onClick={() => setActiveView('workflow')}
+                        className="px-4 py-2 rounded-lg font-medium transition-colors hover:opacity-90"
+                        style={{ backgroundColor: '#00f0a0', color: '#000' }}
+                      >
+                        Go to Workflow
+                      </button>
                     </div>
                   )}
                   {generatedEmails.length > 0 && filterEmails(generatedEmails).length === 0 && emailSearchQuery && (
@@ -5085,7 +5181,19 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset }) => {
           </motion.div>
         </div>
       )}
-      
+
+      {/* Confirmation Modal for Destructive Actions */}
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        title={confirmationModal.title}
+        message={confirmationModal.message}
+        confirmText={confirmationModal.confirmText}
+        cancelText={confirmationModal.cancelText}
+        onConfirm={confirmationModal.onConfirm}
+        onCancel={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
+        danger={confirmationModal.danger}
+      />
+
       {/* Email Review Modal */}
       <EmailReviewModal
         isOpen={showEmailReview}
