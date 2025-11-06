@@ -55,7 +55,7 @@ const LanguageSwitcher = ({ position = 'bottom-right' }) => {
   const dropdownPosition = position.includes('bottom') ? 'bottom-full mb-2' : 'top-full mt-2';
 
   return (
-    <div className={`fixed ${positionClasses[position]} z-50`}>
+    <div className={`fixed ${positionClasses[position]} z-[9999]`}>
       {/* Language Dropdown */}
       {isOpen && (
         <div

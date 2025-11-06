@@ -5,6 +5,7 @@ import WebsiteAnalysisReview from './WebsiteAnalysisReview';
 import WorkflowAnimation from './WorkflowAnimation';
 import JobRightProspectCard from './JobRightProspectCard';
 import FloatingTestimonials from './FloatingTestimonials';
+import AutoLanguageSelector from './AutoLanguageSelector';
 
 // CSS for scrolling animation
 const scrollingStyle = `
@@ -40,6 +41,7 @@ if (typeof document !== 'undefined') {
 
 const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
   const navigate = useNavigate();
+  const { isSignedIn, user } = useUser();
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [businessType, setBusinessType] = useState('auto');
   const [goal, setGoal] = useState('partnership');
@@ -62,6 +64,27 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Handle redirect after successful sign-in
+  useEffect(() => {
+    if (isSignedIn) {
+      // Check if there's a pending website analysis
+      const pendingAnalysis = localStorage.getItem('pendingWebsiteAnalysis');
+      if (pendingAnalysis) {
+        try {
+          const analysisData = JSON.parse(pendingAnalysis);
+          // Clear the pending data
+          localStorage.removeItem('pendingWebsiteAnalysis');
+          // Save to agentSetupData for the analysis flow
+          localStorage.setItem('agentSetupData', JSON.stringify(analysisData));
+          // Redirect to setup/analysis page
+          navigate('/setup');
+        } catch (error) {
+          console.error('Error processing pending analysis:', error);
+        }
+      }
+    }
+  }, [isSignedIn, navigate]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (websiteUrl.trim()) {
@@ -70,8 +93,17 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
         businessType,
         campaignGoal: goal
       };
-      localStorage.setItem('agentSetupData', JSON.stringify(initialData));
-      navigate('/setup');
+
+      // Check authentication state
+      if (!isSignedIn) {
+        // User is NOT logged in - save URL and redirect to sign-in
+        localStorage.setItem('pendingWebsiteAnalysis', JSON.stringify(initialData));
+        navigate('/sign-in');
+      } else {
+        // User IS logged in - redirect to campaign selection/dashboard
+        localStorage.setItem('agentSetupData', JSON.stringify(initialData));
+        navigate('/dashboard');
+      }
     }
   };
 
@@ -82,6 +114,16 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
   const handleBackFromAnalysis = () => {
     setShowAnalysisReview(false);
+  };
+
+  const handleCTAClick = () => {
+    if (!isSignedIn) {
+      // User is NOT logged in - redirect to sign-in
+      navigate('/sign-in');
+    } else {
+      // User IS logged in - redirect to campaign selection (dashboard)
+      navigate('/dashboard');
+    }
   };
 
   const toggleFaq = (index) => {
@@ -176,6 +218,9 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
             {/* Right side - Auth buttons or User Profile */}
             <div className="flex items-center space-x-4">
+              {/* Language Selector */}
+              <AutoLanguageSelector />
+
               {/* Show when user is NOT signed in */}
               <SignedOut>
                 {/* Sign In Button */}
@@ -860,7 +905,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                     {/* Bottom input - smaller sizing */}
                     <div className="absolute bottom-4 left-4 right-4">
-                      <div className="bg-black text-white rounded-full flex items-center justify-between cursor-pointer shadow-xl" style={{
+                      <div onClick={handleCTAClick} className="bg-black text-white rounded-full flex items-center justify-between cursor-pointer shadow-xl" style={{
                         fontSize: '14px',
                         padding: '12px 20px'
                       }}>
@@ -909,7 +954,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                     {/* Black button - exact style from Desktop/prospect.png */}
                     <div style={{ marginTop: '60px' }}>
-                      <div className="bg-black text-white rounded-full flex items-center cursor-pointer shadow-lg" style={{
+                      <div onClick={handleCTAClick} className="bg-black text-white rounded-full flex items-center cursor-pointer shadow-lg" style={{
                         fontSize: '16px',
                         padding: '12px 24px',
                         width: 'fit-content'
@@ -1077,7 +1122,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                     {/* Black button - same style as Step 2 */}
                     <div style={{ marginTop: '60px' }}>
-                      <div className="bg-black text-white rounded-full flex items-center cursor-pointer shadow-lg" style={{
+                      <div onClick={handleCTAClick} className="bg-black text-white rounded-full flex items-center cursor-pointer shadow-lg" style={{
                         fontSize: '16px',
                         padding: '12px 24px',
                         width: 'fit-content'
@@ -1229,7 +1274,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                     {/* Black button - same style as Step 2 */}
                     <div style={{ marginTop: '60px' }}>
-                      <div className="bg-black text-white rounded-full flex items-center cursor-pointer shadow-lg" style={{
+                      <div onClick={handleCTAClick} className="bg-black text-white rounded-full flex items-center cursor-pointer shadow-lg" style={{
                         fontSize: '16px',
                         padding: '12px 24px',
                         width: 'fit-content'

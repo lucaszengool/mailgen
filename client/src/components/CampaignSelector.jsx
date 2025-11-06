@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { UserButton } from '@clerk/clerk-react';
 import {
   Plus, Trash2, FolderOpen, Calendar, Mail,
-  Users, TrendingUp, BarChart3, ArrowRight
+  Users, TrendingUp, BarChart3, ArrowRight, Home
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CampaignSelector({ onSelectCampaign, onCreateCampaign }) {
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newCampaignName, setNewCampaignName] = useState('');
@@ -117,6 +120,26 @@ export default function CampaignSelector({ onSelectCampaign, onCreateCampaign })
       {/* Header */}
       <div className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Top Bar with User Button */}
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Home className="w-5 h-5" />
+              <span className="font-medium">Back to Home</span>
+            </button>
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "w-10 h-10"
+                }
+              }}
+            />
+          </div>
+
+          {/* Main Header */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Your Campaigns</h1>

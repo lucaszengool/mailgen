@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Send, Bot, User, Loader, CheckCircle, XCircle,
   ChevronDown, ChevronRight, Search, Mail, Building2,
@@ -26,6 +27,7 @@ import ProcessNotifications from './ProcessNotifications';
 import OnboardingTour from './OnboardingTour';
 import MarketResearch from './MarketResearch';
 import AIAssistantChatbot from './AIAssistantChatbot';
+import QuotaBar from './QuotaBar';
 
 
 // Utility function for generating gradient patterns
@@ -1696,6 +1698,7 @@ const EmailCardSkeleton = () => (
 );
 
 const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampaigns }) => {
+  const navigate = useNavigate();
   const [activeView, setActiveView] = useState('workflow');
   const [showChatbot, setShowChatbot] = useState(true); // Always show on initial load
   const [wsConnectionStatus, setWsConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'disconnected', 'error'
@@ -4448,6 +4451,19 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           </div>
         </div>
 
+        {/* Back to Main Page Button */}
+        <div className="px-4 pb-2">
+          <button
+            onClick={() => navigate('/')}
+            className="w-full flex items-center px-4 py-3 rounded-lg transition-all duration-200 text-sm bg-white text-black border border-gray-200 hover:bg-gray-50"
+          >
+            <Home className="w-5 h-5 mr-3 flex-shrink-0 text-black" />
+            <span className="truncate font-medium text-black">
+              Back to Main Page
+            </span>
+          </button>
+        </div>
+
         {/* Back to Campaigns Button */}
         {onBackToCampaigns && (
           <div className="px-4 pb-4">
@@ -4462,6 +4478,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             </button>
           </div>
         )}
+
+        {/* Quota Bar */}
+        <div className="px-4 pb-4">
+          <QuotaBar />
+        </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-4 pb-4 space-y-2">

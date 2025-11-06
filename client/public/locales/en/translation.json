@@ -19,7 +19,94 @@
     "filter": "Filter",
     "sort": "Sort",
     "language": "Language",
-    "selectLanguage": "Select Language"
+    "selectLanguage": "Select Language",
+    "backToHome": "Back to Home",
+    "backToMainPage": "Back to Main Page",
+    "dashboard": "Dashboard"
+  },
+  "landing": {
+    "hero": {
+      "title": "The World's First AI Marketer",
+      "subtitle": "[AI] 24/7 Autonomous Email Marketing",
+      "description": "Watch your AI agent work independently - analyzing websites, finding prospects, writing emails, and optimizing campaigns while you sleep.",
+      "urlPlaceholder": "Enter your target website URL...",
+      "startAnalysis": "Start AI Analysis →"
+    },
+    "stats": {
+      "newProspectsToday": "Today's new prospects",
+      "totalProspects": "Total prospects"
+    },
+    "readyToStart": {
+      "title": "Ready to Get Started",
+      "testimonials": "What our users are saying"
+    },
+    "aiCopilot": {
+      "title": "Your AI Copilot",
+      "subtitle": "Marketing automation can be lonely",
+      "feature1": "Focus your efforts with a more tailored list of prospects",
+      "feature2": "Wow in your outreach with specific company insights",
+      "feature3": "Understand why you are a good fit for a partnership",
+      "feature4": "Stuck in your marketing or outreach? Get personalized guidance and coaching",
+      "askAgent": "Ask AI Agent",
+      "welcomeMessage": "Welcome to AI Agent! I am your personal AI marketing copilot. How can I help you today?"
+    },
+    "prospectHunter": {
+      "title": "AI Prospect Hunter",
+      "subtitle": "Increase your success with AI matched Prospects",
+      "feature1": "Apply only to Prospects you are qualified for",
+      "feature2": "Discover matched prospects based on your business, not only titles",
+      "feature3": "Say goodbye to fake prospects",
+      "feature4": "Find early with our custom prospect alerts",
+      "startHunting": "Start Hunting",
+      "matchScore": "Match Score",
+      "budgetFit": "Budget Fit",
+      "needUrgency": "Need Urgency",
+      "authorityLevel": "Authority Level",
+      "qualityProspect": "Why This Is A Quality Prospect",
+      "decisionMaker": "Decision Maker",
+      "activeBuyer": "Active Buyer",
+      "priceSensitive": "Price Sensitive",
+      "growthFocused": "Growth Focused"
+    },
+    "emailCrafting": {
+      "title": "Personalized Email Crafting",
+      "description": "Each email is uniquely crafted using advanced AI that understands your prospect's business context, pain points, and communication style. The system generates compelling subject lines and personalized content that resonates with each recipient.",
+      "feature1": "Context-aware personalization",
+      "feature2": "A/B tested subject lines",
+      "feature3": "Industry-specific messaging",
+      "startWriting": "Start Writing",
+      "composerTitle": "[WRITE] AI Email Composer",
+      "qualityScore": "Quality Score",
+      "personalized": "Personalized"
+    },
+    "performanceTracking": {
+      "title": "Intelligent Performance Tracking",
+      "description": "Real-time analytics powered by AI insights help you understand what's working.",
+      "feature1": "Real-time performance monitoring",
+      "feature2": "AI-powered optimization",
+      "feature3": "Automatic adjustments",
+      "startAnalyzing": "Start Analyzing",
+      "dashboardTitle": "[ANALYZE] Campaign Performance Dashboard",
+      "liveData": "Live Data",
+      "deliverability": "Email Deliverability",
+      "openRate": "Open Rate",
+      "responseRate": "Response Rate",
+      "qualifiedProspects": "Qualified Prospects"
+    },
+    "faq": {
+      "title": "FREQUENTLY ASKED QUESTIONS",
+      "question1": "How is MailGen different from other email marketing platforms like Mailchimp?",
+      "answer1": "MailGen is powered by AI that works 24/7 autonomously. Unlike traditional platforms that require manual setup and management, our AI agent automatically finds prospects, analyzes their needs, crafts personalized emails, and optimizes campaigns in real-time without human intervention.",
+      "question2": "Will MailGen share my business data or email lists?",
+      "answer2": "No, we never share your business data or email lists. Your data is encrypted and stored securely. We follow strict privacy protocols and only use your information to improve your email campaigns. You maintain full ownership and control of all your data.",
+      "question3": "Is MailGen free to use?",
+      "answer3": "MailGen offers a free trial to get started. After the trial, we offer flexible pricing plans based on your needs and usage volume. Contact our sales team for enterprise pricing options.",
+      "question4": "Where does MailGen's prospect and email data come from?",
+      "answer4": "Our AI-powered system aggregates data from multiple verified business databases, public records, and professional networks. All data is validated for accuracy and compliance with data protection regulations.",
+      "question5": "What regions does MailGen's email automation service cover?",
+      "answer5": "Our primary service is currently within the United States. Additionally, we offer email marketing automation that supports international campaigns and global outreach. We're continuously expanding into new regions and will keep our users informed as we grow.",
+      "moreQuestions": "I have more questions!"
+    }
   },
   "nav": {
     "home": "Home",

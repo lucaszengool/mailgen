@@ -48,7 +48,6 @@ import CampaignSelector from './components/CampaignSelector';
 import CampaignOnboardingWizard from './components/CampaignOnboardingWizard';
 import ProcessNotificationsDemo from './components/ProcessNotificationsDemo';
 import BlogPost from './pages/BlogPost';
-import LanguageSwitcher from './components/LanguageSwitcher';
 
 function App() {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
@@ -565,9 +564,6 @@ function App() {
             <Route path="langgraph-agent" element={<LangGraphAgent />} />
           </Route>
         </Routes>
-
-        {/* Global Language Switcher */}
-        <LanguageSwitcher position="bottom-right" />
       </div>
   );
 }
