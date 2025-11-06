@@ -100,8 +100,13 @@ Generate similar keywords for this business:`;
 
     // Search for REAL prospects using the Ollama SearxNG service
     console.log('🔍 Calling Ollama SearxNG service with AI-generated keywords...');
-    const prospects = await ollamaSearxngService.searchForProspectsWithEmails(enhancedQuery, limit);
+    const result = await ollamaSearxngService.discoverEmailsWithProfiles(industry || enhancedQuery, limit);
 
+    if (!result.success) {
+      throw new Error(result.error || 'Email discovery failed');
+    }
+
+    const prospects = result.prospects || [];
     console.log(`✅ Found ${prospects.length} REAL prospects from Ollama SearxNG`);
 
     res.json({
