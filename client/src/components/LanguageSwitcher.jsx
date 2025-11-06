@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const LanguageSwitcher = ({ position = 'bottom-right' }) => {
+  const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState('en');
+  const [currentLang, setCurrentLang] = useState(i18n.language);
 
-  // Function to trigger Google Translate
+  // Update current language when i18n language changes
+  useEffect(() => {
+    setCurrentLang(i18n.language);
+  }, [i18n.language]);
+
+  // Function to change language using i18next
   const changeLanguage = (langCode) => {
-    if (window.google && window.google.translate) {
-      const selectElement = document.querySelector('.goog-te-combo');
-      if (selectElement) {
-        selectElement.value = langCode;
-        selectElement.dispatchEvent(new Event('change'));
-      }
-    }
+    i18n.changeLanguage(langCode);
+    setCurrentLang(langCode);
   };
 
   const languages = [
@@ -67,7 +69,7 @@ const LanguageSwitcher = ({ position = 'bottom-right' }) => {
           <div className="p-3 bg-gradient-to-r from-green-50 to-blue-50 border-b border-gray-200">
             <h3 className="font-semibold text-gray-800 text-sm flex items-center">
               <Globe className="w-4 h-4 mr-2" />
-              Select Language
+              {t('common.selectLanguage')}
             </h3>
           </div>
           <div className="py-1">

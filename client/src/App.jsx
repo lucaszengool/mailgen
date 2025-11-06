@@ -370,8 +370,9 @@ function App() {
         <Routes>
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
-          <Route path="/" element={<Home />} /> {/* Default: Show marketing home page */}
-          <Route path="/setup" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} />
+          <Route path="/" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} /> {/* Default: Show main landing page */}
+          <Route path="/home" element={<Home />} /> {/* Action list at /home */}
+          <Route path="/setup" element={<CampaignSetupWizard onComplete={handleSetupComplete} />} />
           <Route path="/smtp-setup" element={<AgentSetupWizard onComplete={handleSetupComplete} />} />
           {/* Marketing Pages */}
           <Route path="/ai-agent" element={<AIAgentPage />} />
@@ -406,7 +407,8 @@ function App() {
 
         {/* Add Routes for marketing pages */}
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} /> {/* Default: Show main landing page */}
+          <Route path="/home" element={<Home />} /> {/* Action list at /home */}
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/ai-agent" element={<AIAgentPage />} />

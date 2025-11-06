@@ -1,0 +1,142 @@
+{
+  "common": {
+    "welcome": "Bienvenue",
+    "getStarted": "Commencer avec",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "continue": "Continuer",
+    "finish": "Terminer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "language": "Langue",
+    "selectLanguage": "Sélectionner la Langue"
+  },
+  "nav": {
+    "home": "Accueil",
+    "dashboard": "Tableau de Bord",
+    "campaigns": "Campagnes",
+    "prospects": "Prospects",
+    "emails": "E-mails",
+    "analytics": "Analytiques",
+    "settings": "Paramètres",
+    "signIn": "Se Connecter",
+    "signUp": "S'inscrire",
+    "signOut": "Se Déconnecter"
+  },
+  "home": {
+    "tagline": "Plateforme de sensibilisation par e-mail alimentée par l'IA pour les équipes marketing modernes",
+    "aiWorkflow": {
+      "title": "Flux de Travail Agent IA",
+      "description": "Laissez les agents IA gérer l'ensemble de votre flux de travail de sensibilisation - de la recherche et découverte de leads à la génération d'e-mails personnalisés et gestion de campagnes.",
+      "button": "Lancer le Tableau de Bord"
+    },
+    "findProspects": {
+      "title": "Trouver des leads et adresses e-mail",
+      "description": "Utilisez notre puissante base de données de leads et recherche alimentée par l'IA pour trouver rapidement des prospects qualifiés avec des adresses e-mail vérifiées.",
+      "button": "Commencer"
+    },
+    "emailCampaign": {
+      "title": "Envoyer des campagnes d'e-mails froids",
+      "description": "Connectez votre compte e-mail pour créer, personnaliser, programmer et envoyer des campagnes ciblées à grande échelle avec automatisation intelligente.",
+      "button": "Commencer"
+    },
+    "emailEditor": {
+      "title": "Concevoir et personnaliser des e-mails",
+      "description": "Créez de superbes modèles d'e-mails avec notre éditeur glisser-déposer. Utilisez l'IA pour générer du contenu personnalisé qui résonne avec votre audience.",
+      "button": "Ouvrir"
+    },
+    "analytics": {
+      "title": "Suivre les performances et analyses",
+      "description": "Surveillez les ouvertures d'e-mails, clics, réponses et conversions avec des analyses en temps réel. Obtenez des insights pour optimiser vos campagnes.",
+      "button": "Voir"
+    },
+    "research": {
+      "title": "Recherche de marché et insights",
+      "description": "Recherche de marché alimentée par l'IA pour comprendre votre public cible, analyser les concurrents et découvrir de nouvelles opportunités.",
+      "button": "Commencer"
+    },
+    "quickLinks": {
+      "settings": "Paramètres",
+      "importContacts": "Importer des Contacts"
+    }
+  },
+  "campaigns": {
+    "title": "Vos Campagnes",
+    "subtitle": "Sélectionnez une campagne à gérer ou créez-en une nouvelle",
+    "newCampaign": "Nouvelle Campagne",
+    "createCampaign": "Créer une Campagne",
+    "openCampaign": "Ouvrir la Campagne",
+    "deleteCampaign": "Supprimer la Campagne",
+    "campaignName": "Nom de la Campagne",
+    "createNewCampaign": "Créer une Nouvelle Campagne",
+    "stats": {
+      "prospects": "Prospects",
+      "emails": "E-mails",
+      "sent": "Envoyés"
+    }
+  },
+  "onboarding": {
+    "websiteInput": {
+      "title": "Configurer",
+      "subtitle": "Commençons par comprendre votre entreprise",
+      "websiteUrl": "URL du Site Web",
+      "manualInput": "Saisie Manuelle",
+      "websiteUrlLabel": "URL du Site Web",
+      "websiteUrlPlaceholder": "https://exemple.com",
+      "businessDescriptionLabel": "Description de l'Entreprise",
+      "businessDescriptionPlaceholder": "Décrivez votre entreprise, produits/services et marché cible...",
+      "keywordsLabel": "Mots-clés de l'Entreprise (Optionnel)",
+      "keywordsPlaceholder": "ex., SaaS, B2B, IA, Automatisation Marketing",
+      "analyzeWebsite": "Analyser votre site web",
+      "describeYourBusiness": "Décrire votre entreprise"
+    },
+    "websiteAnalysis": {
+      "title": "Analyse du Site Web",
+      "analyzing": "Analyse de votre site web...",
+      "complete": "Analyse Terminée"
+    },
+    "prospects": {
+      "title": "Examiner les Prospects",
+      "found": "Trouvé",
+      "prospects": "prospects"
+    },
+    "smtp": {
+      "title": "Configuration E-mail",
+      "setupSmtp": "Configurez votre configuration d'envoi d'e-mails"
+    },
+    "settingUp": "Configuration de votre campagne...",
+    "configuringMessage": "Configuration de \"{{campaignName}}\" avec vos préférences"
+  },
+  "workflow": {
+    "startWorkflow": "Démarrer le Flux de Travail",
+    "pauseWorkflow": "Mettre en Pause le Flux de Travail",
+    "resumeWorkflow": "Reprendre le Flux de Travail",
+    "stopWorkflow": "Arrêter le Flux de Travail",
+    "workflowRunning": "Le flux de travail est en cours",
+    "workflowPaused": "Le flux de travail est en pause",
+    "workflowStopped": "Flux de travail arrêté"
+  },
+  "email": {
+    "subject": "Objet",
+    "body": "Corps",
+    "to": "À",
+    "from": "De",
+    "send": "Envoyer",
+    "sendEmail": "Envoyer un E-mail",
+    "draft": "Brouillon",
+    "sent": "Envoyé",
+    "compose": "Rédiger",
+    "reply": "Répondre",
+    "forward": "Transférer"
+  }
+}

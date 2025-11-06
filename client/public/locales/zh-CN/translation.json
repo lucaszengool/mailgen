@@ -1,0 +1,142 @@
+{
+  "common": {
+    "welcome": "欢迎",
+    "getStarted": "开始使用",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "continue": "继续",
+    "finish": "完成",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "language": "语言",
+    "selectLanguage": "选择语言"
+  },
+  "nav": {
+    "home": "首页",
+    "dashboard": "仪表板",
+    "campaigns": "营销活动",
+    "prospects": "潜在客户",
+    "emails": "邮件",
+    "analytics": "分析",
+    "settings": "设置",
+    "signIn": "登录",
+    "signUp": "注册",
+    "signOut": "登出"
+  },
+  "home": {
+    "tagline": "AI驱动的电子邮件推广平台，专为现代营销团队打造",
+    "aiWorkflow": {
+      "title": "AI代理工作流",
+      "description": "让AI代理处理您的整个推广工作流程 - 从研究和潜在客户发现到个性化邮件生成和营销活动管理。",
+      "button": "启动仪表板"
+    },
+    "findProspects": {
+      "title": "查找潜在客户和电子邮件地址",
+      "description": "使用我们强大的潜在客户数据库和AI驱动的搜索，快速找到经过验证的电子邮件地址的合格潜在客户。",
+      "button": "开始"
+    },
+    "emailCampaign": {
+      "title": "发送冷邮件营销活动",
+      "description": "连接您的电子邮件帐户，通过智能自动化创建、个性化、安排和发送大规模的定向营销活动。",
+      "button": "开始"
+    },
+    "emailEditor": {
+      "title": "设计和个性化电子邮件",
+      "description": "使用我们的拖放编辑器创建令人惊叹的电子邮件模板。使用AI生成与您的受众产生共鸣的个性化内容。",
+      "button": "打开"
+    },
+    "analytics": {
+      "title": "跟踪性能和分析",
+      "description": "通过实时分析监控电子邮件打开、点击、回复和转化。获取洞察以优化您的营销活动。",
+      "button": "查看"
+    },
+    "research": {
+      "title": "市场研究和洞察",
+      "description": "AI驱动的市场研究，了解您的目标受众，分析竞争对手，发现新机会。",
+      "button": "开始"
+    },
+    "quickLinks": {
+      "settings": "设置",
+      "importContacts": "导入联系人"
+    }
+  },
+  "campaigns": {
+    "title": "您的营销活动",
+    "subtitle": "选择要管理的营销活动或创建新营销活动",
+    "newCampaign": "新营销活动",
+    "createCampaign": "创建营销活动",
+    "openCampaign": "打开营销活动",
+    "deleteCampaign": "删除营销活动",
+    "campaignName": "营销活动名称",
+    "createNewCampaign": "创建新营销活动",
+    "stats": {
+      "prospects": "潜在客户",
+      "emails": "邮件",
+      "sent": "已发送"
+    }
+  },
+  "onboarding": {
+    "websiteInput": {
+      "title": "设置",
+      "subtitle": "让我们首先了解您的业务",
+      "websiteUrl": "网站URL",
+      "manualInput": "手动输入",
+      "websiteUrlLabel": "网站URL",
+      "websiteUrlPlaceholder": "https://example.com",
+      "businessDescriptionLabel": "业务描述",
+      "businessDescriptionPlaceholder": "描述您的业务、产品/服务和目标市场...",
+      "keywordsLabel": "关键业务关键词（可选）",
+      "keywordsPlaceholder": "例如：SaaS、B2B、AI、营销自动化",
+      "analyzeWebsite": "分析您的网站",
+      "describeYourBusiness": "描述您的业务"
+    },
+    "websiteAnalysis": {
+      "title": "网站分析",
+      "analyzing": "正在分析您的网站...",
+      "complete": "分析完成"
+    },
+    "prospects": {
+      "title": "审查潜在客户",
+      "found": "找到",
+      "prospects": "潜在客户"
+    },
+    "smtp": {
+      "title": "电子邮件配置",
+      "setupSmtp": "设置您的电子邮件发送配置"
+    },
+    "settingUp": "正在设置您的营销活动...",
+    "configuringMessage": "正在使用您的偏好配置"{{campaignName}}""
+  },
+  "workflow": {
+    "startWorkflow": "启动工作流",
+    "pauseWorkflow": "暂停工作流",
+    "resumeWorkflow": "恢复工作流",
+    "stopWorkflow": "停止工作流",
+    "workflowRunning": "工作流正在运行",
+    "workflowPaused": "工作流已暂停",
+    "workflowStopped": "工作流已停止"
+  },
+  "email": {
+    "subject": "主题",
+    "body": "正文",
+    "to": "收件人",
+    "from": "发件人",
+    "send": "发送",
+    "sendEmail": "发送电子邮件",
+    "draft": "草稿",
+    "sent": "已发送",
+    "compose": "撰写",
+    "reply": "回复",
+    "forward": "转发"
+  }
+}

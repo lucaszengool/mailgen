@@ -1,0 +1,142 @@
+{
+  "common": {
+    "welcome": "Bienvenido",
+    "getStarted": "Comienza con",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "continue": "Continuar",
+    "finish": "Finalizar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "language": "Idioma",
+    "selectLanguage": "Seleccionar Idioma"
+  },
+  "nav": {
+    "home": "Inicio",
+    "dashboard": "Panel",
+    "campaigns": "Campañas",
+    "prospects": "Prospectos",
+    "emails": "Correos",
+    "analytics": "Analíticas",
+    "settings": "Configuración",
+    "signIn": "Iniciar Sesión",
+    "signUp": "Registrarse",
+    "signOut": "Cerrar Sesión"
+  },
+  "home": {
+    "tagline": "Plataforma de divulgación por correo electrónico impulsada por IA para equipos de marketing modernos",
+    "aiWorkflow": {
+      "title": "Flujo de Trabajo de Agente IA",
+      "description": "Deja que los agentes de IA manejen todo tu flujo de trabajo de divulgación: desde la investigación y descubrimiento de leads hasta la generación de correos electrónicos personalizados y gestión de campañas.",
+      "button": "Iniciar Panel"
+    },
+    "findProspects": {
+      "title": "Encontrar leads y direcciones de correo",
+      "description": "Usa nuestra potente base de datos de leads y búsqueda impulsada por IA para encontrar rápidamente prospectos calificados con direcciones de correo verificadas.",
+      "button": "Comenzar"
+    },
+    "emailCampaign": {
+      "title": "Enviar campañas de correo frío",
+      "description": "Conecta tu cuenta de correo para crear, personalizar, programar y enviar campañas dirigidas a escala con automatización inteligente.",
+      "button": "Comenzar"
+    },
+    "emailEditor": {
+      "title": "Diseñar y personalizar correos",
+      "description": "Crea plantillas de correo impresionantes con nuestro editor de arrastrar y soltar. Usa IA para generar contenido personalizado que resuene con tu audiencia.",
+      "button": "Abrir"
+    },
+    "analytics": {
+      "title": "Seguimiento de rendimiento y analíticas",
+      "description": "Monitorea aperturas de correo, clics, respuestas y conversiones con analíticas en tiempo real. Obtén información para optimizar tus campañas.",
+      "button": "Ver"
+    },
+    "research": {
+      "title": "Investigación de mercado e insights",
+      "description": "Investigación de mercado impulsada por IA para comprender tu audiencia objetivo, analizar competidores y descubrir nuevas oportunidades.",
+      "button": "Comenzar"
+    },
+    "quickLinks": {
+      "settings": "Configuración",
+      "importContacts": "Importar Contactos"
+    }
+  },
+  "campaigns": {
+    "title": "Tus Campañas",
+    "subtitle": "Selecciona una campaña para gestionar o crear una nueva",
+    "newCampaign": "Nueva Campaña",
+    "createCampaign": "Crear Campaña",
+    "openCampaign": "Abrir Campaña",
+    "deleteCampaign": "Eliminar Campaña",
+    "campaignName": "Nombre de Campaña",
+    "createNewCampaign": "Crear Nueva Campaña",
+    "stats": {
+      "prospects": "Prospectos",
+      "emails": "Correos",
+      "sent": "Enviados"
+    }
+  },
+  "onboarding": {
+    "websiteInput": {
+      "title": "Configurar",
+      "subtitle": "Comencemos comprendiendo tu negocio",
+      "websiteUrl": "URL del Sitio Web",
+      "manualInput": "Entrada Manual",
+      "websiteUrlLabel": "URL del Sitio Web",
+      "websiteUrlPlaceholder": "https://ejemplo.com",
+      "businessDescriptionLabel": "Descripción del Negocio",
+      "businessDescriptionPlaceholder": "Describe tu negocio, productos/servicios y mercado objetivo...",
+      "keywordsLabel": "Palabras Clave del Negocio (Opcional)",
+      "keywordsPlaceholder": "ej., SaaS, B2B, IA, Automatización de Marketing",
+      "analyzeWebsite": "Analizar tu sitio web",
+      "describeYourBusiness": "Describir tu negocio"
+    },
+    "websiteAnalysis": {
+      "title": "Análisis del Sitio Web",
+      "analyzing": "Analizando tu sitio web...",
+      "complete": "Análisis Completo"
+    },
+    "prospects": {
+      "title": "Revisar Prospectos",
+      "found": "Encontrados",
+      "prospects": "prospectos"
+    },
+    "smtp": {
+      "title": "Configuración de Correo",
+      "setupSmtp": "Configura tu configuración de envío de correo"
+    },
+    "settingUp": "Configurando tu campaña...",
+    "configuringMessage": "Configurando \"{{campaignName}}\" con tus preferencias"
+  },
+  "workflow": {
+    "startWorkflow": "Iniciar Flujo de Trabajo",
+    "pauseWorkflow": "Pausar Flujo de Trabajo",
+    "resumeWorkflow": "Reanudar Flujo de Trabajo",
+    "stopWorkflow": "Detener Flujo de Trabajo",
+    "workflowRunning": "El flujo de trabajo está en ejecución",
+    "workflowPaused": "El flujo de trabajo está pausado",
+    "workflowStopped": "Flujo de trabajo detenido"
+  },
+  "email": {
+    "subject": "Asunto",
+    "body": "Cuerpo",
+    "to": "Para",
+    "from": "De",
+    "send": "Enviar",
+    "sendEmail": "Enviar Correo",
+    "draft": "Borrador",
+    "sent": "Enviado",
+    "compose": "Redactar",
+    "reply": "Responder",
+    "forward": "Reenviar"
+  }
+}

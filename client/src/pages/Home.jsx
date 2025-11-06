@@ -9,8 +9,10 @@ import {
   CpuChipIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 
 export default function Home({ onNavigate }) {
+  const { t } = useTranslation();
   // Function to handle navigation without router
   const handleNavigation = (path) => {
     if (onNavigate) {
@@ -69,13 +71,13 @@ export default function Home({ onNavigate }) {
         <div className="text-center mb-5 animate-fade-in">
           <div className="inline-flex items-center space-x-2 bg-green-500 text-white px-6 py-2 rounded-full mb-3 shadow-lg">
             <SparklesIcon className="h-5 w-5" />
-            <span className="font-semibold">Welcome</span>
+            <span className="font-semibold">{t('common.welcome')}</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Get started with <span className="text-green-600">EmailAgent</span>
+            {t('common.getStarted')} <span className="text-green-600">EmailAgent</span>
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            AI-powered email outreach platform for modern marketing teams
+            {t('home.tagline')}
           </p>
         </div>
 
@@ -84,54 +86,54 @@ export default function Home({ onNavigate }) {
           {/* AI Agent Workflow */}
           <ActionCard
             icon={CpuChipIcon}
-            title="AI Agent Workflow"
-            description="Let AI agents handle your entire outreach workflow - from research and lead discovery to personalized email generation and campaign management."
-            buttonText="Launch Dashboard"
+            title={t('home.aiWorkflow.title')}
+            description={t('home.aiWorkflow.description')}
+            buttonText={t('home.aiWorkflow.button')}
             onClick={() => handleNavigation('/dashboard')}
           />
 
           {/* Find Prospects */}
           <ActionCard
             icon={MagnifyingGlassIcon}
-            title="Find leads and email addresses"
-            description="Use our powerful lead database and AI-powered search to quickly find qualified prospects with verified email addresses."
-            buttonText="Start"
+            title={t('home.findProspects.title')}
+            description={t('home.findProspects.description')}
+            buttonText={t('home.findProspects.button')}
             onClick={() => handleNavigation('prospects')}
           />
 
           {/* Email Campaign */}
           <ActionCard
             icon={EnvelopeIcon}
-            title="Send cold email campaigns"
-            description="Connect your email account to create, personalize, schedule, and send targeted campaigns at scale with smart automation."
-            buttonText="Start"
+            title={t('home.emailCampaign.title')}
+            description={t('home.emailCampaign.description')}
+            buttonText={t('home.emailCampaign.button')}
             onClick={() => handleNavigation('emails')}
           />
 
           {/* Email Editor */}
           <ActionCard
             icon={PencilSquareIcon}
-            title="Design and personalize emails"
-            description="Create stunning email templates with our drag-and-drop editor. Use AI to generate personalized content that resonates with your audience."
-            buttonText="Open"
+            title={t('home.emailEditor.title')}
+            description={t('home.emailEditor.description')}
+            buttonText={t('home.emailEditor.button')}
             onClick={() => handleNavigation('email_editor')}
           />
 
           {/* Analytics */}
           <ActionCard
             icon={ChartBarIcon}
-            title="Track performance and analytics"
-            description="Monitor email opens, clicks, replies, and conversions with real-time analytics. Get insights to optimize your campaigns."
-            buttonText="View"
+            title={t('home.analytics.title')}
+            description={t('home.analytics.description')}
+            buttonText={t('home.analytics.button')}
             onClick={() => handleNavigation('analytics')}
           />
 
           {/* Research */}
           <ActionCard
             icon={DocumentMagnifyingGlassIcon}
-            title="Market research and insights"
-            description="AI-powered market research to understand your target audience, analyze competitors, and discover new opportunities."
-            buttonText="Start"
+            title={t('home.research.title')}
+            description={t('home.research.description')}
+            buttonText={t('home.research.button')}
             onClick={() => handleNavigation('research')}
           />
         </div>
@@ -144,14 +146,14 @@ export default function Home({ onNavigate }) {
               className="inline-flex items-center space-x-1 px-3 py-1.5 border border-gray-300 hover:bg-gray-100 text-gray-700 text-xs font-medium rounded transition-all duration-200"
             >
               <Cog6ToothIcon className="h-4 w-4" />
-              <span>Settings</span>
+              <span>{t('home.quickLinks.settings')}</span>
             </button>
             <button
               onClick={() => handleNavigation('prospects')}
               className="inline-flex items-center space-x-1 px-3 py-1.5 border border-gray-300 hover:bg-gray-100 text-gray-700 text-xs font-medium rounded transition-all duration-200"
             >
               <UserGroupIcon className="h-4 w-4" />
-              <span>Import Contacts</span>
+              <span>{t('home.quickLinks.importContacts')}</span>
             </button>
           </div>
         </div>

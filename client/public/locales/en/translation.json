@@ -1,0 +1,142 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "getStarted": "Get started with",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "finish": "Finish",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "language": "Language",
+    "selectLanguage": "Select Language"
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "campaigns": "Campaigns",
+    "prospects": "Prospects",
+    "emails": "Emails",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out"
+  },
+  "home": {
+    "tagline": "AI-powered email outreach platform for modern marketing teams",
+    "aiWorkflow": {
+      "title": "AI Agent Workflow",
+      "description": "Let AI agents handle your entire outreach workflow - from research and lead discovery to personalized email generation and campaign management.",
+      "button": "Launch Dashboard"
+    },
+    "findProspects": {
+      "title": "Find leads and email addresses",
+      "description": "Use our powerful lead database and AI-powered search to quickly find qualified prospects with verified email addresses.",
+      "button": "Start"
+    },
+    "emailCampaign": {
+      "title": "Send cold email campaigns",
+      "description": "Connect your email account to create, personalize, schedule, and send targeted campaigns at scale with smart automation.",
+      "button": "Start"
+    },
+    "emailEditor": {
+      "title": "Design and personalize emails",
+      "description": "Create stunning email templates with our drag-and-drop editor. Use AI to generate personalized content that resonates with your audience.",
+      "button": "Open"
+    },
+    "analytics": {
+      "title": "Track performance and analytics",
+      "description": "Monitor email opens, clicks, replies, and conversions with real-time analytics. Get insights to optimize your campaigns.",
+      "button": "View"
+    },
+    "research": {
+      "title": "Market research and insights",
+      "description": "AI-powered market research to understand your target audience, analyze competitors, and discover new opportunities.",
+      "button": "Start"
+    },
+    "quickLinks": {
+      "settings": "Settings",
+      "importContacts": "Import Contacts"
+    }
+  },
+  "campaigns": {
+    "title": "Your Campaigns",
+    "subtitle": "Select a campaign to manage or create a new one",
+    "newCampaign": "New Campaign",
+    "createCampaign": "Create Campaign",
+    "openCampaign": "Open Campaign",
+    "deleteCampaign": "Delete Campaign",
+    "campaignName": "Campaign Name",
+    "createNewCampaign": "Create New Campaign",
+    "stats": {
+      "prospects": "Prospects",
+      "emails": "Emails",
+      "sent": "Sent"
+    }
+  },
+  "onboarding": {
+    "websiteInput": {
+      "title": "Set up",
+      "subtitle": "Let's start by understanding your business",
+      "websiteUrl": "Website URL",
+      "manualInput": "Manual Input",
+      "websiteUrlLabel": "Website URL",
+      "websiteUrlPlaceholder": "https://example.com",
+      "businessDescriptionLabel": "Business Description",
+      "businessDescriptionPlaceholder": "Describe your business, products/services, and target market...",
+      "keywordsLabel": "Key Business Keywords (Optional)",
+      "keywordsPlaceholder": "e.g., SaaS, B2B, AI, Marketing Automation",
+      "analyzeWebsite": "Analyze your website",
+      "describeYourBusiness": "Describe your business"
+    },
+    "websiteAnalysis": {
+      "title": "Website Analysis",
+      "analyzing": "Analyzing your website...",
+      "complete": "Analysis Complete"
+    },
+    "prospects": {
+      "title": "Review Prospects",
+      "found": "Found",
+      "prospects": "prospects"
+    },
+    "smtp": {
+      "title": "Email Configuration",
+      "setupSmtp": "Set up your email sending configuration"
+    },
+    "settingUp": "Setting up your campaign...",
+    "configuringMessage": "Configuring \"{{campaignName}}\" with your preferences"
+  },
+  "workflow": {
+    "startWorkflow": "Start Workflow",
+    "pauseWorkflow": "Pause Workflow",
+    "resumeWorkflow": "Resume Workflow",
+    "stopWorkflow": "Stop Workflow",
+    "workflowRunning": "Workflow is running",
+    "workflowPaused": "Workflow is paused",
+    "workflowStopped": "Workflow stopped"
+  },
+  "email": {
+    "subject": "Subject",
+    "body": "Body",
+    "to": "To",
+    "from": "From",
+    "send": "Send",
+    "sendEmail": "Send Email",
+    "draft": "Draft",
+    "sent": "Sent",
+    "compose": "Compose",
+    "reply": "Reply",
+    "forward": "Forward"
+  }
+}
