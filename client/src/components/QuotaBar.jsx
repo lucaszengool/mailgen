@@ -81,7 +81,7 @@ const QuotaBar = () => {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-green-600" />
-          Hourly Quota
+          Campaign Stats
         </h3>
         {isLimited && (
           <span className="flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">
@@ -97,64 +97,73 @@ const QuotaBar = () => {
         )}
       </div>
 
-      {/* Progress Bar */}
-      <div className="mb-4">
+      {/* 🔥 PROSPECTS SECTION - SEPARATE */}
+      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-600">Emails Generated</span>
-          <span className="text-xs font-semibold text-gray-900">
-            {quotaData.rateLimit.current} / {quotaData.rateLimit.max}
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-blue-600" />
+            <span className="text-xs font-semibold text-blue-900">Prospects Found</span>
+          </div>
+          <span className="text-lg font-bold text-blue-900">
+            {quotaData.prospects.total}
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${
-              isLimited
-                ? 'bg-red-500'
-                : isNearLimit
-                ? 'bg-orange-500'
-                : 'bg-green-500'
-            }`}
-            style={{ width: `${Math.min(percentage, 100)}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between mt-1">
-          <span className="text-xs text-gray-500 flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            Resets in {timeRemaining}
-          </span>
-          <span className="text-xs text-gray-500">
-            {quotaData.rateLimit.max - quotaData.rateLimit.current} remaining
-          </span>
+        <div className="text-xs text-blue-700">
+          People discovered by AI search
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-3">
-        {/* Prospects Found */}
-        <div className="text-center p-2 bg-white border border-gray-200 rounded-lg">
-          <div className="flex items-center justify-center mb-1">
-            <Users className="w-4 h-4 text-green-600" />
-          </div>
-          <div className="text-lg font-bold text-gray-900">{quotaData.prospects.total}</div>
-          <div className="text-xs text-gray-600">Prospects</div>
-        </div>
-
-        {/* Emails Generated */}
-        <div className="text-center p-2 bg-white border border-gray-200 rounded-lg">
-          <div className="flex items-center justify-center mb-1">
+      {/* 🔥 EMAILS SECTION - SEPARATE */}
+      <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
             <Mail className="w-4 h-4 text-green-600" />
+            <span className="text-xs font-semibold text-green-900">Email Generation</span>
           </div>
-          <div className="text-lg font-bold text-gray-900">{quotaData.emails.generated}</div>
-          <div className="text-xs text-gray-600">Generated</div>
         </div>
 
-        {/* Emails Sent */}
-        <div className="text-center p-2 bg-white border border-gray-200 rounded-lg">
-          <div className="flex items-center justify-center mb-1">
-            <TrendingUp className="w-4 h-4 text-green-600" />
+        {/* Progress Bar for Emails */}
+        <div className="mb-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-green-700">Generated</span>
+            <span className="text-xs font-semibold text-green-900">
+              {quotaData.emails.generated} / {quotaData.rateLimit.max}
+            </span>
           </div>
-          <div className="text-lg font-bold text-gray-900">{quotaData.emails.sent}</div>
-          <div className="text-xs text-gray-600">Sent</div>
+          <div className="w-full bg-green-200 rounded-full h-2 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${
+                isLimited
+                  ? 'bg-red-500'
+                  : isNearLimit
+                  ? 'bg-orange-500'
+                  : 'bg-green-600'
+              }`}
+              style={{ width: `${Math.min(percentage, 100)}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Email Stats */}
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className="text-center p-1 bg-white rounded border border-green-200">
+            <div className="text-sm font-bold text-green-900">{quotaData.emails.generated}</div>
+            <div className="text-xs text-green-700">Generated</div>
+          </div>
+          <div className="text-center p-1 bg-white rounded border border-green-200">
+            <div className="text-sm font-bold text-green-900">{quotaData.emails.sent}</div>
+            <div className="text-xs text-green-700">Sent</div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-2 text-xs text-green-700">
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            Resets in {timeRemaining}
+          </span>
+          <span>
+            {quotaData.rateLimit.max - quotaData.rateLimit.current} remaining
+          </span>
         </div>
       </div>
 

@@ -224,6 +224,11 @@ function App() {
   // Campaign management handlers
   const handleSelectCampaign = (campaign) => {
     console.log('📁 Selected campaign:', campaign.name);
+    console.log('🔥 [CAMPAIGN SELECT] CampaignId:', campaign.id);
+
+    // 🔥 PRODUCTION: Store campaignId immediately
+    localStorage.setItem('currentCampaignId', campaign.id);
+    console.log('✅ [CAMPAIGN SELECT] Stored campaignId:', campaign.id);
 
     // Check if campaign has been set up
     const campaignConfig = localStorage.getItem(`campaign_${campaign.id}_config`);
@@ -236,6 +241,16 @@ function App() {
     } else {
       // Campaign is ready - open it
       console.log('✅ Campaign ready, opening workflow dashboard');
+
+      // Parse the config and set agentConfig
+      try {
+        const config = JSON.parse(campaignConfig);
+        setAgentConfig(config);
+        console.log('📥 [CAMPAIGN SELECT] Loaded config for campaign');
+      } catch (error) {
+        console.error('❌ Failed to parse campaign config:', error);
+      }
+
       setCurrentCampaign(campaign);
       setShowCampaignSelector(false);
     }

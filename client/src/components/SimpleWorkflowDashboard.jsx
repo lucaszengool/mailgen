@@ -2194,7 +2194,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   });
   const [selectedLogStep, setSelectedLogStep] = useState(null);
 
-  // 🔥 FRESH START: Clear all data when switching campaigns
+  // 🔥 FRESH START: Clear all data when switching campaigns AND load new data
   useEffect(() => {
     const currentCampaignId = agentConfig?.campaign?.id;
     if (currentCampaignId) {
@@ -2202,7 +2202,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
       // Only reset if this is a DIFFERENT campaign
       if (previousCampaignId && previousCampaignId !== currentCampaignId) {
-        console.log('🔥 [FRESH START] Switching from', previousCampaignId, 'to', currentCampaignId);
+        console.log('🔥 [CAMPAIGN SWITCH] Switching from', previousCampaignId, 'to', currentCampaignId);
         console.log('🧹 Clearing all UI state for new campaign');
 
         // Reset everything
@@ -2216,11 +2216,47 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           totalClicked: 0
         });
         setWorkflowStatus('idle');
+
+        // 🔥 AUTO-LOAD: Immediately fetch data for this campaign
+        console.log('📥 [AUTO-LOAD] Loading data for campaign:', currentCampaignId);
+
+        // Trigger data fetch
+        setTimeout(async () => {
+          console.log('📥 [AUTO-LOAD] Fetching workflow results for campaign:', currentCampaignId);
+
+          // Fetch data from API
+          try {
+            const url = `/api/workflow/results?campaignId=${currentCampaignId}`;
+            const result = await apiGet(url);
+
+            if (result.success && result.data) {
+              const { prospects: prospectsFromAPI, campaignData } = result.data;
+              const emailCampaign = campaignData?.emailCampaign;
+
+              console.log(`📥 [AUTO-LOAD] Loaded ${prospectsFromAPI?.length || 0} prospects, ${emailCampaign?.emails?.length || 0} emails`);
+
+              // Update UI with loaded data
+              if (prospectsFromAPI && prospectsFromAPI.length > 0) {
+                setProspects(prospectsFromAPI);
+              }
+
+              if (emailCampaign?.emails && emailCampaign.emails.length > 0) {
+                setGeneratedEmails(emailCampaign.emails);
+              }
+
+              setWorkflowStatus('completed');
+            } else {
+              console.log('📥 [AUTO-LOAD] No data found for this campaign yet');
+            }
+          } catch (error) {
+            console.error('❌ [AUTO-LOAD] Failed to load campaign data:', error);
+          }
+        }, 500);
       }
 
       // Store the new campaignId
       localStorage.setItem('currentCampaignId', currentCampaignId);
-      console.log('✅ [FRESH START] Current campaignId:', currentCampaignId);
+      console.log('✅ [CAMPAIGN SWITCH] Current campaignId:', currentCampaignId);
     }
   }, [agentConfig?.campaign?.id]);
 
