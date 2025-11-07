@@ -311,12 +311,61 @@ const CampaignOnboardingWizard = ({ campaign, onComplete, onCancel }) => {
         console.log('✅ Website analysis saved to history for campaign');
       }
 
-      toast.success('Campaign setup complete!');
+      // 🚀 CRITICAL: Start the AI agent workflow after campaign setup
+      console.log('🚀 Starting AI agent workflow for campaign:', campaign.name);
+      try {
+        const startResponse = await fetch('/api/workflow/start', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            // Include campaign ID for tracking
+            campaignId: campaign.id,
+            campaignName: campaign.name,
+            // Include all configuration data
+            targetWebsite: setupData.targetWebsite || finalData.targetWebsite,
+            businessType: setupData.businessType || 'auto',
+            businessDescription: setupData.businessDescription,
+            keywords: setupData.keywords,
+            campaignGoal: finalData.campaignGoal,
+            smtpConfig: finalData.smtpConfig,
+            emailTemplate: finalData.emailTemplate,
+            templateData: finalData.templateData,
+            websiteAnalysis: finalData.websiteAnalysis || setupData.websiteAnalysis,
+            audienceType: finalData.audienceType,
+            industries: finalData.industries,
+            roles: finalData.roles,
+            companySize: finalData.companySize,
+            location: finalData.location,
+            controls: {
+              autoReply: true,
+              manualApproval: false,
+              pauseOnError: true,
+              maxEmailsPerHour: 10,
+              workingHours: { start: 9, end: 18 }
+            }
+          })
+        });
 
-      // Call the completion callback
+        if (!startResponse.ok) {
+          console.error('⚠️ Failed to start agent, but configuration was saved');
+          toast.error('Configuration saved, but workflow failed to start. You can start it manually from the dashboard.');
+        } else {
+          const startResult = await startResponse.json();
+          console.log('✅ Agent workflow started successfully:', startResult);
+          toast.success('Campaign setup complete! AI agent is now finding prospects...');
+        }
+      } catch (error) {
+        console.error('❌ Error starting workflow:', error);
+        toast.error('Configuration saved, but workflow failed to start. You can start it manually from the dashboard.');
+      }
+
+      // Call the completion callback with flag to indicate workflow was just started
       onComplete({
         ...campaignConfig,
-        campaign: { ...campaign, setupComplete: true }
+        campaign: { ...campaign, setupComplete: true },
+        workflowJustStarted: true  // 🚀 Flag to trigger popup on dashboard load
       });
 
     } catch (error) {

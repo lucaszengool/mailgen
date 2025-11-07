@@ -2194,6 +2194,19 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   });
   const [selectedLogStep, setSelectedLogStep] = useState(null);
 
+  // 🚀 NEW: Show popup when workflow is just started from campaign onboarding
+  useEffect(() => {
+    if (agentConfig?.workflowJustStarted) {
+      console.log('🚀 New campaign workflow just started - showing welcome popup');
+      setNotificationStage('websiteAnalysisStarting');
+      setShowProcessNotification(true);
+      setWorkflowStatus('starting');
+
+      // Clear the flag so it doesn't show again on re-render
+      // We do this by not modifying agentConfig directly, just consuming the flag
+    }
+  }, [agentConfig?.workflowJustStarted]);
+
   // 🔔 Watch for workflow status changes and show notifications
   useEffect(() => {
     console.log('🔔 Workflow status changed:', workflowStatus);
