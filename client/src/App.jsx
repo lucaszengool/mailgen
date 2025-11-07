@@ -354,8 +354,8 @@ function App() {
     }, 100);
   };
 
-  // Show setup wizard if setup is not complete AND not in website-analysis view
-  if (!isSetupComplete && currentView !== 'website-analysis') {
+  // Show setup wizard if setup is not complete AND not in website-analysis or dashboard view
+  if (!isSetupComplete && currentView !== 'website-analysis' && currentView !== 'dashboard') {
     return (
       <div className="App bg-white min-h-screen">
         <Toaster
