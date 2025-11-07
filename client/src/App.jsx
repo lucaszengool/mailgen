@@ -42,6 +42,7 @@ import EmailDashboard from './components/EmailDashboard';
 import WorkflowPanel from './components/WorkflowPanel';
 import SignInPage from './pages/SignIn';
 import SignUpPage from './pages/SignUp';
+import FirstCampaignSetup from './pages/FirstCampaignSetup';
 import OnboardingTour from './components/OnboardingTour';
 import SimpleWorkflowDashboard from './components/SimpleWorkflowDashboard';
 import CampaignSelector from './components/CampaignSelector';
@@ -383,6 +384,7 @@ function App() {
         <Routes>
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
+          <Route path="/first-campaign-setup" element={<FirstCampaignSetup />} />
           <Route path="/" element={<HeadAIStyleStartPage onComplete={handleSetupComplete} />} /> {/* Default: Show main landing page */}
           <Route path="/home" element={<Home />} /> {/* Action list at /home */}
           <Route path="/setup" element={<CampaignSetupWizard onComplete={handleSetupComplete} />} />
