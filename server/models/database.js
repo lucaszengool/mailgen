@@ -3,11 +3,17 @@ const path = require('path');
 
 class Database {
   constructor() {
-    this.db = new sqlite3.Database(path.join(__dirname, '../data/email_agent.db'), (err) => {
+    // 🔥 RAILWAY: Use data directory that persists on Railway
+    const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '../data/email_agent.db');
+    console.log(`🔧 [DATABASE] Using path: ${dbPath}`);
+    console.log(`🔧 [DATABASE] Environment: ${process.env.NODE_ENV || 'development'}`);
+
+    this.db = new sqlite3.Database(dbPath, (err) => {
       if (err) {
-        console.error('数据库连接失败:', err.message);
+        console.error('❌ [DATABASE] Connection failed:', err.message);
       } else {
-        console.log('✅ SQLite数据库连接成功');
+        console.log('✅ [DATABASE] SQLite connected successfully');
+        console.log(`📍 [DATABASE] Location: ${dbPath}`);
         this.initTables();
       }
     });

@@ -8,8 +8,12 @@ const db = require('../models/database');
 const UserStorageService = require('../services/UserStorageService');
 const { optionalAuth } = require('../middleware/userContext');
 
-// Store last workflow results per user (multi-tenant support)
-const userWorkflowResults = new Map(); // userId -> workflowResults
+// 🔥 PRODUCTION FIX: Store last workflow results per user AND per campaign
+// Structure: userId -> Map(campaignId -> workflowResults)
+// ⚠️ NOTE: This is in-memory storage. On Railway/production, database is source of truth
+const userCampaignWorkflowResults = new Map(); // userId -> Map(campaignId -> workflowResults)
+
+console.log(`🚀 [PRODUCTION] Workflow storage initialized - ENV: ${process.env.NODE_ENV || 'development'}`);
 
 // 🎯 FIX: Track if template has been submitted to prevent popup re-triggering (per user)
 const userTemplateSubmitted = new Map(); // userId -> boolean
@@ -643,11 +647,12 @@ router.get('/step/:stepId', optionalAuth, (req, res) => {
 router.get('/results', optionalAuth, async (req, res) => {
   try {
     const userId = req.userId;
-    console.log(`🔍 Fetching campaign results for user: ${userId}`);
+    const campaignId = req.query.campaignId || null;  // 🔥 PRODUCTION: Campaign filter
+    console.log(`🔍 [PRODUCTION] Fetching results - User: ${userId}, Campaign: ${campaignId || 'LATEST'}`);
 
     // Get user-specific workflow state and results
     const workflowState = getUserWorkflowState(userId);
-    const lastWorkflowResults = userWorkflowResults.get(userId);
+    const lastWorkflowResults = await getLastWorkflowResults(userId, campaignId);
 
     // First check if we have stored results from the last campaign
     // 🎯 FIX: Also check for emails, not just prospects
@@ -1362,9 +1367,10 @@ async function executeRealWorkflow(agent, campaignConfig, userId = 'anonymous') 
       emailCampaign: !!results.emailCampaign
     });
 
-    // CRITICAL FIX: Store results in both locations for frontend access
-    console.log(`📦 [RAILWAY DEBUG] Storing results for user: ${userId}`);
-    setLastWorkflowResults(results, userId);
+    // 🔥 PRODUCTION: Store results with userId AND campaignId
+    const campaignId = results.campaignId || `workflow_${Date.now()}`;
+    console.log(`📦 [PRODUCTION] Storing results for user: ${userId}, campaign: ${campaignId}`);
+    await setLastWorkflowResults(results, userId, campaignId);
     
     // CRITICAL FIX: Store results in WebSocket manager's workflow states
     if (agent.wsManager && results.prospects && results.prospects.length > 0) {
@@ -1425,9 +1431,20 @@ async function executeRealWorkflow(agent, campaignConfig, userId = 'anonymous') 
   }
 }
 
-// Function to set workflow results from other modules (user-specific)
-async function setLastWorkflowResults(results, userId = 'anonymous') {
-  const lastWorkflowResults = userWorkflowResults.get(userId);
+// 🚀 PRODUCTION: Function to set workflow results per user AND per campaign
+async function setLastWorkflowResults(results, userId = 'anonymous', campaignId = null) {
+  // Extract campaignId from results if not provided
+  const finalCampaignId = campaignId || results.campaignId || 'default';
+
+  console.log(`📦 [PRODUCTION] Storing results for User: ${userId}, Campaign: ${finalCampaignId}`);
+
+  // Ensure user map exists
+  if (!userCampaignWorkflowResults.has(userId)) {
+    userCampaignWorkflowResults.set(userId, new Map());
+  }
+
+  const userCampaigns = userCampaignWorkflowResults.get(userId);
+  const lastWorkflowResults = userCampaigns.get(finalCampaignId);
 
   // 🔥 FIX: Don't overwrite if we already have emails and the new results don't
   if (lastWorkflowResults &&
@@ -1435,18 +1452,22 @@ async function setLastWorkflowResults(results, userId = 'anonymous') {
       lastWorkflowResults.emailCampaign.emails &&
       lastWorkflowResults.emailCampaign.emails.length > 0 &&
       (!results.emailCampaign || !results.emailCampaign.emails || results.emailCampaign.emails.length === 0)) {
-    console.log(`⚠️ [User: ${userId}] Preserving existing ${lastWorkflowResults.emailCampaign.emails.length} emails - not overwriting with empty campaign`);
+    console.log(`⚠️ [User: ${userId}, Campaign: ${finalCampaignId}] Preserving existing ${lastWorkflowResults.emailCampaign.emails.length} emails`);
     // Merge: keep existing emails but update other fields
-    userWorkflowResults.set(userId, {
+    userCampaigns.set(finalCampaignId, {
       ...results,
+      campaignId: finalCampaignId,
       emailCampaign: lastWorkflowResults.emailCampaign  // Keep existing emails
     });
   } else {
-    userWorkflowResults.set(userId, results);
+    userCampaigns.set(finalCampaignId, {
+      ...results,
+      campaignId: finalCampaignId
+    });
   }
 
-  const updatedResults = userWorkflowResults.get(userId);
-  console.log(`📦 [User: ${userId}] Stored workflow results with ${results.prospects?.length || 0} prospects and ${updatedResults.emailCampaign?.emails?.length || 0} emails`);
+  const updatedResults = userCampaigns.get(finalCampaignId);
+  console.log(`✅ [User: ${userId}, Campaign: ${finalCampaignId}] Stored ${results.prospects?.length || 0} prospects, ${updatedResults.emailCampaign?.emails?.length || 0} emails`);
 
   // 💾 Save prospects to database for persistence
   if (results.prospects && results.prospects.length > 0) {
@@ -1465,7 +1486,8 @@ async function setLastWorkflowResults(results, userId = 'anonymous') {
             address: prospect.address || '',
             source: prospect.source || 'AI Workflow',
             tags: prospect.tags || '',
-            notes: prospect.notes || `Found via AI workflow on ${new Date().toLocaleString()}`
+            notes: prospect.notes || `Found via AI workflow on ${new Date().toLocaleString()}`,
+            campaignId: finalCampaignId  // 🔥 PRODUCTION: Associate with campaign
           }, userId);
         } catch (saveError) {
           // Skip if already exists (UNIQUE constraint)
@@ -1493,6 +1515,7 @@ async function setLastWorkflowResults(results, userId = 'anonymous') {
 
           await db.saveEmailDraft({
             emailKey: emailKey,
+            campaignId: finalCampaignId,  // 🔥 PRODUCTION: Associate with campaign
             subject: email.subject || 'No Subject',
             preheader: email.preheader || '',
             components: email.components || [],
@@ -1523,14 +1546,87 @@ async function setLastWorkflowResults(results, userId = 'anonymous') {
   }
 }
 
-// Function to get workflow results from other modules (user-specific)
-function getLastWorkflowResults(userId = 'anonymous') {
-  return userWorkflowResults.get(userId);
+// 🚀 PRODUCTION: Function to get workflow results per user AND per campaign
+// Includes database fallback for Railway/production restarts
+async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
+  const userCampaigns = userCampaignWorkflowResults.get(userId);
+
+  // Try in-memory first
+  if (userCampaigns) {
+    // If campaignId specified, return that campaign's results
+    if (campaignId) {
+      const result = userCampaigns.get(campaignId);
+      if (result) {
+        console.log(`📦 [MEMORY] Found results for User: ${userId}, Campaign: ${campaignId}`);
+        return result;
+      }
+    } else {
+      // Otherwise return most recent campaign
+      const campaigns = Array.from(userCampaigns.values());
+      if (campaigns.length > 0) {
+        console.log(`📦 [MEMORY] Found ${campaigns.length} campaigns for User: ${userId}`);
+        return campaigns[campaigns.length - 1];
+      }
+    }
+  }
+
+  // 🔥 RAILWAY FIX: If not in memory, reconstruct from database
+  console.log(`💾 [DATABASE FALLBACK] Reconstructing from DB - User: ${userId}, Campaign: ${campaignId || 'LATEST'}`);
+
+  try {
+    // Get prospects from database
+    const dbFilter = campaignId ? { campaignId } : {};
+    const prospects = await db.getContacts(userId, dbFilter, 10000);
+
+    // Get emails from database
+    const emails = await db.getEmailDrafts(userId, campaignId);
+
+    if (prospects.length > 0 || emails.length > 0) {
+      // Reconstruct workflow results from database
+      const reconstructed = {
+        campaignId: campaignId || prospects[0]?.campaignId || 'reconstructed',
+        prospects: prospects.map(p => ({
+          email: p.email,
+          name: p.name,
+          company: p.company,
+          position: p.position,
+          industry: p.industry,
+          source: p.source
+        })),
+        emailCampaign: {
+          emails: emails.map(e => ({
+            to: e.metadata?.recipient || '',
+            subject: e.subject,
+            body: e.html,
+            html: e.html,
+            recipientName: e.metadata?.recipientName,
+            recipientCompany: e.metadata?.recipientCompany,
+            status: e.status || 'generated'
+          }))
+        },
+        status: 'reconstructed_from_db',
+        timestamp: new Date().toISOString()
+      };
+
+      // Store in memory for future access
+      if (!userCampaignWorkflowResults.has(userId)) {
+        userCampaignWorkflowResults.set(userId, new Map());
+      }
+      userCampaignWorkflowResults.get(userId).set(reconstructed.campaignId, reconstructed);
+
+      console.log(`✅ [DATABASE] Reconstructed: ${prospects.length} prospects, ${emails.length} emails`);
+      return reconstructed;
+    }
+  } catch (error) {
+    console.error(`❌ [DATABASE FALLBACK] Failed to reconstruct:`, error.message);
+  }
+
+  return null;
 }
 
-// Function to add a new email to the workflow results (user-specific)
-function addEmailToWorkflowResults(email, userId = 'anonymous') {
-  let lastWorkflowResults = userWorkflowResults.get(userId);
+// Function to add a new email to the workflow results (user-specific, campaign-specific)
+async function addEmailToWorkflowResults(email, userId = 'anonymous', campaignId = null) {
+  let lastWorkflowResults = await getLastWorkflowResults(userId, campaignId);
 
   if (!lastWorkflowResults) {
     lastWorkflowResults = { emailCampaign: { emails: [] } };
@@ -1544,9 +1640,15 @@ function addEmailToWorkflowResults(email, userId = 'anonymous') {
 
   // Add the new email to the campaign
   lastWorkflowResults.emailCampaign.emails.push(email);
-  userWorkflowResults.set(userId, lastWorkflowResults);
 
-  console.log(`📧 [User: ${userId}] Added email ${email.to} to workflow results. Total emails: ${lastWorkflowResults.emailCampaign.emails.length}`);
+  // Store back with campaign ID
+  const finalCampaignId = campaignId || lastWorkflowResults.campaignId || 'default';
+  if (!userCampaignWorkflowResults.has(userId)) {
+    userCampaignWorkflowResults.set(userId, new Map());
+  }
+  userCampaignWorkflowResults.get(userId).set(finalCampaignId, lastWorkflowResults);
+
+  console.log(`📧 [User: ${userId}, Campaign: ${finalCampaignId}] Added email ${email.to}. Total: ${lastWorkflowResults.emailCampaign.emails.length}`);
 }
 
 // Get generated email for professional editor
@@ -2140,17 +2242,21 @@ function setUserWorkflowState(userId, updates) {
 router.get('/stats', optionalAuth, async (req, res) => {
   try {
     const userId = req.userId || 'anonymous';
-    console.log(`📊 [User: ${userId}] Fetching workflow stats`);
+    const campaignId = req.query.campaignId || null;  // 🔥 PRODUCTION: Accept campaign filter
 
-    // Get workflow results for this user
-    const workflowResults = getLastWorkflowResults(userId);
-    console.log(`📊 Workflow results exist: ${!!workflowResults}, prospects: ${workflowResults?.prospects?.length || 0}`);
+    console.log(`📊 ========================================`);
+    console.log(`📊 [PRODUCTION] User: ${userId}, Campaign: ${campaignId || 'ALL'}`);
 
-    // Count prospects from database
-    const contacts = await db.getContacts(userId, {}, 10000);
-    console.log(`📊 Database contacts for ${userId}: ${contacts.length}`);
+    // Get workflow results for this user and campaign
+    const workflowResults = await getLastWorkflowResults(userId, campaignId);
+    console.log(`📊 Workflow results: ${!!workflowResults}, prospects: ${workflowResults?.prospects?.length || 0}`);
+
+    // Count prospects from database (filtered by campaign if specified)
+    const dbFilter = campaignId ? { campaignId } : {};
+    const contacts = await db.getContacts(userId, dbFilter, 10000);
+    console.log(`📊 Database contacts: ${contacts.length}`);
     const prospectsCount = contacts.filter(c => c.status === 'active').length;
-    console.log(`📊 Active prospects in DB: ${prospectsCount}`);
+    console.log(`📊 Active prospects: ${prospectsCount}`);
 
     // 🔥 FIX: If we have prospects in workflow results but not in DB, count from workflow results
     let finalProspectsCount = prospectsCount;

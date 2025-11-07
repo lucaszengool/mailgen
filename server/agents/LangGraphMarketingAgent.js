@@ -822,7 +822,7 @@ class LangGraphMarketingAgent {
 
         console.log(`💾 Stored ${prospects.length} prospects in pausedCampaignData`);
 
-        // 🚀 CRITICAL FIX: Store workflow results immediately for template endpoint to access
+        // 🚀 PRODUCTION: Store workflow results with userId AND campaignId
         const workflowRoute = require('../routes/workflow');
         if (workflowRoute.setLastWorkflowResults) {
           const partialResults = {
@@ -835,8 +835,8 @@ class LangGraphMarketingAgent {
             timestamp: new Date().toISOString()
           };
           const userId = this.userId || 'anonymous';
-          workflowRoute.setLastWorkflowResults(partialResults, userId);
-          console.log(`📦 Stored partial workflow results for user ${userId} - ${prospects.length} prospects available for template selection`);
+          await workflowRoute.setLastWorkflowResults(partialResults, userId, campaignId);
+          console.log(`📦 [PRODUCTION] Stored results for User: ${userId}, Campaign: ${campaignId}, Prospects: ${prospects.length}`);
         }
 
         // 🔥 CRITICAL: Also store in WebSocket state so /workflow/results can find them
