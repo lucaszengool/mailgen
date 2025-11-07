@@ -123,30 +123,30 @@ const QuotaBar = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-3">
         {/* Prospects Found */}
-        <div className="text-center p-2 bg-blue-50 rounded-lg">
+        <div className="text-center p-2 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center justify-center mb-1">
-            <Users className="w-4 h-4 text-blue-600" />
+            <Users className="w-4 h-4 text-green-600" />
           </div>
-          <div className="text-lg font-bold text-blue-900">{quotaData.prospects.total}</div>
-          <div className="text-xs text-blue-600">Prospects</div>
+          <div className="text-lg font-bold text-gray-900">{quotaData.prospects.total}</div>
+          <div className="text-xs text-gray-600">Prospects</div>
         </div>
 
         {/* Emails Generated */}
-        <div className="text-center p-2 bg-green-50 rounded-lg">
+        <div className="text-center p-2 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center justify-center mb-1">
             <Mail className="w-4 h-4 text-green-600" />
           </div>
-          <div className="text-lg font-bold text-green-900">{quotaData.emails.generated}</div>
-          <div className="text-xs text-green-600">Generated</div>
+          <div className="text-lg font-bold text-gray-900">{quotaData.emails.generated}</div>
+          <div className="text-xs text-gray-600">Generated</div>
         </div>
 
         {/* Emails Sent */}
-        <div className="text-center p-2 bg-purple-50 rounded-lg">
+        <div className="text-center p-2 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center justify-center mb-1">
-            <TrendingUp className="w-4 h-4 text-purple-600" />
+            <TrendingUp className="w-4 h-4 text-green-600" />
           </div>
-          <div className="text-lg font-bold text-purple-900">{quotaData.emails.sent}</div>
-          <div className="text-xs text-purple-600">Sent</div>
+          <div className="text-lg font-bold text-gray-900">{quotaData.emails.sent}</div>
+          <div className="text-xs text-gray-600">Sent</div>
         </div>
       </div>
 
