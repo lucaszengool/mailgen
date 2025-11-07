@@ -438,41 +438,61 @@ function App() {
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="/dashboard" element={
             <div className="min-h-screen bg-gray-50">
-              {showCampaignOnboarding ? (
-                <CampaignOnboardingWizard
-                  campaign={campaignBeingSetup}
-                  onComplete={handleCampaignOnboardingComplete}
-                  onCancel={handleCampaignOnboardingCancel}
-                />
-              ) : showCampaignSelector ? (
-                <CampaignSelector
-                  onSelectCampaign={handleSelectCampaign}
-                  onCreateCampaign={handleCreateCampaign}
-                />
-              ) : currentCampaign ? (
-                <>
-                  <SimpleWorkflowDashboard
-                    agentConfig={agentConfig}
-                    onReset={handleReset}
-                    campaign={currentCampaign}
-                    onBackToCampaigns={handleBackToCampaigns}
-                  />
+              {(() => {
+                console.log('🎯 Dashboard route evaluating conditionals:', {
+                  showCampaignOnboarding,
+                  showCampaignSelector,
+                  currentCampaign: currentCampaign?.name || 'none'
+                });
 
-                  {/* 🎯 Onboarding Tour - shown after initial setup */}
-                  <OnboardingTour
-                    isOpen={showOnboardingTour}
-                    onComplete={handleOnboardingComplete}
-                    startStep={0}
-                  />
-                </>
-              ) : (
-                <div className="flex items-center justify-center min-h-screen">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading dashboard...</p>
-                  </div>
-                </div>
-              )}
+                if (showCampaignOnboarding) {
+                  console.log('→ Rendering CampaignOnboardingWizard');
+                  return (
+                    <CampaignOnboardingWizard
+                      campaign={campaignBeingSetup}
+                      onComplete={handleCampaignOnboardingComplete}
+                      onCancel={handleCampaignOnboardingCancel}
+                    />
+                  );
+                } else if (showCampaignSelector) {
+                  console.log('→ Rendering CampaignSelector');
+                  return (
+                    <CampaignSelector
+                      onSelectCampaign={handleSelectCampaign}
+                      onCreateCampaign={handleCreateCampaign}
+                    />
+                  );
+                } else if (currentCampaign) {
+                  console.log('→ Rendering SimpleWorkflowDashboard');
+                  return (
+                    <>
+                      <SimpleWorkflowDashboard
+                        agentConfig={agentConfig}
+                        onReset={handleReset}
+                        campaign={currentCampaign}
+                        onBackToCampaigns={handleBackToCampaigns}
+                      />
+
+                      {/* 🎯 Onboarding Tour - shown after initial setup */}
+                      <OnboardingTour
+                        isOpen={showOnboardingTour}
+                        onComplete={handleOnboardingComplete}
+                        startStep={0}
+                      />
+                    </>
+                  );
+                } else {
+                  console.log('→ Rendering Loading fallback');
+                  return (
+                    <div className="flex items-center justify-center min-h-screen">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading dashboard...</p>
+                      </div>
+                    </div>
+                  );
+                }
+              })()}
             </div>
           } />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
