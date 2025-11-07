@@ -2136,6 +2136,94 @@ function setUserWorkflowState(userId, updates) {
   console.log(`🎯 [User: ${userId}] Workflow state updated:`, Object.keys(updates));
 }
 
+// 📊 Get workflow statistics for quota bar
+router.get('/stats', optionalAuth, async (req, res) => {
+  try {
+    const userId = req.userId || 'anonymous';
+    console.log(`📊 [User: ${userId}] Fetching workflow stats`);
+
+    // Get workflow results for this user
+    const workflowResults = getLastWorkflowResults(userId);
+
+    // Count prospects from database
+    const contacts = await db.getContacts(userId, {}, 10000);
+    const prospectsCount = contacts.filter(c => c.status === 'active').length;
+
+    // Count generated emails from workflow results
+    let generatedEmailsCount = 0;
+    if (workflowResults && workflowResults.emailCampaign && workflowResults.emailCampaign.emails) {
+      generatedEmailsCount = workflowResults.emailCampaign.emails.length;
+    }
+
+    // Count sent emails from database
+    const emailDrafts = await db.getEmailDrafts(userId);
+    const sentEmailsCount = emailDrafts.filter(e => e.status === 'sent').length;
+
+    // Calculate time until reset (1 hour from now)
+    const now = Date.now();
+    const oneHourInMs = 3600000;
+    const resetTime = now + oneHourInMs;
+    const timeUntilReset = oneHourInMs;
+
+    // Rate limit based on GENERATED EMAILS, not prospects
+    const maxEmailsPerHour = 100;
+    const isLimited = generatedEmailsCount >= maxEmailsPerHour;
+
+    const stats = {
+      rateLimit: {
+        current: generatedEmailsCount,  // 🔥 FIX: Count generated emails, NOT prospects
+        max: maxEmailsPerHour,
+        resetTime: resetTime,
+        timeUntilReset: timeUntilReset,
+        isLimited: isLimited
+      },
+      prospects: {
+        total: prospectsCount,
+        new: 0  // TODO: Track new prospects added in last hour
+      },
+      emails: {
+        generated: generatedEmailsCount,
+        sent: sentEmailsCount
+      }
+    };
+
+    console.log(`📊 [User: ${userId}] Stats:`, {
+      prospects: prospectsCount,
+      generated: generatedEmailsCount,
+      sent: sentEmailsCount
+    });
+
+    res.json({
+      success: true,
+      data: stats
+    });
+
+  } catch (error) {
+    console.error('📊 Error fetching workflow stats:', error);
+    // Return default stats on error
+    res.json({
+      success: true,
+      data: {
+        rateLimit: {
+          current: 0,
+          max: 100,
+          resetTime: Date.now() + 3600000,
+          timeUntilReset: 3600000,
+          isLimited: false
+        },
+        prospects: {
+          total: 0,
+          new: 0
+        },
+        emails: {
+          generated: 0,
+          sent: 0
+        }
+      }
+    });
+  }
+});
+
 module.exports = router;
 module.exports.setLastWorkflowResults = setLastWorkflowResults;
 module.exports.getLastWorkflowResults = getLastWorkflowResults;

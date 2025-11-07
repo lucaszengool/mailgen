@@ -822,6 +822,23 @@ class LangGraphMarketingAgent {
 
         console.log(`💾 Stored ${prospects.length} prospects in pausedCampaignData`);
 
+        // 🚀 CRITICAL FIX: Store workflow results immediately for template endpoint to access
+        const workflowRoute = require('../routes/workflow');
+        if (workflowRoute.setLastWorkflowResults) {
+          const partialResults = {
+            campaignId: campaignId,
+            prospects: prospects,
+            businessAnalysis: businessAnalysis,
+            marketingStrategy: marketingStrategy,
+            smtpConfig: campaignConfig.smtpConfig,
+            status: 'waiting_for_template',
+            timestamp: new Date().toISOString()
+          };
+          const userId = this.userId || 'anonymous';
+          workflowRoute.setLastWorkflowResults(partialResults, userId);
+          console.log(`📦 Stored partial workflow results for user ${userId} - ${prospects.length} prospects available for template selection`);
+        }
+
         // 🔥 CRITICAL: Also store in WebSocket state so /workflow/results can find them
         if (this.wsManager) {
           console.log(`📡 Storing prospects in WebSocket workflow state: ${campaignId}`);

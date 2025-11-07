@@ -4498,7 +4498,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 pb-4 space-y-2">
+        <nav className="flex-1 px-4 pb-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
