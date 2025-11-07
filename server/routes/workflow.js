@@ -2144,20 +2144,35 @@ router.get('/stats', optionalAuth, async (req, res) => {
 
     // Get workflow results for this user
     const workflowResults = getLastWorkflowResults(userId);
+    console.log(`📊 Workflow results exist: ${!!workflowResults}, prospects: ${workflowResults?.prospects?.length || 0}`);
 
     // Count prospects from database
     const contacts = await db.getContacts(userId, {}, 10000);
+    console.log(`📊 Database contacts for ${userId}: ${contacts.length}`);
     const prospectsCount = contacts.filter(c => c.status === 'active').length;
+    console.log(`📊 Active prospects in DB: ${prospectsCount}`);
+
+    // 🔥 FIX: If we have prospects in workflow results but not in DB, count from workflow results
+    let finalProspectsCount = prospectsCount;
+    if (workflowResults && workflowResults.prospects && workflowResults.prospects.length > 0) {
+      // If database has fewer prospects than workflow results, use workflow results count
+      if (workflowResults.prospects.length > prospectsCount) {
+        finalProspectsCount = workflowResults.prospects.length;
+        console.log(`📊 Using workflow results count: ${finalProspectsCount} (DB only has ${prospectsCount})`);
+      }
+    }
 
     // Count generated emails from workflow results
     let generatedEmailsCount = 0;
     if (workflowResults && workflowResults.emailCampaign && workflowResults.emailCampaign.emails) {
       generatedEmailsCount = workflowResults.emailCampaign.emails.length;
     }
+    console.log(`📊 Generated emails: ${generatedEmailsCount}`);
 
     // Count sent emails from database
     const emailDrafts = await db.getEmailDrafts(userId);
     const sentEmailsCount = emailDrafts.filter(e => e.status === 'sent').length;
+    console.log(`📊 Sent emails: ${sentEmailsCount}`);
 
     // Calculate time until reset (1 hour from now)
     const now = Date.now();
@@ -2178,7 +2193,7 @@ router.get('/stats', optionalAuth, async (req, res) => {
         isLimited: isLimited
       },
       prospects: {
-        total: prospectsCount,
+        total: finalProspectsCount,  // 🔥 FIX: Use finalProspectsCount from workflow or DB
         new: 0  // TODO: Track new prospects added in last hour
       },
       emails: {
@@ -2188,7 +2203,7 @@ router.get('/stats', optionalAuth, async (req, res) => {
     };
 
     console.log(`📊 [User: ${userId}] Stats:`, {
-      prospects: prospectsCount,
+      prospects: finalProspectsCount,
       generated: generatedEmailsCount,
       sent: sentEmailsCount
     });
