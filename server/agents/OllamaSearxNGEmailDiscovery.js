@@ -23,10 +23,10 @@ class OllamaSearxNGEmailDiscovery {
   async discoverEmailsWithProfiles(industry, maxEmails = 5) {
     try {
       console.log(`🔍 开始Ollama + SearxNG邮箱发现: ${industry}`);
-      
-      // 临时绕过Python Agent挂起问题，使用快速模板策略
-      console.log('⚡ Python Agent有挂起问题，使用快速模板策略...');
-      const result = await this.generateQuickEmailDiscovery(industry, maxEmails);
+
+      // Execute Python Agent for REAL search
+      console.log('🚀 Calling Python Agent for REAL prospect search...');
+      const result = await this.executePythonAgent(industry, maxEmails);
       
       if (result.success) {
         console.log(`✅ 发现完成: ${result.total_emails}个邮箱, ${result.total_profiles}个画像`);
@@ -334,35 +334,9 @@ class OllamaSearxNGEmailDiscovery {
   }
 
   generateMockEmailsForIndustry(industry, maxEmails) {
-    // 使用真实但通用的域名，避免无效邮件
-    const realDomains = {
-      'AI/Machine Learning': ['microsoft.com', 'openai.com', 'anthropic.com', 'google.com'],
-      'Technology': ['apple.com', 'google.com', 'microsoft.com', 'amazon.com'],
-      'Finance': ['jpmorgan.com', 'goldman.com', 'stripe.com', 'square.com'],
-      'Healthcare': ['johnson.com', 'pfizer.com', 'mayo.edu', 'cdc.gov']
-    };
-    
-    const roles = ['contact', 'info', 'hello', 'support', 'business', 'partnerships'];
-    const domains = realDomains[industry] || realDomains['Technology'];
-    
-    const emails = [];
-    for (let i = 0; i < Math.min(maxEmails, 3); i++) {  // 减少到3个，避免太多假邮件
-      const role = roles[i % roles.length];
-      const domain = domains[i % domains.length];
-      const email = `${role}@${domain}`;
-      
-      emails.push({
-        email: email,
-        source: 'real_company_template',
-        source_url: `https://${domain}`,
-        source_title: `${industry} Company - Contact Information`,
-        confidence: 0.9,  // 提高置信度因为是真实公司域名
-        method: 'real_domain_template',
-        note: 'Template email using real company domain - requires validation'
-      });
-    }
-    
-    return emails;
+    // DISABLED - No more mock emails, only real search
+    console.log('⚠️ Mock email generation disabled - use real search only');
+    return [];
   }
 
   generateMockProfile(emailData, industry) {

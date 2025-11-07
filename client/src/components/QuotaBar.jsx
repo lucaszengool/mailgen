@@ -76,102 +76,81 @@ const QuotaBar = () => {
   console.log('📊 QuotaBar rendering with data:', { percentage, isNearLimit, isLimited });
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-green-600" />
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-3 mb-4">
+      {/* Header - Compact */}
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-semibold text-gray-900 flex items-center gap-1.5">
+          <TrendingUp className="w-3.5 h-3.5 text-gray-600" />
           Campaign Stats
         </h3>
         {isLimited && (
-          <span className="flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">
+          <span className="flex items-center gap-1 text-xs text-red-600 px-2 py-0.5 rounded-full border border-red-200">
             <AlertCircle className="w-3 h-3" />
             Limit Reached
           </span>
         )}
-        {!isLimited && isNearLimit && (
-          <span className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
-            <AlertCircle className="w-3 h-3" />
-            Near Limit
-          </span>
-        )}
       </div>
 
-      {/* 🔥 PROSPECTS SECTION - SEPARATE */}
-      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-blue-600" />
-            <span className="text-xs font-semibold text-blue-900">Prospects Found</span>
-          </div>
-          <span className="text-lg font-bold text-blue-900">
-            {quotaData.prospects.total}
-          </span>
+      {/* Compact Stats Grid - All White Background */}
+      <div className="grid grid-cols-3 gap-2 mb-2">
+        {/* Prospects Found */}
+        <div className="text-center p-2 bg-white border border-gray-200 rounded">
+          <Users className="w-3.5 h-3.5 text-gray-600 mx-auto mb-1" />
+          <div className="text-sm font-bold text-gray-900">{quotaData.prospects.total}</div>
+          <div className="text-xs text-gray-600">Prospects</div>
         </div>
-        <div className="text-xs text-blue-700">
-          People discovered by AI search
+
+        {/* Generated */}
+        <div className="text-center p-2 bg-white border border-gray-200 rounded">
+          <Mail className="w-3.5 h-3.5 text-gray-600 mx-auto mb-1" />
+          <div className="text-sm font-bold text-gray-900">{quotaData.emails.generated}</div>
+          <div className="text-xs text-gray-600">Generated</div>
+        </div>
+
+        {/* Sent */}
+        <div className="text-center p-2 bg-white border border-gray-200 rounded">
+          <TrendingUp className="w-3.5 h-3.5 text-gray-600 mx-auto mb-1" />
+          <div className="text-sm font-bold text-gray-900">{quotaData.emails.sent}</div>
+          <div className="text-xs text-gray-600">Sent</div>
         </div>
       </div>
 
-      {/* 🔥 EMAILS SECTION - SEPARATE */}
-      <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-green-600" />
-            <span className="text-xs font-semibold text-green-900">Email Generation</span>
-          </div>
+      {/* Compact Progress Bar */}
+      <div className="bg-white border border-gray-200 rounded p-2">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs text-gray-600">Quota Usage</span>
+          <span className="text-xs font-semibold text-gray-900">
+            {quotaData.rateLimit.current} / {quotaData.rateLimit.max}
+          </span>
         </div>
-
-        {/* Progress Bar for Emails */}
-        <div className="mb-2">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-green-700">Generated</span>
-            <span className="text-xs font-semibold text-green-900">
-              {quotaData.emails.generated} / {quotaData.rateLimit.max}
-            </span>
-          </div>
-          <div className="w-full bg-green-200 rounded-full h-2 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-300 ${
-                isLimited
-                  ? 'bg-red-500'
-                  : isNearLimit
-                  ? 'bg-orange-500'
-                  : 'bg-green-600'
-              }`}
-              style={{ width: `${Math.min(percentage, 100)}%` }}
-            />
-          </div>
+        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-1">
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${
+              isLimited
+                ? 'bg-red-500'
+                : isNearLimit
+                ? 'bg-orange-500'
+                : 'bg-gray-400'
+            }`}
+            style={{ width: `${Math.min(percentage, 100)}%` }}
+          />
         </div>
-
-        {/* Email Stats */}
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          <div className="text-center p-1 bg-white rounded border border-green-200">
-            <div className="text-sm font-bold text-green-900">{quotaData.emails.generated}</div>
-            <div className="text-xs text-green-700">Generated</div>
-          </div>
-          <div className="text-center p-1 bg-white rounded border border-green-200">
-            <div className="text-sm font-bold text-green-900">{quotaData.emails.sent}</div>
-            <div className="text-xs text-green-700">Sent</div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between mt-2 text-xs text-green-700">
+        <div className="flex items-center justify-between text-xs text-gray-600">
           <span className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
             Resets in {timeRemaining}
           </span>
           <span>
-            {quotaData.rateLimit.max - quotaData.rateLimit.current} remaining
+            {quotaData.rateLimit.max - quotaData.rateLimit.current} left
           </span>
         </div>
       </div>
 
-      {/* Help Text */}
+      {/* Compact Help Text */}
       {isLimited && (
-        <div className="mt-3 p-2 bg-red-50 rounded-lg">
-          <p className="text-xs text-red-700">
-            Hourly limit reached. The system will resume automatically after the reset timer.
+        <div className="mt-2 p-1.5 bg-white border border-red-200 rounded">
+          <p className="text-xs text-red-600">
+            Hourly limit reached. System resumes after timer.
           </p>
         </div>
       )}

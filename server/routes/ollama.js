@@ -278,13 +278,14 @@ ${userQuery}
 **Your Response (be helpful, clear, and actionable):**`;
 
     const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
-      model: 'qwen2.5:7b',
+      model: 'qwen2.5:0.5b',
       prompt: fullPrompt,
       stream: false,
       options: {
         temperature: 0.7,
         top_p: 0.9,
-        max_tokens: 1500
+        max_tokens: 500,
+        num_predict: 500
       }
     });
 
