@@ -73,8 +73,13 @@ function App() {
     }
   }, [location.pathname]);
 
-  // Debug current view state
-  // console.log('🔍 App.jsx render - Current state:', { currentView, isSetupComplete });
+  // Debug dashboard rendering state
+  console.log('🔍 Dashboard render state:', {
+    pathname: location.pathname,
+    showCampaignOnboarding,
+    showCampaignSelector,
+    currentCampaign: currentCampaign?.name || 'none'
+  });
 
   // Handle legal pages (Privacy/Terms) - these should always be accessible
   const currentPath = window.location.pathname;
@@ -432,7 +437,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="/dashboard" element={
-            <>
+            <div className="min-h-screen bg-gray-50">
               {showCampaignOnboarding ? (
                 <CampaignOnboardingWizard
                   campaign={campaignBeingSetup}
@@ -444,7 +449,7 @@ function App() {
                   onSelectCampaign={handleSelectCampaign}
                   onCreateCampaign={handleCreateCampaign}
                 />
-              ) : (
+              ) : currentCampaign ? (
                 <>
                   <SimpleWorkflowDashboard
                     agentConfig={agentConfig}
@@ -460,8 +465,15 @@ function App() {
                     startStep={0}
                   />
                 </>
+              ) : (
+                <div className="flex items-center justify-center min-h-screen">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading dashboard...</p>
+                  </div>
+                </div>
               )}
-            </>
+            </div>
           } />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
