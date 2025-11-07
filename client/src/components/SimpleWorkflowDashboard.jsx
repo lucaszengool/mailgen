@@ -4737,7 +4737,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               <button
                 onClick={startWorkflow}
                 disabled={workflowStatus === 'running'}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl disabled:opacity-50 transition-colors"
+                className="px-6 py-3 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-xl disabled:opacity-50"
               >
                 START CAMPAIGN
               </button>
