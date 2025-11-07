@@ -20,7 +20,7 @@ const QuotaBar = () => {
     }
   });
 
-  const [timeRemaining, setTimeRemaining] = useState('');
+  const [timeRemaining, setTimeRemaining] = useState('60m 0s');
 
   // Fetch quota data from API
   const fetchQuotaData = async () => {
@@ -29,11 +29,14 @@ const QuotaBar = () => {
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data) {
+          console.log('📊 Quota data received:', result.data);
           setQuotaData(result.data);
         }
+      } else {
+        console.warn('📊 Quota API returned non-OK status:', response.status);
       }
     } catch (error) {
-      console.error('Error fetching quota data:', error);
+      console.warn('📊 Quota API not available (dev mode):', error.message);
     }
   };
 
@@ -52,6 +55,7 @@ const QuotaBar = () => {
 
   // Fetch data on mount and every 5 seconds
   useEffect(() => {
+    console.log('📊 QuotaBar mounted - fetching quota data');
     fetchQuotaData();
     const interval = setInterval(fetchQuotaData, 5000);
     return () => clearInterval(interval);
@@ -60,6 +64,8 @@ const QuotaBar = () => {
   const percentage = (quotaData.rateLimit.current / quotaData.rateLimit.max) * 100;
   const isNearLimit = percentage >= 80;
   const isLimited = quotaData.rateLimit.isLimited;
+
+  console.log('📊 QuotaBar rendering with data:', { percentage, isNearLimit, isLimited });
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4">

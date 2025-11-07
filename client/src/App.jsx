@@ -48,6 +48,7 @@ import CampaignSelector from './components/CampaignSelector';
 import CampaignOnboardingWizard from './components/CampaignOnboardingWizard';
 import ProcessNotificationsDemo from './components/ProcessNotificationsDemo';
 import BlogPost from './pages/BlogPost';
+import AutoDetectLanguage from './components/AutoDetectLanguage';
 
 function App() {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
@@ -366,6 +367,10 @@ function App() {
             },
           }}
         />
+
+        {/* Auto-detect user's language on first visit */}
+        <AutoDetectLanguage />
+
         <Routes>
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
