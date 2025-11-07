@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import Layout from './components/Layout';
@@ -51,6 +51,7 @@ import BlogPost from './pages/BlogPost';
 import AutoDetectLanguage from './components/AutoDetectLanguage';
 
 function App() {
+  const location = useLocation();
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [agentConfig, setAgentConfig] = useState(null);
   const [currentView, setCurrentView] = useState('setup');
@@ -62,6 +63,14 @@ function App() {
   const [showCampaignSelector, setShowCampaignSelector] = useState(true);
   const [showCampaignOnboarding, setShowCampaignOnboarding] = useState(false);
   const [campaignBeingSetup, setCampaignBeingSetup] = useState(null);
+
+  // Reset to campaign selector when navigating to /dashboard from elsewhere
+  useEffect(() => {
+    if (location.pathname === '/dashboard' && !currentCampaign && !showCampaignOnboarding) {
+      console.log('📍 Navigated to /dashboard - showing campaign selector');
+      setShowCampaignSelector(true);
+    }
+  }, [location.pathname]);
 
   // Debug current view state
   // console.log('🔍 App.jsx render - Current state:', { currentView, isSetupComplete });
