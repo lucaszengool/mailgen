@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
-import { Sparkles, ArrowRight, Globe } from 'lucide-react';
+import { Sparkles, ArrowRight, Globe, Target, Mail, Zap, CheckCircle } from 'lucide-react';
 
 export default function FirstCampaignSetup() {
   const navigate = useNavigate();
@@ -75,11 +75,14 @@ export default function FirstCampaignSetup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Header with User Button */}
-      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-10">
+      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-100 backdrop-blur-lg bg-opacity-90 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
             <span className="text-2xl font-bold text-gray-900">MailGen</span>
           </div>
           <UserButton afterSignOutUrl="/" />
@@ -87,54 +90,71 @@ export default function FirstCampaignSetup() {
       </div>
 
       {/* Main Content */}
-      <div className="pt-24 pb-12 px-6">
-        <div className="max-w-2xl mx-auto">
-          {/* Welcome Message */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
-              <Sparkles className="w-8 h-8 text-green-600" />
+      <div className="pt-32 pb-12 px-6">
+        <div className="max-w-3xl mx-auto">
+          {/* Welcome Message with Animation */}
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="relative inline-block mb-8">
+              {/* Animated rings */}
+              <div className="absolute inset-0 animate-ping opacity-20">
+                <div className="w-24 h-24 bg-green-500 rounded-full"></div>
+              </div>
+              <div className="relative flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-500 to-green-600 rounded-full shadow-xl">
+                <Sparkles className="w-12 h-12 text-white animate-pulse" />
+              </div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Welcome to MailGen!
+
+            <h1 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">
+              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-500">MailGen</span>
             </h1>
-            <p className="text-xl text-gray-600">
-              Let's create your first AI-powered email campaign
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Let's create your first AI-powered email campaign in minutes
             </p>
           </div>
 
-          {/* Website Input Card */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <Globe className="w-6 h-6 text-green-600" />
-              <h2 className="text-2xl font-bold text-gray-900">
-                Enter Your Website URL
-              </h2>
+          {/* Website Input Card - Premium Design */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-10 mb-10 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                <Globe className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Enter Your Website URL
+                </h2>
+                <p className="text-sm text-gray-500">Step 1 of 3 • Takes 30 seconds</p>
+              </div>
             </div>
 
-            <p className="text-gray-600 mb-6">
-              Our AI will analyze your website to understand your business and create personalized email campaigns for you.
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              Our AI will instantly analyze your website to understand your business value proposition and create personalized email campaigns that convert.
             </p>
 
             <form onSubmit={handleAnalyze} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="relative">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Website URL
                 </label>
-                <input
-                  type="url"
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg"
-                  required
-                  disabled={isAnalyzing}
-                />
+                <div className="relative">
+                  <input
+                    type="url"
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    placeholder="https://yourcompany.com"
+                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg transition-all duration-200 hover:border-gray-300"
+                    required
+                    disabled={isAnalyzing}
+                  />
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <Globe className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={isAnalyzing || !websiteUrl.trim()}
-                className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold py-4 px-6 rounded-lg hover:from-green-700 hover:to-green-600 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold py-5 px-8 rounded-xl hover:shadow-lg hover:shadow-green-500/50 transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
               >
                 {isAnalyzing ? (
                   <>
@@ -151,36 +171,80 @@ export default function FirstCampaignSetup() {
             </form>
           </div>
 
-          {/* Features Preview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-              <div className="text-3xl mb-2">🎯</div>
-              <h3 className="font-semibold text-gray-900 mb-1">AI Analysis</h3>
-              <p className="text-sm text-gray-600">Automatic business understanding</p>
+          {/* Features Preview - Premium Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            {/* Feature 1 */}
+            <div className="group bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg hover:border-green-200 transition-all duration-300 cursor-default">
+              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Target className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">AI Analysis</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Automatic business understanding and competitor insights</p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-              <div className="text-3xl mb-2">📧</div>
-              <h3 className="font-semibold text-gray-900 mb-1">Smart Emails</h3>
-              <p className="text-sm text-gray-600">Personalized for each prospect</p>
+
+            {/* Feature 2 */}
+            <div className="group bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg hover:border-green-200 transition-all duration-300 cursor-default">
+              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Mail className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">Smart Emails</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Personalized content for each prospect automatically</p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-              <div className="text-3xl mb-2">🚀</div>
-              <h3 className="font-semibold text-gray-900 mb-1">Auto Campaigns</h3>
-              <p className="text-sm text-gray-600">24/7 autonomous operation</p>
+
+            {/* Feature 3 */}
+            <div className="group bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg hover:border-green-200 transition-all duration-300 cursor-default">
+              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Zap className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2 text-lg">Auto Campaigns</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">24/7 autonomous operation while you focus on closing deals</p>
+            </div>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="flex items-center justify-center gap-8 mb-8 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span>No credit card required</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span>Setup in 2 minutes</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span>Cancel anytime</span>
             </div>
           </div>
 
           {/* Skip Option */}
-          <div className="text-center mt-8">
+          <div className="text-center">
             <button
               onClick={() => navigate('/dashboard')}
-              className="text-gray-600 hover:text-gray-900 text-sm font-medium underline"
+              className="text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors duration-200"
             >
-              Skip for now and explore
+              Skip for now and explore →
             </button>
           </div>
         </div>
       </div>
+
+      {/* Add custom animation styles */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
