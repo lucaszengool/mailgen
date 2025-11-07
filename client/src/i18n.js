@@ -44,8 +44,8 @@ i18n
 
     // React options
     react: {
-      // Wait for translations to load before rendering
-      useSuspense: true,
+      // Don't block rendering while translations load
+      useSuspense: false,
     },
 
     // Namespace
