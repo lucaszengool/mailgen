@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
 import { Sparkles, ArrowRight, Globe, Target, Mail, Zap, CheckCircle } from 'lucide-react';
@@ -7,6 +7,28 @@ export default function FirstCampaignSetup() {
   const navigate = useNavigate();
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Check if user has existing campaigns on mount
+  useEffect(() => {
+    const checkExistingCampaigns = () => {
+      try {
+        const campaigns = localStorage.getItem('campaigns');
+        if (campaigns) {
+          const parsed = JSON.parse(campaigns);
+          if (parsed && parsed.length > 0) {
+            console.log('✅ User has existing campaigns, redirecting to dashboard');
+            navigate('/dashboard', { replace: true });
+            return;
+          }
+        }
+        console.log('📝 New user, showing first campaign setup');
+      } catch (error) {
+        console.error('Error checking campaigns:', error);
+      }
+    };
+
+    checkExistingCampaigns();
+  }, [navigate]);
 
   const handleAnalyze = async (e) => {
     e.preventDefault();
@@ -18,20 +40,40 @@ export default function FirstCampaignSetup() {
     setIsAnalyzing(true);
 
     try {
-      // Call website analysis API
-      const response = await fetch('/api/analyze-website', {
+      console.log('🔍 Analyzing website:', websiteUrl);
+
+      // Call website analysis API (correct endpoint)
+      const response = await fetch('/api/website-analysis/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          websiteUrl: websiteUrl.trim()
+          targetWebsite: websiteUrl.trim()
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`API returned ${response.status}`);
+      }
+
       const result = await response.json();
+      console.log('✅ Analysis result:', result);
 
       if (result.success && result.analysis) {
+        // Save analysis to localStorage for the setup wizard
+        const analysisData = {
+          targetWebsite: websiteUrl.trim(),
+          businessName: result.analysis.businessName || '',
+          businessIntro: result.analysis.businessIntro || '',
+          productType: result.analysis.productType || '',
+          sellingPoints: result.analysis.sellingPoints || [],
+          audiences: result.analysis.audiences || [],
+          ...result.analysis
+        };
+
+        localStorage.setItem('agentSetupData', JSON.stringify(analysisData));
+
         // Create first campaign automatically
         const firstCampaign = {
           id: Date.now().toString(),
@@ -50,25 +92,18 @@ export default function FirstCampaignSetup() {
         // Save campaign to localStorage
         const campaigns = [firstCampaign];
         localStorage.setItem('campaigns', JSON.stringify(campaigns));
+        localStorage.setItem(`campaign_${firstCampaign.id}_data`, JSON.stringify(analysisData));
 
-        // Save campaign config data for setup wizard
-        const campaignData = {
-          targetWebsite: websiteUrl.trim(),
-          businessName: result.analysis.businessName || '',
-          businessIntro: result.analysis.businessIntro || '',
-          analysisData: result.analysis
-        };
-
-        localStorage.setItem(`campaign_${firstCampaign.id}_data`, JSON.stringify(campaignData));
-        localStorage.setItem('agentSetupData', JSON.stringify(campaignData));
+        console.log('🚀 Redirecting to dashboard with campaign setup');
 
         // Redirect to dashboard which will show campaign onboarding wizard
         navigate('/dashboard');
+      } else {
+        throw new Error('Invalid analysis response');
       }
     } catch (error) {
-      console.error('Error analyzing website:', error);
-      // Still proceed to dashboard even if analysis fails
-      navigate('/dashboard');
+      console.error('❌ Error analyzing website:', error);
+      alert('Unable to analyze website. Please check the URL and try again.');
     } finally {
       setIsAnalyzing(false);
     }
