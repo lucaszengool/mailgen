@@ -15,25 +15,34 @@ export default function CampaignSelector({ onSelectCampaign, onCreateCampaign })
   const [newCampaignName, setNewCampaignName] = useState('');
 
   useEffect(() => {
+    console.log('📋 CampaignSelector mounted');
     loadCampaigns();
   }, []);
 
   const loadCampaigns = () => {
+    console.log('📂 Loading campaigns from localStorage');
     try {
       const stored = localStorage.getItem('campaigns');
+      console.log('📦 Stored campaigns:', stored);
+
       if (stored) {
         const parsed = JSON.parse(stored);
+        console.log('✅ Parsed campaigns:', parsed);
         setCampaigns(parsed);
 
         // If no campaigns exist, auto-create the first one
         if (parsed.length === 0) {
+          console.log('📝 No campaigns found, creating first campaign');
           createFirstCampaign();
+        } else {
+          console.log(`📊 Found ${parsed.length} campaigns`);
         }
       } else {
+        console.log('📝 No stored campaigns, creating first campaign');
         createFirstCampaign();
       }
     } catch (error) {
-      console.error('Failed to load campaigns:', error);
+      console.error('❌ Failed to load campaigns:', error);
       createFirstCampaign();
     }
   };
@@ -114,6 +123,8 @@ export default function CampaignSelector({ onSelectCampaign, onCreateCampaign })
       year: 'numeric'
     });
   };
+
+  console.log('🎨 CampaignSelector rendering with', campaigns.length, 'campaigns');
 
   return (
     <div className="min-h-screen bg-white">
