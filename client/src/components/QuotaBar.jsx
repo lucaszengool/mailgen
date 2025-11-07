@@ -25,7 +25,15 @@ const QuotaBar = () => {
   // Fetch quota data from API
   const fetchQuotaData = async () => {
     try {
-      const response = await fetch('/api/workflow/stats');
+      // 🔥 PRODUCTION: Get current campaignId from localStorage or context
+      const currentCampaignId = localStorage.getItem('currentCampaignId');
+      const url = currentCampaignId
+        ? `/api/workflow/stats?campaignId=${currentCampaignId}`
+        : '/api/workflow/stats';
+
+      console.log(`📊 Fetching stats for campaign: ${currentCampaignId || 'ALL'}`);
+
+      const response = await fetch(url);
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data) {

@@ -243,6 +243,16 @@ function App() {
 
   const handleCreateCampaign = (campaign) => {
     console.log('🆕 Creating new campaign:', campaign.name);
+    console.log('🔥 [FRESH START] Campaign ID:', campaign.id);
+
+    // 🔥 PRODUCTION: Set current campaignId for this new campaign
+    localStorage.setItem('currentCampaignId', campaign.id);
+    console.log('✅ Stored currentCampaignId:', campaign.id);
+
+    // 🔥 CLEAR previous campaign data from UI
+    // This ensures the new campaign starts with 0 prospects, 0 emails
+    console.log('🧹 Clearing previous campaign data from UI');
+
     // New campaigns always need setup
     setCampaignBeingSetup(campaign);
     setShowCampaignOnboarding(true);
@@ -251,6 +261,14 @@ function App() {
 
   const handleCampaignOnboardingComplete = (data) => {
     console.log('✅ Campaign onboarding complete:', data);
+    console.log('🔥 [FRESH START] Campaign setup complete for:', data.campaign?.id);
+
+    // 🔥 PRODUCTION: Ensure currentCampaignId is set
+    if (data.campaign?.id) {
+      localStorage.setItem('currentCampaignId', data.campaign.id);
+      console.log('✅ Confirmed currentCampaignId:', data.campaign.id);
+    }
+
     setShowCampaignOnboarding(false);
     setCampaignBeingSetup(null);
 

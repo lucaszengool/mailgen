@@ -2194,10 +2194,47 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   });
   const [selectedLogStep, setSelectedLogStep] = useState(null);
 
+  // 🔥 FRESH START: Clear all data when switching campaigns
+  useEffect(() => {
+    const currentCampaignId = agentConfig?.campaign?.id;
+    if (currentCampaignId) {
+      const previousCampaignId = localStorage.getItem('currentCampaignId');
+
+      // Only reset if this is a DIFFERENT campaign
+      if (previousCampaignId && previousCampaignId !== currentCampaignId) {
+        console.log('🔥 [FRESH START] Switching from', previousCampaignId, 'to', currentCampaignId);
+        console.log('🧹 Clearing all UI state for new campaign');
+
+        // Reset everything
+        setProspects([]);
+        setGeneratedEmails([]);
+        setSteps([]);
+        setEmailCampaignStats({
+          emails: [],
+          totalSent: 0,
+          totalOpened: 0,
+          totalClicked: 0
+        });
+        setWorkflowStatus('idle');
+      }
+
+      // Store the new campaignId
+      localStorage.setItem('currentCampaignId', currentCampaignId);
+      console.log('✅ [FRESH START] Current campaignId:', currentCampaignId);
+    }
+  }, [agentConfig?.campaign?.id]);
+
   // 🚀 NEW: Show popup when workflow is just started from campaign onboarding
   useEffect(() => {
     if (agentConfig?.workflowJustStarted) {
       console.log('🚀 New campaign workflow just started - showing welcome popup');
+
+      // 🔥 FRESH START: Ensure campaignId is stored
+      if (agentConfig?.campaign?.id) {
+        localStorage.setItem('currentCampaignId', agentConfig.campaign.id);
+        console.log('✅ [FRESH START] Stored campaignId:', agentConfig.campaign.id);
+      }
+
       setNotificationStage('websiteAnalysisStarting');
       setShowProcessNotification(true);
       setWorkflowStatus('starting');
@@ -3381,8 +3418,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         setIsLoadingEmails(true);
       }
       setLastWorkflowFetchTime(now);
-      console.log('🔄 Fetching workflow results with authentication...');
-      const result = await apiGet('/api/workflow/results');
+
+      // 🔥 PRODUCTION: Get current campaignId and include in request
+      const currentCampaignId = localStorage.getItem('currentCampaignId');
+      const url = currentCampaignId
+        ? `/api/workflow/results?campaignId=${currentCampaignId}`
+        : '/api/workflow/results';
+
+      console.log(`🔄 Fetching workflow results for campaign: ${currentCampaignId || 'ALL'}`);
+      const result = await apiGet(url);
 
       console.log('📊 Workflow results fetched:', result);
       console.log('📊 EmailCampaign data:', result.data?.emailCampaign);
