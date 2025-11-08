@@ -749,23 +749,29 @@ router.get('/results', optionalAuth, async (req, res) => {
     let prospects = [];
     let campaignData = {};
     let hasRealResults = false;
-    
-    // Check WebSocket manager for real prospect data
-    const wsManager = req.app.locals.wsManager;
-    
-    if (wsManager && wsManager.workflowStates.size > 0) {
-      // console.log('🔄 Checking WebSocket workflow states for real prospect data...'); // Commented to reduce Railway log spam
 
-      // Look for prospect data in any workflow state
+    // 🔥 FIX: Check WebSocket manager for real prospect data, but ONLY for this campaign
+    const wsManager = req.app.locals.wsManager;
+
+    if (wsManager && wsManager.workflowStates.size > 0) {
+      console.log(`🔄 Checking WebSocket workflow states for campaign: ${campaignId || 'LATEST'}...`);
+
+      // Look for prospect data in workflow states that match this campaign
       for (const [workflowId, state] of wsManager.workflowStates) {
-        // console.log(`📊 Checking workflow ${workflowId}, data keys:`, Object.keys(state.data || {})); // Commented to reduce Railway log spam
-        // console.log(`📊 Steps available:`, Object.keys(state.steps || {})); // Commented to reduce Railway log spam
-        
+        // 🔥 CRITICAL: Only process this state if it belongs to this campaign or if no campaign filter
+        const stateCampaignId = state.data?.campaignId || state.campaignId;
+
+        if (campaignId && stateCampaignId && stateCampaignId !== campaignId) {
+          console.log(`⏭️  Skipping workflow ${workflowId} (campaign: ${stateCampaignId}, looking for: ${campaignId})`);
+          continue; // Skip states from other campaigns
+        }
+
+        console.log(`📊 Checking workflow ${workflowId} for campaign ${stateCampaignId || 'LATEST'}`);
+
         // Check for prospects in direct data object
         if (state.data && state.data.prospects && state.data.prospects.length > 0) {
-          // Only log once when first found, not on every poll
           if (prospects.length === 0) {
-            console.log(`✅ Found ${state.data.prospects.length} real prospects in workflow ${workflowId} (direct data)`);
+            console.log(`✅ Found ${state.data.prospects.length} prospects in workflow ${workflowId} for campaign ${stateCampaignId || 'LATEST'}`);
           }
           prospects = state.data.prospects;
           hasRealResults = true;
@@ -773,19 +779,19 @@ router.get('/results', optionalAuth, async (req, res) => {
         // Also check for prospects in the prospect_search step result
         else if (state.steps && state.steps.prospect_search && state.steps.prospect_search.result && state.steps.prospect_search.result.prospects) {
           if (prospects.length === 0) {
-            console.log(`✅ Found ${state.steps.prospect_search.result.prospects.length} real prospects in workflow ${workflowId} (step result)`);
+            console.log(`✅ Found ${state.steps.prospect_search.result.prospects.length} prospects in workflow ${workflowId} (step result) for campaign ${stateCampaignId || 'LATEST'}`);
           }
           prospects = state.steps.prospect_search.result.prospects;
           hasRealResults = true;
         }
-        
+
         // If we found prospects, extract other campaign data from the state and break
         if (hasRealResults) {
           // Extract other campaign data from the state
           campaignData = {
             businessAnalysis: state.data?.businessAnalysis || state.steps?.website_analysis?.result || {
               websiteUrl: 'https://fruitai.org',
-              industry: 'AI Technology', 
+              industry: 'AI Technology',
               targetAudience: 'B2B Professionals',
               companyName: 'FruitAI'
             },
@@ -799,6 +805,10 @@ router.get('/results', optionalAuth, async (req, res) => {
           };
           break;
         }
+      }
+
+      if (!hasRealResults && campaignId) {
+        console.log(`⚠️  No WebSocket data found for campaign: ${campaignId}`);
       }
     }
     

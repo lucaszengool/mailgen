@@ -150,18 +150,20 @@ class WorkflowWebSocketManager extends EventEmitter {
   // 广播工作流状态更新
   broadcastWorkflowUpdate(workflowId, update) {
     console.log(`📡 Broadcasting workflow update for ${workflowId}:`, update.type);
-    
+
     // 更新存储的状态
     if (!this.workflowStates.has(workflowId)) {
       this.workflowStates.set(workflowId, {
         id: workflowId,
+        campaignId: workflowId, // 🔥 FIX: Store campaignId (workflowId IS the campaignId)
         status: 'running',
         stages: {},
         currentStage: null,
-        startTime: Date.now()
+        startTime: Date.now(),
+        data: {} // 🔥 FIX: Initialize data object for storing prospects/emails
       });
     }
-    
+
     const state = this.workflowStates.get(workflowId);
     
     // 更新状态

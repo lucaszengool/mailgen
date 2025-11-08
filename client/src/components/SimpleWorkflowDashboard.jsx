@@ -1840,6 +1840,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         setShowChatbot(true);
       }
 
+      // Extract prospect name for loading message
+      const prospectName = prospect.name ||
+                          prospect.persona?.name ||
+                          (prospect.email ? prospect.email.split('@')[0] : 'prospect');
+
+      // Show loading message immediately
+      const loadingMessage = {
+        content: `🔍 **MailGen is analyzing ${prospectName}...**\n\nPlease wait while I gather insights about this prospect and evaluate the match quality.`,
+        suggestions: [],
+        isLoading: true
+      };
+      setChatbotExternalMessage(loadingMessage);
+
+      // Small delay to ensure loading message is visible
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       // Get website analysis from localStorage
       const websiteAnalysis = JSON.parse(localStorage.getItem('websiteAnalysis') || 'null');
 
@@ -1871,16 +1887,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       } else {
         // Show error in chatbot
         const errorMessage = {
-          content: `I couldn't analyze this prospect. ${data.message || 'Please make sure Ollama is running.'}`,
-          suggestions: []
+          content: `❌ I couldn't analyze this prospect. ${data.message || 'Please make sure Ollama is running with the command:\n\n```\nollama run qwen2.5:0.5b\n```'}`,
+          suggestions: [
+            { text: 'Try Again', action: 'retry_analysis' },
+            { text: 'View All Prospects', action: 'goto_prospects' }
+          ]
         };
         setChatbotExternalMessage(errorMessage);
       }
     } catch (error) {
       console.error('Error analyzing prospect:', error);
       const errorMessage = {
-        content: 'I encountered an error while analyzing this prospect. Please make sure the backend services are running.',
-        suggestions: []
+        content: `❌ I encountered an error while analyzing this prospect.\n\n**Possible solutions:**\n1. Make sure the backend server is running\n2. Verify Ollama is running: \`ollama run qwen2.5:0.5b\`\n3. Check your network connection\n\n**Error details:** ${error.message}`,
+        suggestions: [
+          { text: 'View All Prospects', action: 'goto_prospects' },
+          { text: 'Go to Settings', action: 'goto_settings' }
+        ]
       };
       setChatbotExternalMessage(errorMessage);
     }
@@ -2325,6 +2347,54 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       console.log('✅ [CAMPAIGN SWITCH] Current campaignId:', currentCampaignId);
     }
   }, [agentConfig?.campaign?.id]);
+
+  // 🔥 INITIAL LOAD: Load campaign data when component mounts or campaign prop changes
+  useEffect(() => {
+    const loadInitialCampaignData = async () => {
+      const campaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+
+      if (!campaignId) {
+        console.log('⚠️  [INITIAL LOAD] No campaignId found, skipping data load');
+        return;
+      }
+
+      console.log(`📥 [INITIAL LOAD] Loading data for campaign: ${campaignId}`);
+
+      try {
+        const url = `/api/workflow/results?campaignId=${campaignId}`;
+        const result = await apiGet(url);
+
+        if (result.success && result.data) {
+          const { prospects: prospectsFromAPI, campaignData } = result.data;
+          const emailCampaign = campaignData?.emailCampaign;
+
+          console.log(`📥 [INITIAL LOAD] Found ${prospectsFromAPI?.length || 0} prospects, ${emailCampaign?.emails?.length || 0} emails`);
+
+          // Only update if we actually have data
+          if (prospectsFromAPI && prospectsFromAPI.length > 0) {
+            setProspects(prospectsFromAPI);
+            console.log(`✅ [INITIAL LOAD] Loaded ${prospectsFromAPI.length} prospects`);
+          }
+
+          if (emailCampaign?.emails && emailCampaign.emails.length > 0) {
+            setGeneratedEmails(emailCampaign.emails);
+            console.log(`✅ [INITIAL LOAD] Loaded ${emailCampaign.emails.length} emails`);
+          }
+
+          // Update workflow status if we have data
+          if ((prospectsFromAPI && prospectsFromAPI.length > 0) || (emailCampaign?.emails && emailCampaign.emails.length > 0)) {
+            setWorkflowStatus('completed');
+          }
+        } else {
+          console.log('📥 [INITIAL LOAD] No existing data for this campaign');
+        }
+      } catch (error) {
+        console.error('❌ [INITIAL LOAD] Failed to load campaign data:', error);
+      }
+    };
+
+    loadInitialCampaignData();
+  }, [campaign?.id]); // Run when campaign changes OR on mount
 
   // 🚀 NEW: Show popup when workflow is just started from campaign onboarding
   useEffect(() => {

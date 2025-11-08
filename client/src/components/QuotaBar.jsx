@@ -83,22 +83,32 @@ const QuotaBar = () => {
 
   const isProspectNearLimit = prospectPercentage >= 80;
   const isEmailNearLimit = emailPercentage >= 80;
-  const isLimited = quotaData.rateLimit.isLimited;
 
-  console.log('📊 QuotaBar rendering with data:', { prospectPercentage, emailPercentage, isLimited });
+  // Only show as limited if EITHER prospect or email quota is actually at/over limit
+  const isProspectAtLimit = prospectPercentage >= 100;
+  const isEmailAtLimit = emailPercentage >= 100;
+  const isLimited = isProspectAtLimit || isEmailAtLimit;
+
+  console.log('📊 QuotaBar rendering with data:', { prospectPercentage, emailPercentage, isLimited, isProspectAtLimit, isEmailAtLimit });
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-2 mb-3">
       {/* Header - Extra Compact */}
       <div className="flex items-center justify-between mb-1.5">
-        <h3 className="text-xs font-semibold text-gray-900 flex items-center gap-1">
+        <h3 className="text-xs font-semibold text-black flex items-center gap-1">
           <TrendingUp className="w-3 h-3" style={{ color: '#00f5a0' }} />
           Campaign Stats
         </h3>
         {isLimited && (
-          <span className="flex items-center gap-0.5 text-xs text-red-600 px-1.5 py-0.5 rounded-full border border-red-200">
+          <span className="flex items-center gap-0.5 text-xs text-red-600 px-1.5 py-0.5 rounded-full border border-red-200 bg-red-50">
             <AlertCircle className="w-2.5 h-2.5" />
-            Limit
+            {isProspectAtLimit && isEmailAtLimit ? 'Quotas Full' : isProspectAtLimit ? 'Prospects Full' : 'Emails Full'}
+          </span>
+        )}
+        {!isLimited && (isProspectNearLimit || isEmailNearLimit) && (
+          <span className="flex items-center gap-0.5 text-xs text-orange-600 px-1.5 py-0.5 rounded-full border border-orange-200 bg-orange-50">
+            <AlertCircle className="w-2.5 h-2.5" />
+            Near Limit
           </span>
         )}
       </div>
@@ -106,84 +116,84 @@ const QuotaBar = () => {
       {/* Extra Compact Stats Grid */}
       <div className="grid grid-cols-3 gap-1.5 mb-1.5">
         {/* Prospects */}
-        <div className="text-center p-1.5 bg-white border border-gray-200 rounded">
+        <div className="text-center p-1.5 bg-white border-2 border-gray-200 rounded">
           <Users className="w-3 h-3 mx-auto mb-0.5" style={{ color: '#00f5a0' }} />
-          <div className="text-xs font-bold text-gray-900">{quotaData.prospects.total}</div>
-          <div className="text-xs text-gray-600" style={{ fontSize: '0.65rem' }}>Prospects</div>
+          <div className="text-xs font-bold text-black">{quotaData.prospects.total}</div>
+          <div className="text-xs text-black" style={{ fontSize: '0.65rem' }}>Prospects</div>
         </div>
 
         {/* Generated */}
-        <div className="text-center p-1.5 bg-white border border-gray-200 rounded">
+        <div className="text-center p-1.5 bg-white border-2 border-gray-200 rounded">
           <Mail className="w-3 h-3 mx-auto mb-0.5" style={{ color: '#00f5a0' }} />
-          <div className="text-xs font-bold text-gray-900">{quotaData.emails.generated}</div>
-          <div className="text-xs text-gray-600" style={{ fontSize: '0.65rem' }}>Generated</div>
+          <div className="text-xs font-bold text-black">{quotaData.emails.generated}</div>
+          <div className="text-xs text-black" style={{ fontSize: '0.65rem' }}>Generated</div>
         </div>
 
         {/* Sent */}
-        <div className="text-center p-1.5 bg-white border border-gray-200 rounded">
+        <div className="text-center p-1.5 bg-white border-2 border-gray-200 rounded">
           <TrendingUp className="w-3 h-3 mx-auto mb-0.5" style={{ color: '#00f5a0' }} />
-          <div className="text-xs font-bold text-gray-900">{quotaData.emails.sent}</div>
-          <div className="text-xs text-gray-600" style={{ fontSize: '0.65rem' }}>Sent</div>
+          <div className="text-xs font-bold text-black">{quotaData.emails.sent}</div>
+          <div className="text-xs text-black" style={{ fontSize: '0.65rem' }}>Sent</div>
         </div>
       </div>
 
       {/* Prospect Quota Bar */}
-      <div className="bg-white border border-gray-200 rounded p-1.5 mb-1.5">
+      <div className="bg-white border-2 border-gray-200 rounded p-1.5 mb-1.5">
         <div className="flex items-center justify-between mb-0.5">
-          <span className="text-xs text-gray-600 flex items-center gap-1" style={{ fontSize: '0.65rem' }}>
+          <span className="text-xs text-black flex items-center gap-1" style={{ fontSize: '0.65rem' }}>
             <Users className="w-2.5 h-2.5" style={{ color: '#00f5a0' }} />
             Prospect Quota
           </span>
-          <span className="text-xs font-semibold text-gray-900" style={{ fontSize: '0.65rem' }}>
+          <span className="text-xs font-semibold text-black" style={{ fontSize: '0.65rem' }}>
             {quotaData.prospects.quota.current}/{quotaData.prospects.quota.max}
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-1 overflow-hidden mb-0.5">
+        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-0.5">
           <div
             className="h-full rounded-full transition-all duration-300"
             style={{
               width: `${Math.min(prospectPercentage, 100)}%`,
-              backgroundColor: isLimited ? '#ef4444' : isProspectNearLimit ? '#f97316' : '#00f5a0'
+              backgroundColor: isProspectAtLimit ? '#ef4444' : isProspectNearLimit ? '#f97316' : '#00f5a0'
             }}
           />
         </div>
-        <div className="flex items-center justify-between text-gray-600" style={{ fontSize: '0.65rem' }}>
+        <div className="flex items-center justify-between text-black" style={{ fontSize: '0.65rem' }}>
           <span className="flex items-center gap-0.5">
-            <Clock className="w-2.5 h-2.5" />
+            <Clock className="w-2.5 h-2.5" style={{ color: '#00f5a0' }} />
             {timeRemaining}
           </span>
-          <span>
+          <span className="font-medium">
             {quotaData.prospects.quota.max - quotaData.prospects.quota.current} left
           </span>
         </div>
       </div>
 
       {/* Email Generation Quota Bar */}
-      <div className="bg-white border border-gray-200 rounded p-1.5">
+      <div className="bg-white border-2 border-gray-200 rounded p-1.5">
         <div className="flex items-center justify-between mb-0.5">
-          <span className="text-xs text-gray-600 flex items-center gap-1" style={{ fontSize: '0.65rem' }}>
+          <span className="text-xs text-black flex items-center gap-1" style={{ fontSize: '0.65rem' }}>
             <Mail className="w-2.5 h-2.5" style={{ color: '#00f5a0' }} />
             Email Gen Quota
           </span>
-          <span className="text-xs font-semibold text-gray-900" style={{ fontSize: '0.65rem' }}>
+          <span className="text-xs font-semibold text-black" style={{ fontSize: '0.65rem' }}>
             {quotaData.emails.quota.current}/{quotaData.emails.quota.max}
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-1 overflow-hidden mb-0.5">
+        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-0.5">
           <div
             className="h-full rounded-full transition-all duration-300"
             style={{
               width: `${Math.min(emailPercentage, 100)}%`,
-              backgroundColor: isLimited ? '#ef4444' : isEmailNearLimit ? '#f97316' : '#00f5a0'
+              backgroundColor: isEmailAtLimit ? '#ef4444' : isEmailNearLimit ? '#f97316' : '#00f5a0'
             }}
           />
         </div>
-        <div className="flex items-center justify-between text-gray-600" style={{ fontSize: '0.65rem' }}>
+        <div className="flex items-center justify-between text-black" style={{ fontSize: '0.65rem' }}>
           <span className="flex items-center gap-0.5">
-            <Clock className="w-2.5 h-2.5" />
+            <Clock className="w-2.5 h-2.5" style={{ color: '#00f5a0' }} />
             {timeRemaining}
           </span>
-          <span>
+          <span className="font-medium">
             {quotaData.emails.quota.max - quotaData.emails.quota.current} left
           </span>
         </div>
@@ -193,7 +203,25 @@ const QuotaBar = () => {
       {isLimited && (
         <div className="mt-1.5 p-1 bg-white border border-red-200 rounded">
           <p className="text-red-600" style={{ fontSize: '0.65rem' }}>
-            Limit reached. Resets in {timeRemaining}.
+            {isProspectAtLimit && isEmailAtLimit
+              ? 'Prospect and Email quotas reached. Resets in '
+              : isProspectAtLimit
+              ? 'Prospect quota reached. Resets in '
+              : 'Email quota reached. Resets in '}
+            {timeRemaining}.
+          </p>
+        </div>
+      )}
+
+      {/* Warning when near limit */}
+      {!isLimited && (isProspectNearLimit || isEmailNearLimit) && (
+        <div className="mt-1.5 p-1 bg-white border border-orange-200 rounded">
+          <p className="text-orange-600" style={{ fontSize: '0.65rem' }}>
+            {isProspectNearLimit && isEmailNearLimit
+              ? 'Approaching quota limits'
+              : isProspectNearLimit
+              ? 'Approaching prospect quota limit'
+              : 'Approaching email quota limit'}
           </p>
         </div>
       )}

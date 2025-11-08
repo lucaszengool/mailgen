@@ -80,9 +80,17 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
         role: 'assistant',
         content: externalMessage.content,
         timestamp: new Date().toISOString(),
-        suggestions: externalMessage.suggestions || []
+        suggestions: externalMessage.suggestions || [],
+        isLoading: externalMessage.isLoading || false
       };
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prev => {
+        // If this is a loading message, replace any previous loading messages
+        if (externalMessage.isLoading) {
+          return [...prev.filter(msg => !msg.isLoading), assistantMessage];
+        }
+        // If this is a result, remove loading messages and add result
+        return [...prev.filter(msg => !msg.isLoading), assistantMessage];
+      });
     }
   }, [externalMessage, isOpen]);
 
@@ -306,7 +314,7 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
           <div key={index} className="mt-4 mb-2">
             <div className="flex items-center gap-2">
               <div className="w-1 h-5 bg-[#00f5a0] rounded"></div>
-              <span className="font-bold text-gray-900 text-base">{cleanLine}</span>
+              <span className="font-bold text-black text-base">{cleanLine}</span>
             </div>
           </div>
         );
@@ -329,7 +337,7 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
         formattedElements.push(
           <div key={index} className="flex items-start gap-2 ml-4 mb-1">
             <div className="w-1.5 h-1.5 bg-[#00f5a0] rounded-full mt-2 flex-shrink-0"></div>
-            <span className="text-gray-700 text-sm leading-relaxed">{bulletText}</span>
+            <span className="text-black text-sm leading-relaxed">{bulletText}</span>
           </div>
         );
         return;
@@ -337,7 +345,7 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
 
       // Regular text
       formattedElements.push(
-        <div key={index} className="text-gray-700 text-sm leading-relaxed mb-1">
+        <div key={index} className="text-black text-sm leading-relaxed mb-1">
           {cleanLine}
         </div>
       );
@@ -349,33 +357,33 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col border-l border-gray-200">
+    <div className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col border-l-4 border-[#00f5a0]">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 bg-white border-b border-gray-200">
+      <div className="flex items-center justify-between p-6 bg-gradient-to-r from-white to-green-50 border-b-2 border-[#00f5a0]">
         <div className="flex items-center space-x-3">
           {/* MailGen Logo */}
           <div className="w-12 h-12 bg-[#00f5a0] rounded-full flex items-center justify-center shadow-lg shadow-[#00f5a0]/30">
             <Sparkles className="w-6 h-6 text-black" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">MailGen</h2>
-            <p className="text-sm text-gray-600">Your AI Copilot</p>
+            <h2 className="text-xl font-bold text-black">MailGen</h2>
+            <p className="text-sm text-black">Your AI Copilot</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => {/* Show quick guide */}}
-            className="px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border-2 border-[#00f5a0] rounded-full text-sm font-medium text-black hover:bg-[#00f5a0] transition-colors"
           >
             <BookOpen className="w-4 h-4 inline mr-1" />
             Quick Guide
           </button>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-[#00f5a0] rounded-full transition-colors"
             title="Close"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-black" />
           </button>
         </div>
       </div>
@@ -384,9 +392,34 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
       <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
         {messages.map((message, index) => (
           <div key={index} className="space-y-3">
-            {message.role === 'assistant' && (
+            {message.role === 'assistant' && message.isLoading && (
+              <div className="p-5 bg-gradient-to-r from-green-50 to-white rounded-xl border-2 border-[#00f5a0] shadow-lg">
+                <div className="flex items-start gap-4">
+                  <div className="relative mt-1">
+                    <div className="w-8 h-8 bg-[#00f5a0] rounded-full flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-black animate-pulse" />
+                    </div>
+                    <div className="absolute inset-0 w-8 h-8 rounded-full bg-[#00f5a0] opacity-30 animate-ping"></div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-black text-lg mb-2">MailGen is Analyzing...</div>
+                    <div className="whitespace-pre-wrap break-words text-black leading-relaxed">
+                      {formatMessageContent(message.content)}
+                    </div>
+                    <div className="flex items-center gap-2 mt-4">
+                      <div className="w-2 h-2 bg-[#00f5a0] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-[#00f5a0] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-[#00f5a0] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      <span className="ml-2 text-sm text-black font-medium">Processing data</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {message.role === 'assistant' && !message.isLoading && (
               <div className="p-0">
-                <div className="whitespace-pre-wrap break-words text-gray-800 leading-relaxed">
+                <div className="whitespace-pre-wrap break-words text-black leading-relaxed">
                   {formatMessageContent(message.content)}
                 </div>
                 <div className="text-xs text-gray-400 mt-2">
@@ -400,7 +433,7 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
 
             {message.role === 'user' && (
               <div className="flex justify-end">
-                <div className="text-gray-800 rounded-lg p-0 max-w-[80%]">
+                <div className="text-black rounded-lg p-0 max-w-[80%]">
                   <div className="whitespace-pre-wrap break-words">
                     {message.content}
                   </div>
@@ -415,18 +448,18 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
             )}
 
             {/* Suggested Actions */}
-            {message.suggestions && message.suggestions.length > 0 && (
+            {message.suggestions && message.suggestions.length > 0 && !message.isLoading && (
               <div className="space-y-2 mt-3">
                 {message.suggestions.map((suggestion, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleAction(suggestion.action, suggestion.text)}
-                    className="w-full text-left px-4 py-3 bg-white border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all flex items-center justify-between group"
+                    className="w-full text-left px-4 py-3 bg-white border-2 border-[#00f5a0] rounded-lg hover:bg-[#00f5a0] transition-all flex items-center justify-between group"
                   >
-                    <span className="text-gray-700 group-hover:text-green-700">
+                    <span className="text-black font-medium group-hover:text-black">
                       {suggestion.text}
                     </span>
-                    <MessageSquare className="w-4 h-4 text-gray-400 group-hover:text-green-500" />
+                    <MessageSquare className="w-4 h-4 text-[#00f5a0] group-hover:text-black" />
                   </button>
                 ))}
               </div>
@@ -456,21 +489,21 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
       </div>
 
       {/* Input */}
-      <div className="p-6 bg-white border-t border-gray-200">
-        <div className="flex items-center space-x-3 bg-gray-50 rounded-full px-5 py-3 border border-gray-200 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-500/20 transition-all">
+      <div className="p-6 bg-gradient-to-r from-white to-green-50 border-t-2 border-[#00f5a0]">
+        <div className="flex items-center space-x-3 bg-white rounded-full px-5 py-3 border-2 border-[#00f5a0] focus-within:border-[#00f5a0] focus-within:ring-2 focus-within:ring-[#00f5a0]/20 transition-all">
           <input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask me anything..."
-            className="flex-1 bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
+            className="flex-1 bg-transparent focus:outline-none text-black placeholder-gray-500"
             disabled={isLoading}
           />
           <button
             onClick={sendMessage}
             disabled={!input.trim() || isLoading}
-            className="p-2 rounded-full bg-green-500 text-white hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-full bg-[#00f5a0] text-black hover:bg-[#00e090] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Send message"
           >
             <Send className="w-5 h-5" />

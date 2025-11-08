@@ -3286,19 +3286,21 @@ export default function ProfessionalEmailEditor(props) {
       
       const smtpConfig = JSON.parse(smtpConfigString || '{}');
       console.log('📧 Parsed SMTP Config (individual):', smtpConfig);
-      
-      if (!smtpConfig.host || !smtpConfig.port || !smtpConfig.username || !smtpConfig.password) {
+
+      // Check for both old format (username/password) and new format (auth.user/auth.pass)
+      const hasAuth = (smtpConfig.auth?.user && smtpConfig.auth?.pass) || (smtpConfig.username && smtpConfig.password);
+
+      if (!smtpConfig.host || !smtpConfig.port || !hasAuth) {
         console.log('❌ Missing SMTP config fields for individual email');
         toast.error('Please configure SMTP settings first. Go to Settings page to set up SMTP.');
-        
+
         // Show what's missing
         const missing = [];
         if (!smtpConfig.host) missing.push('host');
         if (!smtpConfig.port) missing.push('port');
-        if (!smtpConfig.username) missing.push('username');
-        if (!smtpConfig.password) missing.push('password');
+        if (!hasAuth) missing.push('credentials (username/password or auth.user/auth.pass)');
         console.log('❌ Missing fields:', missing.join(', '));
-        
+
         setLoading(false);
         return;
       }
@@ -3363,19 +3365,23 @@ export default function ProfessionalEmailEditor(props) {
       console.log('🐛 SEND DEBUG: rootEmailHTML length:', rootEmailHTML?.length || 0);
       console.log('🐛 SEND DEBUG: finalHTML length:', finalHTML?.length || 0);
       console.log('🐛 SEND DEBUG: Selected HTML length:', emailHTML?.length || 0);
-      
+
+      // Extract credentials from either format (auth.user/auth.pass or username/password)
+      const smtpUser = smtpConfig.auth?.user || smtpConfig.username;
+      const smtpPass = smtpConfig.auth?.pass || smtpConfig.password;
+
       const emailData = {
         subject: subject || 'Your Email Subject',
         html: emailHTML,
-        from: smtpConfig.from || smtpConfig.username,
+        from: smtpConfig.from || smtpUser,
         to: [recipientEmail],
         smtp: {
           host: smtpConfig.host,
           port: parseInt(smtpConfig.port),
           secure: smtpConfig.secure || (parseInt(smtpConfig.port) === 465),
           auth: {
-            user: smtpConfig.username,
-            pass: smtpConfig.password
+            user: smtpUser,
+            pass: smtpPass
           }
         }
       };
@@ -3398,9 +3404,9 @@ export default function ProfessionalEmailEditor(props) {
           host: emailData.smtp?.host || smtpConfig.host,
           port: emailData.smtp?.port || smtpConfig.port,
           secure: emailData.smtp?.secure || smtpConfig.secure,
-          username: emailData.smtp?.auth?.user || smtpConfig.username,
-          password: emailData.smtp?.auth?.pass || smtpConfig.password,
-          fromName: smtpConfig.fromName || emailData.from?.split('<')[0]?.trim()
+          username: emailData.smtp?.auth?.user || smtpUser,
+          password: emailData.smtp?.auth?.pass || smtpPass,
+          fromName: smtpConfig.fromName || smtpConfig.senderName || emailData.from?.split('<')[0]?.trim()
         },
         action: 'send_single',  // Indicate this is a single email send
         // 🔥 CRITICAL FIX: Include user template data for workflow resumption
@@ -3410,8 +3416,8 @@ export default function ProfessionalEmailEditor(props) {
           body: emailData.html,
           components: emailComponents || [],  // Include the current components structure
           templateType: emailComponents?.length > 0 ? 'component_based' : 'html_based',
-          senderName: smtpConfig.fromName,
-          senderEmail: smtpConfig.username,
+          senderName: smtpConfig.fromName || smtpConfig.senderName,
+          senderEmail: smtpUser,
           smtpConfig: smtpConfig
         }
       };
@@ -3462,23 +3468,29 @@ export default function ProfessionalEmailEditor(props) {
     try {
       setLoading(true);
       console.log('📧 Parsed SMTP Config (template):', smtpConfig);
-      
-      if (!smtpConfig.host || !smtpConfig.port || !smtpConfig.username || !smtpConfig.password) {
+
+      // Check for both old format (username/password) and new format (auth.user/auth.pass)
+      const hasAuth = (smtpConfig.auth?.user && smtpConfig.auth?.pass) || (smtpConfig.username && smtpConfig.password);
+
+      if (!smtpConfig.host || !smtpConfig.port || !hasAuth) {
         console.log('❌ Missing SMTP config fields for template emails');
         toast.error('Please configure SMTP settings first. Go to Settings page to set up SMTP.');
-        
+
         // Show what's missing
         const missing = [];
         if (!smtpConfig.host) missing.push('host');
         if (!smtpConfig.port) missing.push('port');
-        if (!smtpConfig.username) missing.push('username');
-        if (!smtpConfig.password) missing.push('password');
+        if (!hasAuth) missing.push('credentials (username/password or auth.user/auth.pass)');
         console.log('❌ Missing fields:', missing.join(', '));
-        
+
         setLoading(false);
         return;
       }
-      
+
+      // Extract credentials from either format (auth.user/auth.pass or username/password)
+      const smtpUser = smtpConfig.auth?.user || smtpConfig.username;
+      const smtpPass = smtpConfig.auth?.pass || smtpConfig.password;
+
       // CRITICAL FIX: Use the selected template from the modal instead of current editor state
       console.log('🎨 EMAIL GENERATION DEBUG: Using selected template:', selectedTemplate?.name || 'None selected');
       console.log('🎨 EMAIL GENERATION DEBUG: selectedTemplate exists?', !!selectedTemplate);
@@ -3864,7 +3876,7 @@ export default function ProfessionalEmailEditor(props) {
             // 🔥 CRITICAL FIX: Include userTemplate for workflow resumption
             userTemplate: templateData,
             emailData: {
-              from: `${smtpConfig.fromName || 'Your Name'} <${smtpConfig.username}>`,
+              from: `${smtpConfig.fromName || smtpConfig.senderName || 'Your Name'} <${smtpUser}>`,
               to: recipientEmail,
               subject: personalizedData.subject || 'Hello from our team',
               html: personalizedHTML

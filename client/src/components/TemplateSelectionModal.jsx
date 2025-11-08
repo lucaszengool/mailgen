@@ -1355,25 +1355,25 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           backgroundColor: 'white',
           border: '1px solid #e9ecef',
           borderRadius: '4px',
-          padding: '8px',
+          padding: '6px',
           height: '120px',
           overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px'
+          fontSize: '5px',
+          lineHeight: '1.3',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-            <div style={{ width: '16px', height: '16px', backgroundColor: isSelected ? '#00f5a0' : '#10b981', borderRadius: '2px' }}></div>
-            <div style={{ height: '3px', width: '40px', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '3px' }}>
+            <div style={{ width: '10px', height: '10px', backgroundColor: isSelected ? '#00f5a0' : '#10b981', borderRadius: '1px' }}></div>
+            <span style={{ fontSize: '5px', color: '#6b7280', fontWeight: '600' }}>COMPANY</span>
           </div>
-          <div style={{ height: '4px', width: '90%', backgroundColor: '#1f2937', borderRadius: '1px' }}></div>
-          <div style={{ height: '2px', width: '100%', backgroundColor: '#e9ecef', borderRadius: '1px', marginTop: '2px' }}></div>
-          <div style={{ height: '2px', width: '95%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
-          <div style={{ height: '2px', width: '88%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
-          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#10b981', height: '8px', width: '60px', borderRadius: '2px', marginTop: '4px' }}></div>
-          <div style={{ backgroundColor: '#f9fafb', padding: '4px', borderLeft: '2px solid #10b981', marginTop: '4px' }}>
-            <div style={{ height: '2px', width: '70%', backgroundColor: '#d1d5db', borderRadius: '1px', marginBottom: '2px' }}></div>
-            <div style={{ height: '2px', width: '50%', backgroundColor: '#e5e7eb', borderRadius: '1px' }}></div>
+          <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#111827', marginBottom: '3px' }}>Partnership Opportunity</div>
+          <div style={{ fontSize: '4.5px', color: '#4b5563', marginBottom: '1px' }}>Hi John,</div>
+          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '0.5px' }}>I noticed your company's innovative work...</div>
+          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '0.5px' }}>We'd love to explore partnership opportunities</div>
+          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '3px' }}>that could benefit both organizations.</div>
+          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#10b981', padding: '2px 6px', borderRadius: '2px', fontSize: '4.5px', color: 'white', fontWeight: '600', marginBottom: '3px' }}>Schedule Meeting</div>
+          <div style={{ backgroundColor: '#f9fafb', padding: '3px', borderLeft: '2px solid #10b981', fontSize: '4px', color: '#6b7280', fontStyle: 'italic' }}>
+            "Great results from our partnership" - CEO
           </div>
         </div>
       );
@@ -1386,24 +1386,39 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           backgroundColor: 'white',
           border: '1px solid #e9ecef',
           borderRadius: '4px',
-          padding: '8px',
+          padding: '6px',
           height: '120px',
           overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '3px'
+          fontSize: '5px',
+          lineHeight: '1.3',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
         }}>
-          <div style={{ backgroundColor: isSelected ? '#00f5a0' : '#3b82f6', height: '12px', borderRadius: '2px', marginBottom: '2px' }}></div>
-          <div style={{ height: '4px', width: '70%', backgroundColor: '#1f2937', borderRadius: '1px' }}></div>
-          <div style={{ display: 'flex', gap: '3px', marginTop: '2px' }}>
-            <div style={{ flex: 1, height: '16px', backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px' }}></div>
-            <div style={{ flex: 1, height: '16px', backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px' }}></div>
+          <div style={{ backgroundColor: isSelected ? '#00f5a0' : '#3b82f6', padding: '3px', borderRadius: '2px', marginBottom: '3px', textAlign: 'center' }}>
+            <span style={{ fontSize: '5px', color: 'white', fontWeight: 'bold' }}>TECH INNOVATION</span>
           </div>
-          <div style={{ display: 'flex', gap: '3px' }}>
-            <div style={{ flex: 1, height: '16px', backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px' }}></div>
-            <div style={{ flex: 1, height: '16px', backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px' }}></div>
+          <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#111827', marginBottom: '3px' }}>Transform Your Business</div>
+          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '2px' }}>Cutting-edge AI solutions for modern enterprises</div>
+          <div style={{ display: 'flex', gap: '2px', marginBottom: '2px' }}>
+            <div style={{ flex: 1, backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px', padding: '2px', textAlign: 'center' }}>
+              <div style={{ fontSize: '5px', fontWeight: 'bold', color: '#3b82f6' }}>10x</div>
+              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Faster</div>
+            </div>
+            <div style={{ flex: 1, backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px', padding: '2px', textAlign: 'center' }}>
+              <div style={{ fontSize: '5px', fontWeight: 'bold', color: '#3b82f6' }}>40%</div>
+              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Savings</div>
+            </div>
           </div>
-          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#3b82f6', height: '10px', width: '80px', borderRadius: '3px', marginTop: '2px' }}></div>
+          <div style={{ display: 'flex', gap: '2px', marginBottom: '3px' }}>
+            <div style={{ flex: 1, backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px', padding: '2px', textAlign: 'center' }}>
+              <div style={{ fontSize: '5px', fontWeight: 'bold', color: '#3b82f6' }}>24/7</div>
+              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Support</div>
+            </div>
+            <div style={{ flex: 1, backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px', padding: '2px', textAlign: 'center' }}>
+              <div style={{ fontSize: '5px', fontWeight: 'bold', color: '#3b82f6' }}>100%</div>
+              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Secure</div>
+            </div>
+          </div>
+          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#3b82f6', padding: '2px 8px', borderRadius: '3px', fontSize: '4.5px', color: 'white', fontWeight: '600' }}>Start Free Trial →</div>
         </div>
       );
     }
@@ -1415,34 +1430,34 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           backgroundColor: 'white',
           border: '1px solid #e9ecef',
           borderRadius: '4px',
-          padding: '8px',
+          padding: '6px',
           height: '120px',
           overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '3px'
+          fontSize: '5px',
+          lineHeight: '1.3',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
         }}>
-          <div style={{ borderBottom: '2px solid #6b7280', paddingBottom: '3px', marginBottom: '2px' }}>
-            <div style={{ height: '4px', width: '60%', backgroundColor: '#111827', borderRadius: '1px' }}></div>
+          <div style={{ borderBottom: '2px solid #6b7280', paddingBottom: '2px', marginBottom: '3px' }}>
+            <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#111827' }}>Strategic Partnership Proposal</div>
           </div>
-          <div style={{ height: '2px', width: '100%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
-          <div style={{ height: '2px', width: '95%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
-          <div style={{ display: 'flex', gap: '4px', marginTop: '2px', padding: '4px', backgroundColor: '#f9fafb', borderRadius: '2px' }}>
+          <div style={{ fontSize: '4.5px', color: '#4b5563', marginBottom: '1px' }}>Dear Mr. Johnson,</div>
+          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '2px' }}>Our analysis shows significant synergy between our organizations in the enterprise SaaS space...</div>
+          <div style={{ display: 'flex', gap: '2px', marginTop: '2px', marginBottom: '3px', padding: '3px', backgroundColor: '#f9fafb', borderRadius: '2px' }}>
             <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ height: '6px', width: '20px', margin: '0 auto', backgroundColor: isSelected ? '#00f5a0' : '#6366f1', borderRadius: '1px', marginBottom: '2px' }}></div>
-              <div style={{ height: '2px', width: '24px', margin: '0 auto', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+              <div style={{ fontSize: '6px', fontWeight: 'bold', color: isSelected ? '#00f5a0' : '#6366f1' }}>$2.5M</div>
+              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Revenue</div>
             </div>
             <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ height: '6px', width: '20px', margin: '0 auto', backgroundColor: isSelected ? '#00f5a0' : '#6366f1', borderRadius: '1px', marginBottom: '2px' }}></div>
-              <div style={{ height: '2px', width: '24px', margin: '0 auto', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+              <div style={{ fontSize: '6px', fontWeight: 'bold', color: isSelected ? '#00f5a0' : '#6366f1' }}>150%</div>
+              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Growth</div>
             </div>
             <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ height: '6px', width: '20px', margin: '0 auto', backgroundColor: isSelected ? '#00f5a0' : '#6366f1', borderRadius: '1px', marginBottom: '2px' }}></div>
-              <div style={{ height: '2px', width: '24px', margin: '0 auto', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+              <div style={{ fontSize: '6px', fontWeight: 'bold', color: isSelected ? '#00f5a0' : '#6366f1' }}>45K</div>
+              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Users</div>
             </div>
           </div>
-          <div style={{ backgroundColor: '#f9fafb', padding: '3px', borderLeft: '2px solid #6366f1', marginTop: '2px' }}>
-            <div style={{ height: '2px', width: '80%', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+          <div style={{ backgroundColor: '#f9fafb', padding: '3px', borderLeft: '2px solid #6366f1', fontSize: '3.5px', color: '#6b7280', fontStyle: 'italic' }}>
+            "Strategic vision aligned perfectly" - Board Member
           </div>
         </div>
       );
