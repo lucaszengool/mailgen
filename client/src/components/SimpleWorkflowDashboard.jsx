@@ -1469,7 +1469,7 @@ const SettingsView = () => {
                   <button
                     onClick={updateSmtpConfig}
                     disabled={isSaving}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                    className="px-6 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors disabled:opacity-50"
                   >
                     {isSaving ? 'Updating...' : 'Update Configuration'}
                   </button>
@@ -1523,7 +1523,7 @@ const SettingsView = () => {
                 </div>
 
                 <div className="flex justify-end pt-4 border-t border-gray-200">
-                  <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                  <button className="px-6 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors">
                     Update Website Analysis
                   </button>
                 </div>
@@ -1606,7 +1606,7 @@ const SettingsView = () => {
                 </div>
 
                 <div className="flex justify-end pt-4 border-t border-gray-200">
-                  <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                  <button className="px-6 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors">
                     Update Campaign Config
                   </button>
                 </div>
@@ -5935,7 +5935,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           onClick={() => {
             setShowChatbot(true);
           }}
-          className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-all z-40"
+          className="fixed bottom-6 right-6 bg-[#00f5a0] hover:bg-[#00e090] text-black p-4 rounded-full shadow-lg transition-all z-40"
           title="Open MailGen AI Assistant"
         >
           <MessageSquare className="w-6 h-6" />

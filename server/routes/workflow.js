@@ -139,15 +139,26 @@ router.get('/status', optionalAuth, (req, res) => {
 router.get('/stats', optionalAuth, (req, res) => {
   try {
     const agent = getMarketingAgent(req);
+    const maxProspectsPerHour = 100;
+    const maxEmailsPerHour = 100;
+
     const stats = {
       prospects: {
         total: 0,
-        new: 0
+        new: 0,
+        quota: {
+          current: 0,
+          max: maxProspectsPerHour
+        }
       },
       emails: {
         generated: 0,
         sent: 0,
-        pending: 0
+        pending: 0,
+        quota: {
+          current: 0,
+          max: maxEmailsPerHour
+        }
       },
       rateLimit: {
         current: 0,
@@ -181,6 +192,7 @@ router.get('/stats', optionalAuth, (req, res) => {
       if (agent.prospectSearchAgent.autonomousSearch.stats) {
         stats.prospects.total = agent.prospectSearchAgent.autonomousSearch.emailPool.size;
         stats.prospects.new = agent.prospectSearchAgent.autonomousSearch.stats.totalEmailsFound;
+        stats.prospects.quota.current = stats.prospects.total;
       }
     }
 
@@ -191,9 +203,11 @@ router.get('/stats', optionalAuth, (req, res) => {
         if (state.data) {
           if (state.data.prospects) {
             stats.prospects.total = state.data.prospects.length;
+            stats.prospects.quota.current = stats.prospects.total;
           }
           if (state.data.generatedEmails) {
             stats.emails.generated = state.data.generatedEmails.length;
+            stats.emails.quota.current = stats.emails.generated;
           }
         }
         stats.workflow.isRunning = state.status === 'running';

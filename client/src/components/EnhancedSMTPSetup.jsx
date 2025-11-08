@@ -497,7 +497,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   </h2>
                   <button
                     onClick={startTutorial}
-                    className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-black rounded-lg hover:bg-green-600 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors"
                   >
                     <Play className="w-4 h-4" />
                     <span>Start Tutorial</span>
@@ -714,7 +714,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   href={selectedProviderData.tutorial[currentTutorialStep].link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-green-500 text-black rounded-lg hover:bg-green-600 transition-colors"
+                  className="inline-flex items-center space-x-2 px-4 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors"
                 >
                   <span>{selectedProviderData.tutorial[currentTutorialStep].action}</span>
                   <ExternalLink className="w-4 h-4" />
@@ -728,7 +728,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
               </div>
               <button
                 onClick={nextTutorialStep}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-black rounded-lg hover:bg-green-600 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors"
               >
                 <span>
                   {currentTutorialStep === selectedProviderData.tutorial.length - 1 ? 'Finish' : 'Next'}
@@ -884,7 +884,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                     </button>
                     <button
                       onClick={testConnection}
-                      className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center"
+                      className="flex-1 px-4 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors flex items-center justify-center"
                     >
                       <span>Retry</span>
                       <ArrowRight className="w-4 h-4 ml-2" />

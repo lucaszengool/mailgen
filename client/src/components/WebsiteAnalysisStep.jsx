@@ -168,7 +168,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
             </button>
             <button
               onClick={analyzeWebsite}
-              className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+              className="px-6 py-2.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors"
             >
               Retry Analysis
             </button>
@@ -315,7 +315,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
             </div>
             <button
               onClick={addSellingPoint}
-              className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
+              className="px-3 py-1.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold text-sm rounded-lg"
             >
               + Add Point
             </button>
