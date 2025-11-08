@@ -204,6 +204,93 @@ router.get('/status', async (req, res) => {
   }
 });
 
+// Analyze Prospect Match
+router.post('/analyze-prospect', async (req, res) => {
+  try {
+    const { prospect, websiteAnalysis } = req.body;
+
+    // Extract prospect information
+    const prospectEmail = prospect.email || 'Unknown email';
+    const prospectName = prospect.name || prospect.persona?.name || 'Unknown';
+    const prospectCompany = prospect.company || prospect.persona?.company_name || 'Unknown company';
+    const prospectType = prospect.persona?.type || prospect.type || 'Unknown type';
+    const prospectIndustry = prospect.industry || 'Unknown industry';
+    const matchScore = prospect.confidence || prospect.score || 0;
+
+    // Build context from website analysis if available
+    let businessContext = '';
+    if (websiteAnalysis && websiteAnalysis.analysis) {
+      const analysis = websiteAnalysis.analysis;
+      businessContext = `
+User's Business Information:
+- Business Type: ${analysis.businessType || 'Not specified'}
+- Value Proposition: ${analysis.valueProposition || 'Not specified'}
+- Target Audience: ${analysis.targetAudience || 'Not specified'}
+- Key Features: ${analysis.keyFeatures?.join(', ') || 'Not specified'}
+- Unique Selling Points: ${analysis.uniqueSellingPoints?.join(', ') || 'Not specified'}`;
+    } else {
+      businessContext = 'User\'s Business Information: Not available yet';
+    }
+
+    const systemPrompt = `You are MailGen, an expert AI analyst helping evaluate prospect-business fit.
+
+${businessContext}
+
+**Prospect Information:**
+- Name: ${prospectName}
+- Email: ${prospectEmail}
+- Company: ${prospectCompany}
+- Type: ${prospectType}
+- Industry: ${prospectIndustry}
+- Match Score: ${Math.round(matchScore * 100)}%
+
+**Your Task:**
+Analyze why this prospect is a good match for the user's business. Write a clear, concise analysis (3-4 sentences) covering:
+
+1. Why this prospect's company/role aligns with the user's target audience
+2. Specific value propositions from the user's business that would appeal to this prospect
+3. Key talking points for initial outreach
+
+Keep it actionable and focused on the match quality. Be enthusiastic but realistic.
+
+**Your Analysis:**`;
+
+    const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
+      model: 'qwen2.5:0.5b',
+      prompt: systemPrompt,
+      stream: false,
+      options: {
+        temperature: 0.7,
+        top_p: 0.9,
+        max_tokens: 300,
+        num_predict: 300
+      }
+    });
+
+    const analysis = response.data.response;
+
+    res.json({
+      success: true,
+      analysis: analysis,
+      prospectInfo: {
+        name: prospectName,
+        company: prospectCompany,
+        email: prospectEmail,
+        matchScore: Math.round(matchScore * 100)
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Prospect Analysis Error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to analyze prospect. Please ensure Ollama is running.',
+      error: error.message
+    });
+  }
+});
+
 // AI Assistant Chat endpoint
 router.post('/chat', async (req, res) => {
   try {

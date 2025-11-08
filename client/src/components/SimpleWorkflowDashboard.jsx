@@ -1701,6 +1701,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('workflow');
   const [showChatbot, setShowChatbot] = useState(true); // Always show on initial load
+  const [chatbotExternalMessage, setChatbotExternalMessage] = useState(null);
   const [wsConnectionStatus, setWsConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'disconnected', 'error'
   const [campaignConfig, setCampaignConfig] = useState(null);
 
@@ -1818,6 +1819,60 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       ...prev,
       [filterType]: prev[filterType] === value ? null : value
     }));
+  };
+
+  // Handle "Ask MailGen" prospect analysis
+  const handleAskMailGen = async (prospect) => {
+    try {
+      // Open chatbot if not already open
+      if (!showChatbot) {
+        setShowChatbot(true);
+      }
+
+      // Get website analysis from localStorage
+      const websiteAnalysis = JSON.parse(localStorage.getItem('websiteAnalysis') || 'null');
+
+      // Call analysis API
+      const response = await fetch('/api/ollama/analyze-prospect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prospect: prospect,
+          websiteAnalysis: websiteAnalysis
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Format the message for chatbot
+        const prospectInfo = data.prospectInfo;
+        const message = {
+          content: `**Analyzing Prospect: ${prospectInfo.name}**\n\nCompany: ${prospectInfo.company}\nEmail: ${prospectInfo.email}\nMatch Score: ${prospectInfo.matchScore}%\n\n${data.analysis}`,
+          suggestions: [
+            { text: 'Generate Email for this Prospect', action: 'goto_email_editor' },
+            { text: 'View All Prospects', action: 'goto_prospects' }
+          ]
+        };
+        setChatbotExternalMessage(message);
+      } else {
+        // Show error in chatbot
+        const errorMessage = {
+          content: `I couldn't analyze this prospect. ${data.message || 'Please make sure Ollama is running.'}`,
+          suggestions: []
+        };
+        setChatbotExternalMessage(errorMessage);
+      }
+    } catch (error) {
+      console.error('Error analyzing prospect:', error);
+      const errorMessage = {
+        content: 'I encountered an error while analyzing this prospect. Please make sure the backend services are running.',
+        suggestions: []
+      };
+      setChatbotExternalMessage(errorMessage);
+    }
   };
 
   // Filter functions
@@ -5018,6 +5073,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                               }
                             }}
                             isGenerating={false}
+                            onAskMailGen={handleAskMailGen}
                           />
                           
                           <motion.div
@@ -5277,6 +5333,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                             showFilters={false} // Filters now shown separately above
                             selectedFilters={prospectFilters}
                             onFilterChange={handleProspectFilterChange}
+                            onAskMailGen={handleAskMailGen}
                           />
                         </motion.div>
                       ))}
@@ -5869,6 +5926,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         setActiveView={setActiveView}
         prospects={prospects}
         emails={emailCampaignStats.emails || generatedEmails || []}
+        externalMessage={chatbotExternalMessage}
       />
 
       {/* Floating chat button */}

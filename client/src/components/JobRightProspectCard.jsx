@@ -5,7 +5,7 @@ import {
   Target, AlertCircle, TrendingUp, Building2, Mail
 } from 'lucide-react';
 
-const JobRightProspectCard = ({ prospect, index, onClick, showFilters = false, selectedFilters = {}, onFilterChange }) => {
+const JobRightProspectCard = ({ prospect, index, onClick, showFilters = false, selectedFilters = {}, onFilterChange, onAskMailGen }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
@@ -575,13 +575,18 @@ const JobRightProspectCard = ({ prospect, index, onClick, showFilters = false, s
           <Heart className={`w-5 h-5 ${isLiked ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
         </button>
 
-        {/* Ask Orion Button */}
+        {/* Ask MailGen Button */}
         <button
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onAskMailGen) {
+              onAskMailGen(prospect);
+            }
+          }}
           className="w-32 h-9 border border-gray-900 rounded-md text-gray-900 hover:bg-gray-50 transition-colors text-sm font-semibold flex items-center justify-center space-x-1 bg-white"
         >
           <MessageSquare className="w-4 h-4" />
-          <span>ANALYZE</span>
+          <span>ASK MAILGEN</span>
         </button>
 
         {/* Apply Now Button */}

@@ -17,7 +17,8 @@ router.get('/', async (req, res) => {
       status = 'active',
       page = 1,
       limit = 50,
-      search
+      search,
+      campaignId
     } = req.query;
 
     // 获取用户ID
@@ -26,6 +27,7 @@ router.get('/', async (req, res) => {
     let filter = { status };
     if (industry) filter.industry = industry;
     if (company) filter.company = company;
+    if (campaignId) filter.campaignId = campaignId;  // 🔥 CRITICAL: Filter by campaign
 
     const contacts = await db.getContacts(userId, filter, parseInt(limit));
 
@@ -86,7 +88,7 @@ router.post('/', async (req, res) => {
     const contactId = await db.saveContact({
       ...contactData,
       source: contactData.source || 'manual'
-    }, userId);
+    }, userId, contactData.campaignId || null);
 
     res.json({
       success: true,
@@ -124,6 +126,7 @@ router.post('/import/csv', upload.single('csvFile'), async (req, res) => {
       });
     }
 
+    const campaignId = req.body.campaignId || null;  // 🔥 Get campaign ID from request
     const results = [];
     const errors = [];
     let processedCount = 0;
@@ -162,7 +165,7 @@ router.post('/import/csv', upload.single('csvFile'), async (req, res) => {
           };
 
           const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
-          await db.saveContact(contact, userId);
+          await db.saveContact(contact, userId, campaignId);
           successCount++;
           results.push(contact);
 
@@ -219,7 +222,7 @@ router.post('/import/csv', upload.single('csvFile'), async (req, res) => {
 // 从网站搜索导入联系人
 router.post('/import/search', async (req, res) => {
   try {
-    const { searchResults, source = 'website_search' } = req.body;
+    const { searchResults, source = 'website_search', campaignId = null } = req.body;
     const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     if (!searchResults || !Array.isArray(searchResults)) {
@@ -255,7 +258,7 @@ router.post('/import/search', async (req, res) => {
           notes: result.notes || `从网站导入: ${result.website || ''}`
         };
 
-        await db.saveContact(contact, userId);
+        await db.saveContact(contact, userId, campaignId);
         results.imported++;
 
       } catch (error) {
@@ -315,7 +318,9 @@ router.put('/:id', async (req, res) => {
       ...updateData
     };
 
-    await db.saveContact(updatedContact, userId);
+    // Preserve campaignId from existing contact
+    const campaignId = existingContact.campaign_id || updateData.campaignId || null;
+    await db.saveContact(updatedContact, userId, campaignId);
 
     res.json({
       success: true,
@@ -351,7 +356,7 @@ router.delete('/:id', async (req, res) => {
     await db.saveContact({
       ...contact,
       status: 'deleted'
-    }, userId);
+    }, userId, contact.campaign_id || null);
 
     res.json({
       success: true,
@@ -419,7 +424,7 @@ router.post('/batch', async (req, res) => {
             throw new Error('不支持的批量操作类型');
         }
 
-        await db.saveContact(updatedContact, userId);
+        await db.saveContact(updatedContact, userId, updatedContact.campaign_id || null);
         results.success++;
 
       } catch (error) {

@@ -1486,9 +1486,8 @@ async function setLastWorkflowResults(results, userId = 'anonymous', campaignId 
             address: prospect.address || '',
             source: prospect.source || 'AI Workflow',
             tags: prospect.tags || '',
-            notes: prospect.notes || `Found via AI workflow on ${new Date().toLocaleString()}`,
-            campaignId: finalCampaignId  // 🔥 PRODUCTION: Associate with campaign
-          }, userId);
+            notes: prospect.notes || `Found via AI workflow on ${new Date().toLocaleString()}`
+          }, userId, finalCampaignId);  // 🔥 PRODUCTION: Associate with campaign
         } catch (saveError) {
           // Skip if already exists (UNIQUE constraint)
           if (!saveError.message.includes('UNIQUE constraint')) {
@@ -1515,7 +1514,6 @@ async function setLastWorkflowResults(results, userId = 'anonymous', campaignId 
 
           await db.saveEmailDraft({
             emailKey: emailKey,
-            campaignId: finalCampaignId,  // 🔥 PRODUCTION: Associate with campaign
             subject: email.subject || 'No Subject',
             preheader: email.preheader || '',
             components: email.components || [],
@@ -1530,7 +1528,7 @@ async function setLastWorkflowResults(results, userId = 'anonymous', campaignId 
               createdAt: email.createdAt || new Date().toISOString(),
               status: email.status || 'generated'
             }
-          }, userId);
+          }, userId, finalCampaignId);  // 🔥 PRODUCTION: Associate with campaign
         } catch (saveError) {
           // Skip if already exists (UNIQUE constraint)
           if (!saveError.message.includes('UNIQUE constraint')) {
@@ -2288,6 +2286,7 @@ router.get('/stats', optionalAuth, async (req, res) => {
 
     // Rate limit based on GENERATED EMAILS, not prospects
     const maxEmailsPerHour = 100;
+    const maxProspectsPerHour = 100;
     const isLimited = generatedEmailsCount >= maxEmailsPerHour;
 
     const stats = {
@@ -2300,11 +2299,19 @@ router.get('/stats', optionalAuth, async (req, res) => {
       },
       prospects: {
         total: finalProspectsCount,  // 🔥 FIX: Use finalProspectsCount from workflow or DB
-        new: 0  // TODO: Track new prospects added in last hour
+        new: 0,  // TODO: Track new prospects added in last hour
+        quota: {
+          current: finalProspectsCount,
+          max: maxProspectsPerHour
+        }
       },
       emails: {
         generated: generatedEmailsCount,
-        sent: sentEmailsCount
+        sent: sentEmailsCount,
+        quota: {
+          current: generatedEmailsCount,
+          max: maxEmailsPerHour
+        }
       }
     };
 
@@ -2334,11 +2341,19 @@ router.get('/stats', optionalAuth, async (req, res) => {
         },
         prospects: {
           total: 0,
-          new: 0
+          new: 0,
+          quota: {
+            current: 0,
+            max: 100
+          }
         },
         emails: {
           generated: 0,
-          sent: 0
+          sent: 0,
+          quota: {
+            current: 0,
+            max: 100
+          }
         }
       }
     });

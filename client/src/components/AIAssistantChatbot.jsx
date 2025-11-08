@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, BookOpen, Loader, Sparkles } from 'lucide-react';
 
-const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospects = [], emails = [] }) => {
+const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospects = [], emails = [], externalMessage }) => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -72,6 +72,19 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
       inputRef.current?.focus();
     }
   }, [isOpen]);
+
+  // Handle external messages (e.g., from prospect analysis)
+  useEffect(() => {
+    if (externalMessage && isOpen) {
+      const assistantMessage = {
+        role: 'assistant',
+        content: externalMessage.content,
+        timestamp: new Date().toISOString(),
+        suggestions: externalMessage.suggestions || []
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+    }
+  }, [externalMessage, isOpen]);
 
   const handleAction = async (action, customMessage) => {
     // Add user message if custom message provided

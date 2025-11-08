@@ -12,11 +12,19 @@ const QuotaBar = () => {
     },
     prospects: {
       total: 0,
-      new: 0
+      new: 0,
+      quota: {
+        current: 0,
+        max: 100
+      }
     },
     emails: {
       generated: 0,
-      sent: 0
+      sent: 0,
+      quota: {
+        current: 0,
+        max: 100
+      }
     }
   });
 
@@ -69,11 +77,15 @@ const QuotaBar = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const percentage = (quotaData.rateLimit.current / quotaData.rateLimit.max) * 100;
-  const isNearLimit = percentage >= 80;
+  // Calculate percentages for both quotas
+  const prospectPercentage = (quotaData.prospects.quota.current / quotaData.prospects.quota.max) * 100;
+  const emailPercentage = (quotaData.emails.quota.current / quotaData.emails.quota.max) * 100;
+
+  const isProspectNearLimit = prospectPercentage >= 80;
+  const isEmailNearLimit = emailPercentage >= 80;
   const isLimited = quotaData.rateLimit.isLimited;
 
-  console.log('📊 QuotaBar rendering with data:', { percentage, isNearLimit, isLimited });
+  console.log('📊 QuotaBar rendering with data:', { prospectPercentage, emailPercentage, isLimited });
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-2 mb-3">
@@ -115,20 +127,23 @@ const QuotaBar = () => {
         </div>
       </div>
 
-      {/* Extra Compact Progress Bar */}
-      <div className="bg-white border border-gray-200 rounded p-1.5">
+      {/* Prospect Quota Bar */}
+      <div className="bg-white border border-gray-200 rounded p-1.5 mb-1.5">
         <div className="flex items-center justify-between mb-0.5">
-          <span className="text-xs text-gray-600" style={{ fontSize: '0.65rem' }}>Quota</span>
+          <span className="text-xs text-gray-600 flex items-center gap-1" style={{ fontSize: '0.65rem' }}>
+            <Users className="w-2.5 h-2.5" style={{ color: '#00f5a0' }} />
+            Prospect Quota
+          </span>
           <span className="text-xs font-semibold text-gray-900" style={{ fontSize: '0.65rem' }}>
-            {quotaData.rateLimit.current}/{quotaData.rateLimit.max}
+            {quotaData.prospects.quota.current}/{quotaData.prospects.quota.max}
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1 overflow-hidden mb-0.5">
           <div
             className="h-full rounded-full transition-all duration-300"
             style={{
-              width: `${Math.min(percentage, 100)}%`,
-              backgroundColor: isLimited ? '#ef4444' : isNearLimit ? '#f97316' : '#00f5a0'
+              width: `${Math.min(prospectPercentage, 100)}%`,
+              backgroundColor: isLimited ? '#ef4444' : isProspectNearLimit ? '#f97316' : '#00f5a0'
             }}
           />
         </div>
@@ -138,7 +153,38 @@ const QuotaBar = () => {
             {timeRemaining}
           </span>
           <span>
-            {quotaData.rateLimit.max - quotaData.rateLimit.current} left
+            {quotaData.prospects.quota.max - quotaData.prospects.quota.current} left
+          </span>
+        </div>
+      </div>
+
+      {/* Email Generation Quota Bar */}
+      <div className="bg-white border border-gray-200 rounded p-1.5">
+        <div className="flex items-center justify-between mb-0.5">
+          <span className="text-xs text-gray-600 flex items-center gap-1" style={{ fontSize: '0.65rem' }}>
+            <Mail className="w-2.5 h-2.5" style={{ color: '#00f5a0' }} />
+            Email Gen Quota
+          </span>
+          <span className="text-xs font-semibold text-gray-900" style={{ fontSize: '0.65rem' }}>
+            {quotaData.emails.quota.current}/{quotaData.emails.quota.max}
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-1 overflow-hidden mb-0.5">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${Math.min(emailPercentage, 100)}%`,
+              backgroundColor: isLimited ? '#ef4444' : isEmailNearLimit ? '#f97316' : '#00f5a0'
+            }}
+          />
+        </div>
+        <div className="flex items-center justify-between text-gray-600" style={{ fontSize: '0.65rem' }}>
+          <span className="flex items-center gap-0.5">
+            <Clock className="w-2.5 h-2.5" />
+            {timeRemaining}
+          </span>
+          <span>
+            {quotaData.emails.quota.max - quotaData.emails.quota.current} left
           </span>
         </div>
       </div>

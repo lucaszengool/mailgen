@@ -462,7 +462,7 @@ const db = require('../models/database');
 // Save draft to database
 router.post('/drafts', async (req, res) => {
   try {
-    const { emailKey, subject, preheader, components, html, metadata } = req.body;
+    const { emailKey, subject, preheader, components, html, metadata, campaignId } = req.body;
     const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
 
     if (!emailKey || !components) {
@@ -481,7 +481,7 @@ router.post('/drafts', async (req, res) => {
       metadata
     };
 
-    const draftId = await db.saveEmailDraft(draft, userId);
+    const draftId = await db.saveEmailDraft(draft, userId, campaignId || null);
 
     res.json({
       success: true,
@@ -502,7 +502,8 @@ router.post('/drafts', async (req, res) => {
 router.get('/drafts', async (req, res) => {
   try {
     const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
-    const drafts = await db.getEmailDrafts(userId);
+    const campaignId = req.query.campaignId || null;
+    const drafts = await db.getEmailDrafts(userId, campaignId);
 
     res.json({
       success: true,
