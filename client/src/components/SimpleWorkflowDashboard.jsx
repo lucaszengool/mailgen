@@ -1705,6 +1705,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const [wsConnectionStatus, setWsConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'disconnected', 'error'
   const [campaignConfig, setCampaignConfig] = useState(null);
 
+  // 🔥 CRITICAL: Set campaign ID in localStorage immediately on mount
+  useEffect(() => {
+    if (campaign && campaign.id) {
+      const storedCampaignId = localStorage.getItem('currentCampaignId');
+      if (storedCampaignId !== campaign.id) {
+        console.log('🔥 [MOUNT] Setting currentCampaignId:', campaign.id);
+        localStorage.setItem('currentCampaignId', campaign.id);
+      }
+    }
+  }, [campaign?.id]);
+
   // Load campaign-specific configuration
   useEffect(() => {
     if (campaign && campaign.id) {

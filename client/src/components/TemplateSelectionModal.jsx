@@ -1346,12 +1346,241 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
   };
 
   const renderTemplatePreview = (template) => {
-    // Create a mini preview version of the HTML with consistent colors
+    const isSelected = selectedTemplate === template.id;
+
+    // Professional Partnership - Clean, minimal design
+    if (template.id === 'professional_partnership') {
+      return (
+        <div style={{
+          backgroundColor: 'white',
+          border: '1px solid #e9ecef',
+          borderRadius: '4px',
+          padding: '8px',
+          height: '120px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+            <div style={{ width: '16px', height: '16px', backgroundColor: isSelected ? '#00f5a0' : '#10b981', borderRadius: '2px' }}></div>
+            <div style={{ height: '3px', width: '40px', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
+          </div>
+          <div style={{ height: '4px', width: '90%', backgroundColor: '#1f2937', borderRadius: '1px' }}></div>
+          <div style={{ height: '2px', width: '100%', backgroundColor: '#e9ecef', borderRadius: '1px', marginTop: '2px' }}></div>
+          <div style={{ height: '2px', width: '95%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
+          <div style={{ height: '2px', width: '88%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
+          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#10b981', height: '8px', width: '60px', borderRadius: '2px', marginTop: '4px' }}></div>
+          <div style={{ backgroundColor: '#f9fafb', padding: '4px', borderLeft: '2px solid #10b981', marginTop: '4px' }}>
+            <div style={{ height: '2px', width: '70%', backgroundColor: '#d1d5db', borderRadius: '1px', marginBottom: '2px' }}></div>
+            <div style={{ height: '2px', width: '50%', backgroundColor: '#e5e7eb', borderRadius: '1px' }}></div>
+          </div>
+        </div>
+      );
+    }
+
+    // Modern Tech - Bold, clean design
+    if (template.id === 'modern_tech') {
+      return (
+        <div style={{
+          backgroundColor: 'white',
+          border: '1px solid #e9ecef',
+          borderRadius: '4px',
+          padding: '8px',
+          height: '120px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '3px'
+        }}>
+          <div style={{ backgroundColor: isSelected ? '#00f5a0' : '#3b82f6', height: '12px', borderRadius: '2px', marginBottom: '2px' }}></div>
+          <div style={{ height: '4px', width: '70%', backgroundColor: '#1f2937', borderRadius: '1px' }}></div>
+          <div style={{ display: 'flex', gap: '3px', marginTop: '2px' }}>
+            <div style={{ flex: 1, height: '16px', backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px' }}></div>
+            <div style={{ flex: 1, height: '16px', backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px' }}></div>
+          </div>
+          <div style={{ display: 'flex', gap: '3px' }}>
+            <div style={{ flex: 1, height: '16px', backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px' }}></div>
+            <div style={{ flex: 1, height: '16px', backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px' }}></div>
+          </div>
+          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#3b82f6', height: '10px', width: '80px', borderRadius: '3px', marginTop: '2px' }}></div>
+        </div>
+      );
+    }
+
+    // Executive Outreach - Sophisticated design
+    if (template.id === 'executive_outreach') {
+      return (
+        <div style={{
+          backgroundColor: 'white',
+          border: '1px solid #e9ecef',
+          borderRadius: '4px',
+          padding: '8px',
+          height: '120px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '3px'
+        }}>
+          <div style={{ borderBottom: '2px solid #6b7280', paddingBottom: '3px', marginBottom: '2px' }}>
+            <div style={{ height: '4px', width: '60%', backgroundColor: '#111827', borderRadius: '1px' }}></div>
+          </div>
+          <div style={{ height: '2px', width: '100%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
+          <div style={{ height: '2px', width: '95%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
+          <div style={{ display: 'flex', gap: '4px', marginTop: '2px', padding: '4px', backgroundColor: '#f9fafb', borderRadius: '2px' }}>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ height: '6px', width: '20px', margin: '0 auto', backgroundColor: isSelected ? '#00f5a0' : '#6366f1', borderRadius: '1px', marginBottom: '2px' }}></div>
+              <div style={{ height: '2px', width: '24px', margin: '0 auto', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+            </div>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ height: '6px', width: '20px', margin: '0 auto', backgroundColor: isSelected ? '#00f5a0' : '#6366f1', borderRadius: '1px', marginBottom: '2px' }}></div>
+              <div style={{ height: '2px', width: '24px', margin: '0 auto', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+            </div>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ height: '6px', width: '20px', margin: '0 auto', backgroundColor: isSelected ? '#00f5a0' : '#6366f1', borderRadius: '1px', marginBottom: '2px' }}></div>
+              <div style={{ height: '2px', width: '24px', margin: '0 auto', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+            </div>
+          </div>
+          <div style={{ backgroundColor: '#f9fafb', padding: '3px', borderLeft: '2px solid #6366f1', marginTop: '2px' }}>
+            <div style={{ height: '2px', width: '80%', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+          </div>
+        </div>
+      );
+    }
+
+    // Product Launch - Dynamic design
+    if (template.id === 'product_launch') {
+      return (
+        <div style={{
+          backgroundColor: 'white',
+          border: '1px solid #e9ecef',
+          borderRadius: '4px',
+          padding: '8px',
+          height: '120px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '3px'
+        }}>
+          <div style={{ background: isSelected ? 'linear-gradient(90deg, #00f5a0 0%, #00e090 100%)' : 'linear-gradient(90deg, #ec4899 0%, #f43f5e 100%)', height: '16px', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '12px', height: '8px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '1px' }}></div>
+          </div>
+          <div style={{ height: '4px', width: '80%', backgroundColor: '#1f2937', borderRadius: '1px', margin: '0 auto' }}></div>
+          <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
+            <div style={{ flex: 1, padding: '3px', backgroundColor: '#fce7f3', borderRadius: '2px' }}>
+              <div style={{ height: '2px', backgroundColor: '#ec4899', borderRadius: '1px', marginBottom: '2px' }}></div>
+              <div style={{ height: '2px', backgroundColor: '#f9a8d4', borderRadius: '1px' }}></div>
+            </div>
+            <div style={{ flex: 1, padding: '3px', backgroundColor: '#fce7f3', borderRadius: '2px' }}>
+              <div style={{ height: '2px', backgroundColor: '#ec4899', borderRadius: '1px', marginBottom: '2px' }}></div>
+              <div style={{ height: '2px', backgroundColor: '#f9a8d4', borderRadius: '1px' }}></div>
+            </div>
+          </div>
+          <div style={{ backgroundColor: '#fdf2f8', padding: '3px', borderRadius: '2px', marginTop: '2px', textAlign: 'center' }}>
+            <div style={{ height: '6px', width: '40px', margin: '0 auto', backgroundColor: '#ec4899', borderRadius: '2px' }}></div>
+          </div>
+          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#ec4899', height: '10px', width: '70px', borderRadius: '3px', margin: '0 auto' }}></div>
+        </div>
+      );
+    }
+
+    // Consultative Sales - Trust-building design
+    if (template.id === 'consultative_sales') {
+      return (
+        <div style={{
+          backgroundColor: 'white',
+          border: '1px solid #e9ecef',
+          borderRadius: '4px',
+          padding: '8px',
+          height: '120px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '3px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '2px' }}>
+            <div style={{ width: '14px', height: '14px', backgroundColor: isSelected ? '#00f5a0' : '#0ea5e9', borderRadius: '50%' }}></div>
+            <div style={{ height: '3px', width: '50px', backgroundColor: '#0ea5e9', borderRadius: '1px' }}></div>
+          </div>
+          <div style={{ height: '2px', width: '100%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
+          <div style={{ height: '2px', width: '95%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
+          <div style={{ backgroundColor: '#f0f9ff', padding: '4px', borderRadius: '2px', border: '1px solid #bae6fd', marginTop: '2px' }}>
+            <div style={{ height: '2px', width: '90%', backgroundColor: '#0ea5e9', borderRadius: '1px', marginBottom: '2px' }}></div>
+            <div style={{ height: '2px', width: '80%', backgroundColor: '#7dd3fc', borderRadius: '1px' }}></div>
+          </div>
+          <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
+            <div style={{ height: '2px', width: '30px', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+            <div style={{ height: '2px', width: '30px', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
+          </div>
+          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#0ea5e9', height: '8px', width: '65px', borderRadius: '2px', marginTop: '2px' }}></div>
+        </div>
+      );
+    }
+
+    // Event Invitation - Engaging design
+    if (template.id === 'event_invitation') {
+      return (
+        <div style={{
+          backgroundColor: 'white',
+          border: '1px solid #e9ecef',
+          borderRadius: '4px',
+          padding: '8px',
+          height: '120px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '3px'
+        }}>
+          <div style={{ background: isSelected ? 'linear-gradient(135deg, #00f5a0 0%, #00e090 100%)' : 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)', height: '18px', borderRadius: '2px', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20px', height: '6px', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '1px' }}></div>
+          </div>
+          <div style={{ height: '4px', width: '70%', backgroundColor: '#1f2937', borderRadius: '1px', margin: '0 auto' }}></div>
+          <div style={{ display: 'flex', gap: '3px', marginTop: '2px' }}>
+            <div style={{ width: '4px', height: '20px', backgroundColor: '#8b5cf6', borderRadius: '1px' }}></div>
+            <div style={{ flex: 1 }}>
+              <div style={{ height: '2px', width: '90%', backgroundColor: '#e9ecef', borderRadius: '1px', marginBottom: '2px' }}></div>
+              <div style={{ height: '2px', width: '80%', backgroundColor: '#e9ecef', borderRadius: '1px', marginBottom: '2px' }}></div>
+              <div style={{ height: '2px', width: '85%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
+            <div style={{ flex: 1, height: '10px', backgroundColor: '#f3e8ff', borderRadius: '2px', border: '1px solid #c4b5fd' }}></div>
+            <div style={{ flex: 1, height: '10px', backgroundColor: '#f3e8ff', borderRadius: '2px', border: '1px solid #c4b5fd' }}></div>
+          </div>
+          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#8b5cf6', height: '10px', width: '75px', borderRadius: '3px', margin: '0 auto' }}></div>
+        </div>
+      );
+    }
+
+    // Custom Template - Blank canvas
+    if (template.id === 'custom_template') {
+      return (
+        <div style={{
+          backgroundColor: 'white',
+          border: '1px dashed #d1d5db',
+          borderRadius: '4px',
+          padding: '8px',
+          height: '120px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px'
+        }}>
+          <div style={{ width: '24px', height: '24px', border: '2px dashed #9ca3af', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: '14px', color: '#9ca3af' }}>+</div>
+          </div>
+          <div style={{ height: '2px', width: '60px', backgroundColor: '#e5e7eb', borderRadius: '1px' }}></div>
+          <div style={{ height: '2px', width: '50px', backgroundColor: '#e5e7eb', borderRadius: '1px' }}></div>
+          <div style={{ height: '2px', width: '55px', backgroundColor: '#e5e7eb', borderRadius: '1px' }}></div>
+        </div>
+      );
+    }
+
+    // Default fallback
     return (
       <div style={{
-        fontSize: '10px',
-        lineHeight: '1.2',
-        color: '#343a40',
         backgroundColor: 'white',
         border: '1px solid #e9ecef',
         borderRadius: '4px',
@@ -1359,82 +1588,9 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
         height: '120px',
         overflow: 'hidden'
       }}>
-        <div style={{
-          backgroundColor: selectedTemplate === template.id ? '#28a745' : '#343a40',
-          color: 'white',
-          padding: '4px 6px',
-          marginBottom: '4px',
-          borderRadius: '2px',
-          fontSize: '8px',
-          textAlign: 'center'
-        }}>
-          {template.components?.includes('logo') && ' '}
-          {template.components?.includes('header_banner') && ' '}
-          {template.components?.includes('executive_header') && ' '}
-          {template.components?.includes('product_hero') && ' '}
-          {template.components?.includes('expert_header') && ' '}
-          {template.components?.includes('event_hero') && ' '}
-          HEADER
+        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+          Preview
         </div>
-
-        <div style={{ padding: '2px 4px', marginBottom: '3px' }}>
-          <div style={{ height: '2px', backgroundColor: '#dee2e6', marginBottom: '2px' }}></div>
-          <div style={{ height: '2px', backgroundColor: '#f8f9fa', marginBottom: '2px' }}></div>
-          <div style={{ height: '2px', backgroundColor: '#dee2e6' }}></div>
-        </div>
-
-        {template.components?.includes('cta_button') && (
-          <div style={{
-            backgroundColor: '#28a745',
-            height: '8px',
-            margin: '3px 0',
-            borderRadius: '2px'
-          }}></div>
-        )}
-
-        {template.components?.includes('feature_grid') && (
-          <div style={{
-            display: 'flex',
-            gap: '2px',
-            marginBottom: '3px'
-          }}>
-            <div style={{ backgroundColor: '#28a745', height: '6px', flex: 1, borderRadius: '1px' }}></div>
-            <div style={{ backgroundColor: '#28a745', height: '6px', flex: 1, borderRadius: '1px' }}></div>
-          </div>
-        )}
-
-        <div style={{ padding: '2px 4px', marginBottom: '3px' }}>
-          <div style={{ height: '1px', backgroundColor: '#dee2e6', marginBottom: '2px' }}></div>
-          <div style={{ height: '1px', backgroundColor: '#f8f9fa', marginBottom: '2px' }}></div>
-        </div>
-
-        {template.components?.includes('testimonial') && (
-          <div style={{
-            backgroundColor: '#f8f9fa',
-            borderLeft: '2px solid #28a745',
-            height: '6px',
-            margin: '2px 0'
-          }}></div>
-        )}
-
-        {template.components?.includes('stats_showcase') && (
-          <div style={{
-            display: 'flex',
-            gap: '1px',
-            marginBottom: '2px'
-          }}>
-            <div style={{ backgroundColor: '#f8f9fa', height: '4px', flex: 1 }}></div>
-            <div style={{ backgroundColor: '#f8f9fa', height: '4px', flex: 1 }}></div>
-            <div style={{ backgroundColor: '#f8f9fa', height: '4px', flex: 1 }}></div>
-          </div>
-        )}
-
-        <div style={{
-          backgroundColor: '#f8f9fa',
-          height: '4px',
-          marginTop: 'auto',
-          borderRadius: '0 0 2px 2px'
-        }}></div>
       </div>
     );
   };

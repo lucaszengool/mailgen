@@ -251,7 +251,7 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
 
         {/* Success Message with Animation */}
         <div
-          className="bg-gradient-to-r from-[#00f5a0]/10 to-white rounded-2xl p-8 mb-10 border-2 border-[#00f5a0]/30 animate-slide-up"
+          className="bg-white rounded-2xl p-8 mb-10 border-2 border-[#00f5a0]/30 animate-slide-up"
           style={{ animationDelay: `${700 + prospects.length * 100}ms` }}
         >
           <div className="flex items-start gap-6">

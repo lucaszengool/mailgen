@@ -279,6 +279,73 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
     }
   };
 
+  // Format message content - remove markdown and add styled elements
+  const formatMessageContent = (content) => {
+    if (!content) return null;
+
+    // Split content by lines
+    const lines = content.split('\n');
+    const formattedElements = [];
+
+    lines.forEach((line, index) => {
+      // Remove markdown symbols from the line
+      let cleanLine = line
+        .replace(/\*\*/g, '')  // Remove bold **
+        .replace(/###\s*/g, '')  // Remove headings ###
+        .replace(/\*/g, '');     // Remove italics *
+
+      // Skip empty lines
+      if (!cleanLine.trim()) {
+        formattedElements.push(<br key={`br-${index}`} />);
+        return;
+      }
+
+      // Check if this is a main heading (starts with uppercase and ends with :)
+      if (cleanLine.match(/^[A-Z][^:]*:$/)) {
+        formattedElements.push(
+          <div key={index} className="mt-4 mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-[#00f5a0] rounded"></div>
+              <span className="font-bold text-gray-900 text-base">{cleanLine}</span>
+            </div>
+          </div>
+        );
+        return;
+      }
+
+      // Check if this is a sub-heading (has bold emphasis or starts with numbers)
+      if (line.includes('**') || cleanLine.match(/^\d+\./)) {
+        formattedElements.push(
+          <div key={index} className="mt-3 mb-1">
+            <span className="font-semibold text-[#00f5a0] text-sm">{cleanLine}</span>
+          </div>
+        );
+        return;
+      }
+
+      // Check if this is a bullet point (starts with - or •)
+      if (cleanLine.match(/^[-•]\s/)) {
+        const bulletText = cleanLine.replace(/^[-•]\s/, '');
+        formattedElements.push(
+          <div key={index} className="flex items-start gap-2 ml-4 mb-1">
+            <div className="w-1.5 h-1.5 bg-[#00f5a0] rounded-full mt-2 flex-shrink-0"></div>
+            <span className="text-gray-700 text-sm leading-relaxed">{bulletText}</span>
+          </div>
+        );
+        return;
+      }
+
+      // Regular text
+      formattedElements.push(
+        <div key={index} className="text-gray-700 text-sm leading-relaxed mb-1">
+          {cleanLine}
+        </div>
+      );
+    });
+
+    return <div>{formattedElements}</div>;
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -287,8 +354,8 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
       <div className="flex items-center justify-between p-6 bg-white border-b border-gray-200">
         <div className="flex items-center space-x-3">
           {/* MailGen Logo */}
-          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 bg-[#00f5a0] rounded-full flex items-center justify-center shadow-lg shadow-[#00f5a0]/30">
+            <Sparkles className="w-6 h-6 text-black" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900">MailGen</h2>
@@ -320,7 +387,7 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
             {message.role === 'assistant' && (
               <div className="p-0">
                 <div className="whitespace-pre-wrap break-words text-gray-800 leading-relaxed">
-                  {message.content}
+                  {formatMessageContent(message.content)}
                 </div>
                 <div className="text-xs text-gray-400 mt-2">
                   {new Date(message.timestamp).toLocaleTimeString([], {
@@ -368,8 +435,21 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
         ))}
 
         {isLoading && (
-          <div className="p-0">
-            <Loader className="w-5 h-5 animate-spin text-green-500" />
+          <div className="p-4 bg-gradient-to-r from-green-50 to-white rounded-lg border border-green-100">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Sparkles className="w-6 h-6 text-[#00f5a0] animate-pulse" />
+                <div className="absolute inset-0 w-6 h-6 rounded-full bg-[#00f5a0] opacity-20 animate-ping"></div>
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-gray-900 mb-1">MailGen is thinking...</div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-[#00f5a0] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-[#00f5a0] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-[#00f5a0] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} />

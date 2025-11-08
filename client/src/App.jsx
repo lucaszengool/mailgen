@@ -67,11 +67,14 @@ function App() {
 
   // Reset to campaign selector when navigating to /dashboard from elsewhere
   useEffect(() => {
-    if (location.pathname === '/dashboard' && !currentCampaign && !showCampaignOnboarding) {
-      console.log('📍 Navigated to /dashboard - showing campaign selector');
-      setShowCampaignSelector(true);
+    if (location.pathname === '/dashboard') {
+      console.log('📍 Navigated to /dashboard - setting currentView and showing campaign selector');
+      setCurrentView('dashboard');
+      if (!currentCampaign && !showCampaignOnboarding) {
+        setShowCampaignSelector(true);
+      }
     }
-  }, [location.pathname]);
+  }, [location.pathname, currentCampaign, showCampaignOnboarding]);
 
   // Debug dashboard rendering state
   console.log('🔍 Dashboard render state:', {
