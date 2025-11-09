@@ -884,8 +884,9 @@ router.get('/results', optionalAuth, async (req, res) => {
       try {
         console.log(`💾 [User: ${userId}] No in-memory results, fetching from database...`);
 
-        // Fetch prospects from database
-        const dbProspects = await db.getContacts(userId, { status: 'active' }, 1000);
+        // Fetch prospects from database with campaign filter
+        const dbFilter = campaignId ? { status: 'active', campaignId } : { status: 'active' };
+        const dbProspects = await db.getContacts(userId, dbFilter, 1000);
         if (dbProspects && dbProspects.length > 0) {
           prospects = dbProspects.map(c => ({
             id: c.id || `contact_${c.email}`,
@@ -897,11 +898,11 @@ router.get('/results', optionalAuth, async (req, res) => {
             source: c.source || 'Database'
           }));
           hasRealResults = true;
-          console.log(`💾 [User: ${userId}] Loaded ${prospects.length} prospects from database`);
+          console.log(`💾 [User: ${userId}] Loaded ${prospects.length} prospects from database (Campaign: ${campaignId || 'ALL'})`);
         }
 
-        // Fetch email drafts from database
-        const dbDrafts = await db.getEmailDrafts(userId);
+        // Fetch email drafts from database with campaign filter
+        const dbDrafts = await db.getEmailDrafts(userId, campaignId);
         if (dbDrafts && dbDrafts.length > 0) {
           const emails = dbDrafts.map(draft => ({
             id: draft.id,

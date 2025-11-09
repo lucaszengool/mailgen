@@ -55,6 +55,7 @@ class EnhancedKnowledgeBase {
         CREATE TABLE IF NOT EXISTS prospects (
           id TEXT PRIMARY KEY,
           user_id TEXT DEFAULT 'anonymous',
+          campaign_id TEXT,
           email TEXT,
           company TEXT,
           contact_name TEXT,
@@ -85,9 +86,24 @@ class EnhancedKnowledgeBase {
         ALTER TABLE prospects ADD COLUMN user_id TEXT DEFAULT 'anonymous'
       `).catch(() => {}); // Ignore error if column already exists
 
+      // Add campaign_id column if it doesn't exist (for existing databases)
+      await this.execSQL(`
+        ALTER TABLE prospects ADD COLUMN campaign_id TEXT
+      `).catch(() => {}); // Ignore error if column already exists
+
       // Create index for faster user-specific queries
       await this.execSQL(`
         CREATE INDEX IF NOT EXISTS idx_prospects_user_id ON prospects(user_id)
+      `);
+
+      // Create index for faster campaign-specific queries
+      await this.execSQL(`
+        CREATE INDEX IF NOT EXISTS idx_prospects_campaign_id ON prospects(campaign_id)
+      `);
+
+      // Create composite index for user + campaign queries
+      await this.execSQL(`
+        CREATE INDEX IF NOT EXISTS idx_prospects_user_campaign ON prospects(user_id, campaign_id)
       `);
 
       // 邮件记录表
@@ -95,6 +111,7 @@ class EnhancedKnowledgeBase {
         CREATE TABLE IF NOT EXISTS emails (
           id TEXT PRIMARY KEY,
           user_id TEXT DEFAULT 'anonymous',
+          campaign_id TEXT,
           prospect_id TEXT,
           subject TEXT,
           content TEXT,
@@ -123,9 +140,24 @@ class EnhancedKnowledgeBase {
         ALTER TABLE emails ADD COLUMN user_id TEXT DEFAULT 'anonymous'
       `).catch(() => {}); // Ignore error if column already exists
 
+      // Add campaign_id column if it doesn't exist (for existing databases)
+      await this.execSQL(`
+        ALTER TABLE emails ADD COLUMN campaign_id TEXT
+      `).catch(() => {}); // Ignore error if column already exists
+
       // Create index for faster user-specific queries
       await this.execSQL(`
         CREATE INDEX IF NOT EXISTS idx_emails_user_id ON emails(user_id)
+      `);
+
+      // Create index for faster campaign-specific queries
+      await this.execSQL(`
+        CREATE INDEX IF NOT EXISTS idx_emails_campaign_id ON emails(campaign_id)
+      `);
+
+      // Create composite index for user + campaign queries
+      await this.execSQL(`
+        CREATE INDEX IF NOT EXISTS idx_emails_user_campaign ON emails(user_id, campaign_id)
       `);
 
       // 业务分析表
@@ -288,15 +320,17 @@ class EnhancedKnowledgeBase {
   // 潜在客户管理
   async addProspect(prospectData) {
     const sql = `
-      INSERT OR REPLACE INTO prospects 
-      (id, email, company, industry, status, business_size, potential_interest, 
-       source, source_url, discovery_context, conversion_probability, priority_score, 
-       next_action, tags, created_at, updated_at) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT OR REPLACE INTO prospects
+      (id, user_id, campaign_id, email, company, industry, status, business_size, potential_interest,
+       source, source_url, discovery_context, conversion_probability, priority_score,
+       next_action, tags, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    
+
     return await this.execSQL(sql, [
       prospectData.id,
+      prospectData.user_id || 'anonymous',
+      prospectData.campaign_id || null,
       prospectData.email,
       prospectData.company,
       prospectData.industry,
@@ -315,9 +349,18 @@ class EnhancedKnowledgeBase {
     ]);
   }
 
-  async getProspect(prospectId, userId = 'anonymous') {
-    const sql = 'SELECT * FROM prospects WHERE id = ? AND user_id = ?';
-    const result = await this.getSQL(sql, [prospectId, userId]);
+  async getProspect(prospectId, userId = 'anonymous', campaignId = null) {
+    let sql, params;
+
+    if (campaignId) {
+      sql = 'SELECT * FROM prospects WHERE id = ? AND user_id = ? AND campaign_id = ?';
+      params = [prospectId, userId, campaignId];
+    } else {
+      sql = 'SELECT * FROM prospects WHERE id = ? AND user_id = ?';
+      params = [prospectId, userId];
+    }
+
+    const result = await this.getSQL(sql, params);
 
     if (result && result.tags) {
       try {
@@ -365,9 +408,18 @@ class EnhancedKnowledgeBase {
     return await this.execSQL(sql, values);
   }
 
-  async getAllProspects(userId = 'anonymous') {
-    const sql = 'SELECT * FROM prospects WHERE user_id = ? ORDER BY priority_score DESC, created_at DESC';
-    const results = await this.allSQL(sql, [userId]);
+  async getAllProspects(userId = 'anonymous', campaignId = null) {
+    let sql, params;
+
+    if (campaignId) {
+      sql = 'SELECT * FROM prospects WHERE user_id = ? AND campaign_id = ? ORDER BY priority_score DESC, created_at DESC';
+      params = [userId, campaignId];
+    } else {
+      sql = 'SELECT * FROM prospects WHERE user_id = ? ORDER BY priority_score DESC, created_at DESC';
+      params = [userId];
+    }
+
+    const results = await this.allSQL(sql, params);
 
     return results.map(prospect => {
       if (prospect.tags) {
@@ -389,17 +441,19 @@ class EnhancedKnowledgeBase {
   // 邮件管理
   async saveEmail(emailData) {
     const sql = `
-      INSERT INTO emails 
-      (id, prospect_id, subject, content, type, status, sent_at, received_at, 
-       scheduled_at, from_email, to_email, message_id, thread_id, 
-       personalization_notes, intent_analysis, response_strategy, next_action) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO emails
+      (id, user_id, campaign_id, prospect_id, subject, content, type, status, sent_at, received_at,
+       scheduled_at, from_email, to_email, message_id, thread_id,
+       personalization_notes, intent_analysis, response_strategy, next_action)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    
+
     const id = emailData.id || `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     return await this.execSQL(sql, [
       id,
+      emailData.user_id || 'anonymous',
+      emailData.campaign_id || null,
       emailData.prospect_id,
       emailData.subject,
       emailData.content,
@@ -419,13 +473,26 @@ class EnhancedKnowledgeBase {
     ]);
   }
 
-  async getEmailHistory(prospectId, userId = 'anonymous') {
-    const sql = `
-      SELECT * FROM emails
-      WHERE prospect_id = ? AND user_id = ?
-      ORDER BY created_at ASC
-    `;
-    return await this.allSQL(sql, [prospectId, userId]);
+  async getEmailHistory(prospectId, userId = 'anonymous', campaignId = null) {
+    let sql, params;
+
+    if (campaignId) {
+      sql = `
+        SELECT * FROM emails
+        WHERE prospect_id = ? AND user_id = ? AND campaign_id = ?
+        ORDER BY created_at ASC
+      `;
+      params = [prospectId, userId, campaignId];
+    } else {
+      sql = `
+        SELECT * FROM emails
+        WHERE prospect_id = ? AND user_id = ?
+        ORDER BY created_at ASC
+      `;
+      params = [prospectId, userId];
+    }
+
+    return await this.allSQL(sql, params);
   }
 
   async getEmailById(emailId) {
