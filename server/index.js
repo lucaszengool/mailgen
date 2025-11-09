@@ -158,6 +158,9 @@ const templateRoutes = require('./routes/template');
 templateRoutes.wsManager = wsManager; // Attach wsManager
 app.use('/api/template', templateRoutes);
 
+// Company Details API routes
+app.use('/api/company', require('./routes/company'));
+
 // SMTP Test endpoint for Railway diagnostics
 app.use('/api/test-smtp', require('./routes/test-smtp'));
 
