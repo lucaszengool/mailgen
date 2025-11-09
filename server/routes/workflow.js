@@ -1392,19 +1392,25 @@ async function executeRealWorkflow(agent, campaignConfig, userId = 'anonymous') 
     });
 
     // 🔥 PRODUCTION: Store results with userId AND campaignId
-    const campaignId = results.campaignId || `workflow_${Date.now()}`;
+    // 🔥 CRITICAL FIX: Use campaignId from campaignConfig to ensure correct campaign association
+    const campaignId = campaignConfig.campaignId || results.campaignId || `workflow_${Date.now()}`;
     console.log(`📦 [PRODUCTION] Storing results for user: ${userId}, campaign: ${campaignId}`);
+    console.log(`🔍 [PRODUCTION] CampaignId source: ${campaignConfig.campaignId ? 'campaignConfig' : results.campaignId ? 'results' : 'generated'}`);
+
+    // Add campaignId to results
+    results.campaignId = campaignId;
+
     await setLastWorkflowResults(results, userId, campaignId);
-    
-    // CRITICAL FIX: Store results in WebSocket manager's workflow states
+
+    // CRITICAL FIX: Store results in WebSocket manager's workflow states WITH campaignId
     if (agent.wsManager && results.prospects && results.prospects.length > 0) {
-      console.log(`📡 Storing ${results.prospects.length} prospects in WebSocket workflow states`);
-      
+      console.log(`📡 Storing ${results.prospects.length} prospects in WebSocket workflow states for campaign ${campaignId}`);
+
       // Update the current workflow state with prospect data
-      const workflowId = results.campaignId || `workflow_${Date.now()}`;
-      agent.wsManager.broadcastWorkflowUpdate(workflowId, {
+      agent.wsManager.broadcastWorkflowUpdate(campaignId, {
         type: 'data_update',
         data: {
+          campaignId: campaignId, // 🔥 CRITICAL: Include campaignId in data
           prospects: results.prospects,
           businessAnalysis: results.businessAnalysis,
           marketingStrategy: results.marketingStrategy,

@@ -91,7 +91,11 @@ class WorkflowWebSocketManager extends EventEmitter {
         case 'subscribe_workflow':
           this.subscribeToWorkflow(clientId, data.workflowId);
           break;
-          
+
+        case 'unsubscribe_workflow':
+          this.unsubscribeFromWorkflow(clientId, data.workflowId);
+          break;
+
         case 'update_strategy':
           this.handleStrategyUpdate(clientId, data);
           break;
@@ -134,7 +138,7 @@ class WorkflowWebSocketManager extends EventEmitter {
     if (client) {
       client.subscriptions.add(workflowId);
       console.log(`👁️ Client ${clientId} subscribed to workflow ${workflowId}`);
-      
+
       // 发送当前工作流状态
       const state = this.workflowStates.get(workflowId);
       if (state) {
@@ -144,6 +148,16 @@ class WorkflowWebSocketManager extends EventEmitter {
           state
         });
       }
+    }
+  }
+
+  // 🔥 NEW: Unsubscribe from workflow updates
+  unsubscribeFromWorkflow(clientId, workflowId) {
+    const client = this.clients.get(clientId);
+    if (client) {
+      client.subscriptions.delete(workflowId);
+      console.log(`👋 Client ${clientId} unsubscribed from workflow ${workflowId}`);
+      console.log(`   Remaining subscriptions:`, Array.from(client.subscriptions));
     }
   }
 

@@ -1353,26 +1353,27 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       return (
         <div style={{
           backgroundColor: 'white',
-          border: '1px solid #e9ecef',
-          borderRadius: '4px',
-          padding: '6px',
-          height: '120px',
+          border: '2px solid #e5e7eb',
+          borderRadius: '8px',
+          padding: '16px',
+          height: '180px',
           overflow: 'hidden',
-          fontSize: '5px',
-          lineHeight: '1.3',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
+          fontSize: '9px',
+          lineHeight: '1.4',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '3px' }}>
-            <div style={{ width: '10px', height: '10px', backgroundColor: isSelected ? '#00f5a0' : '#10b981', borderRadius: '1px' }}></div>
-            <span style={{ fontSize: '5px', color: '#6b7280', fontWeight: '600' }}>COMPANY</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+            <div style={{ width: '18px', height: '18px', backgroundColor: isSelected ? '#00f5a0' : '#10b981', borderRadius: '3px' }}></div>
+            <span style={{ fontSize: '8px', color: '#6b7280', fontWeight: '600', letterSpacing: '0.5px' }}>COMPANY</span>
           </div>
-          <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#111827', marginBottom: '3px' }}>Partnership Opportunity</div>
-          <div style={{ fontSize: '4.5px', color: '#4b5563', marginBottom: '1px' }}>Hi John,</div>
-          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '0.5px' }}>I noticed your company's innovative work...</div>
-          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '0.5px' }}>We'd love to explore partnership opportunities</div>
-          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '3px' }}>that could benefit both organizations.</div>
-          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#10b981', padding: '2px 6px', borderRadius: '2px', fontSize: '4.5px', color: 'white', fontWeight: '600', marginBottom: '3px' }}>Schedule Meeting</div>
-          <div style={{ backgroundColor: '#f9fafb', padding: '3px', borderLeft: '2px solid #10b981', fontSize: '4px', color: '#6b7280', fontStyle: 'italic' }}>
+          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#111827', marginBottom: '6px' }}>Partnership Opportunity</div>
+          <div style={{ fontSize: '8px', color: '#4b5563', marginBottom: '3px' }}>Hi John,</div>
+          <div style={{ fontSize: '7px', color: '#6b7280', marginBottom: '2px', lineHeight: '1.4' }}>I noticed your company's innovative work...</div>
+          <div style={{ fontSize: '7px', color: '#6b7280', marginBottom: '2px', lineHeight: '1.4' }}>We'd love to explore partnership opportunities</div>
+          <div style={{ fontSize: '7px', color: '#6b7280', marginBottom: '8px', lineHeight: '1.4' }}>that could benefit both organizations.</div>
+          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#10b981', padding: '6px 14px', borderRadius: '4px', fontSize: '8px', color: 'white', fontWeight: '600', marginBottom: '8px' }}>Schedule Meeting</div>
+          <div style={{ backgroundColor: '#f9fafb', padding: '8px', borderLeft: '3px solid #10b981', fontSize: '7px', color: '#6b7280', fontStyle: 'italic' }}>
             "Great results from our partnership" - CEO
           </div>
         </div>
@@ -1384,14 +1385,15 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       return (
         <div style={{
           backgroundColor: 'white',
-          border: '1px solid #e9ecef',
-          borderRadius: '4px',
-          padding: '6px',
-          height: '120px',
+          border: '2px solid #e5e7eb',
+          borderRadius: '8px',
+          padding: '16px',
+          height: '180px',
           overflow: 'hidden',
-          fontSize: '5px',
-          lineHeight: '1.3',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
+          fontSize: '9px',
+          lineHeight: '1.4',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
           <div style={{ backgroundColor: isSelected ? '#00f5a0' : '#3b82f6', padding: '3px', borderRadius: '2px', marginBottom: '3px', textAlign: 'center' }}>
             <span style={{ fontSize: '5px', color: 'white', fontWeight: 'bold' }}>TECH INNOVATION</span>
@@ -1428,14 +1430,15 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       return (
         <div style={{
           backgroundColor: 'white',
-          border: '1px solid #e9ecef',
-          borderRadius: '4px',
-          padding: '6px',
-          height: '120px',
+          border: '2px solid #e5e7eb',
+          borderRadius: '8px',
+          padding: '16px',
+          height: '180px',
           overflow: 'hidden',
-          fontSize: '5px',
-          lineHeight: '1.3',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
+          fontSize: '9px',
+          lineHeight: '1.4',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
           <div style={{ borderBottom: '2px solid #6b7280', paddingBottom: '2px', marginBottom: '3px' }}>
             <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#111827' }}>Strategic Partnership Proposal</div>
@@ -1468,14 +1471,15 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       return (
         <div style={{
           backgroundColor: 'white',
-          border: '1px solid #e9ecef',
-          borderRadius: '4px',
-          padding: '8px',
-          height: '120px',
+          border: '2px solid #e5e7eb',
+          borderRadius: '8px',
+          padding: '16px',
+          height: '180px',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          gap: '3px'
+          gap: '6px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
           <div style={{ background: isSelected ? 'linear-gradient(90deg, #00f5a0 0%, #00e090 100%)' : 'linear-gradient(90deg, #ec4899 0%, #f43f5e 100%)', height: '16px', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: '12px', height: '8px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '1px' }}></div>
@@ -1504,14 +1508,15 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       return (
         <div style={{
           backgroundColor: 'white',
-          border: '1px solid #e9ecef',
-          borderRadius: '4px',
-          padding: '8px',
-          height: '120px',
+          border: '2px solid #e5e7eb',
+          borderRadius: '8px',
+          padding: '16px',
+          height: '180px',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          gap: '3px'
+          gap: '6px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '2px' }}>
             <div style={{ width: '14px', height: '14px', backgroundColor: isSelected ? '#00f5a0' : '#0ea5e9', borderRadius: '50%' }}></div>
@@ -1537,14 +1542,15 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       return (
         <div style={{
           backgroundColor: 'white',
-          border: '1px solid #e9ecef',
-          borderRadius: '4px',
-          padding: '8px',
-          height: '120px',
+          border: '2px solid #e5e7eb',
+          borderRadius: '8px',
+          padding: '16px',
+          height: '180px',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          gap: '3px'
+          gap: '6px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
           <div style={{ background: isSelected ? 'linear-gradient(135deg, #00f5a0 0%, #00e090 100%)' : 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)', height: '18px', borderRadius: '2px', position: 'relative' }}>
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20px', height: '6px', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '1px' }}></div>
@@ -1645,44 +1651,19 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                 } bg-white border border-gray-200 rounded-lg overflow-hidden`}
                 onClick={() => handleTemplateSelect(key)}
               >
-                {/* Template Preview */}
-                <div className="p-4 bg-gray-50">
+                {/* Template Preview - Enlarged */}
+                <div className="p-6 bg-gray-50 flex items-center justify-center" style={{ minHeight: '200px' }}>
                   {renderTemplatePreview(template)}
                 </div>
 
                 {/* Template Info */}
                 <div className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-gray-800 text-lg">{template.name}</h3>
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="font-semibold text-gray-900 text-lg">{template.name}</h3>
                     {selectedTemplate === key && (
                       <div className="bg-green-500 text-white rounded-full p-1">
                         <Check size={16} />
                       </div>
-                    )}
-                  </div>
-
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{template.description}</p>
-
-                  {/* Template Stats */}
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                    <span>{template.structure.paragraphs} paragraphs</span>
-                    <span>{template.structure.components.length} components</span>
-                  </div>
-
-                  {/* Components Preview */}
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {template.structure.components.slice(0, 3).map((component, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-                      >
-                        {component.replace('_', ' ')}
-                      </span>
-                    ))}
-                    {template.structure.components.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                        +{template.structure.components.length - 3}
-                      </span>
                     )}
                   </div>
 

@@ -2321,23 +2321,29 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               const { prospects: prospectsFromAPI, campaignData } = result.data;
               const emailCampaign = campaignData?.emailCampaign;
 
-              console.log(`📥 [AUTO-LOAD] Loaded ${prospectsFromAPI?.length || 0} prospects, ${emailCampaign?.emails?.length || 0} emails`);
+              console.log(`📥 [AUTO-LOAD] Loaded ${prospectsFromAPI?.length || 0} prospects, ${emailCampaign?.emails?.length || 0} emails for campaign ${currentCampaignId}`);
 
-              // Update UI with loaded data
-              if (prospectsFromAPI && prospectsFromAPI.length > 0) {
-                setProspects(prospectsFromAPI);
+              // 🔥 CRITICAL FIX: ALWAYS update state, even with empty arrays
+              setProspects(prospectsFromAPI || []);
+              setGeneratedEmails(emailCampaign?.emails || []);
+
+              if ((prospectsFromAPI && prospectsFromAPI.length > 0) || (emailCampaign?.emails && emailCampaign.emails.length > 0)) {
+                setWorkflowStatus('completed');
+              } else {
+                setWorkflowStatus('idle');
               }
-
-              if (emailCampaign?.emails && emailCampaign.emails.length > 0) {
-                setGeneratedEmails(emailCampaign.emails);
-              }
-
-              setWorkflowStatus('completed');
             } else {
-              console.log('📥 [AUTO-LOAD] No data found for this campaign yet');
+              console.log(`📥 [AUTO-LOAD] No data found for campaign ${currentCampaignId} - clearing state`);
+              // Clear state if no data
+              setProspects([]);
+              setGeneratedEmails([]);
+              setWorkflowStatus('idle');
             }
           } catch (error) {
             console.error('❌ [AUTO-LOAD] Failed to load campaign data:', error);
+            // Clear on error
+            setProspects([]);
+            setGeneratedEmails([]);
           }
         }, 500);
       }
@@ -2355,6 +2361,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
       if (!campaignId) {
         console.log('⚠️  [INITIAL LOAD] No campaignId found, skipping data load');
+        // Clear data if no campaign
+        setProspects([]);
+        setGeneratedEmails([]);
         return;
       }
 
@@ -2368,28 +2377,43 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           const { prospects: prospectsFromAPI, campaignData } = result.data;
           const emailCampaign = campaignData?.emailCampaign;
 
-          console.log(`📥 [INITIAL LOAD] Found ${prospectsFromAPI?.length || 0} prospects, ${emailCampaign?.emails?.length || 0} emails`);
+          console.log(`📥 [INITIAL LOAD] Found ${prospectsFromAPI?.length || 0} prospects, ${emailCampaign?.emails?.length || 0} emails for campaign ${campaignId}`);
 
-          // Only update if we actually have data
+          // 🔥 CRITICAL FIX: ALWAYS set prospects, even if empty array
+          // This ensures switching to a campaign with no prospects will clear the old ones
+          setProspects(prospectsFromAPI || []);
+          setGeneratedEmails(emailCampaign?.emails || []);
+
           if (prospectsFromAPI && prospectsFromAPI.length > 0) {
-            setProspects(prospectsFromAPI);
-            console.log(`✅ [INITIAL LOAD] Loaded ${prospectsFromAPI.length} prospects`);
+            console.log(`✅ [INITIAL LOAD] Loaded ${prospectsFromAPI.length} prospects for campaign ${campaignId}`);
+          } else {
+            console.log(`📭 [INITIAL LOAD] No prospects found for campaign ${campaignId} - cleared prospects state`);
           }
 
           if (emailCampaign?.emails && emailCampaign.emails.length > 0) {
-            setGeneratedEmails(emailCampaign.emails);
-            console.log(`✅ [INITIAL LOAD] Loaded ${emailCampaign.emails.length} emails`);
+            console.log(`✅ [INITIAL LOAD] Loaded ${emailCampaign.emails.length} emails for campaign ${campaignId}`);
+          } else {
+            console.log(`📭 [INITIAL LOAD] No emails found for campaign ${campaignId} - cleared emails state`);
           }
 
           // Update workflow status if we have data
           if ((prospectsFromAPI && prospectsFromAPI.length > 0) || (emailCampaign?.emails && emailCampaign.emails.length > 0)) {
             setWorkflowStatus('completed');
+          } else {
+            setWorkflowStatus('idle');
           }
         } else {
-          console.log('📥 [INITIAL LOAD] No existing data for this campaign');
+          console.log(`📥 [INITIAL LOAD] No existing data for campaign ${campaignId} - clearing state`);
+          // 🔥 CRITICAL FIX: Clear state if no data returned
+          setProspects([]);
+          setGeneratedEmails([]);
+          setWorkflowStatus('idle');
         }
       } catch (error) {
         console.error('❌ [INITIAL LOAD] Failed to load campaign data:', error);
+        // Clear state on error to avoid showing wrong data
+        setProspects([]);
+        setGeneratedEmails([]);
       }
     };
 
@@ -3887,6 +3911,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       console.log('✅ WebSocket readyState:', wsInstance.readyState);
       console.log('✅ Connection established to:', wsUrl);
       setWsConnectionStatus('connected');
+
+      // 🔥 CRITICAL: Subscribe to current campaign's workflow
+      const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+      if (currentCampaignId) {
+        console.log(`📡 Subscribing to campaign workflow: ${currentCampaignId}`);
+        wsInstance.send(JSON.stringify({
+          type: 'subscribe_workflow',
+          workflowId: currentCampaignId
+        }));
+      }
     };
 
     wsInstance.onerror = (error) => {
@@ -4391,6 +4425,33 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
     return () => wsInstance.close();
   }, []);
+
+  // 🔥 NEW: Resubscribe to workflow when campaign changes
+  useEffect(() => {
+    if (ws && ws.readyState === WebSocket.OPEN && campaign?.id) {
+      console.log(`🔄 Campaign changed to ${campaign.id}, resubscribing to workflow...`);
+
+      // Unsubscribe from previous campaign (if any)
+      const previousCampaignId = localStorage.getItem('previousCampaignId');
+      if (previousCampaignId && previousCampaignId !== campaign.id) {
+        console.log(`📡 Unsubscribing from previous campaign: ${previousCampaignId}`);
+        ws.send(JSON.stringify({
+          type: 'unsubscribe_workflow',
+          workflowId: previousCampaignId
+        }));
+      }
+
+      // Subscribe to new campaign
+      console.log(`📡 Subscribing to new campaign workflow: ${campaign.id}`);
+      ws.send(JSON.stringify({
+        type: 'subscribe_workflow',
+        workflowId: campaign.id
+      }));
+
+      // Store current as previous for next change
+      localStorage.setItem('previousCampaignId', campaign.id);
+    }
+  }, [campaign?.id, ws]);
 
   // 💾 CRITICAL: Fetch persisted data from database on component mount
   useEffect(() => {

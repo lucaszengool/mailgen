@@ -1,8 +1,16 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
+const { getOllamaQueue } = require('../utils/OllamaQueue');
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+
+// Initialize Ollama queue with Railway-optimized settings
+const ollamaQueue = getOllamaQueue({
+  maxConcurrent: parseInt(process.env.OLLAMA_MAX_CONCURRENT) || 5,
+  timeout: 60000,
+  ollamaUrl: OLLAMA_URL
+});
 
 // 生成邮件内容
 router.post('/generate-email', async (req, res) => {
@@ -34,10 +42,12 @@ router.post('/generate-email', async (req, res) => {
 
 请直接返回邮件内容，包含主题行和正文。`;
 
-    const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
+    // 🚀 Use queue for concurrent request management
+    const response = await ollamaQueue.enqueue({
+      userId: req.userId || 'anonymous',
+      campaignId: req.body.campaignId || 'default',
       model: 'qwen2.5:7b',
       prompt: systemPrompt,
-      stream: false,
       options: {
         temperature: 0.7,
         top_p: 0.9,
@@ -45,7 +55,7 @@ router.post('/generate-email', async (req, res) => {
       }
     });
 
-    const emailContent = response.data.response;
+    const emailContent = response.response;
     
     // 解析邮件主题和正文
     const lines = emailContent.split('\n');
@@ -103,10 +113,12 @@ router.post('/analyze-reply', async (req, res) => {
 
 请以JSON格式返回分析结果。`;
 
-    const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
+    // 🚀 Use queue for concurrent request management
+    const response = await ollamaQueue.enqueue({
+      userId: req.userId || 'anonymous',
+      campaignId: req.body.campaignId || 'default',
       model: 'qwen2.5:7b',
       prompt: systemPrompt,
-      stream: false,
       options: {
         temperature: 0.3,
         top_p: 0.8
@@ -116,7 +128,7 @@ router.post('/analyze-reply', async (req, res) => {
     res.json({
       success: true,
       data: {
-        analysis: response.data.response,
+        analysis: response.response,
         analyzedAt: new Date().toISOString()
       }
     });
@@ -150,10 +162,12 @@ router.post('/generate-followup', async (req, res) => {
 
 请返回主题和正文。`;
 
-    const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
+    // 🚀 Use queue for concurrent request management
+    const response = await ollamaQueue.enqueue({
+      userId: req.userId || 'anonymous',
+      campaignId: req.body.campaignId || 'default',
       model: 'qwen2.5:7b',
       prompt: systemPrompt,
-      stream: false,
       options: {
         temperature: 0.6,
         top_p: 0.9
@@ -163,7 +177,7 @@ router.post('/generate-followup', async (req, res) => {
     res.json({
       success: true,
       data: {
-        followupEmail: response.data.response,
+        followupEmail: response.response,
         generatedAt: new Date().toISOString()
       }
     });
@@ -200,6 +214,29 @@ router.get('/status', async (req, res) => {
         qwenAvailable: false,
         error: 'Ollama服务未连接'
       }
+    });
+  }
+});
+
+// 🚀 NEW: Performance monitoring endpoint
+router.get('/queue-status', (req, res) => {
+  try {
+    const status = ollamaQueue.getStatus();
+
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      ...status,
+      health: {
+        healthy: status.queue.running < status.queue.maxConcurrent,
+        queueBacklog: status.queue.pending,
+        utilizationRate: (status.queue.running / status.queue.maxConcurrent * 100).toFixed(2) + '%'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });
@@ -255,10 +292,12 @@ Keep it actionable and focused on the match quality. Be enthusiastic but realist
 
 **Your Analysis:**`;
 
-    const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
+    // 🚀 Use queue for concurrent request management
+    const response = await ollamaQueue.enqueue({
+      userId: req.userId || 'anonymous',
+      campaignId: req.body.campaignId || 'default',
       model: 'qwen2.5:0.5b',
       prompt: systemPrompt,
-      stream: false,
       options: {
         temperature: 0.7,
         top_p: 0.9,
@@ -267,7 +306,7 @@ Keep it actionable and focused on the match quality. Be enthusiastic but realist
       }
     });
 
-    const analysis = response.data.response;
+    const analysis = response.response;
 
     res.json({
       success: true,
@@ -364,10 +403,12 @@ ${userQuery}
 
 **Your Response (be helpful, clear, and actionable):**`;
 
-    const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
+    // 🚀 Use queue for concurrent request management
+    const response = await ollamaQueue.enqueue({
+      userId: req.userId || 'anonymous',
+      campaignId: req.body.campaignId || 'default',
       model: 'qwen2.5:0.5b',
       prompt: fullPrompt,
-      stream: false,
       options: {
         temperature: 0.7,
         top_p: 0.9,
@@ -376,7 +417,7 @@ ${userQuery}
       }
     });
 
-    const assistantResponse = response.data.response;
+    const assistantResponse = response.response;
 
     res.json({
       success: true,

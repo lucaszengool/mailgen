@@ -350,13 +350,16 @@ class LangGraphMarketingAgent {
    * 执行完整的营销活动流程
    */
   async executeCampaign(campaignConfig) {
-    const campaignId = `campaign_${Date.now()}`;
+    // 🔥 CRITICAL FIX: Use campaignId from config if provided, otherwise generate new one
+    const campaignId = campaignConfig.campaignId || `campaign_${Date.now()}`;
     this.state.currentCampaign = campaignId;
     this.campaignConfig = campaignConfig;  // Store campaign config for later use
     this.userId = campaignConfig.userId || 'anonymous';  // 🎯 CRITICAL: Store userId for workflow results
+    this.currentCampaignId = campaignId;  // 🔥 CRITICAL: Store campaignId for database operations
 
     console.log(`🚀 ============= EXECUTING CAMPAIGN ${campaignId} =============`);
     console.log(`🚀 [RAILWAY DEBUG] executeCampaign() CALLED`);
+    console.log(`🔍 [RAILWAY DEBUG] CampaignId: ${campaignId} (${campaignConfig.campaignId ? 'from config' : 'generated'})`);
     console.log(`👤 [RAILWAY DEBUG] User ID: ${this.userId}`);
     console.log(`🚀 [RAILWAY DEBUG] Target Website: ${campaignConfig.targetWebsite}`);
     console.log(`🚀 [RAILWAY DEBUG] Campaign Goal: ${campaignConfig.campaignGoal}`);
@@ -2610,27 +2613,59 @@ Return ONLY a JSON array of REAL search queries, for example:
       console.log(`🎨 Using template-specific Ollama prompt for: ${emailTemplateType}`);
       usingTemplatePrompt = true;
 
+      // 🔥 ENHANCED: Extract website analysis data for template prompts
+      const websiteAnalysis = this.businessAnalysisData || {};
+      const keyFeatures = websiteAnalysis.keyFeatures || [];
+      const uniqueSellingPoints = websiteAnalysis.uniqueSellingPoints || [];
+      const targetAudience = websiteAnalysis.targetAudience || '';
+
+      // Build enhanced context for template
+      const enhancedContext = `
+
+=== YOUR COMPANY DETAILS (Use these specific features in your email) ===
+What ${senderCompany} offers: ${senderService}
+${keyFeatures.length > 0 ? `Key Features: ${keyFeatures.slice(0, 3).join(', ')}` : ''}
+${uniqueSellingPoints.length > 0 ? `What Makes Us Unique: ${uniqueSellingPoints.slice(0, 2).join('; ')}` : ''}
+${targetAudience ? `Who We Help: ${targetAudience}` : ''}
+Value Proposition: ${valueProposition}
+
+CRITICAL: Reference these SPECIFIC features and benefits when explaining how ${senderCompany} can help ${recipientCompany}. Don't be generic - use the actual Key Features and Unique Selling Points listed above.
+`;
+
       // Use the template's custom prompt and replace placeholders
       emailPrompt = fullTemplateDefinition.ollamaPrompt
         .replace(/{senderName}/g, senderName || 'Team')
         .replace(/{companyName}/g, senderCompany)
-        .replace(/{company}/g, senderCompany)
+        .replace(/{company}/g, recipientCompany)
         .replace(/{recipientName}/g, recipientName)
         .replace(/{name}/g, recipientName)
         .replace(/{service}/g, senderService)
-        .replace(/{valueProposition}/g, valueProposition);
+        .replace(/{valueProposition}/g, valueProposition)
+        + enhancedContext; // 🔥 ADD enhanced context to prompt
 
-      console.log(`✨ Template prompt customized with real data`);
+      console.log(`✨ Template prompt customized with ENHANCED website analysis data`);
+      console.log(`   📊 Added ${keyFeatures.length} key features, ${uniqueSellingPoints.length} USPs`);
     } else {
       console.log(`📝 Using default Ollama email prompt`);
+
+      // 🔥 ENHANCED: Extract more website analysis data for better context
+      const websiteAnalysis = this.businessAnalysisData || {};
+      const keyFeatures = websiteAnalysis.keyFeatures || [];
+      const uniqueSellingPoints = websiteAnalysis.uniqueSellingPoints || [];
+      const targetAudience = websiteAnalysis.targetAudience || '';
+      const businessType = websiteAnalysis.businessType || senderIndustry;
+
       emailPrompt = `You are writing a highly personalized business email. Write ONLY the email content with natural, conversational language.
 
 === SENDER (WHO YOU ARE) ===
 Company: ${senderCompany}
-Industry: ${senderIndustry}
+Industry: ${businessType || senderIndustry}
 What you offer: ${senderService}
-${senderProducts.length > 0 ? `Products: ${senderProducts.join(', ')}` : ''}
-Value: ${valueProposition}
+${senderProducts.length > 0 ? `Products/Services: ${senderProducts.join(', ')}` : ''}
+Value Proposition: ${valueProposition}
+${keyFeatures.length > 0 ? `Key Features: ${keyFeatures.slice(0, 3).join(', ')}` : ''}
+${uniqueSellingPoints.length > 0 ? `What Makes Us Unique: ${uniqueSellingPoints.slice(0, 2).join('; ')}` : ''}
+${targetAudience ? `Our Target Customers: ${targetAudience}` : ''}
 Campaign Goal: ${campaignGoal}
 
 === RECIPIENT (WHO YOU'RE WRITING TO) ===
@@ -2638,6 +2673,9 @@ Name: ${recipientName}
 ${recipientRole ? `Role: ${recipientRole}` : ''}
 ${recipientCompany ? `Company: ${recipientCompany}` : ''}
 ${recipientIndustry ? `Industry: ${recipientIndustry}` : ''}
+
+=== YOUR TASK ===
+Write an email that demonstrates DEEP UNDERSTANDING of ${senderCompany}'s actual offerings (listed above) and shows HOW these specific features/benefits can help ${recipientCompany}. Use the KEY FEATURES and UNIQUE SELLING POINTS to make the email highly relevant and specific.
 
 === IMPORTANT WRITING RULES ===
 ✓ Start with a warm, personal greeting using ${recipientName}

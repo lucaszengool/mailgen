@@ -325,7 +325,7 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
       if (line.includes('**') || cleanLine.match(/^\d+\./)) {
         formattedElements.push(
           <div key={index} className="mt-3 mb-1">
-            <span className="font-semibold text-[#00f5a0] text-sm">{cleanLine}</span>
+            <span className="font-semibold text-black text-sm">{cleanLine}</span>
           </div>
         );
         return;
@@ -357,9 +357,9 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col border-l-4 border-[#00f5a0]">
+    <div className="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-50 flex flex-col border-l border-gray-200">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 bg-gradient-to-r from-white to-green-50 border-b-2 border-[#00f5a0]">
+      <div className="flex items-center justify-between p-6 bg-white border-b border-gray-200">
         <div className="flex items-center space-x-3">
           {/* MailGen Logo */}
           <div className="w-12 h-12 bg-[#00f5a0] rounded-full flex items-center justify-center shadow-lg shadow-[#00f5a0]/30">
@@ -373,17 +373,17 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
         <div className="flex items-center space-x-2">
           <button
             onClick={() => {/* Show quick guide */}}
-            className="px-4 py-2 border-2 border-[#00f5a0] rounded-full text-sm font-medium text-black hover:bg-[#00f5a0] transition-colors"
+            className="px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
             <BookOpen className="w-4 h-4 inline mr-1" />
             Quick Guide
           </button>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-[#00f5a0] rounded-full transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             title="Close"
           >
-            <X className="w-5 h-5 text-black" />
+            <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
       </div>
@@ -454,12 +454,12 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
                   <button
                     key={idx}
                     onClick={() => handleAction(suggestion.action, suggestion.text)}
-                    className="w-full text-left px-4 py-3 bg-white border-2 border-[#00f5a0] rounded-lg hover:bg-[#00f5a0] transition-all flex items-center justify-between group"
+                    className="w-full text-left px-4 py-3 bg-white border border-gray-200 rounded-lg hover:border-[#00f5a0] hover:bg-green-50 transition-all flex items-center justify-between group"
                   >
-                    <span className="text-black font-medium group-hover:text-black">
+                    <span className="text-black group-hover:text-[#00f5a0] font-medium">
                       {suggestion.text}
                     </span>
-                    <MessageSquare className="w-4 h-4 text-[#00f5a0] group-hover:text-black" />
+                    <MessageSquare className="w-4 h-4 text-gray-400 group-hover:text-[#00f5a0]" />
                   </button>
                 ))}
               </div>
@@ -489,8 +489,8 @@ const AIAssistantChatbot = ({ isOpen, onClose, activeView, setActiveView, prospe
       </div>
 
       {/* Input */}
-      <div className="p-6 bg-gradient-to-r from-white to-green-50 border-t-2 border-[#00f5a0]">
-        <div className="flex items-center space-x-3 bg-white rounded-full px-5 py-3 border-2 border-[#00f5a0] focus-within:border-[#00f5a0] focus-within:ring-2 focus-within:ring-[#00f5a0]/20 transition-all">
+      <div className="p-6 bg-white border-t border-gray-200">
+        <div className="flex items-center space-x-3 bg-gray-50 rounded-full px-5 py-3 border border-gray-200 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-500/20 transition-all">
           <input
             ref={inputRef}
             value={input}
