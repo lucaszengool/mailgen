@@ -5437,9 +5437,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                             ease: "easeInOut"
                           }}
                           className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-                          style={{ backgroundColor: 'rgba(0, 240, 160, 0.1)' }}
+                          style={{ backgroundColor: 'rgba(0, 245, 160, 0.1)' }}
                         >
-                          <Search className="w-8 h-8 text-green-600" />
+                          <Search className="w-8 h-8 text-[#00f5a0]" />
                         </motion.div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
                           Searching for Prospects...
@@ -5451,17 +5451,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
-                            className="w-2 h-2 rounded-full bg-green-500"
+                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
                           />
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-                            className="w-2 h-2 rounded-full bg-green-500"
+                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
                           />
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-                            className="w-2 h-2 rounded-full bg-green-500"
+                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
                           />
                         </div>
                         <p className="text-sm text-gray-500 mt-4">This usually takes 1-2 minutes</p>
@@ -5478,8 +5478,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                         </p>
                         <button
                           onClick={() => setActiveView('workflow')}
-                          className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                          style={{ backgroundColor: '#00f0a0', color: '#000' }}
+                          className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#00f5a0] focus:ring-offset-2"
+                          style={{ backgroundColor: '#00f5a0', color: '#000' }}
                         >
                           Start Workflow
                         </button>
@@ -5581,9 +5581,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                             ease: "easeInOut"
                           }}
                           className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-                          style={{ backgroundColor: 'rgba(0, 240, 160, 0.1)' }}
+                          style={{ backgroundColor: 'rgba(0, 245, 160, 0.1)' }}
                         >
-                          <Sparkles className="w-8 h-8 text-green-600" />
+                          <Sparkles className="w-8 h-8 text-[#00f5a0]" />
                         </motion.div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
                           Generating Emails...
@@ -5595,17 +5595,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
-                            className="w-2 h-2 rounded-full bg-green-500"
+                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
                           />
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-                            className="w-2 h-2 rounded-full bg-green-500"
+                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
                           />
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-                            className="w-2 h-2 rounded-full bg-green-500"
+                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
                           />
                         </div>
                         <p className="text-sm text-gray-500 mt-4">This usually takes 1-2 minutes</p>
@@ -5622,8 +5622,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                         </p>
                         <button
                           onClick={() => setActiveView('workflow')}
-                          className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                          style={{ backgroundColor: '#00f0a0', color: '#000' }}
+                          className="px-4 py-2 rounded-lg font-medium transition-all duration-150 hover:opacity-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#00f5a0] focus:ring-offset-2"
+                          style={{ backgroundColor: '#00f5a0', color: '#000' }}
                         >
                           Go to Workflow
                         </button>
