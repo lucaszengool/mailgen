@@ -22,6 +22,7 @@ import JobRightProspectCard from './JobRightProspectCard';
 import JobRightEmailCard from './JobRightEmailCard';
 import ProfessionalEmailEditor from './ProfessionalEmailEditor';
 import TemplateSelectionModal from './TemplateSelectionModal';
+import CompanyDetailModal from './CompanyDetailModal';
 import AgentStatusNotification, { AgentActivityPanel } from './AgentStatusNotification';
 import UserActionReminder from './UserActionReminder';
 import ProcessNotifications from './ProcessNotifications';
@@ -1818,6 +1819,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     danger: false
   });
 
+  // 🏢 Company detail modal state
+  const [showCompanyDetail, setShowCompanyDetail] = useState(false);
+  const [selectedProspectForDetail, setSelectedProspectForDetail] = useState(null);
+
   // Filter handlers
   const handleProspectFilterChange = (filterType, value) => {
     setProspectFilters(prev => ({
@@ -1831,6 +1836,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       ...prev,
       [filterType]: prev[filterType] === value ? null : value
     }));
+  };
+
+  // Handle prospect card click to show company details
+  const handleProspectClick = (prospect) => {
+    console.log('🏢 Opening company details for:', prospect.company);
+    setSelectedProspectForDetail(prospect);
+    setShowCompanyDetail(true);
   };
 
   // Handle "Ask MailGen" prospect analysis
@@ -5227,6 +5239,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                               }
                             }}
                             isGenerating={false}
+                            onClick={handleProspectClick}
                             onAskMailGen={handleAskMailGen}
                           />
                           
@@ -5487,6 +5500,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                             showFilters={false} // Filters now shown separately above
                             selectedFilters={prospectFilters}
                             onFilterChange={handleProspectFilterChange}
+                            onClick={handleProspectClick}
                             onAskMailGen={handleAskMailGen}
                           />
                         </motion.div>
@@ -5973,6 +5987,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         />,
         document.body
       )}
+
+      {/* 🏢 Company Detail Modal */}
+      <CompanyDetailModal
+        isOpen={showCompanyDetail}
+        onClose={() => {
+          setShowCompanyDetail(false);
+          setSelectedProspectForDetail(null);
+        }}
+        prospect={selectedProspectForDetail}
+      />
 
       {/* 🎯 User Action Reminder - Shows pending actions specific to this user */}
       <UserActionReminder
