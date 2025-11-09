@@ -1482,10 +1482,124 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       );
     }
 
-    // Default fallback for other templates
+    // Product Launch - Live Preview
+    if (template.id === 'product_launch') {
+      return (
+        <div style={previewWrapper}>
+          <div style={emailContainer}>
+            <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: '40px 30px', textAlign: 'center', color: 'white' }}>
+              <div style={{ fontSize: '36px', marginBottom: '10px' }}>🚀</div>
+              <h1 style={{ margin: '0 0 10px', fontSize: '26px', fontWeight: '700' }}>Exclusive Launch</h1>
+              <p style={{ margin: '0', fontSize: '15px', opacity: 0.9 }}>Be the first to experience innovation</p>
+            </div>
+            <div style={{ padding: '30px' }}>
+              <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#343a40', margin: '0 0 20px' }}>
+                Revolutionary new platform launching next week...
+              </p>
+              <div style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', borderRadius: '8px', padding: '20px', color: 'white', textAlign: 'center', margin: '20px 0' }}>
+                <div style={{ fontSize: '14px', marginBottom: '8px', opacity: 0.9 }}>LIMITED SPOTS</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold' }}>50 Only</div>
+              </div>
+              <div style={{ textAlign: 'center', margin: '25px 0' }}>
+                <div style={{ display: 'inline-block', background: '#667eea', color: 'white', padding: '14px 28px', borderRadius: '6px', fontWeight: '600', fontSize: '16px' }}>
+                  Get Early Access →
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Consultative Sales - Live Preview
+    if (template.id === 'consultative_sales') {
+      return (
+        <div style={previewWrapper}>
+          <div style={emailContainer}>
+            <div style={{ padding: '30px', borderBottom: '3px solid #f59e0b' }}>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#111827' }}>Strategic Assessment Invitation</div>
+            </div>
+            <div style={{ padding: '30px' }}>
+              <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#343a40', margin: '0 0 20px' }}>
+                Complimentary business review for {'{company}'}...
+              </p>
+              <div style={{ background: '#fef3c7', borderRadius: '8px', padding: '20px', margin: '20px 0' }}>
+                <div style={{ fontWeight: '600', color: '#92400e', marginBottom: '12px' }}>What You'll Discover:</div>
+                <div style={{ fontSize: '14px', color: '#78350f', lineHeight: '1.8' }}>
+                  ✓ Hidden growth opportunities<br/>
+                  ✓ Cost optimization strategies<br/>
+                  ✓ Industry benchmarking
+                </div>
+              </div>
+              <div style={{ textAlign: 'center', margin: '25px 0' }}>
+                <div style={{ display: 'inline-block', background: '#f59e0b', color: 'white', padding: '14px 28px', borderRadius: '6px', fontWeight: '600', fontSize: '16px' }}>
+                  Schedule Assessment →
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Event Invitation - Live Preview
+    if (template.id === 'event_invitation') {
+      return (
+        <div style={previewWrapper}>
+          <div style={emailContainer}>
+            <div style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)', padding: '40px 30px', textAlign: 'center', color: 'white' }}>
+              <div style={{ fontSize: '36px', marginBottom: '10px' }}>🎯</div>
+              <h1 style={{ margin: '0 0 10px', fontSize: '24px', fontWeight: '700' }}>You're Invited!</h1>
+              <p style={{ margin: '0', fontSize: '15px', opacity: 0.9 }}>Annual Innovation Summit 2025</p>
+            </div>
+            <div style={{ padding: '30px' }}>
+              <div style={{ background: '#ede9fe', borderRadius: '8px', padding: '20px', margin: '20px 0', textAlign: 'center' }}>
+                <div style={{ fontSize: '14px', color: '#5b21b6', marginBottom: '8px' }}>📅 March 15-17, 2025</div>
+                <div style={{ fontSize: '14px', color: '#5b21b6' }}>📍 San Francisco, CA</div>
+              </div>
+              <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#343a40', margin: '20px 0' }}>
+                Join 500+ industry leaders for three days of insights...
+              </p>
+              <div style={{ textAlign: 'center', margin: '25px 0' }}>
+                <div style={{ display: 'inline-block', background: '#4f46e5', color: 'white', padding: '14px 28px', borderRadius: '6px', fontWeight: '600', fontSize: '16px' }}>
+                  Register Now →
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Custom Template - Live Preview
+    if (template.id === 'custom_template') {
+      return (
+        <div style={previewWrapper}>
+          <div style={emailContainer}>
+            <div style={{ padding: '30px', textAlign: 'center', background: 'white' }}>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827', marginBottom: '10px' }}>Build Your Own</div>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>Fully customizable template</p>
+            </div>
+            <div style={{ padding: '30px', background: '#f3f4f6' }}>
+              <div style={{ background: 'white', borderRadius: '8px', padding: '20px', marginBottom: '15px', borderLeft: '4px solid ' + accentColor }}>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Drag & drop components</div>
+              </div>
+              <div style={{ background: 'white', borderRadius: '8px', padding: '20px', marginBottom: '15px', borderLeft: '4px solid ' + accentColor }}>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Add your branding</div>
+              </div>
+              <div style={{ background: 'white', borderRadius: '8px', padding: '20px', borderLeft: '4px solid ' + accentColor }}>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Personalize everything</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Default fallback
     return (
       <div style={previewWrapper}>
-        <div style={{ fontSize: '14px', color: '#6b7280' }}>Preview Coming Soon</div>
+        <div style={{ fontSize: '14px', color: '#6b7280' }}>Preview Not Available</div>
       </div>
     );
   };

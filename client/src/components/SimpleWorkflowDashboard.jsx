@@ -5381,9 +5381,36 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           {activeView === 'prospects' && (
             <div className="bg-white min-h-full">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Prospects</h2>
+                {/* Show company detail view or prospects list */}
+                {showCompanyDetail && selectedProspectForDetail ? (
+                  <>
+                    {/* Back button */}
+                    <button
+                      onClick={() => {
+                        setShowCompanyDetail(false);
+                        setSelectedProspectForDetail(null);
+                      }}
+                      className="flex items-center space-x-2 mb-6 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                      <span>Back to Prospects</span>
+                    </button>
 
-                {/* Search Bar for Prospects */}
+                    {/* Company Detail Page (inline, not modal) */}
+                    <CompanyDetailModal
+                      isOpen={true}
+                      onClose={() => {
+                        setShowCompanyDetail(false);
+                        setSelectedProspectForDetail(null);
+                      }}
+                      prospect={selectedProspectForDetail}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Prospects</h2>
+
+                    {/* Search Bar for Prospects */}
                 {prospects.length > 0 && (
                   <div className="bg-white border border-gray-300 rounded-lg p-4 mb-6">
                     <div className="relative">
@@ -5518,6 +5545,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                     </>
                   )}
                 </div>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -5988,15 +6017,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         document.body
       )}
 
-      {/* 🏢 Company Detail Modal */}
-      <CompanyDetailModal
-        isOpen={showCompanyDetail}
-        onClose={() => {
-          setShowCompanyDetail(false);
-          setSelectedProspectForDetail(null);
-        }}
-        prospect={selectedProspectForDetail}
-      />
+      {/* 🏢 Company Detail Modal - Removed, now shown inline in prospects view */}
 
       {/* 🎯 User Action Reminder - Shows pending actions specific to this user */}
       <UserActionReminder
