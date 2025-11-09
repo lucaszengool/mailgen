@@ -1347,271 +1347,145 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
 
   const renderTemplatePreview = (template) => {
     const isSelected = selectedTemplate === template.id;
+    const accentColor = isSelected ? '#00f5a0' : '#28a745';
 
-    // Professional Partnership - Clean, minimal design
+    // Common wrapper style for all previews
+    const previewWrapper = {
+      width: '100%',
+      height: '280px',
+      overflow: 'hidden',
+      position: 'relative',
+      backgroundColor: '#f9fafb',
+      borderRadius: '8px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    };
+
+    const emailContainer = {
+      transform: 'scale(0.38)',
+      transformOrigin: 'center center',
+      width: '600px',
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      backgroundColor: 'white',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+      border: '1px solid #e5e7eb'
+    };
+
+    // Professional Partnership - Live Preview
     if (template.id === 'professional_partnership') {
       return (
-        <div style={{
-          backgroundColor: 'white',
-          border: '2px solid #e5e7eb',
-          borderRadius: '8px',
-          padding: '16px',
-          height: '180px',
-          overflow: 'hidden',
-          fontSize: '9px',
-          lineHeight: '1.4',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-            <div style={{ width: '18px', height: '18px', backgroundColor: isSelected ? '#00f5a0' : '#10b981', borderRadius: '3px' }}></div>
-            <span style={{ fontSize: '8px', color: '#6b7280', fontWeight: '600', letterSpacing: '0.5px' }}>COMPANY</span>
-          </div>
-          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#111827', marginBottom: '6px' }}>Partnership Opportunity</div>
-          <div style={{ fontSize: '8px', color: '#4b5563', marginBottom: '3px' }}>Hi John,</div>
-          <div style={{ fontSize: '7px', color: '#6b7280', marginBottom: '2px', lineHeight: '1.4' }}>I noticed your company's innovative work...</div>
-          <div style={{ fontSize: '7px', color: '#6b7280', marginBottom: '2px', lineHeight: '1.4' }}>We'd love to explore partnership opportunities</div>
-          <div style={{ fontSize: '7px', color: '#6b7280', marginBottom: '8px', lineHeight: '1.4' }}>that could benefit both organizations.</div>
-          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#10b981', padding: '6px 14px', borderRadius: '4px', fontSize: '8px', color: 'white', fontWeight: '600', marginBottom: '8px' }}>Schedule Meeting</div>
-          <div style={{ backgroundColor: '#f9fafb', padding: '8px', borderLeft: '3px solid #10b981', fontSize: '7px', color: '#6b7280', fontStyle: 'italic' }}>
-            "Great results from our partnership" - CEO
+        <div style={previewWrapper}>
+          <div style={emailContainer}>
+            <div style={{ textAlign: 'center', padding: '20px', background: 'white', borderBottom: '2px solid #e9ecef' }}>
+              <div style={{ width: '120px', height: '40px', backgroundColor: accentColor, margin: '0 auto', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 'bold', fontSize: '16px' }}>COMPANY</div>
+              <p style={{ margin: '10px 0 0', color: '#6c757d', fontSize: '14px' }}>Building Strategic Partnerships</p>
+            </div>
+            <div style={{ padding: '40px 30px' }}>
+              <h2 style={{ color: '#343a40', margin: '0 0 25px', fontSize: '24px' }}>Hello John!</h2>
+              <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#343a40', margin: '0 0 20px' }}>
+                I noticed your company's innovative work...
+              </p>
+              <div style={{ textAlign: 'center', margin: '30px 0' }}>
+                <div style={{ display: 'inline-block', background: accentColor, color: 'black', padding: '14px 28px', borderRadius: '6px', fontWeight: '600', fontSize: '16px' }}>
+                  Schedule Meeting
+                </div>
+              </div>
+              <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#343a40', margin: '20px 0' }}>
+                We'd love to explore partnership opportunities...
+              </p>
+              <div style={{ background: 'white', borderLeft: `4px solid ${accentColor}`, padding: '18px', margin: '25px 0', border: '1px solid #e5e7eb', borderRadius: '0 6px 6px 0' }}>
+                <p style={{ margin: '0', fontStyle: 'italic', color: '#495057', fontSize: '14px' }}>
+                  "Great results from our partnership" - CEO
+                </p>
+              </div>
+            </div>
+            <div style={{ padding: '20px 30px', background: 'white', borderTop: '1px solid #e9ecef' }}>
+              <p style={{ margin: '0', color: '#6c757d', fontSize: '14px' }}>
+                Best regards,<br/><strong>Team</strong>
+              </p>
+            </div>
           </div>
         </div>
       );
     }
 
-    // Modern Tech - Bold, clean design
+    // Modern Tech - Live Preview  
     if (template.id === 'modern_tech') {
       return (
-        <div style={{
-          backgroundColor: 'white',
-          border: '2px solid #e5e7eb',
-          borderRadius: '8px',
-          padding: '16px',
-          height: '180px',
-          overflow: 'hidden',
-          fontSize: '9px',
-          lineHeight: '1.4',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ backgroundColor: isSelected ? '#00f5a0' : '#3b82f6', padding: '3px', borderRadius: '2px', marginBottom: '3px', textAlign: 'center' }}>
-            <span style={{ fontSize: '5px', color: 'white', fontWeight: 'bold' }}>TECH INNOVATION</span>
-          </div>
-          <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#111827', marginBottom: '3px' }}>Transform Your Business</div>
-          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '2px' }}>Cutting-edge AI solutions for modern enterprises</div>
-          <div style={{ display: 'flex', gap: '2px', marginBottom: '2px' }}>
-            <div style={{ flex: 1, backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px', padding: '2px', textAlign: 'center' }}>
-              <div style={{ fontSize: '5px', fontWeight: 'bold', color: '#3b82f6' }}>10x</div>
-              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Faster</div>
+        <div style={previewWrapper}>
+          <div style={emailContainer}>
+            <div style={{ background: 'white', padding: '40px 30px', textAlign: 'center', borderBottom: '2px solid #e9ecef' }}>
+              <h1 style={{ margin: '0 0 10px', fontSize: '28px', fontWeight: '700', color: '#343a40' }}>Transform Your Business</h1>
+              <p style={{ margin: '0', fontSize: '16px', color: '#6c757d' }}>Cutting-edge AI solutions</p>
             </div>
-            <div style={{ flex: 1, backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px', padding: '2px', textAlign: 'center' }}>
-              <div style={{ fontSize: '5px', fontWeight: 'bold', color: '#3b82f6' }}>40%</div>
-              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Savings</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '2px', marginBottom: '3px' }}>
-            <div style={{ flex: 1, backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px', padding: '2px', textAlign: 'center' }}>
-              <div style={{ fontSize: '5px', fontWeight: 'bold', color: '#3b82f6' }}>24/7</div>
-              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Support</div>
-            </div>
-            <div style={{ flex: 1, backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '2px', padding: '2px', textAlign: 'center' }}>
-              <div style={{ fontSize: '5px', fontWeight: 'bold', color: '#3b82f6' }}>100%</div>
-              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Secure</div>
+            <div style={{ padding: '30px' }}>
+              <p style={{ fontSize: '17px', lineHeight: '1.7', color: '#343a40', margin: '0 0 25px' }}>
+                Innovation and technology trends...
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', margin: '25px 0', padding: '20px', background: accentColor, borderRadius: '8px', color: 'black' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '28px', marginBottom: '8px' }}>10x</div>
+                  <div style={{ fontSize: '14px' }}>Faster</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '28px', marginBottom: '8px' }}>40%</div>
+                  <div style={{ fontSize: '14px' }}>Savings</div>
+                </div>
+              </div>
+              <div style={{ textAlign: 'center', margin: '25px 0' }}>
+                <div style={{ display: 'inline-block', background: accentColor, color: 'black', padding: '14px 28px', borderRadius: '6px', fontWeight: '600', fontSize: '16px' }}>
+                  Start Free Trial →
+                </div>
+              </div>
             </div>
           </div>
-          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#3b82f6', padding: '2px 8px', borderRadius: '3px', fontSize: '4.5px', color: 'white', fontWeight: '600' }}>Start Free Trial →</div>
         </div>
       );
     }
 
-    // Executive Outreach - Sophisticated design
+    // Executive Outreach - Live Preview
     if (template.id === 'executive_outreach') {
       return (
-        <div style={{
-          backgroundColor: 'white',
-          border: '2px solid #e5e7eb',
-          borderRadius: '8px',
-          padding: '16px',
-          height: '180px',
-          overflow: 'hidden',
-          fontSize: '9px',
-          lineHeight: '1.4',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ borderBottom: '2px solid #6b7280', paddingBottom: '2px', marginBottom: '3px' }}>
-            <div style={{ fontSize: '6px', fontWeight: 'bold', color: '#111827' }}>Strategic Partnership Proposal</div>
-          </div>
-          <div style={{ fontSize: '4.5px', color: '#4b5563', marginBottom: '1px' }}>Dear Mr. Johnson,</div>
-          <div style={{ fontSize: '4px', color: '#6b7280', marginBottom: '2px' }}>Our analysis shows significant synergy between our organizations in the enterprise SaaS space...</div>
-          <div style={{ display: 'flex', gap: '2px', marginTop: '2px', marginBottom: '3px', padding: '3px', backgroundColor: '#f9fafb', borderRadius: '2px' }}>
-            <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ fontSize: '6px', fontWeight: 'bold', color: isSelected ? '#00f5a0' : '#6366f1' }}>$2.5M</div>
-              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Revenue</div>
+        <div style={previewWrapper}>
+          <div style={emailContainer}>
+            <div style={{ borderBottom: '2px solid #6b7280', paddingBottom: '15px', padding: '30px 30px 15px' }}>
+              <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#111827' }}>Strategic Partnership Proposal</div>
             </div>
-            <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ fontSize: '6px', fontWeight: 'bold', color: isSelected ? '#00f5a0' : '#6366f1' }}>150%</div>
-              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Growth</div>
+            <div style={{ padding: '30px' }}>
+              <p style={{ fontSize: '15px', color: '#4b5563', margin: '0 0 15px' }}>Dear Mr. Johnson,</p>
+              <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#343a40', margin: '0 0 25px' }}>
+                Our analysis shows significant synergy between our organizations...
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', margin: '25px 0', padding: '20px', background: '#f9fafb', borderRadius: '8px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: accentColor, marginBottom: '5px' }}>$2.5M</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>Revenue</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: accentColor, marginBottom: '5px' }}>150%</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>Growth</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: accentColor, marginBottom: '5px' }}>45K</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>Users</div>
+                </div>
+              </div>
+              <div style={{ background: 'white', borderLeft: `4px solid ${accentColor}`, padding: '15px', margin: '20px 0', border: '1px solid #e5e7eb' }}>
+                <p style={{ margin: '0', fontStyle: 'italic', color: '#495057', fontSize: '13px' }}>
+                  "Strategic vision aligned perfectly" - Board Member
+                </p>
+              </div>
             </div>
-            <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ fontSize: '6px', fontWeight: 'bold', color: isSelected ? '#00f5a0' : '#6366f1' }}>45K</div>
-              <div style={{ fontSize: '3.5px', color: '#6b7280' }}>Users</div>
-            </div>
-          </div>
-          <div style={{ backgroundColor: '#f9fafb', padding: '3px', borderLeft: '2px solid #6366f1', fontSize: '3.5px', color: '#6b7280', fontStyle: 'italic' }}>
-            "Strategic vision aligned perfectly" - Board Member
           </div>
         </div>
       );
     }
 
-    // Product Launch - Dynamic design
-    if (template.id === 'product_launch') {
-      return (
-        <div style={{
-          backgroundColor: 'white',
-          border: '2px solid #e5e7eb',
-          borderRadius: '8px',
-          padding: '16px',
-          height: '180px',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ background: isSelected ? 'linear-gradient(90deg, #00f5a0 0%, #00e090 100%)' : 'linear-gradient(90deg, #ec4899 0%, #f43f5e 100%)', height: '16px', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '12px', height: '8px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '1px' }}></div>
-          </div>
-          <div style={{ height: '4px', width: '80%', backgroundColor: '#1f2937', borderRadius: '1px', margin: '0 auto' }}></div>
-          <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
-            <div style={{ flex: 1, padding: '3px', backgroundColor: '#fce7f3', borderRadius: '2px' }}>
-              <div style={{ height: '2px', backgroundColor: '#ec4899', borderRadius: '1px', marginBottom: '2px' }}></div>
-              <div style={{ height: '2px', backgroundColor: '#f9a8d4', borderRadius: '1px' }}></div>
-            </div>
-            <div style={{ flex: 1, padding: '3px', backgroundColor: '#fce7f3', borderRadius: '2px' }}>
-              <div style={{ height: '2px', backgroundColor: '#ec4899', borderRadius: '1px', marginBottom: '2px' }}></div>
-              <div style={{ height: '2px', backgroundColor: '#f9a8d4', borderRadius: '1px' }}></div>
-            </div>
-          </div>
-          <div style={{ backgroundColor: '#fdf2f8', padding: '3px', borderRadius: '2px', marginTop: '2px', textAlign: 'center' }}>
-            <div style={{ height: '6px', width: '40px', margin: '0 auto', backgroundColor: '#ec4899', borderRadius: '2px' }}></div>
-          </div>
-          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#ec4899', height: '10px', width: '70px', borderRadius: '3px', margin: '0 auto' }}></div>
-        </div>
-      );
-    }
-
-    // Consultative Sales - Trust-building design
-    if (template.id === 'consultative_sales') {
-      return (
-        <div style={{
-          backgroundColor: 'white',
-          border: '2px solid #e5e7eb',
-          borderRadius: '8px',
-          padding: '16px',
-          height: '180px',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '2px' }}>
-            <div style={{ width: '14px', height: '14px', backgroundColor: isSelected ? '#00f5a0' : '#0ea5e9', borderRadius: '50%' }}></div>
-            <div style={{ height: '3px', width: '50px', backgroundColor: '#0ea5e9', borderRadius: '1px' }}></div>
-          </div>
-          <div style={{ height: '2px', width: '100%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
-          <div style={{ height: '2px', width: '95%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
-          <div style={{ backgroundColor: '#f0f9ff', padding: '4px', borderRadius: '2px', border: '1px solid #bae6fd', marginTop: '2px' }}>
-            <div style={{ height: '2px', width: '90%', backgroundColor: '#0ea5e9', borderRadius: '1px', marginBottom: '2px' }}></div>
-            <div style={{ height: '2px', width: '80%', backgroundColor: '#7dd3fc', borderRadius: '1px' }}></div>
-          </div>
-          <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
-            <div style={{ height: '2px', width: '30px', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
-            <div style={{ height: '2px', width: '30px', backgroundColor: '#d1d5db', borderRadius: '1px' }}></div>
-          </div>
-          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#0ea5e9', height: '8px', width: '65px', borderRadius: '2px', marginTop: '2px' }}></div>
-        </div>
-      );
-    }
-
-    // Event Invitation - Engaging design
-    if (template.id === 'event_invitation') {
-      return (
-        <div style={{
-          backgroundColor: 'white',
-          border: '2px solid #e5e7eb',
-          borderRadius: '8px',
-          padding: '16px',
-          height: '180px',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ background: isSelected ? 'linear-gradient(135deg, #00f5a0 0%, #00e090 100%)' : 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)', height: '18px', borderRadius: '2px', position: 'relative' }}>
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20px', height: '6px', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '1px' }}></div>
-          </div>
-          <div style={{ height: '4px', width: '70%', backgroundColor: '#1f2937', borderRadius: '1px', margin: '0 auto' }}></div>
-          <div style={{ display: 'flex', gap: '3px', marginTop: '2px' }}>
-            <div style={{ width: '4px', height: '20px', backgroundColor: '#8b5cf6', borderRadius: '1px' }}></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ height: '2px', width: '90%', backgroundColor: '#e9ecef', borderRadius: '1px', marginBottom: '2px' }}></div>
-              <div style={{ height: '2px', width: '80%', backgroundColor: '#e9ecef', borderRadius: '1px', marginBottom: '2px' }}></div>
-              <div style={{ height: '2px', width: '85%', backgroundColor: '#e9ecef', borderRadius: '1px' }}></div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
-            <div style={{ flex: 1, height: '10px', backgroundColor: '#f3e8ff', borderRadius: '2px', border: '1px solid #c4b5fd' }}></div>
-            <div style={{ flex: 1, height: '10px', backgroundColor: '#f3e8ff', borderRadius: '2px', border: '1px solid #c4b5fd' }}></div>
-          </div>
-          <div style={{ display: 'inline-block', backgroundColor: isSelected ? '#00f5a0' : '#8b5cf6', height: '10px', width: '75px', borderRadius: '3px', margin: '0 auto' }}></div>
-        </div>
-      );
-    }
-
-    // Custom Template - Blank canvas
-    if (template.id === 'custom_template') {
-      return (
-        <div style={{
-          backgroundColor: 'white',
-          border: '1px dashed #d1d5db',
-          borderRadius: '4px',
-          padding: '8px',
-          height: '120px',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '6px'
-        }}>
-          <div style={{ width: '24px', height: '24px', border: '2px dashed #9ca3af', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ fontSize: '14px', color: '#9ca3af' }}>+</div>
-          </div>
-          <div style={{ height: '2px', width: '60px', backgroundColor: '#e5e7eb', borderRadius: '1px' }}></div>
-          <div style={{ height: '2px', width: '50px', backgroundColor: '#e5e7eb', borderRadius: '1px' }}></div>
-          <div style={{ height: '2px', width: '55px', backgroundColor: '#e5e7eb', borderRadius: '1px' }}></div>
-        </div>
-      );
-    }
-
-    // Default fallback
+    // Default fallback for other templates
     return (
-      <div style={{
-        backgroundColor: 'white',
-        border: '1px solid #e9ecef',
-        borderRadius: '4px',
-        padding: '8px',
-        height: '120px',
-        overflow: 'hidden'
-      }}>
-        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
-          Preview
-        </div>
+      <div style={previewWrapper}>
+        <div style={{ fontSize: '14px', color: '#6b7280' }}>Preview Coming Soon</div>
       </div>
     );
   };
@@ -1651,8 +1525,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                 } bg-white border border-gray-200 rounded-lg overflow-hidden`}
                 onClick={() => handleTemplateSelect(key)}
               >
-                {/* Template Preview - Enlarged */}
-                <div className="p-6 bg-gray-50 flex items-center justify-center" style={{ minHeight: '200px' }}>
+                {/* Template Preview - Enlarged Live Preview */}
+                <div className="p-4 bg-gray-50 flex items-center justify-center" style={{ minHeight: '300px' }}>
                   {renderTemplatePreview(template)}
                 </div>
 

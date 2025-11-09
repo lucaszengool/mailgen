@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SignedIn, UserButton } from '@clerk/clerk-react';
+import toast from 'react-hot-toast';
 import { apiGet, apiPost } from '../utils/apiClient';
 import TemplateSelectionService from '../services/TemplateSelectionService';
 import { EMAIL_TEMPLATES } from '../data/emailTemplatesConsistent.js';
@@ -3194,6 +3195,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       console.log('✅ Template selection response:', result);
       console.log(`✅ Template ${templateToUse.name} applied successfully with customizations!`);
 
+      // 🎉 Show success notification
+      toast.success(`Template "${templateToUse.name}" selected! Starting email generation...`, {
+        duration: 5000,
+        icon: '🎨',
+      });
+
       // Close template selection modal and mark as submitted
       setShowTemplateSelection(false);
       setSelectedTemplate(null);
@@ -3203,6 +3210,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
     } catch (error) {
       console.error('❌ Failed to confirm template selection:', error);
+
+      // 🎉 Show error notification
+      toast.error(`Failed to select template: ${error.message}. Please try again.`, {
+        duration: 6000,
+      });
     } finally {
       setIsSubmittingTemplate(false);
     }

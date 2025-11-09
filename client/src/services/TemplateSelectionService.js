@@ -137,6 +137,8 @@ class TemplateSelectionService {
    */
   async selectTemplate(templateId, campaignId, workflowId, customizations = null, components = null) {
     try {
+      console.log('🚀🚀🚀 ========================================');
+      console.log('🚀 TEMPLATE SELECTION SERVICE - STARTING API CALL');
       console.log(`🎨 Selecting template: ${templateId} for campaign: ${campaignId || workflowId}`);
 
       if (customizations && Object.keys(customizations).length > 0) {
@@ -165,6 +167,11 @@ class TemplateSelectionService {
         components: components || []
       };
 
+      console.log('📤 Request URL: /api/template/select');
+      console.log('📤 Request body keys:', Object.keys(requestBody));
+      console.log('📤 Full URL will be:', window.location.origin + '/api/template/select');
+      console.log('🚀 Making fetch request NOW...');
+
       const response = await fetch('/api/template/select', {
         method: 'POST',
         headers: {
@@ -173,17 +180,32 @@ class TemplateSelectionService {
         body: JSON.stringify(requestBody),
       });
 
+      console.log('📥 Response received! Status:', response.status);
+      console.log('📥 Response OK?:', response.ok);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ Server response error:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
 
       const result = await response.json();
       console.log('✅ Template selection response:', result);
+      console.log('✅✅✅ TEMPLATE SELECTION API CALL COMPLETED SUCCESSFULLY');
+      console.log('🚀🚀🚀 ========================================');
+
+      // Show success notification
+      console.log('🎯 Template selected successfully! Email generation should start now...');
 
       return result;
 
     } catch (error) {
-      console.error('❌ Failed to select template:', error);
+      console.error('❌❌❌ ========================================');
+      console.error('❌ TEMPLATE SELECTION API CALL FAILED!');
+      console.error('❌ Error type:', error.constructor.name);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌❌❌ ========================================');
       throw error;
     }
   }
