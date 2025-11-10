@@ -673,19 +673,19 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                 <div className="space-y-4">
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Revenue Growth</div>
-                    <div className="text-2xl font-bold text-green-600">{companyData.growthMetrics.revenueGrowth}</div>
+                    <div className="text-2xl font-bold text-green-600">{companyData.growthMetrics?.revenueGrowth || 'N/A'}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Employee Growth</div>
-                    <div className="text-2xl font-bold text-green-600">{companyData.growthMetrics.employeeGrowth}</div>
+                    <div className="text-2xl font-bold text-green-600">{companyData.growthMetrics?.employeeGrowth || 'N/A'}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Customer Growth</div>
-                    <div className="text-2xl font-bold text-green-600">{companyData.growthMetrics.customerGrowth}</div>
+                    <div className="text-2xl font-bold text-green-600">{companyData.growthMetrics?.customerGrowth || 'N/A'}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Market Expansion</div>
-                    <div className="text-lg font-bold text-gray-900">{companyData.growthMetrics.marketExpansion}</div>
+                    <div className="text-lg font-bold text-gray-900">{companyData.growthMetrics?.marketExpansion || 'N/A'}</div>
                   </div>
                 </div>
               </div>
