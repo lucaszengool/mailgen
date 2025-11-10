@@ -1352,20 +1352,20 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
     // Common wrapper style for all previews
     const previewWrapper = {
       width: '100%',
-      height: '600px',
+      height: '900px',
       overflow: 'hidden',
       position: 'relative',
       backgroundColor: 'white',
       borderRadius: '12px',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'center',
-      padding: '24px'
+      padding: '30px 20px'
     };
 
     const emailContainer = {
-      transform: 'scale(1.0)',
-      transformOrigin: 'center center',
+      transform: 'scale(0.95)',
+      transformOrigin: 'top center',
       width: '600px',
       fontFamily: "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       backgroundColor: 'white',
@@ -1649,7 +1649,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                 onClick={() => handleTemplateSelect(key)}
               >
                 {/* Template Preview - Enlarged Live Preview */}
-                <div className="p-3 bg-white flex items-center justify-center" style={{ minHeight: '640px' }}>
+                <div className="p-3 bg-white flex items-start justify-center" style={{ minHeight: '940px' }}>
                   {renderTemplatePreview(template)}
                 </div>
 
