@@ -133,6 +133,22 @@ class TemplateSelectionService {
   }
 
   /**
+   * Get the correct API base URL
+   */
+  getApiBaseUrl() {
+    // Check if we're on Railway frontend service
+    const currentHost = window.location.host;
+
+    if (currentHost.includes('honest-hope') || currentHost.includes('powerful-contentment')) {
+      // Frontend Railway service - use backend service URL
+      return 'https://mailgen-production.up.railway.app';
+    }
+
+    // Local development or same host
+    return window.location.origin;
+  }
+
+  /**
    * Send template selection to server
    */
   async selectTemplate(templateId, campaignId, workflowId, customizations = null, components = null) {
@@ -167,17 +183,25 @@ class TemplateSelectionService {
         components: components || []
       };
 
+      // Get correct API base URL (handles Railway multi-service setup)
+      const apiBaseUrl = this.getApiBaseUrl();
+      const fullUrl = `${apiBaseUrl}/api/template/select`;
+
       console.log('📤 Request URL: /api/template/select');
       console.log('📤 Request body keys:', Object.keys(requestBody));
-      console.log('📤 Full URL will be:', window.location.origin + '/api/template/select');
+      console.log('📤 Full URL will be:', fullUrl);
+      console.log('🔗 Current host:', window.location.host);
+      console.log('🔗 API base:', apiBaseUrl);
       console.log('🚀 Making fetch request NOW...');
 
-      const response = await fetch('/api/template/select', {
+      const response = await fetch(fullUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
+        // Include credentials for cross-origin requests
+        credentials: 'include'
       });
 
       console.log('📥 Response received! Status:', response.status);
@@ -215,7 +239,10 @@ class TemplateSelectionService {
    */
   async getAvailableTemplates() {
     try {
-      const response = await fetch('/api/template/templates');
+      const apiBaseUrl = this.getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/template/templates`, {
+        credentials: 'include'
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -242,7 +269,10 @@ class TemplateSelectionService {
    */
   async getTemplate(templateId) {
     try {
-      const response = await fetch(`/api/template/templates/${templateId}`);
+      const apiBaseUrl = this.getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/template/templates/${templateId}`, {
+        credentials: 'include'
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

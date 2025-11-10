@@ -28,10 +28,12 @@ import {
   LinkIcon,
   ChartBarIcon,
   GlobeAltIcon,
-  AcademicCapIcon
+  AcademicCapIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import toast from 'react-hot-toast'
+import ComprehensiveCompanyDetailPage from '../components/ComprehensiveCompanyDetailPage'
 
 export default function Prospects() {
   const [prospects, setProspects] = useState([])
@@ -54,15 +56,24 @@ export default function Prospects() {
     industryNews: []
   })
   const [selectedProspect, setSelectedProspect] = useState(null)
+  const [showCompanyDetails, setShowCompanyDetails] = useState(false) // Track company details view
   const [generatingProfiles, setGeneratingProfiles] = useState(new Set()) // Track which profiles are being generated
 
   // WebSocket connection for real-time updates
   const ws = useRef(null)
 
   useEffect(() => {
+    // Check if there's an active campaign and set initial status
+    const currentCampaignId = localStorage.getItem('currentCampaignId')
+    if (currentCampaignId) {
+      console.log(`📋 Prospects page loaded with active campaign: ${currentCampaignId}`)
+      // Set initial status to finding_prospects if we have a campaign but no prospects yet
+      setWorkflowStatus('finding_prospects')
+    }
+
     fetchProspects()
     connectWebSocket()
-    
+
     return () => {
       if (ws.current) {
         ws.current.close()
@@ -229,6 +240,18 @@ export default function Prospects() {
       
       ws.current.onopen = () => {
         console.log('✅ WebSocket connected to prospects feed')
+
+        // Subscribe to current campaign's workflow updates
+        const currentCampaignId = localStorage.getItem('currentCampaignId')
+        if (currentCampaignId) {
+          console.log(`📡 Prospects page: Subscribing to campaign workflow: ${currentCampaignId}`)
+          ws.current.send(JSON.stringify({
+            type: 'subscribe_workflow',
+            workflowId: currentCampaignId
+          }))
+        } else {
+          console.log('⚠️ No current campaign ID found for subscription')
+        }
       }
       
       ws.current.onerror = (error) => {
@@ -310,6 +333,13 @@ export default function Prospects() {
       console.log(`📊 Total unique prospects after deduplication: ${uniqueProspects.length}`)
 
       setProspects(uniqueProspects)
+
+      // Clear workflow status if we have prospects
+      if (uniqueProspects.length > 0 && workflowStatus === 'finding_prospects') {
+        console.log('✅ Prospects found, clearing searching status')
+        setWorkflowStatus(null)
+        toast.dismiss('finding_prospects')
+      }
     } catch (error) {
       console.error('❌ Failed to fetch prospects:', error)
       toast.error('Failed to load prospects')
@@ -451,6 +481,19 @@ export default function Prospects() {
         <span className="ml-2 text-orange-600">Loading prospects...</span>
       </div>
     )
+  }
+
+  // Show comprehensive company details page when a prospect card is clicked
+  if (showCompanyDetails && selectedProspect) {
+    return (
+      <ComprehensiveCompanyDetailPage
+        prospect={selectedProspect}
+        onBack={() => {
+          setShowCompanyDetails(false);
+          setSelectedProspect(null);
+        }}
+      />
+    );
   }
 
   return (
@@ -796,7 +839,10 @@ export default function Prospects() {
         
         <JobRightStyleProspectList
           prospects={sortedProspects}
-          onSelectProspect={setSelectedProspect}
+          onSelectProspect={(prospect) => {
+            setSelectedProspect(prospect);
+            setShowCompanyDetails(true);
+          }}
           selectedProspect={selectedProspect}
           onGenerateProfile={generateProspectProfile}
           generatingProfiles={generatingProfiles}
@@ -1544,11 +1590,8 @@ function JobRightStyleProspectCard({ prospect, isSelected, onSelect, onGenerateP
   }
 
   const handleCardClick = () => {
-    if (prospect.sourceUrl) {
-      window.open(prospect.sourceUrl, '_blank', 'noopener,noreferrer')
-    } else {
-      onSelect()
-    }
+    // Always show company details page instead of opening external URL
+    onSelect()
   }
 
   const matchInfo = getMatchLevel(prospect.confidence)
