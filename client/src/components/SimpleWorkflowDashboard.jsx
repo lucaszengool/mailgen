@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   Send, Bot, User, Loader, CheckCircle, XCircle,
-  ChevronDown, ChevronRight, Search, Mail, Building2,
+  ChevronDown, ChevronRight, ChevronLeft, Search, Mail, Building2,
   TrendingUp, MessageSquare, Brain, Globe, Database,
   FileText, Sparkles, ArrowRight, Clock, Activity,
   Target, Users, BarChart3, Link, Shield, Zap, Edit, Settings,
@@ -22,7 +22,7 @@ import JobRightProspectCard from './JobRightProspectCard';
 import JobRightEmailCard from './JobRightEmailCard';
 import ProfessionalEmailEditor from './ProfessionalEmailEditor';
 import TemplateSelectionModal from './TemplateSelectionModal';
-import CompanyDetailModal from './CompanyDetailModal';
+import CompanyDetailPage from './CompanyDetailPage';
 import AgentStatusNotification, { AgentActivityPanel } from './AgentStatusNotification';
 import UserActionReminder from './UserActionReminder';
 import ProcessNotifications from './ProcessNotifications';
@@ -5383,29 +5383,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               <div className="p-6">
                 {/* Show company detail view or prospects list */}
                 {showCompanyDetail && selectedProspectForDetail ? (
-                  <>
-                    {/* Back button */}
-                    <button
-                      onClick={() => {
-                        setShowCompanyDetail(false);
-                        setSelectedProspectForDetail(null);
-                      }}
-                      className="flex items-center space-x-2 mb-6 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                      <span>Back to Prospects</span>
-                    </button>
-
-                    {/* Company Detail Page (inline, not modal) */}
-                    <CompanyDetailModal
-                      isOpen={true}
-                      onClose={() => {
-                        setShowCompanyDetail(false);
-                        setSelectedProspectForDetail(null);
-                      }}
-                      prospect={selectedProspectForDetail}
-                    />
-                  </>
+                  <CompanyDetailPage
+                    prospect={selectedProspectForDetail}
+                    onBack={() => {
+                      setShowCompanyDetail(false);
+                      setSelectedProspectForDetail(null);
+                    }}
+                  />
                 ) : (
                   <>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Prospects</h2>

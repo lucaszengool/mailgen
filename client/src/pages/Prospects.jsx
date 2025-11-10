@@ -36,6 +36,7 @@ import toast from 'react-hot-toast'
 export default function Prospects() {
   const [prospects, setProspects] = useState([])
   const [loading, setLoading] = useState(true)
+  const [workflowStatus, setWorkflowStatus] = useState(null) // Track workflow status: 'finding_prospects', 'generating_emails', etc.
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedIndustry, setSelectedIndustry] = useState('')
   const [selectedPosition, setSelectedPosition] = useState('')
@@ -194,11 +195,35 @@ export default function Prospects() {
           ))
           
           // Update selected prospect if it matches
-          setSelectedProspect(prev => 
-            prev && prev.email === updatedEmail 
+          setSelectedProspect(prev =>
+            prev && prev.email === updatedEmail
               ? { ...prev, ...data.data }
               : prev
           )
+        } else if (data.type === 'stage_start' || data.type === 'workflow_status_update') {
+          // Workflow status update from backend
+          console.log('🔄 Workflow status update:', data.stage || data.status)
+          const status = data.stage || data.status
+          setWorkflowStatus(status)
+
+          // Show toast notification for important status changes
+          if (status === 'finding_prospects') {
+            toast.loading('🔍 AI Agent is searching for prospects... This may take 1-2 minutes', {
+              id: 'finding_prospects',
+              duration: Infinity
+            })
+          } else if (status === 'generating_emails') {
+            toast.dismiss('finding_prospects')
+            toast.loading('✉️ Generating personalized emails...', {
+              id: 'generating_emails',
+              duration: Infinity
+            })
+          } else if (status === 'complete') {
+            toast.dismiss('finding_prospects')
+            toast.dismiss('generating_emails')
+            toast.success('✅ Campaign complete!')
+            setWorkflowStatus(null) // Clear workflow status
+          }
         }
       }
       
@@ -769,12 +794,13 @@ export default function Prospects() {
           </div>
         </div>
         
-        <JobRightStyleProspectList 
+        <JobRightStyleProspectList
           prospects={sortedProspects}
           onSelectProspect={setSelectedProspect}
           selectedProspect={selectedProspect}
           onGenerateProfile={generateProspectProfile}
           generatingProfiles={generatingProfiles}
+          workflowStatus={workflowStatus}
         />
         </div>
       </div>
@@ -783,13 +809,34 @@ export default function Prospects() {
 }
 
 // Prospect Cards View Component
-function ProspectCardsView({ prospects }) {
+function ProspectCardsView({ prospects, workflowStatus }) {
   if (prospects.length === 0) {
+    // Show searching state if workflow is active
+    if (workflowStatus === 'finding_prospects') {
+      return (
+        <div className="text-center py-16 bg-gradient-to-br from-green-50 to-white rounded-xl border-2 border-green-200">
+          <div className="loading-spinner h-16 w-16 mx-auto mb-4 border-green-500"></div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">🔍 AI Agent is Searching for Prospects</h3>
+          <p className="text-gray-600 mb-4">Please wait 1-2 minutes while we discover potential prospects...</p>
+          <div className="max-w-md mx-auto">
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Our AI is analyzing the web, finding contact information, and qualifying leads for your campaign.
+              </p>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="text-center py-16 bg-gray-50 rounded-xl">
         <UserGroupIcon className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No prospects found</h3>
-        <p className="text-gray-600">Try adjusting your filters or add new prospects</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No Prospects Yet</h3>
+        <p className="text-gray-600">Start a workflow to discover potential prospects for your campaign</p>
+        <button className="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+          Start Workflow
+        </button>
       </div>
     )
   }
@@ -1439,13 +1486,34 @@ function ProspectListView({ prospects }) {
 }
 
 // JobRight.ai Style Prospect List Component
-function JobRightStyleProspectList({ prospects, selectedProspect, onSelectProspect, onGenerateProfile, generatingProfiles }) {
+function JobRightStyleProspectList({ prospects, selectedProspect, onSelectProspect, onGenerateProfile, generatingProfiles, workflowStatus }) {
   if (prospects.length === 0) {
+    // Show searching state if workflow is active
+    if (workflowStatus === 'finding_prospects') {
+      return (
+        <div className="text-center py-16 bg-gradient-to-br from-green-50 to-white rounded-2xl border-2 border-green-200">
+          <div className="loading-spinner h-16 w-16 mx-auto mb-4 border-green-500"></div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">🔍 AI Agent is Searching for Prospects</h3>
+          <p className="text-gray-600 mb-4">Please wait 1-2 minutes while we discover potential prospects...</p>
+          <div className="max-w-md mx-auto">
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Our AI is analyzing the web, finding contact information, and qualifying leads for your campaign.
+              </p>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
         <UserGroupIcon className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No prospects found</h3>
-        <p className="text-gray-600">Try adjusting your filters to find more prospects</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No Prospects Yet</h3>
+        <p className="text-gray-600">Start a workflow to discover potential prospects for your campaign</p>
+        <button className="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+          Start Workflow
+        </button>
       </div>
     )
   }
