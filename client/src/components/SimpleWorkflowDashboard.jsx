@@ -22,7 +22,7 @@ import JobRightProspectCard from './JobRightProspectCard';
 import JobRightEmailCard from './JobRightEmailCard';
 import ProfessionalEmailEditor from './ProfessionalEmailEditor';
 import TemplateSelectionModal from './TemplateSelectionModal';
-import CompanyDetailPage from './CompanyDetailPage';
+import ComprehensiveCompanyDetailPage from './ComprehensiveCompanyDetailPage';
 import AgentStatusNotification, { AgentActivityPanel } from './AgentStatusNotification';
 import UserActionReminder from './UserActionReminder';
 import ProcessNotifications from './ProcessNotifications';
@@ -5411,7 +5411,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               <div className="p-6">
                 {/* Show company detail view or prospects list */}
                 {showCompanyDetail && selectedProspectForDetail ? (
-                  <CompanyDetailPage
+                  <ComprehensiveCompanyDetailPage
                     prospect={selectedProspectForDetail}
                     onBack={() => {
                       setShowCompanyDetail(false);
