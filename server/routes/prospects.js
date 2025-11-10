@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const OllamaSearxNGEmailDiscovery = require('../agents/OllamaSearxNGEmailDiscovery');
+const EnhancedEmailSearchAgent = require('../agents/EnhancedEmailSearchAgent');
 
 /**
  * POST /api/prospects/search
- * Real prospect search endpoint using Ollama + SearxNG
+ * Real prospect search endpoint using SuperEmailDiscoveryEngine.py (with SearxNG)
  *
  * Accepts:
  * - query: search query string
@@ -34,48 +34,50 @@ router.post('/search', async (req, res) => {
 
     console.log(`🎯 Searching for prospects in: ${industry}`);
     console.log(`🎯 Target audience: ${targetAudience}`);
+    console.log(`🌐 SearxNG URL: ${process.env.SEARXNG_URL || 'http://localhost:8080'}`);
 
-    // Use Ollama + SearxNG for REAL prospect search (no Scrapingdog API needed!)
-    const emailDiscovery = new OllamaSearxNGEmailDiscovery();
+    // Use SuperEmailDiscoveryEngine.py (uses SearxNG internally)
+    const emailSearchAgent = new EnhancedEmailSearchAgent();
 
     let formattedProspects = [];
     let isRealData = false;
     let searchMethod = 'mock_fallback';
 
     try {
-      // Search for real prospects using Ollama + SearxNG (local, no API keys needed!)
-      console.log(`🤖 Calling Ollama + SearxNG with industry: "${industry}" and limit: ${limit}`);
-      const result = await emailDiscovery.discoverEmailsWithProfiles(industry, limit);
+      // Search for real prospects using SuperEmailDiscoveryEngine.py
+      console.log(`🚀 Calling SuperEmailDiscoveryEngine.py with industry: "${industry}" and limit: ${limit}`);
+      const result = await emailSearchAgent.searchEmails(industry, limit);
+
+      console.log(`📊 Search result:`, { success: result.success, prospectsCount: result.prospects?.length || 0 });
 
       if (result.success && result.prospects && result.prospects.length > 0) {
         const prospects = result.prospects;
-        console.log(`✅ Found ${prospects.length} REAL prospects from Ollama + SearxNG`);
+        console.log(`✅ Found ${prospects.length} REAL prospects from SuperEmailDiscoveryEngine`);
 
         // Format prospects for frontend
         formattedProspects = prospects.map((prospect, index) => ({
           name: prospect.name || `Prospect ${index + 1}`,
           email: prospect.email,
           company: prospect.company || 'Company',
-          role: prospect.role || 'Decision Maker',
+          role: prospect.estimatedRole || prospect.role || 'Decision Maker',
           location: prospect.location || 'Unknown',
           score: Math.round((prospect.confidence || 0.8) * 100),
-          source: prospect.source || 'ollama_searxng',
+          source: prospect.source || 'searxng',
           sourceUrl: prospect.sourceUrl || '',
-          verified: true, // Ollama + SearxNG provides verified results
-          metadata: {
-            profile: prospect.profile,
-            searchMetadata: prospect.searchMetadata
-          }
+          verified: prospect.emailVerified || false,
+          metadata: prospect.metadata || {}
         }));
 
         isRealData = true;
-        searchMethod = 'Ollama + SearxNG';
+        searchMethod = 'SuperEmailDiscoveryEngine (SearxNG)';
       } else {
-        console.warn(`⚠️ Ollama + SearxNG returned no results, using fallback mock data`);
+        console.warn(`⚠️ SuperEmailDiscoveryEngine returned no results, using fallback mock data`);
+        console.warn(`⚠️ This may be due to SearxNG service issues or no emails found for: ${industry}`);
         formattedProspects = generateMockProspects(industry, targetAudience, businessName, limit);
       }
     } catch (searchError) {
-      console.error(`❌ Ollama + SearxNG search failed: ${searchError.message}`);
+      console.error(`❌ SuperEmailDiscoveryEngine search failed:`, searchError.message);
+      console.error(`❌ Stack trace:`, searchError.stack);
       console.log(`🎭 Using fallback mock prospects for testing`);
       formattedProspects = generateMockProspects(industry, targetAudience, businessName, limit);
     }
