@@ -1611,20 +1611,21 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
+      {/* MUCH WIDER MODAL - ALMOST FULL SCREEN */}
+      <div className="bg-white rounded-2xl shadow-2xl max-w-[95vw] w-full max-h-[95vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">Choose Email Template</h2>
-            <p className="text-gray-600 mt-1 font-medium">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Choose Email Template</h2>
+            <p className="text-gray-700 text-base font-medium">
               {templateRequest ?
-                `⚡ Found ${templateRequest.prospectsFound} prospects! Select a template to start generating personalized emails. (Template selection is required)` :
+                `⚡ Found ${templateRequest.prospectsFound} prospects! Select a template to start generating personalized emails.` :
                 '⚡ Select a template to continue. (Template selection is required to start email generation)'
               }
             </p>
             {templateRequest && templateRequest.sampleProspects && (
-              <div className="mt-2 text-sm text-gray-500">
+              <div className="mt-2 text-sm text-gray-600">
                 Sample prospects: {templateRequest.sampleProspects.map(p => p.company).join(', ')}
               </div>
             )}
@@ -1632,56 +1633,65 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           {/* ❌ X button REMOVED - Template selection is REQUIRED to continue workflow */}
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[70vh]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Content - MUCH LARGER PREVIEW CARDS */}
+        <div className="p-8 overflow-y-auto max-h-[75vh]">
+          {/* 2 COLUMNS INSTEAD OF 3 - WIDER CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
             {Object.entries(EMAIL_TEMPLATES).map(([key, template]) => (
               <div
                 key={key}
                 className={`relative cursor-pointer transition-all duration-300 ${
                   selectedTemplate === key
-                    ? 'ring-4 ring-green-500 shadow-2xl transform scale-105'
-                    : 'hover:shadow-xl hover:scale-102 hover:ring-2 hover:ring-green-300'
-                } bg-white border-2 rounded-xl overflow-hidden`}
+                    ? 'ring-4 ring-green-500 shadow-2xl transform scale-[1.02]'
+                    : 'hover:shadow-xl hover:scale-[1.01] hover:ring-2 hover:ring-green-300'
+                } bg-white border-2 rounded-2xl overflow-hidden`}
                 style={{
-                  borderColor: selectedTemplate === key ? '#00f5a0' : 'rgba(0,245,160,0.2)'
+                  borderColor: selectedTemplate === key ? '#00f5a0' : 'rgba(0,245,160,0.2)',
+                  minHeight: '700px'
                 }}
                 onClick={() => handleTemplateSelect(key)}
               >
-                {/* Template Preview - Full Email Structure */}
-                <div className="p-3 bg-white flex items-start justify-center" style={{ minHeight: '890px' }}>
-                  {renderTemplatePreview(template)}
-                </div>
-
-                {/* Template Info */}
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">{template.name}</h3>
-                    {selectedTemplate === key && (
-                      <div className="bg-green-500 text-white rounded-full p-1">
-                        <Check size={16} />
-                      </div>
-                    )}
+                {/* FULL EMAIL BODY PREVIEW - TAKES UP ENTIRE CARD */}
+                <div className="h-full flex flex-col">
+                  {/* Small Template Name Header */}
+                  <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-bold text-gray-900 text-base">{template.name}</h3>
+                      {selectedTemplate === key && (
+                        <div className="bg-green-500 text-white rounded-full px-2 py-0.5 text-xs font-medium flex items-center gap-1">
+                          <Check size={12} />
+                          Selected
+                        </div>
+                      )}
+                    </div>
+                    {/* Compact Action Buttons */}
+                    <div className="flex gap-1">
+                      <button
+                        onClick={(e) => handlePreview(key, e)}
+                        className="flex items-center justify-center gap-1 px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+                        title="Full Preview"
+                      >
+                        <Eye size={12} />
+                        Preview
+                      </button>
+                      {selectedTemplate === key && (
+                        <button
+                          onClick={(e) => handleCustomize(key, e)}
+                          className="flex items-center justify-center gap-1 px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                          title="Customize Template"
+                        >
+                          <Edit3 size={12} />
+                          Edit
+                        </button>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={(e) => handlePreview(key, e)}
-                      className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                    >
-                      <Eye size={14} />
-                      Preview
-                    </button>
-                    {selectedTemplate === key && (
-                      <button
-                        onClick={(e) => handleCustomize(key, e)}
-                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-                      >
-                        <Edit3 size={14} />
-                        Customize
-                      </button>
-                    )}
+                  {/* MASSIVE EMAIL PREVIEW - FILLS THE REST OF THE CARD */}
+                  <div className="flex-1 p-6 bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6" style={{ minHeight: '600px' }}>
+                      {renderTemplatePreview(template)}
+                    </div>
                   </div>
                 </div>
               </div>

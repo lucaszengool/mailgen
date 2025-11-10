@@ -291,11 +291,17 @@ router.post('/select', optionalAuth, async (req, res) => {
         console.log('🔍 Current agent state keys:', agent.state ? Object.keys(agent.state) : 'No state');
 
         // Try to retrieve stored workflow results if available
+        console.log(`🔍 [User: ${userId}] Attempting to retrieve stored workflow results for campaign: ${campaignId || 'default'}...`);
         const workflowRoute = require('./workflow');
         if (workflowRoute.getLastWorkflowResults) {
-          const storedResults = workflowRoute.getLastWorkflowResults();
+          const storedResults = await workflowRoute.getLastWorkflowResults(userId, campaignId);
+          console.log(`🔍 [User: ${userId}] Stored results retrieved:`, {
+            found: !!storedResults,
+            hasProspects: !!(storedResults && storedResults.prospects),
+            prospectsCount: storedResults?.prospects?.length || 0
+          });
           if (storedResults && storedResults.prospects && storedResults.prospects.length > 0) {
-            console.log(`📦 Found stored workflow results with ${storedResults.prospects.length} prospects`);
+            console.log(`📦 [User: ${userId}] Found stored workflow results with ${storedResults.prospects.length} prospects`);
 
             // Resume with stored results
             const waitingState = {
@@ -342,16 +348,35 @@ router.post('/select', optionalAuth, async (req, res) => {
               console.log('✨ Custom properties (stored path):', Object.keys(templateData.customizations));
             }
 
+            console.log('🚀🚀🚀 CALLING continueWithSelectedTemplate (stored results path)...');
+            console.log(`   📊 Prospects: ${waitingState.prospects.length}`);
+            console.log(`   📧 Template: ${templateId}`);
+            console.log(`   🎨 Customized: ${enhancedTemplate.isCustomized}`);
+
             setTimeout(async () => {
               try {
+                console.log('🚀 Executing continueWithSelectedTemplate NOW...');
                 await agent.continueWithSelectedTemplate(templateId, waitingState, enhancedTemplate);
+                console.log('✅ continueWithSelectedTemplate completed successfully');
               } catch (error) {
                 console.error('❌ Failed to resume with stored results:', error);
+                console.error('❌ Error stack:', error.stack);
               }
             }, 100);
+          } else {
+            console.log(`❌ [User: ${userId}] No stored workflow results found or no prospects available`);
+            console.log('🔍 Stored results detail:', {
+              hasStoredResults: !!storedResults,
+              hasProspects: !!(storedResults && storedResults.prospects),
+              prospectsLength: storedResults?.prospects?.length
+            });
           }
+        } else {
+          console.log('❌ getLastWorkflowResults function not available');
         }
       }
+    } else {
+      console.log('❌ LangGraph agent not available');
     }
 
     res.json({
