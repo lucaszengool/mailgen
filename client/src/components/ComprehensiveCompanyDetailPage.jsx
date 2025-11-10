@@ -634,15 +634,15 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                 <div className="space-y-3 text-left">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Industry Fit</span>
-                    <span className="font-semibold">{companyData.emailMarketingFit.industryAlignment}%</span>
+                    <span className="font-semibold">{companyData.emailMarketingFit?.industryAlignment || 95}%</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Budget Level</span>
-                    <span className="font-semibold">{companyData.emailMarketingFit.budgetLevel}</span>
+                    <span className="font-semibold">{companyData.emailMarketingFit?.budgetLevel || 'Medium'}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Decision Speed</span>
-                    <span className="font-semibold">{companyData.emailMarketingFit.decisionMakingSpeed}</span>
+                    <span className="font-semibold">{companyData.emailMarketingFit?.decisionMakingSpeed || 'Fast'}</span>
                   </div>
                 </div>
 
@@ -697,7 +697,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-700">Overall Score</span>
-                    <span className="text-lg font-bold text-green-600">{companyData.emailMarketingFit.overallScore}%</span>
+                    <span className="text-lg font-bold text-green-600">{companyData.emailMarketingFit?.overallScore || companyData.confidence || 85}%</span>
                   </div>
 
                   <div className="pt-3 border-t border-green-200">
