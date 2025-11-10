@@ -410,7 +410,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               </h2>
 
               <div className="space-y-3">
-                {companyData.valuePropositions.map((value, idx) => (
+                {(companyData.valuePropositions || []).map((value, idx) => (
                   <div key={idx} className="flex items-start space-x-3">
                     <CheckCircleIcon className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                     <span className="text-gray-700">{value}</span>
@@ -427,7 +427,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               </h2>
 
               <div className="grid grid-cols-1 gap-6">
-                {companyData.targetPersonas.map((persona, idx) => (
+                {(companyData.targetPersonas || []).map((persona, idx) => (
                   <div key={idx} className="border border-gray-200 rounded-xl p-5 hover:border-green-200 transition-colors">
                     <div className="flex items-start justify-between mb-3">
                       <h3 className="font-bold text-gray-900">{persona.role}</h3>
@@ -457,7 +457,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               </h2>
 
               <div className="flex flex-wrap gap-3">
-                {companyData.techStack.map((tech, idx) => (
+                {(companyData.techStack || []).map((tech, idx) => (
                   <span
                     key={idx}
                     className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
@@ -496,14 +496,16 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="mb-6">
                 <h3 className="text-base font-semibold text-gray-900 mb-4">Funding Growth Trend</h3>
                 <div className="space-y-3">
-                  {companyData.funding.yearlyFunding.map((data, idx) => (
+                  {((companyData.funding && companyData.funding.yearlyFunding) || []).map((data, idx) => {
+                    const maxAmount = Math.max(...((companyData.funding && companyData.funding.yearlyFunding) || []).map(d => d.amount || 0));
+                    return (
                     <div key={idx} className="flex items-center space-x-4">
                       <span className="text-sm font-medium text-gray-700 w-16">{data.year}</span>
                       <div className="flex-1 h-8 bg-gray-100 rounded-lg overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-end pr-3 transition-all"
                           style={{
-                            width: `${(data.amount / Math.max(...companyData.funding.yearlyFunding.map(d => d.amount))) * 100}%`,
+                            width: `${maxAmount > 0 ? (data.amount / maxAmount) * 100 : 0}%`,
                             minWidth: '60px'
                           }}
                         >
@@ -511,7 +513,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
 
@@ -529,7 +531,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               </h2>
 
               <div className="grid grid-cols-2 gap-6">
-                {companyData.leadership.map((leader, idx) => (
+                {(companyData.leadership || []).map((leader, idx) => (
                   <div key={idx} className="flex items-start space-x-4">
                     <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {leader.photo ? (
@@ -556,7 +558,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               </h2>
 
               <div className="space-y-4">
-                {companyData.news.map((article, idx) => (
+                {(companyData.news || []).map((article, idx) => (
                   <div key={idx} className="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -701,7 +703,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                   <div className="pt-3 border-t border-green-200">
                     <div className="text-sm font-medium text-gray-700 mb-2">Key Pain Points:</div>
                     <div className="space-y-2">
-                      {companyData.emailMarketingFit.painPoints.map((point, idx) => (
+                      {((companyData.emailMarketingFit && companyData.emailMarketingFit.painPoints) || []).map((point, idx) => (
                         <div key={idx} className="flex items-start space-x-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5"></div>
                           <span className="text-sm text-gray-600">{point}</span>
