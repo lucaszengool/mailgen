@@ -1349,10 +1349,10 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
     const isSelected = selectedTemplate === template.id;
     const accentColor = '#00f5a0'; // Always use brand green
 
-    // Common wrapper style for all previews
+    // Common wrapper style for all previews - REDUCED SIZE
     const previewWrapper = {
       width: '100%',
-      height: '850px',
+      height: '340px',
       overflow: 'hidden',
       position: 'relative',
       backgroundColor: 'white',
@@ -1360,55 +1360,57 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       display: 'flex',
       alignItems: 'flex-start',
       justifyContent: 'center',
-      padding: '20px'
+      padding: '8px'
     };
 
     const emailContainer = {
-      transform: 'scale(0.58)',
+      transform: 'scale(0.45)',
       transformOrigin: 'top center',
       width: '600px',
-      fontFamily: "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      fontFamily: "'Inter', 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
       backgroundColor: 'white',
       boxShadow: isSelected
-        ? '0 20px 60px rgba(0,245,160,0.25), 0 8px 20px rgba(0,0,0,0.1)'
-        : '0 10px 40px rgba(0,245,160,0.15), 0 4px 12px rgba(0,0,0,0.08)',
-      border: `3px solid ${isSelected ? accentColor : 'rgba(0,245,160,0.3)'}`,
-      borderRadius: '16px',
+        ? '0 25px 70px rgba(0,245,160,0.3), 0 10px 25px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6)'
+        : '0 15px 50px rgba(0,245,160,0.18), 0 5px 15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.4)',
+      border: `3px solid ${isSelected ? accentColor : 'rgba(0,245,160,0.35)'}`,
+      borderRadius: '20px',
       overflow: 'hidden',
-      transition: 'all 0.3s ease'
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      backdropFilter: 'blur(20px)'
     };
 
-    // Professional Partnership - Live Preview
+    // Professional Partnership - Live Preview (ENHANCED)
     if (template.id === 'professional_partnership') {
       return (
         <div style={previewWrapper}>
           <div style={emailContainer}>
-            <div style={{ textAlign: 'center', padding: '25px', background: `linear-gradient(135deg, ${accentColor} 0%, rgba(0,245,160,0.7) 100%)`, borderBottom: `3px solid ${accentColor}` }}>
-              <div style={{ width: '140px', height: '45px', backgroundColor: 'white', margin: '0 auto', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 'bold', fontSize: '18px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>COMPANY</div>
-              <p style={{ margin: '12px 0 0', color: 'white', fontSize: '15px', fontWeight: '600' }}>Building Strategic Partnerships</p>
+            <div style={{ textAlign: 'center', padding: '32px 40px', background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 50%, rgba(0,245,160,0.85) 100%)`, borderBottom: `4px solid ${accentColor}`, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at top right, rgba(255,255,255,0.15) 0%, transparent 60%)', pointerEvents: 'none' }}></div>
+              <div style={{ width: '160px', height: '52px', backgroundColor: 'white', margin: '0 auto', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1a1a1a', fontWeight: '900', fontSize: '20px', letterSpacing: '1px', boxShadow: '0 8px 24px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15)', position: 'relative', border: '2px solid rgba(0,245,160,0.2)' }}>COMPANY</div>
+              <p style={{ margin: '18px 0 0', color: 'white', fontSize: '17px', fontWeight: '700', letterSpacing: '0.3px', textShadow: '0 2px 12px rgba(0,0,0,0.15)' }}>Building Strategic Partnerships</p>
             </div>
-            <div style={{ padding: '45px 35px', background: 'white' }}>
-              <h2 style={{ color: '#1a1a1a', margin: '0 0 25px', fontSize: '26px', fontWeight: '700' }}>Hello John!</h2>
-              <p style={{ fontSize: '17px', lineHeight: '1.7', color: '#333', margin: '0 0 25px' }}>
-                I noticed your company's innovative work...
+            <div style={{ padding: '50px 40px', background: 'linear-gradient(to bottom, white 0%, rgba(248,250,252,1) 100%)' }}>
+              <h2 style={{ color: '#0f172a', margin: '0 0 28px', fontSize: '30px', fontWeight: '800', letterSpacing: '-0.5px', lineHeight: '1.2' }}>Hello John!</h2>
+              <p style={{ fontSize: '18px', lineHeight: '1.8', color: '#475569', margin: '0 0 28px', fontWeight: '500' }}>
+                I noticed your company's innovative work in transforming the industry landscape...
               </p>
-              <div style={{ textAlign: 'center', margin: '35px 0' }}>
-                <div style={{ display: 'inline-block', background: accentColor, color: 'black', padding: '16px 35px', borderRadius: '10px', fontWeight: '700', fontSize: '17px', boxShadow: `0 8px 25px rgba(0,245,160,0.4)`, transform: 'translateY(0)', transition: 'transform 0.2s' }}>
+              <div style={{ textAlign: 'center', margin: '42px 0' }}>
+                <div style={{ display: 'inline-block', background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 100%)`, color: '#0f172a', padding: '18px 42px', borderRadius: '14px', fontWeight: '800', fontSize: '18px', boxShadow: `0 12px 32px rgba(0,245,160,0.45), 0 4px 12px rgba(0,245,160,0.25)`, letterSpacing: '0.3px', border: '2px solid rgba(255,255,255,0.3)' }}>
                   Schedule Meeting
                 </div>
               </div>
-              <p style={{ fontSize: '17px', lineHeight: '1.7', color: '#333', margin: '25px 0' }}>
-                We'd love to explore partnership opportunities...
+              <p style={{ fontSize: '18px', lineHeight: '1.8', color: '#475569', margin: '28px 0', fontWeight: '500' }}>
+                We'd love to explore strategic partnership opportunities that drive mutual growth...
               </p>
-              <div style={{ background: `linear-gradient(to right, rgba(0,245,160,0.08) 0%, white 100%)`, borderLeft: `5px solid ${accentColor}`, padding: '20px', margin: '30px 0', borderRadius: '0 10px 10px 0', boxShadow: '0 4px 15px rgba(0,245,160,0.1)' }}>
-                <p style={{ margin: '0', fontStyle: 'italic', color: '#2a2a2a', fontSize: '15px', fontWeight: '500' }}>
-                  "Great results from our partnership" - CEO
+              <div style={{ background: `linear-gradient(120deg, rgba(0,245,160,0.12) 0%, rgba(0,217,145,0.08) 50%, white 100%)`, borderLeft: `6px solid ${accentColor}`, padding: '24px 28px', margin: '35px 0', borderRadius: '0 16px 16px 0', boxShadow: '0 6px 20px rgba(0,245,160,0.15), inset 0 1px 0 rgba(255,255,255,0.5)' }}>
+                <p style={{ margin: '0', fontStyle: 'italic', color: '#1e293b', fontSize: '17px', fontWeight: '600', lineHeight: '1.6' }}>
+                  "Great results from our partnership exceeded all expectations" <span style={{ color: '#64748b', fontWeight: '500', display: 'block', marginTop: '8px', fontSize: '15px' }}>— CEO, Fortune 500 Company</span>
                 </p>
               </div>
             </div>
-            <div style={{ padding: '25px 35px', background: `linear-gradient(to bottom, white 0%, rgba(0,245,160,0.05) 100%)`, borderTop: `2px solid ${accentColor}` }}>
-              <p style={{ margin: '0', color: '#555', fontSize: '15px', lineHeight: '1.6' }}>
-                Best regards,<br/><strong style={{ color: '#1a1a1a' }}>Team</strong>
+            <div style={{ padding: '28px 40px', background: `linear-gradient(to bottom, rgba(248,250,252,1) 0%, rgba(241,245,249,1) 100%)`, borderTop: `3px solid ${accentColor}` }}>
+              <p style={{ margin: '0', color: '#64748b', fontSize: '16px', lineHeight: '1.7', fontWeight: '500' }}>
+                Best regards,<br/><strong style={{ color: '#0f172a', fontSize: '17px', fontWeight: '700' }}>James Anderson</strong><br/><span style={{ color: '#94a3b8', fontSize: '14px' }}>Strategic Partnerships Director</span>
               </p>
             </div>
           </div>
@@ -1416,31 +1418,32 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       );
     }
 
-    // Modern Tech - Live Preview
+    // Modern Tech - Live Preview (ENHANCED)
     if (template.id === 'modern_tech') {
       return (
         <div style={previewWrapper}>
           <div style={emailContainer}>
-            <div style={{ background: `linear-gradient(135deg, ${accentColor} 0%, rgba(0,245,160,0.8) 100%)`, padding: '45px 35px', textAlign: 'center', borderBottom: `3px solid ${accentColor}` }}>
-              <h1 style={{ margin: '0 0 12px', fontSize: '32px', fontWeight: '800', color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>Transform Your Business</h1>
-              <p style={{ margin: '0', fontSize: '17px', color: 'white', fontWeight: '500' }}>Cutting-edge AI solutions</p>
+            <div style={{ background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 50%, #00c785 100%)`, padding: '50px 40px', textAlign: 'center', borderBottom: `4px solid ${accentColor}`, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '-50%', right: '-20%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
+              <h1 style={{ margin: '0 0 14px', fontSize: '36px', fontWeight: '900', color: 'white', textShadow: '0 4px 16px rgba(0,0,0,0.2)', letterSpacing: '-1px', position: 'relative' }}>Transform Your Business</h1>
+              <p style={{ margin: '0', fontSize: '18px', color: 'rgba(255,255,255,0.95)', fontWeight: '700', letterSpacing: '0.5px', textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>Next-Generation AI Solutions</p>
             </div>
-            <div style={{ padding: '40px 35px', background: 'white' }}>
-              <p style={{ fontSize: '18px', lineHeight: '1.7', color: '#333', margin: '0 0 30px' }}>
-                Innovation and technology trends...
+            <div style={{ padding: '45px 40px', background: 'linear-gradient(to bottom, white 0%, rgba(250,251,252,1) 100%)' }}>
+              <p style={{ fontSize: '19px', lineHeight: '1.85', color: '#334155', margin: '0 0 32px', fontWeight: '500' }}>
+                Harness the power of cutting-edge AI to revolutionize your operations and accelerate growth...
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', margin: '30px 0', padding: '30px', background: `linear-gradient(135deg, ${accentColor} 0%, rgba(0,245,160,0.85) 100%)`, borderRadius: '12px', color: 'black', boxShadow: `0 10px 35px rgba(0,245,160,0.3)` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', margin: '35px 0', padding: '35px 30px', background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 50%, #00c785 100%)`, borderRadius: '18px', color: '#0f172a', boxShadow: `0 16px 48px rgba(0,245,160,0.35), 0 4px 12px rgba(0,245,160,0.2)`, border: '3px solid rgba(255,255,255,0.3)' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '36px', fontWeight: '800', marginBottom: '10px' }}>10x</div>
-                  <div style={{ fontSize: '16px', fontWeight: '600' }}>Faster</div>
+                  <div style={{ fontSize: '42px', fontWeight: '900', marginBottom: '12px', textShadow: '0 2px 8px rgba(0,0,0,0.15)', letterSpacing: '-1px' }}>10x</div>
+                  <div style={{ fontSize: '17px', fontWeight: '700', letterSpacing: '0.5px' }}>Faster Results</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '36px', fontWeight: '800', marginBottom: '10px' }}>40%</div>
-                  <div style={{ fontSize: '16px', fontWeight: '600' }}>Savings</div>
+                  <div style={{ fontSize: '42px', fontWeight: '900', marginBottom: '12px', textShadow: '0 2px 8px rgba(0,0,0,0.15)', letterSpacing: '-1px' }}>40%</div>
+                  <div style={{ fontSize: '17px', fontWeight: '700', letterSpacing: '0.5px' }}>Cost Savings</div>
                 </div>
               </div>
-              <div style={{ textAlign: 'center', margin: '35px 0' }}>
-                <div style={{ display: 'inline-block', background: accentColor, color: 'black', padding: '18px 40px', borderRadius: '12px', fontWeight: '700', fontSize: '18px', boxShadow: `0 10px 30px rgba(0,245,160,0.4)` }}>
+              <div style={{ textAlign: 'center', margin: '38px 0 0' }}>
+                <div style={{ display: 'inline-block', background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 100%)`, color: '#0f172a', padding: '20px 48px', borderRadius: '16px', fontWeight: '800', fontSize: '19px', boxShadow: `0 14px 36px rgba(0,245,160,0.45), 0 4px 12px rgba(0,245,160,0.25)`, letterSpacing: '0.3px', border: '2px solid rgba(255,255,255,0.4)' }}>
                   Start Free Trial →
                 </div>
               </div>
@@ -1450,36 +1453,36 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       );
     }
 
-    // Executive Outreach - Live Preview
+    // Executive Outreach - Live Preview (ENHANCED)
     if (template.id === 'executive_outreach') {
       return (
         <div style={previewWrapper}>
           <div style={emailContainer}>
-            <div style={{ borderBottom: `4px solid ${accentColor}`, paddingBottom: '20px', padding: '35px 35px 20px', background: `linear-gradient(to bottom, white 0%, rgba(0,245,160,0.03) 100%)` }}>
-              <div style={{ fontSize: '26px', fontWeight: '800', color: '#1a1a1a', letterSpacing: '-0.5px' }}>Strategic Partnership Proposal</div>
+            <div style={{ borderBottom: `5px solid ${accentColor}`, paddingBottom: '24px', padding: '38px 40px 24px', background: `linear-gradient(to bottom, white 0%, rgba(248,250,252,1) 100%)`, boxShadow: 'inset 0 -1px 0 rgba(0,245,160,0.1)' }}>
+              <div style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.7px', lineHeight: '1.2' }}>Strategic Partnership Proposal</div>
             </div>
-            <div style={{ padding: '40px 35px', background: 'white' }}>
-              <p style={{ fontSize: '17px', color: '#555', margin: '0 0 20px', fontWeight: '500' }}>Dear Mr. Johnson,</p>
-              <p style={{ fontSize: '18px', lineHeight: '1.7', color: '#333', margin: '0 0 30px' }}>
-                Our analysis shows significant synergy between our organizations...
+            <div style={{ padding: '45px 40px', background: 'linear-gradient(to bottom, white 0%, rgba(250,251,252,1) 100%)' }}>
+              <p style={{ fontSize: '18px', color: '#64748b', margin: '0 0 24px', fontWeight: '600' }}>Dear Mr. Johnson,</p>
+              <p style={{ fontSize: '19px', lineHeight: '1.85', color: '#334155', margin: '0 0 32px', fontWeight: '500' }}>
+                Our comprehensive analysis reveals significant synergies between our organizations, presenting unprecedented opportunities for strategic collaboration...
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', margin: '30px 0', padding: '25px', background: `linear-gradient(135deg, rgba(0,245,160,0.12) 0%, rgba(0,245,160,0.05) 100%)`, borderRadius: '12px', border: `2px solid rgba(0,245,160,0.3)` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '18px', margin: '35px 0', padding: '30px 25px', background: `linear-gradient(135deg, rgba(0,245,160,0.15) 0%, rgba(0,217,145,0.08) 100%)`, borderRadius: '16px', border: `3px solid rgba(0,245,160,0.35)`, boxShadow: '0 8px 24px rgba(0,245,160,0.18)' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '30px', fontWeight: '800', color: accentColor, marginBottom: '8px', textShadow: '0 2px 8px rgba(0,245,160,0.2)' }}>$2.5M</div>
-                  <div style={{ fontSize: '13px', color: '#1a1a1a', fontWeight: '600' }}>Revenue</div>
+                  <div style={{ fontSize: '34px', fontWeight: '900', color: '#00f5a0', marginBottom: '10px', textShadow: '0 3px 12px rgba(0,245,160,0.25)', letterSpacing: '-1px' }}>$2.5M</div>
+                  <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '700', letterSpacing: '0.3px' }}>Revenue</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '30px', fontWeight: '800', color: accentColor, marginBottom: '8px', textShadow: '0 2px 8px rgba(0,245,160,0.2)' }}>150%</div>
-                  <div style={{ fontSize: '13px', color: '#1a1a1a', fontWeight: '600' }}>Growth</div>
+                  <div style={{ fontSize: '34px', fontWeight: '900', color: '#00f5a0', marginBottom: '10px', textShadow: '0 3px 12px rgba(0,245,160,0.25)', letterSpacing: '-1px' }}>150%</div>
+                  <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '700', letterSpacing: '0.3px' }}>Growth</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '30px', fontWeight: '800', color: accentColor, marginBottom: '8px', textShadow: '0 2px 8px rgba(0,245,160,0.2)' }}>45K</div>
-                  <div style={{ fontSize: '13px', color: '#1a1a1a', fontWeight: '600' }}>Users</div>
+                  <div style={{ fontSize: '34px', fontWeight: '900', color: '#00f5a0', marginBottom: '10px', textShadow: '0 3px 12px rgba(0,245,160,0.25)', letterSpacing: '-1px' }}>45K</div>
+                  <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '700', letterSpacing: '0.3px' }}>Users</div>
                 </div>
               </div>
-              <div style={{ background: `linear-gradient(to right, rgba(0,245,160,0.1) 0%, white 100%)`, borderLeft: `5px solid ${accentColor}`, padding: '20px', margin: '30px 0', borderRadius: '0 10px 10px 0', boxShadow: '0 4px 15px rgba(0,245,160,0.15)' }}>
-                <p style={{ margin: '0', fontStyle: 'italic', color: '#2a2a2a', fontSize: '15px', fontWeight: '500' }}>
-                  "Strategic vision aligned perfectly" - Board Member
+              <div style={{ background: `linear-gradient(120deg, rgba(0,245,160,0.12) 0%, rgba(0,217,145,0.06) 50%, white 100%)`, borderLeft: `6px solid ${accentColor}`, padding: '24px 28px', margin: '35px 0', borderRadius: '0 16px 16px 0', boxShadow: '0 6px 20px rgba(0,245,160,0.18), inset 0 1px 0 rgba(255,255,255,0.6)' }}>
+                <p style={{ margin: '0', fontStyle: 'italic', color: '#1e293b', fontSize: '17px', fontWeight: '600', lineHeight: '1.7' }}>
+                  "Strategic vision aligned perfectly with our long-term objectives" <span style={{ color: '#64748b', fontWeight: '500', display: 'block', marginTop: '8px', fontSize: '15px' }}>— Board Member, Global Fortune 100</span>
                 </p>
               </div>
             </div>
@@ -1488,26 +1491,27 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       );
     }
 
-    // Product Launch - Live Preview
+    // Product Launch - Live Preview (ENHANCED)
     if (template.id === 'product_launch') {
       return (
         <div style={previewWrapper}>
           <div style={emailContainer}>
-            <div style={{ background: `linear-gradient(135deg, ${accentColor} 0%, rgba(0,245,160,0.75) 100%)`, padding: '50px 35px', textAlign: 'center', color: 'white', boxShadow: 'inset 0 -2px 20px rgba(0,0,0,0.1)' }}>
-              <div style={{ fontSize: '42px', marginBottom: '15px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }}>🚀</div>
-              <h1 style={{ margin: '0 0 12px', fontSize: '32px', fontWeight: '800', textShadow: '0 2px 10px rgba(0,0,0,0.15)' }}>Exclusive Launch</h1>
-              <p style={{ margin: '0', fontSize: '17px', fontWeight: '500' }}>Be the first to experience innovation</p>
+            <div style={{ background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 50%, #00c785 100%)`, padding: '55px 40px', textAlign: 'center', color: 'white', boxShadow: 'inset 0 -2px 20px rgba(0,0,0,0.12)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '-30%', left: '-10%', width: '250px', height: '250px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
+              <div style={{ fontSize: '48px', marginBottom: '18px', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.25))', position: 'relative' }}>🚀</div>
+              <h1 style={{ margin: '0 0 14px', fontSize: '36px', fontWeight: '900', textShadow: '0 4px 16px rgba(0,0,0,0.2)', letterSpacing: '-1px', position: 'relative' }}>Exclusive Launch</h1>
+              <p style={{ margin: '0', fontSize: '18px', fontWeight: '700', letterSpacing: '0.5px', textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>Be the first to experience innovation</p>
             </div>
-            <div style={{ padding: '40px 35px', background: 'white' }}>
-              <p style={{ fontSize: '18px', lineHeight: '1.7', color: '#333', margin: '0 0 30px' }}>
-                Revolutionary new platform launching next week...
+            <div style={{ padding: '45px 40px', background: 'linear-gradient(to bottom, white 0%, rgba(250,251,252,1) 100%)' }}>
+              <p style={{ fontSize: '19px', lineHeight: '1.85', color: '#334155', margin: '0 0 32px', fontWeight: '500' }}>
+                Revolutionary new platform launching next week with unprecedented capabilities to transform your workflow...
               </p>
-              <div style={{ background: `linear-gradient(135deg, ${accentColor} 0%, rgba(0,245,160,0.8) 100%)`, borderRadius: '12px', padding: '30px', color: 'black', textAlign: 'center', margin: '30px 0', boxShadow: `0 15px 40px rgba(0,245,160,0.35)` }}>
-                <div style={{ fontSize: '16px', marginBottom: '12px', fontWeight: '700', letterSpacing: '1px' }}>LIMITED SPOTS</div>
-                <div style={{ fontSize: '48px', fontWeight: '900' }}>50 Only</div>
+              <div style={{ background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 50%, #00c785 100%)`, borderRadius: '18px', padding: '35px 30px', color: '#0f172a', textAlign: 'center', margin: '35px 0', boxShadow: `0 18px 48px rgba(0,245,160,0.4), 0 6px 16px rgba(0,245,160,0.2)`, border: '3px solid rgba(255,255,255,0.4)' }}>
+                <div style={{ fontSize: '17px', marginBottom: '14px', fontWeight: '800', letterSpacing: '1.5px', textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>LIMITED SPOTS</div>
+                <div style={{ fontSize: '52px', fontWeight: '900', letterSpacing: '-2px', textShadow: '0 3px 12px rgba(0,0,0,0.15)' }}>50 Only</div>
               </div>
-              <div style={{ textAlign: 'center', margin: '35px 0' }}>
-                <div style={{ display: 'inline-block', background: accentColor, color: 'black', padding: '18px 40px', borderRadius: '12px', fontWeight: '700', fontSize: '18px', boxShadow: `0 10px 30px rgba(0,245,160,0.4)` }}>
+              <div style={{ textAlign: 'center', margin: '38px 0 0' }}>
+                <div style={{ display: 'inline-block', background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 100%)`, color: '#0f172a', padding: '20px 48px', borderRadius: '16px', fontWeight: '800', fontSize: '19px', boxShadow: `0 14px 36px rgba(0,245,160,0.45), 0 4px 12px rgba(0,245,160,0.25)`, letterSpacing: '0.3px', border: '2px solid rgba(255,255,255,0.4)' }}>
                   Get Early Access →
                 </div>
               </div>
@@ -1517,28 +1521,28 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       );
     }
 
-    // Consultative Sales - Live Preview
+    // Consultative Sales - Live Preview (ENHANCED)
     if (template.id === 'consultative_sales') {
       return (
         <div style={previewWrapper}>
           <div style={emailContainer}>
-            <div style={{ padding: '35px', borderBottom: `4px solid ${accentColor}`, background: `linear-gradient(to bottom, white 0%, rgba(0,245,160,0.04) 100%)` }}>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: '#1a1a1a', letterSpacing: '-0.3px' }}>Strategic Assessment Invitation</div>
+            <div style={{ padding: '38px 40px', borderBottom: `5px solid ${accentColor}`, background: `linear-gradient(to bottom, white 0%, rgba(248,250,252,1) 100%)`, boxShadow: 'inset 0 -1px 0 rgba(0,245,160,0.1)' }}>
+              <div style={{ fontSize: '26px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.6px' }}>Strategic Assessment Invitation</div>
             </div>
-            <div style={{ padding: '40px 35px', background: 'white' }}>
-              <p style={{ fontSize: '18px', lineHeight: '1.7', color: '#333', margin: '0 0 30px' }}>
-                Complimentary business review for {'{company}'}...
+            <div style={{ padding: '45px 40px', background: 'linear-gradient(to bottom, white 0%, rgba(250,251,252,1) 100%)' }}>
+              <p style={{ fontSize: '19px', lineHeight: '1.85', color: '#334155', margin: '0 0 32px', fontWeight: '500' }}>
+                Complimentary comprehensive business review designed specifically for {'{company}'}...
               </p>
-              <div style={{ background: `linear-gradient(135deg, rgba(0,245,160,0.15) 0%, rgba(0,245,160,0.08) 100%)`, borderRadius: '12px', padding: '25px', margin: '30px 0', border: `2px solid rgba(0,245,160,0.4)` }}>
-                <div style={{ fontWeight: '700', color: '#1a1a1a', marginBottom: '15px', fontSize: '16px' }}>What You'll Discover:</div>
-                <div style={{ fontSize: '16px', color: '#2a2a2a', lineHeight: '2', fontWeight: '500' }}>
-                  ✓ Hidden growth opportunities<br/>
-                  ✓ Cost optimization strategies<br/>
-                  ✓ Industry benchmarking
+              <div style={{ background: `linear-gradient(135deg, rgba(0,245,160,0.18) 0%, rgba(0,217,145,0.10) 100%)`, borderRadius: '16px', padding: '30px 28px', margin: '35px 0', border: `3px solid rgba(0,245,160,0.45)`, boxShadow: '0 8px 24px rgba(0,245,160,0.2)' }}>
+                <div style={{ fontWeight: '800', color: '#0f172a', marginBottom: '18px', fontSize: '18px', letterSpacing: '0.3px' }}>What You'll Discover:</div>
+                <div style={{ fontSize: '17px', color: '#1e293b', lineHeight: '2.1', fontWeight: '600' }}>
+                  ✓ Hidden growth opportunities and untapped revenue streams<br/>
+                  ✓ Cost optimization strategies with immediate ROI<br/>
+                  ✓ Competitive industry benchmarking and insights
                 </div>
               </div>
-              <div style={{ textAlign: 'center', margin: '35px 0' }}>
-                <div style={{ display: 'inline-block', background: accentColor, color: 'black', padding: '18px 40px', borderRadius: '12px', fontWeight: '700', fontSize: '18px', boxShadow: `0 10px 30px rgba(0,245,160,0.4)` }}>
+              <div style={{ textAlign: 'center', margin: '38px 0 0' }}>
+                <div style={{ display: 'inline-block', background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 100%)`, color: '#0f172a', padding: '20px 48px', borderRadius: '16px', fontWeight: '800', fontSize: '19px', boxShadow: `0 14px 36px rgba(0,245,160,0.45), 0 4px 12px rgba(0,245,160,0.25)`, letterSpacing: '0.3px', border: '2px solid rgba(255,255,255,0.4)' }}>
                   Schedule Assessment →
                 </div>
               </div>
@@ -1548,26 +1552,27 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       );
     }
 
-    // Event Invitation - Live Preview
+    // Event Invitation - Live Preview (ENHANCED)
     if (template.id === 'event_invitation') {
       return (
         <div style={previewWrapper}>
           <div style={emailContainer}>
-            <div style={{ background: `linear-gradient(135deg, ${accentColor} 0%, rgba(0,245,160,0.7) 100%)`, padding: '50px 35px', textAlign: 'center', color: 'white', boxShadow: 'inset 0 -2px 20px rgba(0,0,0,0.1)' }}>
-              <div style={{ fontSize: '42px', marginBottom: '15px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }}>🎯</div>
-              <h1 style={{ margin: '0 0 12px', fontSize: '30px', fontWeight: '800', textShadow: '0 2px 10px rgba(0,0,0,0.15)' }}>You're Invited!</h1>
-              <p style={{ margin: '0', fontSize: '17px', fontWeight: '500' }}>Annual Innovation Summit 2025</p>
+            <div style={{ background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 50%, #00c785 100%)`, padding: '55px 40px', textAlign: 'center', color: 'white', boxShadow: 'inset 0 -2px 20px rgba(0,0,0,0.12)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '-40%', right: '-15%', width: '280px', height: '280px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
+              <div style={{ fontSize: '48px', marginBottom: '18px', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.25))', position: 'relative' }}>🎯</div>
+              <h1 style={{ margin: '0 0 14px', fontSize: '34px', fontWeight: '900', textShadow: '0 4px 16px rgba(0,0,0,0.2)', letterSpacing: '-0.8px', position: 'relative' }}>You're Invited!</h1>
+              <p style={{ margin: '0', fontSize: '18px', fontWeight: '700', letterSpacing: '0.5px', textShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>Annual Innovation Summit 2025</p>
             </div>
-            <div style={{ padding: '40px 35px', background: 'white' }}>
-              <div style={{ background: `linear-gradient(135deg, rgba(0,245,160,0.15) 0%, rgba(0,245,160,0.08) 100%)`, borderRadius: '12px', padding: '25px', margin: '30px 0', textAlign: 'center', border: `2px solid rgba(0,245,160,0.4)` }}>
-                <div style={{ fontSize: '16px', color: '#1a1a1a', marginBottom: '10px', fontWeight: '600' }}>📅 March 15-17, 2025</div>
-                <div style={{ fontSize: '16px', color: '#1a1a1a', fontWeight: '600' }}>📍 San Francisco, CA</div>
+            <div style={{ padding: '45px 40px', background: 'linear-gradient(to bottom, white 0%, rgba(250,251,252,1) 100%)' }}>
+              <div style={{ background: `linear-gradient(135deg, rgba(0,245,160,0.18) 0%, rgba(0,217,145,0.10) 100%)`, borderRadius: '16px', padding: '30px 28px', margin: '32px 0', textAlign: 'center', border: `3px solid rgba(0,245,160,0.45)`, boxShadow: '0 8px 24px rgba(0,245,160,0.2)' }}>
+                <div style={{ fontSize: '18px', color: '#0f172a', marginBottom: '12px', fontWeight: '800', letterSpacing: '0.3px' }}>📅 March 15-17, 2025</div>
+                <div style={{ fontSize: '18px', color: '#0f172a', fontWeight: '800', letterSpacing: '0.3px' }}>📍 San Francisco, CA</div>
               </div>
-              <p style={{ fontSize: '18px', lineHeight: '1.7', color: '#333', margin: '30px 0' }}>
-                Join 500+ industry leaders for three days of insights...
+              <p style={{ fontSize: '19px', lineHeight: '1.85', color: '#334155', margin: '32px 0', fontWeight: '500', textAlign: 'center' }}>
+                Join 500+ industry leaders for three days of transformative insights, networking, and innovation...
               </p>
-              <div style={{ textAlign: 'center', margin: '35px 0' }}>
-                <div style={{ display: 'inline-block', background: accentColor, color: 'black', padding: '18px 40px', borderRadius: '12px', fontWeight: '700', fontSize: '18px', boxShadow: `0 10px 30px rgba(0,245,160,0.4)` }}>
+              <div style={{ textAlign: 'center', margin: '38px 0 0' }}>
+                <div style={{ display: 'inline-block', background: `linear-gradient(135deg, ${accentColor} 0%, #00d991 100%)`, color: '#0f172a', padding: '20px 48px', borderRadius: '16px', fontWeight: '800', fontSize: '19px', boxShadow: `0 14px 36px rgba(0,245,160,0.45), 0 4px 12px rgba(0,245,160,0.25)`, letterSpacing: '0.3px', border: '2px solid rgba(255,255,255,0.4)' }}>
                   Register Now →
                 </div>
               </div>
@@ -1647,14 +1652,14 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                 } bg-white border-2 rounded-2xl overflow-hidden`}
                 style={{
                   borderColor: selectedTemplate === key ? '#00f5a0' : 'rgba(0,245,160,0.2)',
-                  minHeight: '700px'
+                  minHeight: '420px'
                 }}
                 onClick={() => handleTemplateSelect(key)}
               >
                 {/* FULL EMAIL BODY PREVIEW - TAKES UP ENTIRE CARD */}
                 <div className="h-full flex flex-col">
                   {/* Small Template Name Header */}
-                  <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                  <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
                     <div className="flex items-center gap-3">
                       <h3 className="font-bold text-gray-900 text-base">{template.name}</h3>
                       {selectedTemplate === key && (
@@ -1688,8 +1693,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                   </div>
 
                   {/* MASSIVE EMAIL PREVIEW - FILLS THE REST OF THE CARD */}
-                  <div className="flex-1 p-6 bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6" style={{ minHeight: '600px' }}>
+                  <div className="flex-1 p-3 bg-gradient-to-br from-gray-50 via-white to-green-50/20 overflow-hidden">
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-2 h-full overflow-hidden hover:shadow-xl transition-shadow duration-300" style={{ minHeight: '350px' }}>
                       {renderTemplatePreview(template)}
                     </div>
                   </div>
