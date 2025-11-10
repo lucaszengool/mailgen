@@ -478,17 +478,17 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="grid grid-cols-3 gap-6 mb-8">
                 <div>
                   <div className="text-sm text-gray-600 mb-2 font-medium">Current Stage</div>
-                  <div className="font-bold text-gray-900">{companyData.funding.stage}</div>
+                  <div className="font-bold text-gray-900">{companyData.funding?.stage || 'Growth Stage'}</div>
                 </div>
 
                 <div>
                   <div className="text-sm text-gray-600 mb-2 font-medium">Total Funding</div>
-                  <div className="font-bold text-gray-900">{companyData.funding.totalFunding}</div>
+                  <div className="font-bold text-gray-900">{companyData.funding?.totalFunding || 'Undisclosed'}</div>
                 </div>
 
                 <div>
                   <div className="text-sm text-gray-600 mb-2 font-medium">Last Round</div>
-                  <div className="font-bold text-gray-900">{companyData.funding.lastRound}</div>
+                  <div className="font-bold text-gray-900">{companyData.funding?.lastRound || 'Undisclosed'}</div>
                 </div>
               </div>
 
@@ -519,7 +519,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
 
               <div className="pt-6 border-t border-gray-100">
                 <div className="text-sm text-gray-600 mb-2 font-medium">Key Investors</div>
-                <div className="text-gray-900">{companyData.funding.investors.join(', ')}</div>
+                <div className="text-gray-900">{(companyData.funding?.investors || []).join(', ') || 'Undisclosed'}</div>
               </div>
             </div>
 
