@@ -4008,6 +4008,34 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         setCurrentMicroStepIndex(0);
         setIsAnimating(false);
         setBackgroundWorkflowRunning(false);
+      } else if (data.type === 'stage_start' || data.type === 'workflow_status_update') {
+        // 🚀 NEW: Handle workflow stage/status updates from backend
+        console.log(`🚀 Received ${data.type}:`, data);
+
+        const status = data.stage || data.status || data.data?.status;
+        if (status) {
+          console.log(`🔔 Updating workflowStatus to: ${status}`);
+          setWorkflowStatus(status);
+
+          // Show toast notification for stage changes
+          if (status === 'finding_prospects') {
+            toast.loading('🔍 AI Agent is searching for prospects...', {
+              id: 'workflow_status',
+              duration: Infinity
+            });
+          } else if (status === 'generating_emails') {
+            toast.loading('✉️ Generating personalized emails...', {
+              id: 'workflow_status',
+              duration: Infinity
+            });
+          } else if (status === 'complete' || status === 'completed') {
+            toast.dismiss('workflow_status');
+            toast.success('✅ Workflow complete!');
+          }
+        }
+
+        // Fetch latest data
+        fetchAndTriggerWorkflowSteps();
       } else if (data.type === 'data_update' || data.message?.includes('Broadcasting workflow update')) {
         // Handle data update messages from backend
         console.log('📊 Received data_update or workflow broadcast message');
@@ -5540,8 +5568,24 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Campaign</h2>
 
+                {/* Show generating state if workflow is generating emails */}
+                {workflowStatus === 'generating_emails' && generatedEmails.length === 0 && (
+                  <div className="text-center py-16 bg-gradient-to-br from-green-50 to-white rounded-2xl border-2 border-green-200">
+                    <div className="loading-spinner h-16 w-16 mx-auto mb-4 border-green-500"></div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">✉️ AI Agent is Generating Personalized Emails</h3>
+                    <p className="text-gray-600 mb-4">Please wait while we create customized emails for each prospect...</p>
+                    <div className="max-w-md mx-auto">
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <p className="text-sm text-gray-500">
+                          Our AI is analyzing each prospect's profile and crafting personalized email content tailored to their needs.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Search Bar for Emails */}
-                {generatedEmails.length > 0 && (
+                {generatedEmails.length > 0 && workflowStatus !== 'generating_emails' && (
                   <div className="bg-white border border-gray-300 rounded-lg p-4 mb-6">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
