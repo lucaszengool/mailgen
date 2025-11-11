@@ -1355,6 +1355,25 @@ class LangGraphMarketingAgent {
         businessAnalysis // Pass business analysis
       );
 
+      // 🔥 CRITICAL FIX: Save email campaign results to workflow storage
+      console.log('💾 Saving email campaign results to workflow storage...');
+      const workflowRoute = require('../routes/workflow');
+      if (workflowRoute.setLastWorkflowResults) {
+        const completeResults = {
+          campaignId: campaignId,
+          prospects: waitingState.prospects,
+          businessAnalysis: businessAnalysis,
+          marketingStrategy: finalMarketingStrategy,
+          emailCampaign: emailCampaign, // 🎯 CRITICAL: Include generated emails
+          smtpConfig: waitingState.smtpConfig,
+          status: 'completed',
+          timestamp: new Date().toISOString()
+        };
+        const userId = this.userId || 'anonymous';
+        await workflowRoute.setLastWorkflowResults(completeResults, userId, campaignId);
+        console.log(`✅ [PRODUCTION] Saved ${emailCampaign?.emails?.length || 0} emails to workflow results for User: ${userId}, Campaign: ${campaignId}`);
+      }
+
       // Send completion updates
       if (this.wsManager) {
         this.wsManager.stepCompleted('email_generation', emailCampaign);
@@ -1364,6 +1383,18 @@ class LangGraphMarketingAgent {
         // Update workflow status
         this.wsManager.updateWorkflowStatus('completed');
         this.wsManager.sendNotification('🎉 邮件生成完成！', 'success');
+
+        // 🔥 Broadcast complete results with emails to frontend
+        this.wsManager.broadcast({
+          type: 'workflow_complete',
+          data: {
+            campaignId,
+            prospectsCount: waitingState.prospects.length,
+            emailsGenerated: emailCampaign?.emails?.length || 0,
+            status: 'completed',
+            timestamp: new Date().toISOString()
+          }
+        });
       }
 
       console.log('✅ Email generation resumed successfully with selected template');
