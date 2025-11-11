@@ -5458,7 +5458,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                       ))}
                     </>
                   ) : prospects.length === 0 ? (
-                    workflowStatus === 'running' || workflowStatus === 'starting' || workflowStatus === 'paused' || workflowStatus === 'waiting' || quotaData?.workflow?.isRunning || quotaData?.workflow?.isPaused ? (
+                    workflowStatus === 'running' || workflowStatus === 'starting' || workflowStatus === 'paused' || workflowStatus === 'waiting' ? (
                       // Show searching animation when workflow is active
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -5620,7 +5620,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                       ))}
                     </>
                   ) : generatedEmails.length === 0 ? (
-                    workflowStatus === 'running' || workflowStatus === 'starting' || workflowStatus === 'paused' || workflowStatus === 'waiting' || quotaData?.workflow?.isRunning || quotaData?.workflow?.isPaused ? (
+                    workflowStatus === 'running' || workflowStatus === 'starting' || workflowStatus === 'paused' || workflowStatus === 'waiting' ? (
                       // Show generating animation when workflow is active
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
