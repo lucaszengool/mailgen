@@ -50,6 +50,7 @@ import CampaignOnboardingWizard from './components/CampaignOnboardingWizard';
 import ProcessNotificationsDemo from './components/ProcessNotificationsDemo';
 import BlogPost from './pages/BlogPost';
 import AutoDetectLanguage from './components/AutoDetectLanguage';
+import TemplateSelectionHandler from './components/TemplateSelectionHandler';
 
 function App() {
   const location = useLocation();
@@ -394,6 +395,9 @@ function App() {
   if (!isSetupComplete && currentView !== 'website-analysis' && currentView !== 'dashboard') {
     return (
       <div className="App bg-white min-h-screen">
+        {/* Global Template Selection Handler */}
+        <TemplateSelectionHandler />
+
         <Toaster
           position="top-right"
           toastOptions={{
@@ -421,6 +425,9 @@ function App() {
 
         {/* Auto-detect user's language on first visit */}
         <AutoDetectLanguage />
+
+        {/* Global Template Selection Handler - listens for template_selection_required events */}
+        <TemplateSelectionHandler />
 
         <Routes>
           <Route path="/sign-in/*" element={<SignInPage />} />
