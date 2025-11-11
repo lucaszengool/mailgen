@@ -1643,196 +1643,274 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           {/* 2 COLUMNS INSTEAD OF 3 - WIDER CARDS */}
           <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
             {Object.entries(EMAIL_TEMPLATES).map(([key, template]) => {
-              // Define color schemes for each template
-              const templateColors = {
-                'professional_partnership': { from: '#f8fafc', to: '#f1f5f9', accent: '#0f172a', icon: '🤝' },
-                'modern_tech': { from: '#fafafa', to: '#f5f5f5', accent: '#18181b', icon: '⚡' },
-                'executive_outreach': { from: '#fafafa', to: '#f9fafb', accent: '#111827', icon: '👔' },
-                'product_launch': { from: '#fafafa', to: '#f9f9f9', accent: '#171717', icon: '🚀' },
-                'consultative_sales': { from: '#fafafa', to: '#f8f9fa', accent: '#1f2937', icon: '💼' },
-                'event_invitation': { from: '#f9fafb', to: '#f3f4f6', accent: '#1f2937', icon: '🎯' },
-                'custom': { from: '#ffffff', to: '#fafafa', accent: '#000000', icon: '✨' }
-              };
-
-              const colors = templateColors[key] || templateColors['custom'];
-
               return (
                 <div
                   key={key}
-                  className={`group relative cursor-pointer transition-all duration-300 rounded-2xl overflow-hidden ${
+                  className={`group relative cursor-pointer transition-all duration-300 rounded-xl overflow-hidden bg-white ${
                     selectedTemplate === key
-                      ? 'ring-2 ring-black shadow-2xl transform scale-[1.02]'
-                      : 'hover:shadow-xl hover:scale-[1.01] shadow-md'
+                      ? 'ring-2 ring-black shadow-2xl'
+                      : 'hover:shadow-xl border border-gray-200'
                   }`}
-                  style={{
-                    background: `linear-gradient(135deg, ${colors.from} 0%, ${colors.to} 100%)`,
-                    border: selectedTemplate === key ? '2px solid #000' : '1px solid #e5e7eb'
-                  }}
                   onClick={() => handleTemplateSelect(key)}
                 >
                   {/* Selection Badge */}
                   {selectedTemplate === key && (
                     <div className="absolute top-4 right-4 z-10">
-                      <div className="bg-black text-white rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1 shadow-lg">
+                      <div className="bg-black text-white rounded-full px-3 py-1.5 text-xs font-semibold flex items-center gap-1 shadow-lg">
                         <Check size={14} />
                         Selected
                       </div>
                     </div>
                   )}
 
-                  <div className="p-6">
-                    {/* Template Icon & Name */}
+                  <div className="p-5">
+                    {/* Template Name Only */}
                     <div className="mb-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="text-4xl">{colors.icon}</div>
-                          <div>
-                            <h3 className="font-bold text-gray-900 text-lg">{template.name}</h3>
-                            <p className="text-sm text-gray-600 mt-0.5">{template.description || 'Professional email template'}</p>
-                          </div>
-                        </div>
-                      </div>
+                      <h3 className="font-bold text-gray-900 text-base">{template.name}</h3>
+                      <p className="text-xs text-gray-500 mt-1">{template.description || 'Professional email template'}</p>
                     </div>
 
-                    {/* Clean Preview Snippet */}
-                    <div className="bg-white rounded-xl p-4 mb-4 border border-gray-200 shadow-sm min-h-[200px]">
-                      <div className="space-y-3">
-                        {/* Subject line hint */}
-                        <div className="border-b border-gray-100 pb-2">
-                          <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Preview</p>
+                    {/* VISUAL EMAIL PREVIEW - Actual UI Components */}
+                    <div className="bg-white rounded-lg border border-gray-200 shadow-inner overflow-hidden">
+                      {/* Template specific VISUAL preview content */}
+                      {key === 'professional_partnership' && (
+                        <div className="p-6 space-y-4">
+                          {/* Email Header Bar */}
+                          <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-gray-200"></div>
+                              <div>
+                                <div className="h-2 w-20 bg-gray-300 rounded"></div>
+                                <div className="h-1.5 w-32 bg-gray-200 rounded mt-1"></div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Email Body */}
+                          <div className="space-y-3">
+                            <div className="h-3 w-3/4 bg-gray-800 rounded"></div>
+                            <div className="space-y-1.5">
+                              <div className="h-2 w-full bg-gray-200 rounded"></div>
+                              <div className="h-2 w-full bg-gray-200 rounded"></div>
+                              <div className="h-2 w-5/6 bg-gray-200 rounded"></div>
+                            </div>
+
+                            {/* Partnership CTA */}
+                            <div className="bg-gray-100 rounded-lg p-4 border border-gray-200">
+                              <div className="h-2 w-32 bg-gray-400 rounded mb-2"></div>
+                              <div className="h-2 w-full bg-gray-300 rounded"></div>
+                            </div>
+
+                            {/* Button */}
+                            <div className="bg-black text-white rounded-md py-2 px-4 text-center">
+                              <div className="h-2 w-24 bg-white rounded mx-auto"></div>
+                            </div>
+                          </div>
                         </div>
+                      )}
 
-                        {/* Template specific preview content */}
-                        {key === 'professional_partnership' && (
-                          <>
-                            <p className="text-sm font-semibold text-gray-900">Building Strategic Partnerships</p>
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                              Hello! I noticed your company's innovative work in transforming the industry...
-                            </p>
-                            <div className="mt-3 pt-3 border-t border-gray-100">
-                              <div className="inline-flex items-center gap-2 text-xs text-gray-500">
-                                <span className="w-2 h-2 rounded-full bg-gray-300"></span>
-                                Partnership • Professional • Executive
-                              </div>
-                            </div>
-                          </>
-                        )}
+                      {key === 'modern_tech' && (
+                        <div className="space-y-0">
+                          {/* Tech Header Banner */}
+                          <div className="bg-gradient-to-r from-gray-900 to-black p-6 text-white">
+                            <div className="h-3 w-48 bg-white rounded mb-2"></div>
+                            <div className="h-2 w-64 bg-gray-400 rounded"></div>
+                          </div>
 
-                        {key === 'modern_tech' && (
-                          <>
-                            <p className="text-sm font-semibold text-gray-900">Transform Your Business</p>
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                              Harness cutting-edge AI to revolutionize operations and accelerate growth...
-                            </p>
-                            <div className="mt-3 flex gap-4 text-xs">
-                              <div className="flex items-center gap-1">
-                                <span className="font-bold text-gray-900">10x</span>
-                                <span className="text-gray-500">Faster</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <span className="font-bold text-gray-900">40%</span>
-                                <span className="text-gray-500">Savings</span>
-                              </div>
+                          {/* Content */}
+                          <div className="p-6 space-y-4">
+                            <div className="space-y-2">
+                              <div className="h-2 w-full bg-gray-200 rounded"></div>
+                              <div className="h-2 w-full bg-gray-200 rounded"></div>
+                              <div className="h-2 w-4/5 bg-gray-200 rounded"></div>
                             </div>
-                          </>
-                        )}
 
-                        {key === 'executive_outreach' && (
-                          <>
-                            <p className="text-sm font-semibold text-gray-900">Strategic Partnership Proposal</p>
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                              Our analysis reveals significant synergies between our organizations...
-                            </p>
-                            <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-                              <div className="text-center">
-                                <p className="font-bold text-gray-900">$2.5M</p>
-                                <p className="text-gray-500">Revenue</p>
+                            {/* Stats Grid */}
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                <div className="h-4 w-12 bg-black rounded mb-1"></div>
+                                <div className="h-2 w-16 bg-gray-300 rounded"></div>
                               </div>
-                              <div className="text-center">
-                                <p className="font-bold text-gray-900">150%</p>
-                                <p className="text-gray-500">Growth</p>
-                              </div>
-                              <div className="text-center">
-                                <p className="font-bold text-gray-900">45K</p>
-                                <p className="text-gray-500">Users</p>
+                              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                <div className="h-4 w-12 bg-black rounded mb-1"></div>
+                                <div className="h-2 w-16 bg-gray-300 rounded"></div>
                               </div>
                             </div>
-                          </>
-                        )}
 
-                        {key === 'product_launch' && (
-                          <>
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-2xl">🚀</span>
-                              <p className="text-sm font-semibold text-gray-900">Exclusive Launch</p>
+                            {/* CTA Button */}
+                            <div className="bg-black rounded-lg py-3 text-center">
+                              <div className="h-2 w-28 bg-white rounded mx-auto"></div>
                             </div>
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                              Be first to experience innovation. Revolutionary platform launching next week...
-                            </p>
-                            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-lg text-xs font-medium">
-                              LIMITED: 50 Spots Only
-                            </div>
-                          </>
-                        )}
+                          </div>
+                        </div>
+                      )}
 
-                        {key === 'consultative_sales' && (
-                          <>
-                            <p className="text-sm font-semibold text-gray-900">Strategic Assessment</p>
-                            <p className="text-xs text-gray-600 leading-relaxed mb-2">
-                              Complimentary business review designed for your company...
-                            </p>
-                            <div className="space-y-1">
-                              <div className="flex items-start gap-2 text-xs text-gray-600">
-                                <span>✓</span>
-                                <span>Growth opportunities & revenue streams</span>
-                              </div>
-                              <div className="flex items-start gap-2 text-xs text-gray-600">
-                                <span>✓</span>
-                                <span>Cost optimization with immediate ROI</span>
-                              </div>
-                            </div>
-                          </>
-                        )}
+                      {key === 'executive_outreach' && (
+                        <div className="p-6 space-y-4">
+                          {/* Executive Header */}
+                          <div className="border-l-4 border-black pl-4 py-2">
+                            <div className="h-3 w-48 bg-gray-900 rounded mb-1"></div>
+                            <div className="h-2 w-32 bg-gray-400 rounded"></div>
+                          </div>
 
-                        {key === 'event_invitation' && (
-                          <>
-                            <div className="text-center">
-                              <p className="text-2xl mb-1">🎯</p>
-                              <p className="text-sm font-semibold text-gray-900">You're Invited!</p>
-                              <p className="text-xs text-gray-600 mt-1">Annual Innovation Summit 2025</p>
-                            </div>
-                            <div className="mt-3 flex justify-center gap-4 text-xs">
-                              <div className="flex items-center gap-1 text-gray-600">
-                                <span>📅</span>
-                                <span>March 15-17</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-gray-600">
-                                <span>📍</span>
-                                <span>San Francisco</span>
-                              </div>
-                            </div>
-                          </>
-                        )}
+                          {/* Body */}
+                          <div className="space-y-2">
+                            <div className="h-2 w-full bg-gray-200 rounded"></div>
+                            <div className="h-2 w-full bg-gray-200 rounded"></div>
+                            <div className="h-2 w-3/4 bg-gray-200 rounded"></div>
+                          </div>
 
-                        {key === 'custom' && (
-                          <>
-                            <p className="text-sm font-semibold text-gray-900">Build Your Own</p>
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                              Fully customizable template with drag & drop components...
-                            </p>
-                            <div className="mt-3 space-y-1">
-                              <div className="flex items-center gap-2 text-xs text-gray-600">
-                                <span>•</span>
-                                <span>Add your branding</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-gray-600">
-                                <span>•</span>
-                                <span>Personalize everything</span>
+                          {/* Metrics Cards */}
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="bg-gray-50 rounded p-2 text-center border border-gray-200">
+                              <div className="h-3 w-12 bg-black rounded mx-auto mb-1"></div>
+                              <div className="h-1.5 w-10 bg-gray-300 rounded mx-auto"></div>
+                            </div>
+                            <div className="bg-gray-50 rounded p-2 text-center border border-gray-200">
+                              <div className="h-3 w-12 bg-black rounded mx-auto mb-1"></div>
+                              <div className="h-1.5 w-10 bg-gray-300 rounded mx-auto"></div>
+                            </div>
+                            <div className="bg-gray-50 rounded p-2 text-center border border-gray-200">
+                              <div className="h-3 w-12 bg-black rounded mx-auto mb-1"></div>
+                              <div className="h-1.5 w-10 bg-gray-300 rounded mx-auto"></div>
+                            </div>
+                          </div>
+
+                          {/* Quote */}
+                          <div className="bg-gray-50 rounded-lg p-3 border-l-2 border-black">
+                            <div className="h-1.5 w-full bg-gray-300 rounded mb-1"></div>
+                            <div className="h-1.5 w-4/5 bg-gray-300 rounded"></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {key === 'product_launch' && (
+                        <div className="p-6 space-y-4">
+                          {/* Launch Badge */}
+                          <div className="text-center py-4 bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg">
+                            <div className="w-10 h-10 bg-black rounded-full mx-auto mb-2"></div>
+                            <div className="h-3 w-32 bg-black rounded mx-auto mb-1"></div>
+                            <div className="h-2 w-48 bg-gray-400 rounded mx-auto"></div>
+                          </div>
+
+                          {/* Description */}
+                          <div className="space-y-2">
+                            <div className="h-2 w-full bg-gray-200 rounded"></div>
+                            <div className="h-2 w-full bg-gray-200 rounded"></div>
+                            <div className="h-2 w-3/4 bg-gray-200 rounded"></div>
+                          </div>
+
+                          {/* Limited Badge */}
+                          <div className="bg-black text-white rounded-lg py-2 px-4 inline-flex mx-auto">
+                            <div className="h-2 w-32 bg-white rounded"></div>
+                          </div>
+
+                          {/* CTA */}
+                          <div className="border-2 border-black rounded-lg py-3 text-center">
+                            <div className="h-2 w-28 bg-black rounded mx-auto"></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {key === 'consultative_sales' && (
+                        <div className="p-6 space-y-4">
+                          {/* Header */}
+                          <div className="space-y-2">
+                            <div className="h-3 w-40 bg-gray-900 rounded"></div>
+                            <div className="h-2 w-full bg-gray-200 rounded"></div>
+                            <div className="h-2 w-5/6 bg-gray-200 rounded"></div>
+                          </div>
+
+                          {/* Checklist */}
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-2">
+                              <div className="w-4 h-4 bg-black rounded-sm flex-shrink-0 mt-0.5"></div>
+                              <div className="flex-1">
+                                <div className="h-2 w-full bg-gray-300 rounded"></div>
                               </div>
                             </div>
-                          </>
-                        )}
-                      </div>
+                            <div className="flex items-start gap-2">
+                              <div className="w-4 h-4 bg-black rounded-sm flex-shrink-0 mt-0.5"></div>
+                              <div className="flex-1">
+                                <div className="h-2 w-5/6 bg-gray-300 rounded"></div>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <div className="w-4 h-4 bg-black rounded-sm flex-shrink-0 mt-0.5"></div>
+                              <div className="flex-1">
+                                <div className="h-2 w-4/5 bg-gray-300 rounded"></div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* CTA Button */}
+                          <div className="bg-black rounded-lg py-3 text-center mt-4">
+                            <div className="h-2 w-32 bg-white rounded mx-auto"></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {key === 'event_invitation' && (
+                        <div className="p-6 space-y-4">
+                          {/* Event Badge */}
+                          <div className="text-center py-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-black rounded-full mx-auto mb-3"></div>
+                            <div className="h-3 w-40 bg-black rounded mx-auto mb-2"></div>
+                            <div className="h-2 w-48 bg-gray-400 rounded mx-auto"></div>
+                          </div>
+
+                          {/* Event Details */}
+                          <div className="bg-gray-50 rounded-lg p-4 space-y-2 border border-gray-200">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-gray-400 rounded"></div>
+                              <div className="h-2 w-32 bg-gray-400 rounded"></div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-gray-400 rounded"></div>
+                              <div className="h-2 w-28 bg-gray-400 rounded"></div>
+                            </div>
+                          </div>
+
+                          {/* Description */}
+                          <div className="space-y-1.5">
+                            <div className="h-2 w-full bg-gray-200 rounded"></div>
+                            <div className="h-2 w-full bg-gray-200 rounded"></div>
+                            <div className="h-2 w-3/4 bg-gray-200 rounded"></div>
+                          </div>
+
+                          {/* Register Button */}
+                          <div className="bg-black rounded-lg py-3 text-center">
+                            <div className="h-2 w-24 bg-white rounded mx-auto"></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {key === 'custom' && (
+                        <div className="p-6 space-y-4">
+                          {/* Drag and Drop Hint */}
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <div className="w-12 h-12 bg-gray-200 rounded-lg mx-auto mb-3"></div>
+                            <div className="h-2 w-32 bg-gray-300 rounded mx-auto mb-2"></div>
+                            <div className="h-1.5 w-48 bg-gray-200 rounded mx-auto"></div>
+                          </div>
+
+                          {/* Component Options */}
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="bg-gray-50 rounded p-2 border border-gray-200 text-center">
+                              <div className="w-6 h-6 bg-gray-300 rounded mx-auto mb-1"></div>
+                              <div className="h-1.5 w-12 bg-gray-300 rounded mx-auto"></div>
+                            </div>
+                            <div className="bg-gray-50 rounded p-2 border border-gray-200 text-center">
+                              <div className="w-6 h-6 bg-gray-300 rounded mx-auto mb-1"></div>
+                              <div className="h-1.5 w-12 bg-gray-300 rounded mx-auto"></div>
+                            </div>
+                            <div className="bg-gray-50 rounded p-2 border border-gray-200 text-center">
+                              <div className="w-6 h-6 bg-gray-300 rounded mx-auto mb-1"></div>
+                              <div className="h-1.5 w-12 bg-gray-300 rounded mx-auto"></div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Action Buttons */}
