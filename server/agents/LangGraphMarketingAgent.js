@@ -733,8 +733,9 @@ class LangGraphMarketingAgent {
    * 🔥 NEW: Execute prospect search in background (non-blocking)
    * This allows the main process to continue while prospects are being found
    */
-  async executeProspectSearchInBackground(marketingStrategy, campaignId, businessAnalysis, campaignConfig) {
+  async executeProspectSearchInBackground(marketingStrategy, campaignId, businessAnalysis, campaignConfig, userId = 'default') {
     console.log('🔄 Background prospect search started...');
+    console.log(`📦 User: ${userId}, Campaign: ${campaignId}`);
 
     // 🔥 SET WORKFLOW STATUS TO FINDING PROSPECTS (triggers prospectSearchStarting popup)
     console.log('🔥 DEBUG: About to set workflow status to finding_prospects');
@@ -754,7 +755,7 @@ class LangGraphMarketingAgent {
     try {
       // Step 1: Find prospects (this may take time)
       console.log('🔍 Starting executeProspectSearchWithLearning...');
-      const prospects = await this.executeProspectSearchWithLearning(marketingStrategy, campaignId);
+      const prospects = await this.executeProspectSearchWithLearning(marketingStrategy, campaignId, userId);
 
       console.log('📊 CRITICAL DEBUG - Prospect search returned:');
       console.log(`   Type: ${Array.isArray(prospects) ? 'Array' : typeof prospects}`);
@@ -964,8 +965,9 @@ class LangGraphMarketingAgent {
   /**
    * 潜在客户搜索 - 简化版本，不使用自愈系统
    */
-  async executeProspectSearchWithLearning(marketingStrategy, campaignId) {
+  async executeProspectSearchWithLearning(marketingStrategy, campaignId, userId = 'default') {
     console.log('🔍 Executing prospect search with real-time email generation...');
+    console.log(`📦 Using batched search for user: ${userId}, campaign: ${campaignId}`);
     
     // Send real-time updates
     if (this.wsManager) {
@@ -1015,10 +1017,51 @@ class LangGraphMarketingAgent {
       }
       
       console.log('🚀 Using ProspectSearchAgent with 超级邮箱搜索引擎!');
+
+      // 📦 Create batch callback for background prospect updates
+      const batchCallback = async (batchData) => {
+        const { batchNumber, prospects, totalSoFar, targetTotal } = batchData;
+        console.log(`📦 [Batch ${batchNumber}] Received ${prospects.length} prospects (${totalSoFar}/${targetTotal} total)`);
+
+        // Save batch to database
+        if (this.userStorageService) {
+          try {
+            await this.userStorageService.saveProspects(userId, campaignId, prospects);
+            console.log(`💾 [Batch ${batchNumber}] Saved to database for user: ${userId}`);
+          } catch (error) {
+            console.error(`❌ [Batch ${batchNumber}] Failed to save:`, error);
+          }
+        }
+
+        // Notify frontend via WebSocket
+        if (this.wsManager) {
+          this.wsManager.broadcast({
+            type: 'prospect_batch_update',
+            data: {
+              userId,
+              campaignId,
+              batchNumber,
+              prospects,
+              totalSoFar,
+              targetTotal,
+              status: 'batch_complete'
+            }
+          });
+          console.log(`📡 [Batch ${batchNumber}] WebSocket notification sent`);
+        }
+      };
+
+      // Call searchProspects with batching options
       const searchResult = await this.prospectSearchAgent.searchProspects(
-        marketingStrategy, 
+        marketingStrategy,
         marketingStrategy?.industry || 'Technology',
-        marketingStrategy?.target_audience?.type || 'all'
+        marketingStrategy?.target_audience?.type || 'all',
+        {
+          userId,
+          campaignId,
+          onBatchComplete: batchCallback,
+          continuous: true // Enable batched mode
+        }
       );
 
       // Extract prospects from search result - searchResult IS the prospects array directly
