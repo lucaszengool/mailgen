@@ -219,44 +219,44 @@ export default function CompanyDetailPage({ prospect, onBack }) {
 
         {/* Email Campaign Information */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Email Campaign Information</h2>
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h2 className="text-xl font-bold text-white mb-4">Email Campaign Information</h2>
+          <div className="bg-black border border-gray-800 rounded-xl p-6">
             <div className="grid grid-cols-3 gap-8">
               <div>
-                <div className="text-sm text-gray-600 mb-2">Contact Email</div>
-                <div className="font-medium text-gray-900">{prospect.email}</div>
+                <div className="text-sm text-gray-400 mb-2">Contact Email</div>
+                <div className="font-medium text-white">{prospect.email}</div>
               </div>
 
               <div>
-                <div className="text-sm text-gray-600 mb-2">Discovery Status</div>
-                <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                <div className="text-sm text-gray-400 mb-2">Discovery Status</div>
+                <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium border ${
                   prospect.status === 'sent'
-                    ? 'bg-blue-100 text-blue-700'
+                    ? 'bg-gray-800 text-blue-400 border-blue-500'
                     : prospect.status === 'replied'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-700'
+                    ? 'bg-gray-800 text-[#00f5a0] border-[#00f5a0]'
+                    : 'bg-gray-800 text-[#00f5a0] border-gray-700'
                 }`}>
                   {prospect.status || 'discovered'}
                 </span>
               </div>
 
               <div>
-                <div className="text-sm text-gray-600 mb-2">Confidence Score</div>
+                <div className="text-sm text-gray-400 mb-2">Confidence Score</div>
                 <div className="flex items-center space-x-3">
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
                     <div
-                      className="h-full bg-green-500 rounded-full transition-all"
+                      className="h-full bg-[#00f5a0] rounded-full transition-all"
                       style={{ width: `${companyData.confidence || 85}%` }}
                     ></div>
                   </div>
-                  <span className="font-semibold text-gray-900">{companyData.confidence || 85}%</span>
+                  <span className="font-semibold text-white">{companyData.confidence || 85}%</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-5 border-t border-gray-200">
-              <div className="text-sm text-gray-600 mb-1">Discovery Source</div>
-              <div className="text-gray-900">{companyData.emailSource}</div>
+            <div className="mt-5 pt-5 border-t border-gray-800">
+              <div className="text-sm text-gray-400 mb-1">Discovery Source</div>
+              <div className="text-white">{companyData.emailSource}</div>
             </div>
           </div>
         </div>

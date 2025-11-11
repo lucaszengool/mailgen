@@ -1110,7 +1110,18 @@ class LangGraphMarketingAgent {
         const state = this.wsManager.workflowStates.get(campaignId);
         console.log(`✅ Verification - Workflow ${campaignId} has ${state?.data?.prospects?.length || 0} prospects stored`);
       }
-      
+
+      // 💾 CRITICAL: Save FIRST BATCH to database immediately
+      if (this.userStorageService && prospects.length > 0) {
+        try {
+          console.log(`💾 [BATCH 1] Saving ${prospects.length} prospects to database for user: ${userId}`);
+          await this.userStorageService.saveProspects(userId, campaignId, prospects);
+          console.log(`✅ [BATCH 1] Prospects saved to database successfully`);
+        } catch (error) {
+          console.error(`❌ [BATCH 1] Failed to save prospects:`, error);
+        }
+      }
+
       // Show sample emails if found
       if (prospects.length > 0) {
         console.log(`   样本邮箱: ${prospects.slice(0, 3).map(p => p.email || 'N/A').join(', ')}`);

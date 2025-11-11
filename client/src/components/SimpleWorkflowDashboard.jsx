@@ -3165,10 +3165,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     // 🔥 FIX: Accept template as parameter to avoid race condition with React state
     const templateToUse = passedTemplate || selectedTemplate;
 
-    if (!templateToUse || !templateRequest) {
-      console.error('❌ No template selected', { passedTemplate, selectedTemplate, templateRequest });
+    if (!templateToUse) {
+      console.error('❌ No template selected', { passedTemplate, selectedTemplate });
       return;
     }
+
+    // 🔥 FIX: Get campaignId from context, not just from templateRequest
+    // This allows manual template selection to work
+    const campaignIdToUse = templateRequest?.campaignId || currentCampaignId || 'default';
+    console.log('🎨 Using campaignId:', campaignIdToUse, '(from:', templateRequest?.campaignId ? 'websocket' : currentCampaignId ? 'context' : 'default', ')');
 
     setIsSubmittingTemplate(true);
 
@@ -3233,8 +3238,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       // Use TemplateSelectionService to send data with customizations AND components
       const result = await TemplateSelectionService.selectTemplate(
         templateToUse.id,
-        templateRequest.campaignId || 'default',
-        templateRequest.workflowId || 'default',
+        campaignIdToUse,
+        templateRequest?.workflowId || campaignIdToUse,
         customizations.isCustomized ? customizations : null,
         templateComponents  // <-- NOW INCLUDING COMPONENTS!
       );

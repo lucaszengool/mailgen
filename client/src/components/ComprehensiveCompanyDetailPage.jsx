@@ -320,10 +320,10 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
             </div>
 
             {/* Email Campaign Information */}
-            <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-50 to-emerald-50 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center relative z-10">
-                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
+            <div className="bg-black border border-gray-800 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-gray-800 to-gray-900 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center relative z-10">
+                <div className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center mr-3 shadow-md border border-gray-700">
                   <EnvelopeIcon className="w-5 h-5 text-[#00f5a0]" />
                 </div>
                 Email Campaign Information
@@ -331,34 +331,34 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
 
               <div className="grid grid-cols-3 gap-6">
                 <div>
-                  <div className="text-sm text-gray-600 mb-2 font-medium">Contact Email</div>
-                  <div className="font-semibold text-gray-900">{companyData.email}</div>
+                  <div className="text-sm text-gray-400 mb-2 font-medium">Contact Email</div>
+                  <div className="font-semibold text-white">{companyData.email}</div>
                 </div>
 
                 <div>
-                  <div className="text-sm text-gray-600 mb-2 font-medium">Discovery Status</div>
-                  <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-[#00f5a0]">
+                  <div className="text-sm text-gray-400 mb-2 font-medium">Discovery Status</div>
+                  <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-gray-800 text-[#00f5a0] border border-gray-700">
                     {prospect.status || 'discovered'}
                   </span>
                 </div>
 
                 <div>
-                  <div className="text-sm text-gray-600 mb-2 font-medium">Confidence Score</div>
+                  <div className="text-sm text-gray-400 mb-2 font-medium">Confidence Score</div>
                   <div className="flex items-center space-x-3">
-                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
                       <div
                         className="h-full bg-[#00f5a0] rounded-full transition-all"
                         style={{ width: `${companyData.confidence}%` }}
                       ></div>
                     </div>
-                    <span className="font-bold text-gray-900">{companyData.confidence}%</span>
+                    <span className="font-bold text-white">{companyData.confidence}%</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-gray-100">
-                <div className="text-sm text-gray-600 mb-2 font-medium">Discovery Source</div>
-                <div className="text-gray-900">{prospect.source || 'Domain analysis'}</div>
+              <div className="mt-6 pt-6 border-t border-gray-800">
+                <div className="text-sm text-gray-400 mb-2 font-medium">Discovery Source</div>
+                <div className="text-white">{prospect.source || 'Domain analysis'}</div>
               </div>
             </div>
 

@@ -13,6 +13,7 @@ import time
 import re
 import requests
 import os
+import hashlib
 from datetime import datetime
 from urllib.parse import quote, urlencode
 from bs4 import BeautifulSoup
@@ -25,7 +26,7 @@ class SuperEmailDiscoveryEngine:
 
         # SearxNG配置 - Railway兼容
         self.searxng_url = os.environ.get('SEARXNG_URL', 'http://localhost:8080')
-        
+
         # 网络会话配置 - 无超时限制
         self.session = requests.Session()
         self.session.headers.update({
@@ -37,12 +38,17 @@ class SuperEmailDiscoveryEngine:
         })
         # 设置无限超时
         self.session.timeout = None
-        
+
         # 邮箱模式
         self.email_pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
-        
+
+        # 🔥 NEW: Email cache directory for deduplication across runs
+        self.cache_dir = os.path.join(os.path.dirname(__file__), '.email_cache')
+        os.makedirs(self.cache_dir, exist_ok=True)
+
         # 搜索状态
         self.found_emails = []
+        self.already_returned_emails = set()  # 🔥 NEW: Track already-returned emails
         self.search_stats = {
             'total_queries': 0,
             'successful_queries': 0,
@@ -51,32 +57,70 @@ class SuperEmailDiscoveryEngine:
             'unique_domains': set(),
             'query_success_rate': {}
         }
-        
+
         self.logger.info("🚀 超级邮箱搜索引擎初始化")
         self.logger.info("   📊 基于2024年最佳邮箱发现实践")
         self.logger.info("   🎯 目标：确保找到真实有效的邮箱地址")
+        self.logger.info("   🗂️ 缓存目录: " + self.cache_dir)
         
     def setup_logging(self):
         """设置详细日志"""
         self.logger = logging.getLogger('SuperEmailEngine')
         self.logger.setLevel(logging.INFO)
-        
+
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.INFO)
-        
+
         file_handler = logging.FileHandler('super_email_discovery.log', encoding='utf-8')
         file_handler.setLevel(logging.DEBUG)
-        
+
         formatter = logging.Formatter(
             '%(asctime)s - %(levelname)s - %(message)s',
             datefmt='%H:%M:%S'
         )
-        
+
         console_handler.setFormatter(formatter)
         file_handler.setFormatter(formatter)
-        
+
         self.logger.addHandler(console_handler)
         self.logger.addHandler(file_handler)
+
+    def get_cache_filename(self, industry):
+        """生成缓存文件名（基于行业名称的hash）"""
+        # Create a hash of the industry to use as filename
+        industry_hash = hashlib.md5(industry.lower().strip().encode()).hexdigest()[:12]
+        return os.path.join(self.cache_dir, f'returned_emails_{industry_hash}.txt')
+
+    def load_returned_emails_cache(self, industry):
+        """加载已返回的邮箱缓存"""
+        cache_file = self.get_cache_filename(industry)
+        if os.path.exists(cache_file):
+            try:
+                with open(cache_file, 'r', encoding='utf-8') as f:
+                    cached_emails = {line.strip() for line in f if line.strip()}
+                    self.already_returned_emails = cached_emails
+                    self.logger.info(f"📂 加载缓存: {len(cached_emails)} 个已返回邮箱 (行业: {industry})")
+                    return len(cached_emails)
+            except Exception as e:
+                self.logger.warning(f"⚠️ 加载缓存失败: {e}")
+                self.already_returned_emails = set()
+        else:
+            self.logger.info(f"📂 无缓存文件，将返回全新邮箱")
+            self.already_returned_emails = set()
+        return 0
+
+    def save_returned_emails_cache(self, industry, new_emails):
+        """保存新返回的邮箱到缓存"""
+        cache_file = self.get_cache_filename(industry)
+        try:
+            # Append new emails to cache file
+            with open(cache_file, 'a', encoding='utf-8') as f:
+                for email in new_emails:
+                    f.write(email + '\n')
+                    self.already_returned_emails.add(email)
+            self.logger.info(f"💾 缓存已更新: +{len(new_emails)} 个邮箱")
+        except Exception as e:
+            self.logger.error(f"❌ 保存缓存失败: {e}")
     
     def generate_professional_search_strategies(self, industry, round_num=1):
         """生成基于2024年最佳实践的专业搜索策略"""
@@ -322,7 +366,12 @@ class SuperEmailDiscoveryEngine:
         self.logger.info(f"   🔄 最大轮数: {max_rounds} (大幅增加)")
         self.logger.info(f"   📊 使用2024年最佳搜索实践")
         self.logger.info(f"   ⏰ 无时间限制 - 搜索越多越准确")
-        
+
+        # 🔥 NEW: Load cache of already-returned emails
+        cached_count = self.load_returned_emails_cache(industry)
+        if cached_count > 0:
+            self.logger.info(f"   🔄 跳过已返回的 {cached_count} 个邮箱，寻找新邮箱...")
+
         start_time = time.time()
         all_emails = []
         round_num = 1
@@ -350,8 +399,11 @@ class SuperEmailDiscoveryEngine:
                 for result in results:
                     text = f"{result.get('title', '')} {result.get('content', '')}"
                     emails = self.extract_emails_advanced(text, f"搜索预览 {i}")
-                    
+
                     for email in emails:
+                        # 🔥 NEW: Skip already-returned emails
+                        if email in self.already_returned_emails:
+                            continue
                         if not any(e['email'] == email for e in preview_emails):
                             preview_emails.append({
                                 'email': email,
@@ -388,8 +440,11 @@ class SuperEmailDiscoveryEngine:
                         try:
                             site = future_to_result[future]
                             website_emails = future.result()
-                            
+
                             for email in website_emails:
+                                # 🔥 NEW: Skip already-returned emails
+                                if email in self.already_returned_emails:
+                                    continue
                                 if not any(e['email'] == email for e in round_emails):
                                     round_emails.append({
                                         'email': email,
@@ -441,24 +496,31 @@ class SuperEmailDiscoveryEngine:
         # 整理最终结果
         final_emails = all_emails[:target_count]
         total_time = time.time() - start_time
-        
+
         # 更新统计
         self.search_stats['emails_found'] = len(final_emails)
-        
+
+        # 🔥 NEW: Save newly returned emails to cache
+        new_email_addresses = [e['email'] for e in final_emails]
+        if new_email_addresses:
+            self.save_returned_emails_cache(industry, new_email_addresses)
+            self.logger.info(f"   ✅ 已保存 {len(new_email_addresses)} 个新邮箱到缓存")
+
         self.logger.info(f"\n🎊 超级搜索完成！")
-        self.logger.info(f"   📧 最终邮箱: {len(final_emails)}个")
+        self.logger.info(f"   📧 最终邮箱: {len(final_emails)}个 (全部为新发现)")
         self.logger.info(f"   🔄 搜索轮数: {round_num-1}")
         self.logger.info(f"   ⏱️ 总耗时: {total_time:.1f}秒")
         self.logger.info(f"   📊 成功率: {self.search_stats['successful_queries']}/{self.search_stats['total_queries']}")
         self.logger.info(f"   🌐 爬取网站: {self.search_stats['websites_scraped']}个")
         self.logger.info(f"   🏢 发现域名: {len(self.search_stats['unique_domains'])}个")
-        
+        self.logger.info(f"   🗂️ 缓存总数: {len(self.already_returned_emails)} 个历史邮箱")
+
         # 显示发现的邮箱
         if final_emails:
-            self.logger.info("\n📧 发现的邮箱地址:")
+            self.logger.info("\n📧 发现的邮箱地址 (新):")
             for i, email_data in enumerate(final_emails, 1):
                 self.logger.info(f"   {i}. {email_data['email']} (置信度: {email_data['confidence']})")
-        
+
         return {
             'success': len(final_emails) > 0,
             'emails': [e['email'] for e in final_emails],

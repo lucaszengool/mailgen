@@ -3683,10 +3683,13 @@ Output: One search query only`;
         console.log(`   Rate limit: ${this.autonomousSearch.rateLimit.countThisHour}/${this.autonomousSearch.rateLimit.maxPerHour} this hour`);
         console.log(`   Pool size: ${this.autonomousSearch.emailPool.size} emails`);
 
-        // Perform search - 📦 BATCHED MODE: Request only 10-15 prospects at a time for faster batches
+        // 📦 BATCHED MODE: Request 12 prospects per search
+        // Python script now handles deduplication internally via cache
         const remainingQuota = this.autonomousSearch.rateLimit.maxPerHour - this.autonomousSearch.rateLimit.countThisHour;
-        const batchSize = 12; // Request 12 prospects per search (allows for duplicates/invalid emails)
-        const searchResults = await this.emailSearchAgent.searchEmails(keyword, Math.min(remainingQuota, batchSize));
+        const batchSize = 12; // Request 12 prospects - Python skips already-returned emails
+        const actualRequest = Math.min(remainingQuota, batchSize);
+        console.log(`📨 Requesting ${actualRequest} NEW prospects (Python handles deduplication)`);
+        const searchResults = await this.emailSearchAgent.searchEmails(keyword, actualRequest);
 
         this.autonomousSearch.stats.totalSearches++;
         this.autonomousSearch.stats.lastSearchTime = Date.now();
@@ -3716,6 +3719,17 @@ Output: One search query only`;
 
           console.log(`✅ Added ${newEmailsAdded} new emails (${searchResults.prospects.length - newEmailsAdded} duplicates)`);
           console.log(`📊 Total unique emails: ${this.autonomousSearch.emailPool.size}`);
+
+          // 🔥 FIX: If we got too many duplicates (>50%), this keyword is exhausted
+          // Skip to next keyword to find more diverse prospects
+          if (searchResults.prospects.length > 0) {
+            const duplicateRate = (searchResults.prospects.length - newEmailsAdded) / searchResults.prospects.length;
+            if (duplicateRate > 0.5 && newEmailsAdded < 5) {
+              console.log(`⚠️ High duplicate rate (${Math.round(duplicateRate * 100)}%), keyword "${keyword}" exhausted`);
+              console.log(`🔄 Moving to next keyword for more variety...`);
+              // Mark this keyword as exhausted by not re-adding it to queue
+            }
+          }
         } else {
           console.log(`⚠️ No results for keyword: "${keyword}"`);
         }
