@@ -65,158 +65,64 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
 
   const createEnhancedFallbackData = (prospect) => {
     const domain = prospect.email ? prospect.email.split('@')[1] : '';
-    const matchScore = prospect.confidence || Math.floor(Math.random() * 30) + 70;
+    const matchScore = prospect.confidence || 85;
 
+    // MINIMAL fallback data - only show what we actually know
     return {
       name: prospect.company || domain,
-      description: `${prospect.company || 'Company'} is a ${prospect.industry || 'Technology'} company focused on innovation and growth. They are actively seeking solutions to improve their business operations and marketing effectiveness.`,
+      description: prospect.description || null,
       logo: null,
       website: prospect.source_url || prospect.website || `https://${domain}`,
-      industry: prospect.industry || 'Technology',
-      founded: prospect.founded || '2015',
-      employees: prospect.companySize || '51-200',
-      location: prospect.location || 'United States',
-      glassdoorRating: '3.8',
+      industry: prospect.industry || null,
+      founded: prospect.founded || null,
+      employees: prospect.companySize || null,
+      location: prospect.location || null,
+      glassdoorRating: null,
       email: prospect.email,
       confidence: matchScore,
       matchLevel: matchScore >= 80 ? 'EXCELLENT MATCH' : matchScore >= 60 ? 'GOOD MATCH' : 'FAIR MATCH',
 
-      // Email Marketing Insights
-      emailMarketingFit: {
-        overallScore: matchScore,
-        industryAlignment: Math.floor(Math.random() * 11) + 90,
-        budgetLevel: 'Medium-High',
-        decisionMakingSpeed: 'Fast',
-        painPoints: [
-          'Lead generation efficiency',
-          'Marketing automation',
-          'ROI tracking and analytics',
-          'Customer engagement'
-        ]
-      },
+      // Only show real data - NO FAKE VALUES
+      emailMarketingFit: null,
 
-      // Key Value Propositions for Email Marketing
-      valuePropositions: [
-        'Increase email campaign ROI by 40%',
-        'Automate prospect discovery and outreach',
-        'AI-powered personalization at scale',
-        'Real-time analytics and insights',
-        'Seamless CRM integration'
-      ],
+      // NO FAKE VALUE PROPOSITIONS
+      valuePropositions: null,
 
-      // Target Personas at Company
-      targetPersonas: [
-        {
-          role: 'Marketing Director',
-          painPoints: ['Campaign performance', 'Lead quality', 'Budget efficiency'],
-          interests: ['Automation', 'Analytics', 'AI/ML']
-        },
-        {
-          role: 'Sales Manager',
-          painPoints: ['Pipeline growth', 'Conversion rates', 'Follow-up efficiency'],
-          interests: ['CRM tools', 'Outreach automation', 'Lead scoring']
-        },
-        {
-          role: 'Business Owner',
-          painPoints: ['Revenue growth', 'Market expansion', 'Customer retention'],
-          interests: ['ROI', 'Scalability', 'Cost-effectiveness']
-        }
-      ],
+      // NO FAKE TARGET PERSONAS
+      targetPersonas: null,
 
-      // Funding information
-      funding: {
-        stage: 'Growth Stage',
-        totalFunding: '$15.2M',
-        lastRound: 'Series A - $8M',
-        investors: ['Sequoia Capital', 'Accel Partners', 'Y Combinator'],
-        yearlyFunding: [
-          { year: '2020', amount: 1.5 },
-          { year: '2021', amount: 3.2 },
-          { year: '2022', amount: 5.5 },
-          { year: '2023', amount: 8.0 },
-          { year: '2024', amount: 15.2 }
-        ]
-      },
+      // NO FAKE FUNDING INFORMATION
+      funding: null,
 
-      // Growth metrics
-      growthMetrics: {
-        revenueGrowth: '+145%',
-        employeeGrowth: '+78%',
-        marketExpansion: '12 new markets',
-        customerGrowth: '+230%'
-      },
+      // NO FAKE GROWTH METRICS
+      growthMetrics: null,
 
-      // Tech stack (important for email marketing targeting)
-      techStack: prospect.techStack || [
-        'Salesforce',
-        'HubSpot',
-        'Google Analytics',
-        'Slack',
-        'AWS',
-        'React'
-      ],
+      // Only show real tech stack if available
+      techStack: prospect.techStack || null,
 
-      // Leadership team
-      leadership: [
-        {
-          name: 'Sarah Johnson',
-          title: 'CEO & Founder',
-          linkedin: '#',
-          photo: null
-        },
-        {
-          name: 'Michael Chen',
-          title: 'VP of Marketing',
-          linkedin: '#',
-          photo: null
-        },
-        {
-          name: 'Emily Rodriguez',
-          title: 'Head of Sales',
-          linkedin: '#',
-          photo: null
-        },
-        {
-          name: 'David Kim',
-          title: 'CTO',
-          linkedin: '#',
-          photo: null
-        }
-      ],
+      // NO FAKE LEADERSHIP TEAM
+      leadership: null,
 
-      // Recent news/activities
-      news: [
-        {
-          source: 'TechCrunch',
-          title: `${prospect.company || 'Company'} Raises Series A Funding to Accelerate Growth`,
-          date: '2025-01-05',
-          url: '#'
-        },
-        {
-          source: 'Business Wire',
-          title: `${prospect.company || 'Company'} Launches New AI-Powered Platform`,
-          date: '2024-12-15',
-          url: '#'
-        },
-        {
-          source: 'Forbes',
-          title: `Top ${prospect.industry || 'Technology'} Companies to Watch in 2025`,
-          date: '2024-11-20',
-          url: '#'
-        }
-      ],
+      // NO FAKE NEWS
+      news: null,
 
-      // Industry insights
-      industryInsights: {
-        marketPosition: 'Rising Leader',
-        competitiveAdvantages: [
-          'Advanced AI technology',
-          'Strong customer retention',
-          'Innovative product features',
-          'Excellent customer support'
-        ],
-        marketTrends: ['AI Adoption', 'Automation', 'Data Analytics', 'Cloud Migration']
-      }
+      // NO FAKE INDUSTRY INSIGHTS
+      industryInsights: null,
+
+      // NO FAKE KEY CLIENTS
+      keyClients: null,
+
+      // NO FAKE COMPETITIVE ADVANTAGES
+      competitiveAdvantages: null,
+
+      // NO FAKE MARKET POSITION
+      marketPosition: null,
+
+      // NO FAKE CONTACT INFO
+      contactInfo: null,
+
+      // Only show social if available
+      social: prospect.social || {}
     };
   };
 
@@ -317,7 +223,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                       </div>
                     )}
                     {companyData.employees && (
-                      <div className="flex items-center space-x-2 px-3 py-2 bg-gray-100 rounded-xl border border-gray-300">
+                      <div className="flex items-center space-x-2 px-3 py-2 bg-white rounded-xl border border-gray-300">
                         <UsersIcon className="w-4 h-4 text-gray-700" />
                         <span className="text-sm font-medium text-gray-900">{companyData.employees} employees</span>
                       </div>
@@ -443,13 +349,13 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                     <div className="relative border border-gray-200 rounded-2xl p-6 group-hover:border-green-500 transition-all bg-white">
                       <div className="flex items-start justify-between mb-4">
                         <h3 className="font-bold text-gray-900 text-lg">{persona.role}</h3>
-                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-gray-300">
                           <BriefcaseIcon className="w-5 h-5 text-green-600" />
                         </div>
                       </div>
 
                       <div className="space-y-3">
-                        <div className="p-3 bg-gray-50 rounded-xl border border-gray-200">
+                        <div className="p-3 bg-white rounded-xl border border-gray-200">
                           <span className="text-sm font-semibold text-gray-900">Pain Points: </span>
                           <span className="text-sm text-gray-700">{persona.painPoints.join(', ')}</span>
                         </div>
@@ -515,7 +421,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                   <div className="font-bold text-white text-lg">{companyData.funding?.totalFunding || 'Undisclosed'}</div>
                 </div>
 
-                <div className="p-4 bg-gray-100 rounded-2xl border border-gray-300">
+                <div className="p-4 bg-white rounded-2xl border border-gray-300">
                   <div className="text-sm text-gray-700 mb-2 font-semibold">Last Round</div>
                   <div className="font-bold text-gray-900 text-lg">{companyData.funding?.lastRound || 'Undisclosed'}</div>
                 </div>
@@ -536,8 +442,8 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                     ];
                     return (
                     <div key={idx} className="flex items-center space-x-4 group">
-                      <span className="text-sm font-bold text-gray-900 w-16 bg-gray-100 px-3 py-2 rounded-lg border border-gray-300">{data.year}</span>
-                      <div className="flex-1 h-12 bg-gray-100 rounded-xl overflow-hidden border border-gray-300 shadow-sm group-hover:shadow-md transition-all">
+                      <span className="text-sm font-bold text-gray-900 w-16 bg-white px-3 py-2 rounded-lg border border-gray-300">{data.year}</span>
+                      <div className="flex-1 h-12 bg-white rounded-xl overflow-hidden border border-gray-300 shadow-sm group-hover:shadow-md transition-all">
                         <div
                           className={`h-full ${colors[idx % colors.length]} flex items-center justify-end pr-4 transition-all duration-500`}
                           style={{
@@ -677,7 +583,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                 </h2>
                 <div className="grid grid-cols-4 gap-4">
                   {companyData.keyClients.map((client, idx) => (
-                    <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all text-center">
+                    <div key={idx} className="p-4 bg-white rounded-xl border border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all text-center">
                       <div className="font-semibold text-gray-900 text-sm">{client.name}</div>
                     </div>
                   ))}
@@ -849,7 +755,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                     <div className="text-sm text-green-500 mb-2 font-semibold">Employee Growth</div>
                     <div className="text-2xl font-bold text-white">{companyData.growthMetrics?.employeeGrowth || 'N/A'}</div>
                   </div>
-                  <div className="p-4 rounded-2xl bg-gray-100 border border-gray-300">
+                  <div className="p-4 rounded-2xl bg-white border border-gray-300">
                     <div className="text-sm text-gray-700 mb-2 font-semibold">Customer Growth</div>
                     <div className="text-2xl font-bold text-gray-900">{companyData.growthMetrics?.customerGrowth || 'N/A'}</div>
                   </div>
@@ -877,7 +783,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                     </div>
                   </div>
 
-                  <div className="p-5 bg-gray-50 rounded-2xl border border-gray-200">
+                  <div className="p-5 bg-white rounded-2xl border border-gray-200">
                     <div className="text-sm font-bold text-gray-900 mb-3 flex items-center">
                       <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
                       Key Pain Points

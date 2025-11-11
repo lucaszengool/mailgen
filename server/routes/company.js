@@ -535,93 +535,109 @@ function generateGrowthMetrics($, domain) {
   const indicators = extractGrowthIndicators($);
   const text = $.text();
 
-  // Try to extract real metrics, otherwise generate reasonable estimates
+  // ONLY return REAL metrics found on website - NO FALLBACKS
+  const revenueMatch = text.match(/revenue.*?(\d+)%/i);
+  const employeeMatch = text.match(/(?:team|staff|employee).*?(?:grew|increased).*?(\d+)%/i);
+  const customerMatch = text.match(/customer.*?(\d+)%/i);
+  const marketMatch = text.match(/(\d+)\s+(?:countries|markets|regions)/i);
+
   return {
-    revenueGrowth: indicators.growth || extractMetric(text, /revenue.*?(\d+)%/i, '+35%'),
-    employeeGrowth: extractMetric(text, /(?:team|staff|employee).*?(?:grew|increased).*?(\d+)%/i, '+42%'),
-    customerGrowth: indicators.customers || extractMetric(text, /customer.*?(\d+)%/i, '+180%'),
-    marketExpansion: indicators.markets ? `${indicators.markets} markets` : extractMetric(text, /(\d+)\s+(?:countries|markets|regions)/i, '8 new markets')
+    revenueGrowth: indicators.growth || (revenueMatch ? revenueMatch[0] : null),
+    employeeGrowth: employeeMatch ? employeeMatch[0] : null,
+    customerGrowth: indicators.customers || (customerMatch ? customerMatch[0] : null),
+    marketExpansion: indicators.markets ? `${indicators.markets} markets` : (marketMatch ? marketMatch[0] : null)
   };
 }
 
-function extractMetric(text, pattern, fallback) {
-  const match = text.match(pattern);
-  return match ? match[0] : fallback;
-}
-
-// Generate email marketing fit analysis
+// Generate email marketing fit analysis - ONLY based on REAL website content
 function generateEmailMarketingFit($, domain) {
   const text = $.text().toLowerCase();
+
+  // Extract REAL pain points from website content
+  const realPainPoints = [];
+  if (text.includes('lead generation') || text.includes('leads')) realPainPoints.push('Lead generation and qualification');
+  if (text.includes('email') && (text.includes('campaign') || text.includes('marketing'))) realPainPoints.push('Email campaign automation');
+  if (text.includes('roi') || text.includes('return on investment')) realPainPoints.push('Marketing ROI measurement');
+  if (text.includes('customer engagement') || text.includes('retention')) realPainPoints.push('Customer engagement and retention');
+  if (text.includes('sales') && text.includes('marketing')) realPainPoints.push('Sales and marketing alignment');
+
+  // Only return data if we found relevant keywords on the site
   const hasMarketing = text.includes('marketing') || text.includes('sales');
   const hasCRM = text.includes('crm') || text.includes('customer');
-  const hasEmail = text.includes('email') || text.includes('newsletter');
+  const hasEmail = text.includes('email');
 
-  const baseScore = 75;
-  const score = baseScore + (hasMarketing ? 10 : 0) + (hasCRM ? 5 : 0) + (hasEmail ? 10 : 0);
+  if (!hasMarketing && !hasCRM && !hasEmail) {
+    return null; // NO FALLBACK DATA
+  }
+
+  const score = 70 + (hasMarketing ? 10 : 0) + (hasCRM ? 5 : 0) + (hasEmail ? 10 : 0);
 
   return {
     overallScore: Math.min(score, 95),
     industryAlignment: Math.min(score + 5, 98),
     budgetLevel: score > 85 ? 'High' : score > 70 ? 'Medium-High' : 'Medium',
     decisionMakingSpeed: score > 80 ? 'Fast' : 'Moderate',
-    painPoints: [
-      'Lead generation and qualification',
-      'Email campaign automation',
-      'Marketing ROI measurement',
-      'Customer engagement and retention',
-      'Sales and marketing alignment'
-    ]
+    painPoints: realPainPoints.length > 0 ? realPainPoints : null
   };
 }
 
-// Generate value propositions based on company analysis
+// Generate value propositions - ONLY if relevant to website content
 function generateValuePropositions($, domain) {
-  const industry = extractIndustry($);
   const text = $.text().toLowerCase();
+  const props = [];
 
-  const baseProps = [
-    'AI-powered prospect discovery and targeting',
-    'Automated email personalization at scale',
-    'Real-time campaign analytics and insights',
-    'Seamless CRM and tool integration',
-    'Increase email response rates by 3-5x'
-  ];
-
-  // Add industry-specific propositions
-  if (industry === 'Technology') {
-    baseProps.push('Developer-friendly API access');
-  } else if (industry === 'Marketing') {
-    baseProps.push('Multi-channel campaign orchestration');
+  // Only add propositions that are RELEVANT to what the company actually does
+  if (text.includes('ai') || text.includes('artificial intelligence') || text.includes('machine learning')) {
+    props.push('AI-powered prospect discovery and targeting');
+  }
+  if (text.includes('automation') || text.includes('automated')) {
+    props.push('Automated email personalization at scale');
+  }
+  if (text.includes('analytics') || text.includes('insights') || text.includes('reporting')) {
+    props.push('Real-time campaign analytics and insights');
+  }
+  if (text.includes('crm') || text.includes('integration') || text.includes('api')) {
+    props.push('Seamless CRM and tool integration');
+  }
+  if (text.includes('email') || text.includes('outreach') || text.includes('response')) {
+    props.push('Increase email response rates by 3-5x');
   }
 
-  return baseProps;
+  return props.length > 0 ? props : null; // Return null if no relevant propositions found
 }
 
-// Generate target personas
+// Generate target personas - ONLY based on company website content
 function generateTargetPersonas($, domain) {
-  const industry = extractIndustry($);
   const text = $.text().toLowerCase();
+  const personas = [];
 
-  const personas = [
-    {
+  // Only add personas if we find relevant indicators on the website
+  if (text.includes('marketing') || text.includes('campaign')) {
+    personas.push({
       role: 'Marketing Director',
       painPoints: ['Campaign performance optimization', 'Lead quality improvement', 'Budget allocation'],
       interests: ['Marketing automation', 'Analytics & reporting', 'AI & machine learning']
-    },
-    {
+    });
+  }
+
+  if (text.includes('sales') || text.includes('revenue')) {
+    personas.push({
       role: 'Sales Manager',
       painPoints: ['Pipeline growth', 'Conversion rate optimization', 'Follow-up efficiency'],
       interests: ['CRM integration', 'Sales automation', 'Lead scoring']
-    },
-    {
+    });
+  }
+
+  if (text.includes('business development') || text.includes('partnership')) {
+    personas.push({
       role: 'Business Development Manager',
       painPoints: ['New market penetration', 'Partnership development', 'Revenue growth'],
       interests: ['Market intelligence', 'Prospect research', 'Outreach automation']
-    }
-  ];
+    });
+  }
 
-  // Add CEO persona for smaller companies
-  if (text.includes('startup') || text.includes('founder')) {
+  // Add CEO persona ONLY for startups/small companies
+  if (text.includes('startup') || text.includes('founder') || text.includes('entrepreneur')) {
     personas.push({
       role: 'CEO / Founder',
       painPoints: ['Revenue acceleration', 'Market expansion', 'Customer acquisition cost'],
@@ -629,7 +645,7 @@ function generateTargetPersonas($, domain) {
     });
   }
 
-  return personas;
+  return personas.length > 0 ? personas : null; // Return null if no personas found
 }
 
 // Extract competitive advantages
