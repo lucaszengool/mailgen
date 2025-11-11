@@ -1642,65 +1642,222 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
         <div className="p-8 overflow-y-auto max-h-[75vh]">
           {/* 2 COLUMNS INSTEAD OF 3 - WIDER CARDS */}
           <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
-            {Object.entries(EMAIL_TEMPLATES).map(([key, template]) => (
-              <div
-                key={key}
-                className={`relative cursor-pointer transition-all duration-300 ${
-                  selectedTemplate === key
-                    ? 'ring-4 ring-green-500 shadow-2xl transform scale-[1.02]'
-                    : 'hover:shadow-xl hover:scale-[1.01] hover:ring-2 hover:ring-green-300'
-                } bg-white border-2 rounded-2xl overflow-hidden`}
-                style={{
-                  borderColor: selectedTemplate === key ? '#00f5a0' : 'rgba(0,245,160,0.2)',
-                  minHeight: '420px'
-                }}
-                onClick={() => handleTemplateSelect(key)}
-              >
-                {/* FULL EMAIL BODY PREVIEW - TAKES UP ENTIRE CARD */}
-                <div className="h-full flex flex-col">
-                  {/* Small Template Name Header */}
-                  <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-bold text-gray-900 text-base">{template.name}</h3>
-                      {selectedTemplate === key && (
-                        <div className="bg-green-500 text-white rounded-full px-2 py-0.5 text-xs font-medium flex items-center gap-1">
-                          <Check size={12} />
-                          Selected
-                        </div>
-                      )}
+            {Object.entries(EMAIL_TEMPLATES).map(([key, template]) => {
+              // Define color schemes for each template
+              const templateColors = {
+                'professional_partnership': { from: '#f8fafc', to: '#f1f5f9', accent: '#0f172a', icon: '🤝' },
+                'modern_tech': { from: '#fafafa', to: '#f5f5f5', accent: '#18181b', icon: '⚡' },
+                'executive_outreach': { from: '#fafafa', to: '#f9fafb', accent: '#111827', icon: '👔' },
+                'product_launch': { from: '#fafafa', to: '#f9f9f9', accent: '#171717', icon: '🚀' },
+                'consultative_sales': { from: '#fafafa', to: '#f8f9fa', accent: '#1f2937', icon: '💼' },
+                'event_invitation': { from: '#f9fafb', to: '#f3f4f6', accent: '#1f2937', icon: '🎯' },
+                'custom': { from: '#ffffff', to: '#fafafa', accent: '#000000', icon: '✨' }
+              };
+
+              const colors = templateColors[key] || templateColors['custom'];
+
+              return (
+                <div
+                  key={key}
+                  className={`group relative cursor-pointer transition-all duration-300 rounded-2xl overflow-hidden ${
+                    selectedTemplate === key
+                      ? 'ring-2 ring-black shadow-2xl transform scale-[1.02]'
+                      : 'hover:shadow-xl hover:scale-[1.01] shadow-md'
+                  }`}
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.from} 0%, ${colors.to} 100%)`,
+                    border: selectedTemplate === key ? '2px solid #000' : '1px solid #e5e7eb'
+                  }}
+                  onClick={() => handleTemplateSelect(key)}
+                >
+                  {/* Selection Badge */}
+                  {selectedTemplate === key && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="bg-black text-white rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1 shadow-lg">
+                        <Check size={14} />
+                        Selected
+                      </div>
                     </div>
-                    {/* Compact Action Buttons */}
-                    <div className="flex gap-1">
+                  )}
+
+                  <div className="p-6">
+                    {/* Template Icon & Name */}
+                    <div className="mb-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="text-4xl">{colors.icon}</div>
+                          <div>
+                            <h3 className="font-bold text-gray-900 text-lg">{template.name}</h3>
+                            <p className="text-sm text-gray-600 mt-0.5">{template.description || 'Professional email template'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Clean Preview Snippet */}
+                    <div className="bg-white rounded-xl p-4 mb-4 border border-gray-200 shadow-sm min-h-[200px]">
+                      <div className="space-y-3">
+                        {/* Subject line hint */}
+                        <div className="border-b border-gray-100 pb-2">
+                          <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Preview</p>
+                        </div>
+
+                        {/* Template specific preview content */}
+                        {key === 'professional_partnership' && (
+                          <>
+                            <p className="text-sm font-semibold text-gray-900">Building Strategic Partnerships</p>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              Hello! I noticed your company's innovative work in transforming the industry...
+                            </p>
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              <div className="inline-flex items-center gap-2 text-xs text-gray-500">
+                                <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                                Partnership • Professional • Executive
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {key === 'modern_tech' && (
+                          <>
+                            <p className="text-sm font-semibold text-gray-900">Transform Your Business</p>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              Harness cutting-edge AI to revolutionize operations and accelerate growth...
+                            </p>
+                            <div className="mt-3 flex gap-4 text-xs">
+                              <div className="flex items-center gap-1">
+                                <span className="font-bold text-gray-900">10x</span>
+                                <span className="text-gray-500">Faster</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-bold text-gray-900">40%</span>
+                                <span className="text-gray-500">Savings</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {key === 'executive_outreach' && (
+                          <>
+                            <p className="text-sm font-semibold text-gray-900">Strategic Partnership Proposal</p>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              Our analysis reveals significant synergies between our organizations...
+                            </p>
+                            <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                              <div className="text-center">
+                                <p className="font-bold text-gray-900">$2.5M</p>
+                                <p className="text-gray-500">Revenue</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="font-bold text-gray-900">150%</p>
+                                <p className="text-gray-500">Growth</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="font-bold text-gray-900">45K</p>
+                                <p className="text-gray-500">Users</p>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {key === 'product_launch' && (
+                          <>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-2xl">🚀</span>
+                              <p className="text-sm font-semibold text-gray-900">Exclusive Launch</p>
+                            </div>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              Be first to experience innovation. Revolutionary platform launching next week...
+                            </p>
+                            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-lg text-xs font-medium">
+                              LIMITED: 50 Spots Only
+                            </div>
+                          </>
+                        )}
+
+                        {key === 'consultative_sales' && (
+                          <>
+                            <p className="text-sm font-semibold text-gray-900">Strategic Assessment</p>
+                            <p className="text-xs text-gray-600 leading-relaxed mb-2">
+                              Complimentary business review designed for your company...
+                            </p>
+                            <div className="space-y-1">
+                              <div className="flex items-start gap-2 text-xs text-gray-600">
+                                <span>✓</span>
+                                <span>Growth opportunities & revenue streams</span>
+                              </div>
+                              <div className="flex items-start gap-2 text-xs text-gray-600">
+                                <span>✓</span>
+                                <span>Cost optimization with immediate ROI</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {key === 'event_invitation' && (
+                          <>
+                            <div className="text-center">
+                              <p className="text-2xl mb-1">🎯</p>
+                              <p className="text-sm font-semibold text-gray-900">You're Invited!</p>
+                              <p className="text-xs text-gray-600 mt-1">Annual Innovation Summit 2025</p>
+                            </div>
+                            <div className="mt-3 flex justify-center gap-4 text-xs">
+                              <div className="flex items-center gap-1 text-gray-600">
+                                <span>📅</span>
+                                <span>March 15-17</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-gray-600">
+                                <span>📍</span>
+                                <span>San Francisco</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {key === 'custom' && (
+                          <>
+                            <p className="text-sm font-semibold text-gray-900">Build Your Own</p>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              Fully customizable template with drag & drop components...
+                            </p>
+                            <div className="mt-3 space-y-1">
+                              <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <span>•</span>
+                                <span>Add your branding</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <span>•</span>
+                                <span>Personalize everything</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
                       <button
                         onClick={(e) => handlePreview(key, e)}
-                        className="flex items-center justify-center gap-1 px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100 transition-colors"
-                        title="Full Preview"
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
                       >
-                        <Eye size={12} />
+                        <Eye size={16} />
                         Preview
                       </button>
                       {selectedTemplate === key && (
                         <button
                           onClick={(e) => handleCustomize(key, e)}
-                          className="flex items-center justify-center gap-1 px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                          title="Customize Template"
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-black rounded-lg hover:bg-gray-800 transition-all"
                         >
-                          <Edit3 size={12} />
-                          Edit
+                          <Edit3 size={16} />
+                          Customize
                         </button>
                       )}
                     </div>
                   </div>
-
-                  {/* MASSIVE EMAIL PREVIEW - FILLS THE REST OF THE CARD */}
-                  <div className="flex-1 p-3 bg-gradient-to-br from-gray-50 via-white to-green-50/20 overflow-hidden">
-                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-2 h-full overflow-hidden hover:shadow-xl transition-shadow duration-300" style={{ minHeight: '350px' }}>
-                      {renderTemplatePreview(template)}
-                    </div>
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
