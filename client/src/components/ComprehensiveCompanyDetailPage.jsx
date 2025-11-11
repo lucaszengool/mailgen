@@ -136,7 +136,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
           </button>
           <div className="flex items-center justify-center py-32">
             <div className="text-center">
-              <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-16 h-16 border-4 border-[#00f5a0] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600 text-lg">Loading comprehensive company data...</p>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
             </button>
             <button
               onClick={() => toast.success('Opening email composer...')}
-              className="flex items-center space-x-2 px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors shadow-sm"
+              className="flex items-center space-x-2 px-5 py-2 bg-[#00f5a0] text-white rounded-lg hover:bg-[#00f5a0] transition-colors shadow-sm"
             >
               <EnvelopeIcon className="w-4 h-4" />
               <span className="text-sm font-semibold">Send Email</span>
@@ -207,7 +207,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                   {companyData.logo ? (
                     <img src={companyData.logo} alt={companyData.name} className="w-full h-full object-cover rounded-2xl" />
                   ) : (
-                    <BuildingOfficeIcon className="w-12 h-12 text-green-500" />
+                    <BuildingOfficeIcon className="w-12 h-12 text-[#00f5a0]" />
                   )}
                 </div>
 
@@ -230,7 +230,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                     )}
                     {companyData.founded && (
                       <div className="flex items-center space-x-2 px-3 py-2 bg-black rounded-xl border border-gray-800">
-                        <CalendarIcon className="w-4 h-4 text-green-500" />
+                        <CalendarIcon className="w-4 h-4 text-[#00f5a0]" />
                         <span className="text-sm font-medium text-white">Founded {companyData.founded}</span>
                       </div>
                     )}
@@ -252,7 +252,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                         rel="noopener noreferrer"
                         className="flex items-center space-x-2 px-4 py-2 bg-green-50 rounded-xl border border-green-200 hover:bg-green-100 hover:shadow-md transition-all"
                       >
-                        <GlobeAltIcon className="w-4 h-4 text-green-600" />
+                        <GlobeAltIcon className="w-4 h-4 text-[#00f5a0]" />
                         <span className="text-sm font-medium text-gray-900">{companyData.website.replace(/^https?:\/\//, '').split('/')[0]}</span>
                       </a>
                     )}
@@ -324,7 +324,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-50 to-emerald-50 rounded-full blur-3xl opacity-30 -mr-32 -mt-32"></div>
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center relative z-10">
                 <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-                  <EnvelopeIcon className="w-5 h-5 text-green-500" />
+                  <EnvelopeIcon className="w-5 h-5 text-[#00f5a0]" />
                 </div>
                 Email Campaign Information
               </h2>
@@ -337,7 +337,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
 
                 <div>
                   <div className="text-sm text-gray-600 mb-2 font-medium">Discovery Status</div>
-                  <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
+                  <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-[#00f5a0]">
                     {prospect.status || 'discovered'}
                   </span>
                 </div>
@@ -347,7 +347,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                   <div className="flex items-center space-x-3">
                     <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-green-500 rounded-full transition-all"
+                        className="h-full bg-[#00f5a0] rounded-full transition-all"
                         style={{ width: `${companyData.confidence}%` }}
                       ></div>
                     </div>
@@ -367,7 +367,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-green-50 to-emerald-50 rounded-full blur-3xl opacity-30 -ml-32 -mt-32"></div>
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center relative z-10">
                 <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-                  <RocketLaunchIcon className="w-5 h-5 text-green-500" />
+                  <RocketLaunchIcon className="w-5 h-5 text-[#00f5a0]" />
                 </div>
                 Why Our Solution Fits Their Needs
               </h2>
@@ -376,7 +376,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                 {(companyData.valuePropositions || []).map((value, idx) => (
                   <div key={idx} className="flex items-start space-x-3 p-3 rounded-xl hover:bg-gray-50 transition-all">
                     <div className="w-6 h-6 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
-                      <CheckCircleIcon className="w-4 h-4 text-green-500" />
+                      <CheckCircleIcon className="w-4 h-4 text-[#00f5a0]" />
                     </div>
                     <span className="text-gray-900 font-medium">{value}</span>
                   </div>
@@ -388,7 +388,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
             <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                 <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-                  <UsersIcon className="w-5 h-5 text-green-500" />
+                  <UsersIcon className="w-5 h-5 text-[#00f5a0]" />
                 </div>
                 Key Decision Makers to Target
               </h2>
@@ -401,7 +401,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                       <div className="flex items-start justify-between mb-4">
                         <h3 className="font-bold text-gray-900 text-lg">{persona.role}</h3>
                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-gray-300">
-                          <BriefcaseIcon className="w-5 h-5 text-green-600" />
+                          <BriefcaseIcon className="w-5 h-5 text-[#00f5a0]" />
                         </div>
                       </div>
 
@@ -425,7 +425,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
             <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                 <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-                  <SparklesIcon className="w-5 h-5 text-green-500" />
+                  <SparklesIcon className="w-5 h-5 text-[#00f5a0]" />
                 </div>
                 Technology Stack
               </h2>
@@ -433,8 +433,8 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="flex flex-wrap gap-3">
                 {(companyData.techStack || []).map((tech, idx) => {
                   const styles = [
-                    'bg-black text-green-500 border-green-500',
-                    'bg-green-500 text-white',
+                    'bg-black text-[#00f5a0] border-[#00f5a0]',
+                    'bg-[#00f5a0] text-white',
                     'bg-gray-900 text-white',
                     'bg-green-50 text-gray-900 border-green-200'
                   ];
@@ -456,19 +456,19 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-green-50 via-emerald-50 to-green-50 rounded-full blur-3xl opacity-40 -mr-48 -mb-48"></div>
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center relative z-10">
                 <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-                  <BanknotesIcon className="w-5 h-5 text-green-500" />
+                  <BanknotesIcon className="w-5 h-5 text-[#00f5a0]" />
                 </div>
                 Funding
               </h2>
 
               <div className="grid grid-cols-3 gap-6 mb-8 relative z-10">
                 <div className="p-4 bg-black rounded-2xl border border-gray-800">
-                  <div className="text-sm text-green-500 mb-2 font-semibold">Current Stage</div>
+                  <div className="text-sm text-[#00f5a0] mb-2 font-semibold">Current Stage</div>
                   <div className="font-bold text-white text-lg">{companyData.funding?.stage || 'Growth Stage'}</div>
                 </div>
 
                 <div className="p-4 bg-black rounded-2xl border border-gray-800">
-                  <div className="text-sm text-green-500 mb-2 font-semibold">Total Funding</div>
+                  <div className="text-sm text-[#00f5a0] mb-2 font-semibold">Total Funding</div>
                   <div className="font-bold text-white text-lg">{companyData.funding?.totalFunding || 'Undisclosed'}</div>
                 </div>
 
@@ -485,9 +485,9 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                   {((companyData.funding && companyData.funding.yearlyFunding) || []).map((data, idx) => {
                     const maxAmount = Math.max(...((companyData.funding && companyData.funding.yearlyFunding) || []).map(d => d.amount || 0));
                     const colors = [
-                      'bg-green-500',
+                      'bg-[#00f5a0]',
                       'bg-black',
-                      'bg-green-600',
+                      'bg-[#00f5a0]',
                       'bg-gray-900',
                       'bg-green-400'
                     ];
@@ -520,7 +520,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
             <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                 <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-                  <TrophyIcon className="w-5 h-5 text-green-500" />
+                  <TrophyIcon className="w-5 h-5 text-[#00f5a0]" />
                 </div>
                 Leadership Team
               </h2>
@@ -532,7 +532,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                       {leader.photo ? (
                         <img src={leader.photo} alt={leader.name} className="w-full h-full object-cover" />
                       ) : (
-                        <UsersIcon className="w-8 h-8 text-green-500" />
+                        <UsersIcon className="w-8 h-8 text-[#00f5a0]" />
                       )}
                     </div>
 
@@ -549,7 +549,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
             <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                 <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-                  <NewspaperIcon className="w-5 h-5 text-green-500" />
+                  <NewspaperIcon className="w-5 h-5 text-[#00f5a0]" />
                 </div>
                 Recent News
               </h2>
@@ -560,10 +560,10 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-3">
-                          <span className="px-3 py-1 bg-black text-green-500 text-xs font-bold rounded-lg">{article.source}</span>
+                          <span className="px-3 py-1 bg-black text-[#00f5a0] text-xs font-bold rounded-lg">{article.source}</span>
                           <span className="text-sm text-gray-500">{article.date}</span>
                         </div>
-                        <h3 className="font-bold text-gray-900 mb-2 leading-snug group-hover:text-green-600 transition-colors">
+                        <h3 className="font-bold text-gray-900 mb-2 leading-snug group-hover:text-[#00f5a0] transition-colors">
                           {article.title}
                         </h3>
                       </div>
@@ -578,18 +578,18 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                   <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3">
-                    <TrophyIcon className="w-5 h-5 text-green-500" />
+                    <TrophyIcon className="w-5 h-5 text-[#00f5a0]" />
                   </div>
                   Competitive Advantages
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   {companyData.competitiveAdvantages.map((advantage, idx) => (
-                    <div key={idx} className="p-4 bg-gradient-to-br from-gray-50 to-green-50 rounded-2xl border border-gray-200 hover:border-green-500 hover:shadow-md transition-all group">
+                    <div key={idx} className="p-4 bg-black rounded-2xl hover:shadow-md transition-all group">
                       <div className="flex items-start space-x-3">
-                        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                          <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <CheckCircleIcon className="w-5 h-5 text-[#00f5a0]" />
                         </div>
-                        <span className="text-gray-900 font-semibold">{advantage}</span>
+                        <span className="text-white font-semibold">{advantage}</span>
                       </div>
                     </div>
                   ))}
@@ -602,22 +602,22 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                   <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3">
-                    <ChartBarIcon className="w-5 h-5 text-green-500" />
+                    <ChartBarIcon className="w-5 h-5 text-[#00f5a0]" />
                   </div>
                   Market Position
                 </h2>
                 <div className="grid grid-cols-3 gap-6">
                   <div className="p-6 bg-black rounded-2xl text-center">
-                    <div className="text-sm text-green-500 mb-2 font-semibold">Category</div>
+                    <div className="text-sm text-[#00f5a0] mb-2 font-semibold">Category</div>
                     <div className="text-xl font-bold text-white">{companyData.marketPosition.category}</div>
                   </div>
-                  <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl text-center border border-green-200">
-                    <div className="text-sm text-green-700 mb-2 font-semibold">Market Share</div>
-                    <div className="text-xl font-bold text-gray-900">{companyData.marketPosition.marketShare}</div>
+                  <div className="p-6 bg-black rounded-2xl text-center">
+                    <div className="text-sm text-[#00f5a0] mb-2 font-semibold">Market Share</div>
+                    <div className="text-xl font-bold text-white">{companyData.marketPosition.marketShare}</div>
                   </div>
-                  <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl text-center border border-gray-200">
-                    <div className="text-sm text-gray-600 mb-2 font-semibold">Competitive Rating</div>
-                    <div className="text-xl font-bold text-green-600">{companyData.marketPosition.competitiveRating}/10</div>
+                  <div className="p-6 bg-black rounded-2xl text-center">
+                    <div className="text-sm text-[#00f5a0] mb-2 font-semibold">Competitive Rating</div>
+                    <div className="text-xl font-bold text-white">{companyData.marketPosition.competitiveRating}/10</div>
                   </div>
                 </div>
               </div>
@@ -628,7 +628,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                   <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3">
-                    <BuildingOfficeIcon className="w-5 h-5 text-green-500" />
+                    <BuildingOfficeIcon className="w-5 h-5 text-[#00f5a0]" />
                   </div>
                   Key Clients & Partners
                 </h2>
@@ -647,7 +647,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                   <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3">
-                    <StarIcon className="w-5 h-5 text-green-500" />
+                    <StarIcon className="w-5 h-5 text-[#00f5a0]" />
                   </div>
                   Mission & Values
                 </h2>
@@ -674,19 +674,19 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                 <div className="space-y-4">
                   {companyData.contactInfo.email && (
                     <div className="p-4 bg-white/10 rounded-xl">
-                      <div className="text-sm text-green-500 mb-1 font-semibold">Email</div>
+                      <div className="text-sm text-[#00f5a0] mb-1 font-semibold">Email</div>
                       <div className="text-white font-medium">{companyData.contactInfo.email}</div>
                     </div>
                   )}
                   {companyData.contactInfo.phone && (
                     <div className="p-4 bg-white/10 rounded-xl">
-                      <div className="text-sm text-green-500 mb-1 font-semibold">Phone</div>
+                      <div className="text-sm text-[#00f5a0] mb-1 font-semibold">Phone</div>
                       <div className="text-white font-medium">{companyData.contactInfo.phone}</div>
                     </div>
                   )}
                   {companyData.contactInfo.address && (
                     <div className="p-4 bg-white/10 rounded-xl">
-                      <div className="text-sm text-green-500 mb-1 font-semibold">Address</div>
+                      <div className="text-sm text-[#00f5a0] mb-1 font-semibold">Address</div>
                       <div className="text-white font-medium">{companyData.contactInfo.address}</div>
                     </div>
                   )}
@@ -768,7 +768,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                   <div className="pt-6 border-t border-white/20 space-y-3 text-left">
                     <div className="text-sm text-white flex items-center space-x-3 p-2.5 bg-white/10 rounded-xl backdrop-blur-sm">
                       <div className="w-6 h-6 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                        <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                        <CheckCircleIcon className="w-4 h-4 text-[#00f5a0]" />
                       </div>
                       <span className="font-medium">High Interest Level</span>
                     </div>
@@ -792,18 +792,18 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                 <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center">
                   <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center mr-2 shadow-md">
-                    <ChartBarIcon className="w-4 h-4 text-green-500" />
+                    <ChartBarIcon className="w-4 h-4 text-[#00f5a0]" />
                   </div>
                   Growth Metrics
                 </h3>
 
                 <div className="space-y-3">
                   <div className="p-4 rounded-2xl bg-black border border-gray-800">
-                    <div className="text-sm text-green-500 mb-2 font-semibold">Revenue Growth</div>
+                    <div className="text-sm text-[#00f5a0] mb-2 font-semibold">Revenue Growth</div>
                     <div className="text-2xl font-bold text-white">{companyData.growthMetrics?.revenueGrowth || 'N/A'}</div>
                   </div>
                   <div className="p-4 rounded-2xl bg-black border border-gray-800">
-                    <div className="text-sm text-green-500 mb-2 font-semibold">Employee Growth</div>
+                    <div className="text-sm text-[#00f5a0] mb-2 font-semibold">Employee Growth</div>
                     <div className="text-2xl font-bold text-white">{companyData.growthMetrics?.employeeGrowth || 'N/A'}</div>
                   </div>
                   <div className="p-4 rounded-2xl bg-white border border-gray-300">
@@ -821,7 +821,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
               <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                 <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center">
                   <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center mr-2 shadow-md">
-                    <EnvelopeIcon className="w-4 h-4 text-green-500" />
+                    <EnvelopeIcon className="w-4 h-4 text-[#00f5a0]" />
                   </div>
                   Email Marketing Fit
                 </h3>
@@ -843,7 +843,7 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
                       {((companyData.emailMarketingFit && companyData.emailMarketingFit.painPoints) || []).map((point, idx) => (
                         <div key={idx} className="flex items-start space-x-3 p-2.5 rounded-xl hover:bg-gray-50 transition-all">
                           <div className="w-6 h-6 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
-                            <CheckCircleIcon className="w-4 h-4 text-green-500" />
+                            <CheckCircleIcon className="w-4 h-4 text-[#00f5a0]" />
                           </div>
                           <span className="text-sm text-gray-900 font-medium">{point}</span>
                         </div>

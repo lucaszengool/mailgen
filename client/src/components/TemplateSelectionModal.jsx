@@ -1336,8 +1336,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       const template = EMAIL_TEMPLATES[selectedTemplate];
       // If template was customized, merge custom data
       const finalTemplate = isCustomizeMode && Object.keys(customTemplateData).length > 0
-        ? { ...template, ...customTemplateData }
-        : template;
+        ? { ...template, ...customTemplateData, id: selectedTemplate }
+        : { ...template, id: selectedTemplate };
       onSelectTemplate(finalTemplate);
       // 🔥 FIX: Pass template directly to avoid React state race condition
       onConfirm(finalTemplate);
@@ -1674,240 +1674,305 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                     <div className="bg-white rounded-lg border border-gray-200 shadow-inner overflow-hidden">
                       {/* Template specific VISUAL preview content */}
                       {key === 'professional_partnership' && (
-                        <div className="p-6 space-y-4">
-                          {/* Email Header Bar */}
-                          <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-gray-200"></div>
-                              <div>
-                                <div className="h-2 w-20 bg-gray-300 rounded"></div>
-                                <div className="h-1.5 w-32 bg-gray-200 rounded mt-1"></div>
-                              </div>
-                            </div>
+                        <div className="p-4 space-y-3 text-[10px]">
+                          {/* Logo Section */}
+                          <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+                            <div className="w-6 h-6 rounded bg-gray-300 flex items-center justify-center text-[8px] text-gray-600">LOGO</div>
+                            <div className="text-gray-400 text-[8px]">Company Name</div>
                           </div>
 
-                          {/* Email Body */}
-                          <div className="space-y-3">
-                            <div className="h-3 w-3/4 bg-gray-800 rounded"></div>
-                            <div className="space-y-1.5">
-                              <div className="h-2 w-full bg-gray-200 rounded"></div>
-                              <div className="h-2 w-full bg-gray-200 rounded"></div>
-                              <div className="h-2 w-5/6 bg-gray-200 rounded"></div>
-                            </div>
+                          {/* Greeting */}
+                          <div className="text-gray-900 font-semibold">Hi [Name],</div>
 
-                            {/* Partnership CTA */}
-                            <div className="bg-gray-100 rounded-lg p-4 border border-gray-200">
-                              <div className="h-2 w-32 bg-gray-400 rounded mb-2"></div>
-                              <div className="h-2 w-full bg-gray-300 rounded"></div>
-                            </div>
+                          {/* Body Paragraphs */}
+                          <div className="space-y-1.5 text-gray-700 leading-tight">
+                            <p>We specialize in helping companies like yours achieve their partnership goals. Our proven approach has delivered results for industry leaders.</p>
+                            <p>We'd love to explore how we can support [Company]'s growth through strategic collaboration.</p>
+                          </div>
 
-                            {/* Button */}
-                            <div className="bg-black text-white rounded-md py-2 px-4 text-center">
-                              <div className="h-2 w-24 bg-white rounded mx-auto"></div>
-                            </div>
+                          {/* Partnership Value Box */}
+                          <div className="bg-gray-50 rounded-lg p-2 border border-gray-200">
+                            <div className="font-semibold text-gray-900 mb-1">Partnership Benefits</div>
+                            <div className="text-gray-600">Strategic alignment, shared resources, mutual growth opportunities</div>
+                          </div>
+
+                          {/* CTA Button */}
+                          <div className="bg-black text-white rounded-md py-2 px-3 text-center font-medium">
+                            Schedule a Call →
+                          </div>
+
+                          {/* Signature */}
+                          <div className="text-gray-600 text-[9px] pt-2 border-t border-gray-100">
+                            Best regards,<br/>
+                            [Your Name]<br/>
+                            [Your Company]
                           </div>
                         </div>
                       )}
 
                       {key === 'modern_tech' && (
-                        <div className="space-y-0">
+                        <div className="space-y-0 text-[10px]">
                           {/* Tech Header Banner */}
-                          <div className="bg-gradient-to-r from-gray-900 to-black p-6 text-white">
-                            <div className="h-3 w-48 bg-white rounded mb-2"></div>
-                            <div className="h-2 w-64 bg-gray-400 rounded"></div>
+                          <div className="bg-gradient-to-r from-gray-900 to-black p-4 text-white">
+                            <div className="font-bold text-[11px] mb-1">Transform Your Tech Stack</div>
+                            <div className="text-gray-300 text-[9px]">Next-generation solutions for modern businesses</div>
                           </div>
 
                           {/* Content */}
-                          <div className="p-6 space-y-4">
-                            <div className="space-y-2">
-                              <div className="h-2 w-full bg-gray-200 rounded"></div>
-                              <div className="h-2 w-full bg-gray-200 rounded"></div>
-                              <div className="h-2 w-4/5 bg-gray-200 rounded"></div>
+                          <div className="p-4 space-y-3">
+                            <div className="text-gray-900 font-semibold">Hi [Name],</div>
+
+                            <div className="space-y-1.5 text-gray-700 leading-tight">
+                              <p>Cutting-edge technology is reshaping [Industry]. We help forward-thinking companies leverage AI and automation to stay ahead.</p>
+                              <p>Our platform has helped 500+ tech companies achieve measurable results.</p>
                             </div>
 
                             {/* Stats Grid */}
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                <div className="h-4 w-12 bg-black rounded mb-1"></div>
-                                <div className="h-2 w-16 bg-gray-300 rounded"></div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="bg-gray-50 rounded-lg p-2 border border-gray-200 text-center">
+                                <div className="text-[14px] font-bold text-gray-900">10x</div>
+                                <div className="text-[8px] text-gray-600">Faster Deploy</div>
                               </div>
-                              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                <div className="h-4 w-12 bg-black rounded mb-1"></div>
-                                <div className="h-2 w-16 bg-gray-300 rounded"></div>
+                              <div className="bg-gray-50 rounded-lg p-2 border border-gray-200 text-center">
+                                <div className="text-[14px] font-bold text-gray-900">40%</div>
+                                <div className="text-[8px] text-gray-600">Cost Savings</div>
                               </div>
                             </div>
 
                             {/* CTA Button */}
-                            <div className="bg-black rounded-lg py-3 text-center">
-                              <div className="h-2 w-28 bg-white rounded mx-auto"></div>
+                            <div className="bg-black text-white rounded-lg py-2 text-center font-medium">
+                              Start Free Trial →
+                            </div>
+
+                            {/* Signature */}
+                            <div className="text-gray-600 text-[9px] pt-2 border-t border-gray-100">
+                              Best,<br/>
+                              [Your Name] | Tech Solutions
                             </div>
                           </div>
                         </div>
                       )}
 
                       {key === 'executive_outreach' && (
-                        <div className="p-6 space-y-4">
+                        <div className="p-4 space-y-3 text-[10px]">
                           {/* Executive Header */}
-                          <div className="border-l-4 border-black pl-4 py-2">
-                            <div className="h-3 w-48 bg-gray-900 rounded mb-1"></div>
-                            <div className="h-2 w-32 bg-gray-400 rounded"></div>
+                          <div className="border-l-4 border-black pl-3 py-2">
+                            <div className="font-bold text-gray-900 text-[11px] mb-0.5">Strategic Partnership Proposal</div>
+                            <div className="text-gray-600 text-[9px]">For [Company] Leadership</div>
                           </div>
 
+                          <div className="text-gray-900 font-semibold">Dear [Name],</div>
+
                           {/* Body */}
-                          <div className="space-y-2">
-                            <div className="h-2 w-full bg-gray-200 rounded"></div>
-                            <div className="h-2 w-full bg-gray-200 rounded"></div>
-                            <div className="h-2 w-3/4 bg-gray-200 rounded"></div>
+                          <div className="space-y-1.5 text-gray-700 leading-tight">
+                            <p>As a leader in [Industry], [Company] is uniquely positioned to benefit from strategic collaboration in today's market.</p>
+                            <p>Our executive team has identified key synergies that could drive substantial value for both organizations.</p>
                           </div>
 
                           {/* Metrics Cards */}
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-3 gap-1.5">
                             <div className="bg-gray-50 rounded p-2 text-center border border-gray-200">
-                              <div className="h-3 w-12 bg-black rounded mx-auto mb-1"></div>
-                              <div className="h-1.5 w-10 bg-gray-300 rounded mx-auto"></div>
+                              <div className="text-[13px] font-bold text-gray-900">$2.5M</div>
+                              <div className="text-[7px] text-gray-600">Avg ROI</div>
                             </div>
                             <div className="bg-gray-50 rounded p-2 text-center border border-gray-200">
-                              <div className="h-3 w-12 bg-black rounded mx-auto mb-1"></div>
-                              <div className="h-1.5 w-10 bg-gray-300 rounded mx-auto"></div>
+                              <div className="text-[13px] font-bold text-gray-900">95%</div>
+                              <div className="text-[7px] text-gray-600">Retention</div>
                             </div>
                             <div className="bg-gray-50 rounded p-2 text-center border border-gray-200">
-                              <div className="h-3 w-12 bg-black rounded mx-auto mb-1"></div>
-                              <div className="h-1.5 w-10 bg-gray-300 rounded mx-auto"></div>
+                              <div className="text-[13px] font-bold text-gray-900">6mo</div>
+                              <div className="text-[7px] text-gray-600">Payback</div>
                             </div>
                           </div>
 
                           {/* Quote */}
-                          <div className="bg-gray-50 rounded-lg p-3 border-l-2 border-black">
-                            <div className="h-1.5 w-full bg-gray-300 rounded mb-1"></div>
-                            <div className="h-1.5 w-4/5 bg-gray-300 rounded"></div>
+                          <div className="bg-gray-50 rounded-lg p-2 border-l-2 border-black">
+                            <p className="text-gray-700 italic text-[9px] leading-tight">"This partnership transformed our strategic positioning and delivered exceptional results."</p>
+                            <div className="text-gray-600 text-[8px] mt-1">— CEO, Fortune 500 Company</div>
+                          </div>
+
+                          {/* CTA */}
+                          <div className="bg-black text-white rounded-md py-2 px-3 text-center font-medium">
+                            Schedule Executive Briefing
+                          </div>
+
+                          <div className="text-gray-600 text-[9px] pt-2 border-t border-gray-100">
+                            Respectfully,<br/>
+                            [Your Name], [Title]
                           </div>
                         </div>
                       )}
 
                       {key === 'product_launch' && (
-                        <div className="p-6 space-y-4">
+                        <div className="p-4 space-y-3 text-[10px]">
                           {/* Launch Badge */}
-                          <div className="text-center py-4 bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg">
-                            <div className="w-10 h-10 bg-black rounded-full mx-auto mb-2"></div>
-                            <div className="h-3 w-32 bg-black rounded mx-auto mb-1"></div>
-                            <div className="h-2 w-48 bg-gray-400 rounded mx-auto"></div>
+                          <div className="text-center py-3 bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg">
+                            <div className="w-8 h-8 bg-black rounded-full mx-auto mb-2 flex items-center justify-center text-white text-[12px] font-bold">🚀</div>
+                            <div className="font-bold text-gray-900 text-[11px] mb-1">NEW PRODUCT LAUNCH</div>
+                            <div className="text-gray-600 text-[9px]">Exclusive Early Access Available</div>
                           </div>
 
+                          <div className="text-gray-900 font-semibold">Hi [Name],</div>
+
                           {/* Description */}
-                          <div className="space-y-2">
-                            <div className="h-2 w-full bg-gray-200 rounded"></div>
-                            <div className="h-2 w-full bg-gray-200 rounded"></div>
-                            <div className="h-2 w-3/4 bg-gray-200 rounded"></div>
+                          <div className="space-y-1.5 text-gray-700 leading-tight">
+                            <p>We're excited to announce the launch of our revolutionary new platform designed specifically for [Industry] professionals.</p>
+                            <p>As a valued connection, you're getting exclusive early access before our public launch next month.</p>
+                            <p>This limited opportunity includes special founding member pricing and premium features.</p>
                           </div>
 
                           {/* Limited Badge */}
-                          <div className="bg-black text-white rounded-lg py-2 px-4 inline-flex mx-auto">
-                            <div className="h-2 w-32 bg-white rounded"></div>
+                          <div className="bg-black text-white rounded-lg py-1.5 px-3 inline-flex text-center font-semibold text-[9px]">
+                            ⏰ Limited Spots Available
                           </div>
 
                           {/* CTA */}
-                          <div className="border-2 border-black rounded-lg py-3 text-center">
-                            <div className="h-2 w-28 bg-black rounded mx-auto"></div>
+                          <div className="border-2 border-black rounded-lg py-2 text-center font-bold text-gray-900">
+                            Claim Your Early Access →
+                          </div>
+
+                          <div className="text-gray-600 text-[9px] pt-2 border-t border-gray-100">
+                            Cheers,<br/>
+                            [Your Name] | Product Team
                           </div>
                         </div>
                       )}
 
                       {key === 'consultative_sales' && (
-                        <div className="p-6 space-y-4">
+                        <div className="p-4 space-y-3 text-[10px]">
                           {/* Header */}
-                          <div className="space-y-2">
-                            <div className="h-3 w-40 bg-gray-900 rounded"></div>
-                            <div className="h-2 w-full bg-gray-200 rounded"></div>
-                            <div className="h-2 w-5/6 bg-gray-200 rounded"></div>
+                          <div className="space-y-1.5">
+                            <div className="font-bold text-gray-900 text-[11px]">Strategic Assessment for [Company]</div>
+                            <div className="text-gray-900 font-semibold">Hi [Name],</div>
+                            <div className="text-gray-700 leading-tight">
+                              I've been analyzing [Company]'s position in [Industry] and identified several opportunities worth discussing.
+                            </div>
                           </div>
 
                           {/* Checklist */}
-                          <div className="space-y-2">
+                          <div className="bg-gray-50 rounded-lg p-3 space-y-2 border border-gray-200">
+                            <div className="font-semibold text-gray-900 text-[10px] mb-2">Key Areas We Can Address:</div>
                             <div className="flex items-start gap-2">
-                              <div className="w-4 h-4 bg-black rounded-sm flex-shrink-0 mt-0.5"></div>
-                              <div className="flex-1">
-                                <div className="h-2 w-full bg-gray-300 rounded"></div>
+                              <div className="w-3 h-3 bg-black rounded-sm flex-shrink-0 mt-0.5 flex items-center justify-center text-white text-[8px]">✓</div>
+                              <div className="flex-1 text-gray-700">
+                                Revenue optimization and growth acceleration
                               </div>
                             </div>
                             <div className="flex items-start gap-2">
-                              <div className="w-4 h-4 bg-black rounded-sm flex-shrink-0 mt-0.5"></div>
-                              <div className="flex-1">
-                                <div className="h-2 w-5/6 bg-gray-300 rounded"></div>
+                              <div className="w-3 h-3 bg-black rounded-sm flex-shrink-0 mt-0.5 flex items-center justify-center text-white text-[8px]">✓</div>
+                              <div className="flex-1 text-gray-700">
+                                Operational efficiency and cost reduction
                               </div>
                             </div>
                             <div className="flex items-start gap-2">
-                              <div className="w-4 h-4 bg-black rounded-sm flex-shrink-0 mt-0.5"></div>
-                              <div className="flex-1">
-                                <div className="h-2 w-4/5 bg-gray-300 rounded"></div>
+                              <div className="w-3 h-3 bg-black rounded-sm flex-shrink-0 mt-0.5 flex items-center justify-center text-white text-[8px]">✓</div>
+                              <div className="flex-1 text-gray-700">
+                                Market expansion and competitive positioning
                               </div>
                             </div>
                           </div>
 
+                          <div className="text-gray-700 leading-tight">
+                            I'd like to share specific insights tailored to [Company]'s situation.
+                          </div>
+
                           {/* CTA Button */}
-                          <div className="bg-black rounded-lg py-3 text-center mt-4">
-                            <div className="h-2 w-32 bg-white rounded mx-auto"></div>
+                          <div className="bg-black text-white rounded-lg py-2 text-center font-medium">
+                            Schedule Consultation →
+                          </div>
+
+                          <div className="text-gray-600 text-[9px] pt-2 border-t border-gray-100">
+                            Best regards,<br/>
+                            [Your Name] | Solutions Consultant
                           </div>
                         </div>
                       )}
 
                       {key === 'event_invitation' && (
-                        <div className="p-6 space-y-4">
+                        <div className="p-4 space-y-3 text-[10px]">
                           {/* Event Badge */}
-                          <div className="text-center py-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-black rounded-full mx-auto mb-3"></div>
-                            <div className="h-3 w-40 bg-black rounded mx-auto mb-2"></div>
-                            <div className="h-2 w-48 bg-gray-400 rounded mx-auto"></div>
+                          <div className="text-center py-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-black rounded-full mx-auto mb-2 flex items-center justify-center text-white text-[14px]">📅</div>
+                            <div className="font-bold text-gray-900 text-[11px] mb-1">You're Invited!</div>
+                            <div className="text-gray-600 text-[9px]">Future of [Industry] Summit 2024</div>
                           </div>
 
+                          <div className="text-gray-900 font-semibold">Hi [Name],</div>
+
                           {/* Event Details */}
-                          <div className="bg-gray-50 rounded-lg p-4 space-y-2 border border-gray-200">
+                          <div className="bg-gray-50 rounded-lg p-3 space-y-2 border border-gray-200">
                             <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 bg-gray-400 rounded"></div>
-                              <div className="h-2 w-32 bg-gray-400 rounded"></div>
+                              <div className="w-3 h-3 bg-gray-700 rounded flex items-center justify-center text-white text-[8px]">📍</div>
+                              <div className="text-gray-700 font-medium">San Francisco Convention Center</div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 bg-gray-400 rounded"></div>
-                              <div className="h-2 w-28 bg-gray-400 rounded"></div>
+                              <div className="w-3 h-3 bg-gray-700 rounded flex items-center justify-center text-white text-[8px]">🕐</div>
+                              <div className="text-gray-700 font-medium">March 15, 2024 • 9:00 AM - 5:00 PM</div>
                             </div>
                           </div>
 
                           {/* Description */}
-                          <div className="space-y-1.5">
-                            <div className="h-2 w-full bg-gray-200 rounded"></div>
-                            <div className="h-2 w-full bg-gray-200 rounded"></div>
-                            <div className="h-2 w-3/4 bg-gray-200 rounded"></div>
+                          <div className="space-y-1.5 text-gray-700 leading-tight">
+                            <p>Join 500+ industry leaders for a day of networking, insights, and innovation. Featured speakers include top executives from Fortune 500 companies.</p>
+                            <p>This exclusive event includes keynotes, workshops, and networking sessions designed for [Industry] professionals.</p>
+                          </div>
+
+                          {/* Perks */}
+                          <div className="bg-gray-50 rounded-lg p-2 border border-gray-200">
+                            <div className="text-gray-900 font-semibold text-[9px] mb-1">✨ Your VIP Access Includes:</div>
+                            <div className="text-gray-600 text-[8px]">Keynote sessions • Private networking • Lunch & refreshments</div>
                           </div>
 
                           {/* Register Button */}
-                          <div className="bg-black rounded-lg py-3 text-center">
-                            <div className="h-2 w-24 bg-white rounded mx-auto"></div>
+                          <div className="bg-black text-white rounded-lg py-2 text-center font-medium">
+                            Reserve Your Spot →
+                          </div>
+
+                          <div className="text-gray-600 text-[9px] pt-2 border-t border-gray-100">
+                            Looking forward to seeing you!<br/>
+                            [Your Name] | Event Organizer
                           </div>
                         </div>
                       )}
 
                       {key === 'custom' && (
-                        <div className="p-6 space-y-4">
+                        <div className="p-4 space-y-3 text-[10px]">
                           {/* Drag and Drop Hint */}
-                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                            <div className="w-12 h-12 bg-gray-200 rounded-lg mx-auto mb-3"></div>
-                            <div className="h-2 w-32 bg-gray-300 rounded mx-auto mb-2"></div>
-                            <div className="h-1.5 w-48 bg-gray-200 rounded mx-auto"></div>
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                            <div className="w-10 h-10 bg-gray-200 rounded-lg mx-auto mb-2 flex items-center justify-center text-gray-500 text-[16px]">🎨</div>
+                            <div className="font-semibold text-gray-900 text-[10px] mb-1">Build Your Own</div>
+                            <div className="text-gray-600 text-[8px]">Drag & drop components to create</div>
                           </div>
 
                           {/* Component Options */}
+                          <div className="text-gray-900 font-semibold text-[9px] mb-2">Available Components:</div>
                           <div className="grid grid-cols-3 gap-2">
                             <div className="bg-gray-50 rounded p-2 border border-gray-200 text-center">
-                              <div className="w-6 h-6 bg-gray-300 rounded mx-auto mb-1"></div>
-                              <div className="h-1.5 w-12 bg-gray-300 rounded mx-auto"></div>
+                              <div className="w-5 h-5 bg-gray-300 rounded mx-auto mb-1 flex items-center justify-center text-[10px]">📝</div>
+                              <div className="text-gray-700 text-[8px] font-medium">Text</div>
                             </div>
                             <div className="bg-gray-50 rounded p-2 border border-gray-200 text-center">
-                              <div className="w-6 h-6 bg-gray-300 rounded mx-auto mb-1"></div>
-                              <div className="h-1.5 w-12 bg-gray-300 rounded mx-auto"></div>
+                              <div className="w-5 h-5 bg-gray-300 rounded mx-auto mb-1 flex items-center justify-center text-[10px]">🖼️</div>
+                              <div className="text-gray-700 text-[8px] font-medium">Image</div>
                             </div>
                             <div className="bg-gray-50 rounded p-2 border border-gray-200 text-center">
-                              <div className="w-6 h-6 bg-gray-300 rounded mx-auto mb-1"></div>
-                              <div className="h-1.5 w-12 bg-gray-300 rounded mx-auto"></div>
+                              <div className="w-5 h-5 bg-black rounded mx-auto mb-1 flex items-center justify-center text-white text-[10px]">▶</div>
+                              <div className="text-gray-700 text-[8px] font-medium">Button</div>
                             </div>
+                          </div>
+
+                          <div className="space-y-2 mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="text-gray-900 font-semibold text-[9px]">✨ Flexible Design:</div>
+                            <div className="text-gray-700 text-[8px] leading-tight">
+                              • Add logos, images, and custom content<br/>
+                              • Arrange sections in any order<br/>
+                              • Full control over styling and layout<br/>
+                              • Perfect for unique brand requirements
+                            </div>
+                          </div>
+
+                          <div className="bg-black text-white rounded-lg py-2 text-center font-medium text-[9px]">
+                            Start Building →
                           </div>
                         </div>
                       )}
@@ -2012,7 +2077,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsPreviewMode(false);
-                  const template = EMAIL_TEMPLATES[selectedTemplate];
+                  const template = { ...EMAIL_TEMPLATES[selectedTemplate], id: selectedTemplate };
                   if (onSelectTemplate) {
                     onSelectTemplate(template);
                   }
@@ -2387,8 +2452,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                     // 🔥 FIX: Pass template directly to avoid React state race condition
                     const template = EMAIL_TEMPLATES[selectedTemplate];
                     const finalTemplate = Object.keys(customTemplateData).length > 0
-                      ? { ...template, ...customTemplateData }
-                      : template;
+                      ? { ...template, ...customTemplateData, id: selectedTemplate }
+                      : { ...template, id: selectedTemplate };
                     onConfirm(finalTemplate);
                   }
                 }}

@@ -2340,17 +2340,31 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               setProspects(prospectsFromAPI || []);
               setGeneratedEmails(emailCampaign?.emails || []);
 
-              if ((prospectsFromAPI && prospectsFromAPI.length > 0) || (emailCampaign?.emails && emailCampaign.emails.length > 0)) {
-                setWorkflowStatus('completed');
-              } else {
-                setWorkflowStatus('idle');
-              }
+              // Only update workflow status if not currently running
+              setWorkflowStatus(prevStatus => {
+                // Don't override running/starting status
+                if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting') {
+                  return prevStatus;
+                }
+                // Otherwise set based on data availability
+                if ((prospectsFromAPI && prospectsFromAPI.length > 0) || (emailCampaign?.emails && emailCampaign.emails.length > 0)) {
+                  return 'completed';
+                } else {
+                  return 'idle';
+                }
+              });
             } else {
               console.log(`📥 [AUTO-LOAD] No data found for campaign ${currentCampaignId} - clearing state`);
               // Clear state if no data
               setProspects([]);
               setGeneratedEmails([]);
-              setWorkflowStatus('idle');
+              // Only set to idle if not currently running
+              setWorkflowStatus(prevStatus => {
+                if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting') {
+                  return prevStatus;
+                }
+                return 'idle';
+              });
             }
           } catch (error) {
             console.error('❌ [AUTO-LOAD] Failed to load campaign data:', error);
@@ -2409,18 +2423,31 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             console.log(`📭 [INITIAL LOAD] No emails found for campaign ${campaignId} - cleared emails state`);
           }
 
-          // Update workflow status if we have data
-          if ((prospectsFromAPI && prospectsFromAPI.length > 0) || (emailCampaign?.emails && emailCampaign.emails.length > 0)) {
-            setWorkflowStatus('completed');
-          } else {
-            setWorkflowStatus('idle');
-          }
+          // Update workflow status if we have data (but don't override running status)
+          setWorkflowStatus(prevStatus => {
+            // Don't override running/starting status
+            if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting') {
+              return prevStatus;
+            }
+            // Otherwise set based on data availability
+            if ((prospectsFromAPI && prospectsFromAPI.length > 0) || (emailCampaign?.emails && emailCampaign.emails.length > 0)) {
+              return 'completed';
+            } else {
+              return 'idle';
+            }
+          });
         } else {
           console.log(`📥 [INITIAL LOAD] No existing data for campaign ${campaignId} - clearing state`);
           // 🔥 CRITICAL FIX: Clear state if no data returned
           setProspects([]);
           setGeneratedEmails([]);
-          setWorkflowStatus('idle');
+          // Only set to idle if not currently running
+          setWorkflowStatus(prevStatus => {
+            if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting') {
+              return prevStatus;
+            }
+            return 'idle';
+          });
         }
       } catch (error) {
         console.error('❌ [INITIAL LOAD] Failed to load campaign data:', error);
