@@ -107,15 +107,20 @@ class ProspectSearchAgent {
     let allProspects = [];
     const uniqueEmails = new Set(); // Track unique emails to prevent duplicates
 
-    // WAIT for continuous search to find prospects (NO TIMEOUT - must find prospects)
+    // 📦 BATCHED SEARCH: Return in batches of 10 for faster UI updates
     if (useContinuousMode) {
-      console.log('\n🚀 Starting autonomous continuous search...');
-      console.log('⏰ NO TIMEOUT - Will wait until prospects are found');
+      console.log('\n🚀 Starting BATCHED autonomous search (10 prospects per batch)...');
+      console.log('📦 Will return first 10, then continue searching in background');
 
-      // Start continuous search
-      const searchPromise = this.startContinuousSearch(strategy, targetIndustry);
+      // Extract userId and campaignId for isolated background processing
+      const userId = options.userId || 'default';
+      const campaignId = options.campaignId || 'default';
+      const batchCallback = options.onBatchComplete; // Callback for each batch completion
 
-      // Wait INDEFINITELY until we have at least 10 prospects
+      // Start continuous search in background
+      this.startContinuousSearch(strategy, targetIndustry, { userId, campaignId, batchCallback });
+
+      // Wait for FIRST BATCH (10 prospects)
       const startTime = Date.now();
       let checkCount = 0;
 
@@ -123,27 +128,36 @@ class ProspectSearchAgent {
         checkCount++;
         const elapsedSeconds = Math.round((Date.now() - startTime) / 1000);
 
-        // Log every 5 seconds to show progress
         if (checkCount % 3 === 0 || this.autonomousSearch.emailPool.size > 0) {
-          console.log(`⏳ [${elapsedSeconds}s] Waiting for prospects... (${this.autonomousSearch.emailPool.size} found so far)`);
+          console.log(`⏳ [${elapsedSeconds}s] Waiting for FIRST BATCH... (${this.autonomousSearch.emailPool.size}/10 found)`);
         }
 
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Check every 2 seconds
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
       const totalTime = Math.round((Date.now() - startTime) / 1000);
-      console.log(`✅ Continuous search found ${this.autonomousSearch.emailPool.size} prospects in ${totalTime}s`);
+      console.log(`✅ FIRST BATCH complete! Found ${this.autonomousSearch.emailPool.size} prospects in ${totalTime}s`);
 
-      // Get all prospects from pool (up to 50)
-      const poolProspects = this.getEmailsFromPool(50);
-      allProspects = poolProspects;
-      poolProspects.forEach(p => uniqueEmails.add(p.email));
-      console.log(`✅ Retrieved ${allProspects.length} prospects from pool`);
+      // Get FIRST BATCH (10 prospects)
+      const batch1Prospects = this.getEmailsFromPool(10);
+      allProspects = batch1Prospects;
+      batch1Prospects.forEach(p => uniqueEmails.add(p.email));
+      console.log(`📦 Returning BATCH 1: ${allProspects.length} prospects`);
+      console.log(`🔄 Background search will continue for more batches...`);
 
-      // Return them immediately
+      // Return first batch immediately
       if (allProspects.length >= 10) {
-        console.log('🎯 Returning prospects from continuous search - SUCCESS!');
         const enrichedProspects = await this.enrichProspectData(allProspects);
+
+        // 🔄 Schedule background batches (non-blocking)
+        this.scheduleBackgroundBatches(strategy, targetIndustry, {
+          userId,
+          campaignId,
+          batchCallback,
+          targetTotal: 50, // Total target: 50 prospects (5 batches of 10)
+          batchSize: 10
+        });
+
         return enrichedProspects;
       }
     }
@@ -3867,6 +3881,85 @@ Output: One search query only`;
     const size = this.autonomousSearch.emailPool.size;
     this.autonomousSearch.emailPool.clear();
     console.log(`🗑️ Cleared ${size} emails from pool`);
+  }
+
+  /**
+   * 📦 Schedule background batches (non-blocking, isolated per campaign/user)
+   */
+  async scheduleBackgroundBatches(strategy, targetIndustry, options) {
+    const { userId, campaignId, batchCallback, targetTotal = 50, batchSize = 10 } = options;
+    const batchKey = `${userId}:${campaignId}`;
+
+    console.log(`🔄 [${batchKey}] Scheduling background batches...`);
+    console.log(`📊 Target: ${targetTotal} prospects total (${Math.ceil((targetTotal - 10) / batchSize)} more batches)`);
+
+    // Run in background (non-blocking)
+    setImmediate(async () => {
+      try {
+        let batchNumber = 2; // Starting from batch 2 (batch 1 already returned)
+        const maxBatches = Math.ceil(targetTotal / batchSize);
+
+        while (batchNumber <= maxBatches) {
+          // Wait for next batch to be ready in the pool
+          const batchStart = Date.now();
+          const targetSize = batchNumber * batchSize;
+
+          console.log(`⏳ [${batchKey}] Waiting for BATCH ${batchNumber}... (need ${targetSize} total prospects)`);
+
+          while (this.autonomousSearch.emailPool.size < targetSize) {
+            await new Promise(resolve => setTimeout(resolve, 3000)); // Check every 3 seconds
+
+            // Safety timeout: 5 minutes per batch
+            if (Date.now() - batchStart > 300000) {
+              console.log(`⚠️ [${batchKey}] Batch ${batchNumber} timeout, moving on`);
+              break;
+            }
+          }
+
+          // Extract next batch
+          const batchProspects = this.getEmailsFromPool(batchSize);
+
+          if (batchProspects.length > 0) {
+            console.log(`✅ [${batchKey}] BATCH ${batchNumber} complete! Found ${batchProspects.length} prospects`);
+
+            // Enrich the batch
+            const enrichedBatch = await this.enrichProspectData(batchProspects);
+
+            // Notify via callback (WebSocket)
+            if (batchCallback && typeof batchCallback === 'function') {
+              try {
+                await batchCallback({
+                  userId,
+                  campaignId,
+                  batchNumber,
+                  prospects: enrichedBatch,
+                  totalSoFar: batchNumber * batchSize,
+                  targetTotal
+                });
+              } catch (callbackError) {
+                console.error(`❌ [${batchKey}] Callback error for batch ${batchNumber}:`, callbackError);
+              }
+            }
+
+            batchNumber++;
+          } else {
+            console.log(`⚠️ [${batchKey}] No more prospects found, stopping at batch ${batchNumber - 1}`);
+            break;
+          }
+
+          // Small delay between batches
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+        console.log(`🎉 [${batchKey}] Background search complete! Total batches: ${batchNumber - 1}`);
+
+        // Stop continuous search for this campaign
+        this.stopContinuousSearch();
+
+      } catch (error) {
+        console.error(`❌ [${batchKey}] Background batch error:`, error);
+      }
+    });
   }
 
   /**
