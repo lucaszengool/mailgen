@@ -192,15 +192,77 @@ function extractLogo($, baseUrl) {
 
 function extractSocialLinks($) {
   const social = {};
+
+  // Twitter/X - multiple patterns
   $('a[href*="twitter.com"], a[href*="x.com"]').each((i, el) => {
-    if (!social.twitter) social.twitter = $(el).attr('href');
+    if (!social.twitter) {
+      const href = $(el).attr('href');
+      if (href && !href.includes('/share') && !href.includes('/intent')) {
+        social.twitter = href;
+      }
+    }
   });
+
+  // LinkedIn - multiple patterns
   $('a[href*="linkedin.com"]').each((i, el) => {
-    if (!social.linkedin) social.linkedin = $(el).attr('href');
+    if (!social.linkedin) {
+      const href = $(el).attr('href');
+      if (href && (href.includes('/company/') || href.includes('/in/'))) {
+        social.linkedin = href;
+      }
+    }
   });
+
+  // Facebook
   $('a[href*="facebook.com"]').each((i, el) => {
-    if (!social.facebook) social.facebook = $(el).attr('href');
+    if (!social.facebook) {
+      const href = $(el).attr('href');
+      if (href && !href.includes('/sharer') && !href.includes('/dialog')) {
+        social.facebook = href;
+      }
+    }
   });
+
+  // Instagram
+  $('a[href*="instagram.com"]').each((i, el) => {
+    if (!social.instagram) social.instagram = $(el).attr('href');
+  });
+
+  // YouTube
+  $('a[href*="youtube.com"], a[href*="youtu.be"]').each((i, el) => {
+    if (!social.youtube) social.youtube = $(el).attr('href');
+  });
+
+  // GitHub
+  $('a[href*="github.com"]').each((i, el) => {
+    if (!social.github) social.github = $(el).attr('href');
+  });
+
+  // TikTok
+  $('a[href*="tiktok.com"]').each((i, el) => {
+    if (!social.tiktok) social.tiktok = $(el).attr('href');
+  });
+
+  // Medium
+  $('a[href*="medium.com"]').each((i, el) => {
+    if (!social.medium) social.medium = $(el).attr('href');
+  });
+
+  // Pinterest
+  $('a[href*="pinterest.com"]').each((i, el) => {
+    if (!social.pinterest) social.pinterest = $(el).attr('href');
+  });
+
+  // Dribbble
+  $('a[href*="dribbble.com"]').each((i, el) => {
+    if (!social.dribbble) social.dribbble = $(el).attr('href');
+  });
+
+  // Behance
+  $('a[href*="behance.net"]').each((i, el) => {
+    if (!social.behance) social.behance = $(el).attr('href');
+  });
+
   return social;
 }
 
