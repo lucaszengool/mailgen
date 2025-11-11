@@ -265,102 +265,211 @@ function extractSpecialties($) {
 
 function extractLeadership($) {
   const leadership = [];
-  $('.team-member, .leadership, .executive, .team, .about-team, .our-team').each((i, el) => {
-    if (i < 6) {
-      const name = $(el).find('.name, .person-name, .member-name, h3, h4').first().text().trim();
-      const title = $(el).find('.title, .position, .role, .job-title').first().text().trim();
-      const photo = $(el).find('img').first().attr('src');
-      if (name && title) {
-        leadership.push({ name, title, photo: photo || null, linkedin: null });
-      }
-    }
-  });
 
-  // Add fallback leadership if none found
-  if (leadership.length === 0) {
-    leadership.push(
-      { name: 'John Anderson', title: 'Chief Executive Officer', photo: null, linkedin: null },
-      { name: 'Sarah Mitchell', title: 'Chief Marketing Officer', photo: null, linkedin: null },
-      { name: 'David Chen', title: 'VP of Sales', photo: null, linkedin: null },
-      { name: 'Emily Rodriguez', title: 'Head of Business Development', photo: null, linkedin: null }
-    );
-  }
-
-  return leadership;
-}
-
-// Extract funding information
-function extractFundingInfo($) {
-  const text = $.text().toLowerCase();
-  const fundingMatch = text.match(/raised\s+\$?([\d\.]+)\s*(million|m|billion|b)/i);
-  const seriesMatch = text.match(/series\s+([a-z])\s+funding/i);
-
-  // Generate yearly funding data for chart
-  const currentYear = new Date().getFullYear();
-  const yearlyFunding = [
-    { year: (currentYear - 4).toString(), amount: 2.5 },
-    { year: (currentYear - 3).toString(), amount: 5.2 },
-    { year: (currentYear - 2).toString(), amount: 8.7 },
-    { year: (currentYear - 1).toString(), amount: 12.5 },
-    { year: currentYear.toString(), amount: 18.3 }
+  // COMPREHENSIVE selector patterns based on real-world websites
+  const leadershipSelectors = [
+    '.team-member', '.leadership-member', '.team-item', '.member-card',
+    '.executive', '.leadership', '.team', '.about-team', '.our-team',
+    '[class*="team-"] [class*="member"]', '[class*="leadership"]',
+    '.team-grid > div', '.team-section > div', '.management-team > div',
+    '.founders .founder', '.executive-team > div', '[data-team-member]'
   ];
 
-  const investors = ['Sequoia Capital', 'Andreessen Horowitz', 'Accel Partners'];
+  // Try each selector pattern
+  for (const selector of leadershipSelectors) {
+    $(selector).each((i, el) => {
+      if (leadership.length >= 8) return false; // Stop after 8 members
+
+      const $el = $(el);
+
+      // Multiple patterns for finding name
+      let name = $el.find('.name, .person-name, .member-name, h3, h4, h5, [class*="name"]').first().text().trim();
+      if (!name) name = $el.find('img').attr('alt');
+      if (!name) name = $el.find('[itemprop="name"]').text().trim();
+
+      // Multiple patterns for finding title/position
+      let title = $el.find('.title, .position, .role, .job-title, [class*="title"], [class*="position"], [itemprop="jobTitle"]').first().text().trim();
+      if (!title) title = $el.find('p, span').filter((i, p) => $(p).text().length < 80).first().text().trim();
+
+      const photo = $el.find('img').first().attr('src');
+      const linkedin = $el.find('a[href*="linkedin"]').attr('href');
+
+      if (name && name.length > 2 && name.length < 60) {
+        leadership.push({
+          name,
+          title: title || 'Team Member',
+          photo: photo || null,
+          linkedin: linkedin || null
+        });
+      }
+    });
+    if (leadership.length > 0) break;
+  }
+
+  // Try JSON-LD schema.org structured data
+  $('script[type="application/ld+json"]').each((i, el) => {
+    try {
+      const json = JSON.parse($(el).html());
+      if (json.founder) {
+        const founders = Array.isArray(json.founder) ? json.founder : [json.founder];
+        founders.forEach(founder => {
+          if (typeof founder === 'object' && founder.name) {
+            leadership.push({
+              name: founder.name,
+              title: 'Founder & CEO',
+              photo: founder.image || null,
+              linkedin: founder.sameAs?.find(url => url.includes('linkedin')) || null
+            });
+          }
+        });
+      }
+    } catch (e) {}
+  });
+
+  // Return null if no leadership found - NO FAKE DATA
+  return leadership.length > 0 ? leadership : null;
+}
+
+// Extract funding information - IMPROVED with multiple patterns
+function extractFundingInfo($) {
+  const text = $.text();
+
+  // Multiple patterns for finding funding amounts
+  const fundingPatterns = [
+    /raised\s+\$?([\d\.]+)\s*(million|m|billion|b|k)/i,
+    /funding\s+of\s+\$?([\d\.]+)\s*(million|m|billion|b)/i,
+    /secured\s+\$?([\d\.]+)\s*(million|m|billion|b)/i,
+    /\$?([\d\.]+)\s*(million|m|billion|b)\s+in\s+funding/i,
+    /total\s+funding[:\s]+\$?([\d\.]+)\s*(million|m|billion|b)/i
+  ];
+
+  let fundingMatch = null;
+  for (const pattern of fundingPatterns) {
+    fundingMatch = text.match(pattern);
+    if (fundingMatch) break;
+  }
+
+  // Multiple patterns for finding funding series
+  const seriesPatterns = [
+    /series\s+([a-z])\s+funding/i,
+    /series\s+([a-z])\s+round/i,
+    /(seed|pre-seed)\s+round/i,
+    /(seed|pre-seed)\s+funding/i
+  ];
+
+  let seriesMatch = null;
+  for (const pattern of seriesPatterns) {
+    seriesMatch = text.match(pattern);
+    if (seriesMatch) break;
+  }
+
+  // Extract investor names
+  const investors = [];
+  const investorPatterns = [
+    /invested\s+by\s+([A-Z][a-z\s&]+(?:Capital|Ventures|Partners|VC|Fund))/g,
+    /led\s+by\s+([A-Z][a-z\s&]+(?:Capital|Ventures|Partners|VC))/g,
+    /([A-Z][a-z\s&]+(?:Capital|Ventures|Partners))\s+invested/g
+  ];
+
+  for (const pattern of investorPatterns) {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      if (match[1] && investors.length < 5) {
+        investors.push(match[1].trim());
+      }
+    }
+  }
+
+  // Try to extract yearly funding data from the page
+  const yearlyFunding = [];
+  const yearPattern = /(20\d{2})[:\s-]+\$?([\d\.]+)\s*(million|m|billion|b|k)/gi;
+  let yearMatch;
+  while ((yearMatch = yearPattern.exec(text)) !== null) {
+    const year = yearMatch[1];
+    let amount = parseFloat(yearMatch[2]);
+    const unit = yearMatch[3].toLowerCase();
+
+    // Convert to millions
+    if (unit.startsWith('b')) amount *= 1000;
+    if (unit.startsWith('k')) amount /= 1000;
+
+    yearlyFunding.push({ year, amount });
+  }
+
+  // Only return funding data if we found REAL information
+  if (!fundingMatch && !seriesMatch && investors.length === 0 && yearlyFunding.length === 0) {
+    return null; // NO FAKE DATA
+  }
 
   return {
-    stage: seriesMatch ? `Series ${seriesMatch[1].toUpperCase()}` : 'Growth Stage',
-    totalFunding: fundingMatch ? `$${fundingMatch[1]}${fundingMatch[2][0].toUpperCase()}` : '$18.3M',
-    lastRound: seriesMatch ? `Series ${seriesMatch[1].toUpperCase()} - ${fundingMatch[0]}` : 'Series A - $8M',
-    investors: investors,
-    yearlyFunding: yearlyFunding
+    stage: seriesMatch ? `Series ${seriesMatch[1].toUpperCase()}` : null,
+    totalFunding: fundingMatch ? `$${fundingMatch[1]}${fundingMatch[2][0].toUpperCase()}` : null,
+    lastRound: (seriesMatch && fundingMatch) ? `Series ${seriesMatch[1].toUpperCase()} - $${fundingMatch[1]}${fundingMatch[2][0].toUpperCase()}` : null,
+    investors: investors.length > 0 ? investors : null,
+    yearlyFunding: yearlyFunding.length > 0 ? yearlyFunding : null
   };
 }
 
-// Extract news and recent activities
+// Extract news and recent activities - IMPROVED with multiple selectors
 function extractNews($) {
   const news = [];
-  $('.news-item, .blog-post, .article, .press-release').each((i, el) => {
-    if (i < 5) {
-      const title = $(el).find('.title, h2, h3, h4').first().text().trim();
-      const date = $(el).find('.date, time, .published').first().text().trim();
-      const link = $(el).find('a').first().attr('href');
-      if (title) {
+
+  // Multiple selector patterns for finding news/blog articles
+  const newsSelectors = [
+    '.news-item', '.blog-post', '.article', '.press-release',
+    '[class*="news"]', '[class*="blog"]', '[class*="article"]',
+    '.post', '[class*="press"]', '[data-news-item]',
+    'article', '.entry', '[class*="story"]'
+  ];
+
+  for (const selector of newsSelectors) {
+    $(selector).each((i, el) => {
+      if (news.length >= 5) return false;
+
+      const $el = $(el);
+
+      // Try multiple patterns to find title
+      let title = $el.find('.title, h2, h3, h4, h5, [class*="title"], [class*="heading"]').first().text().trim();
+      if (!title) title = $el.find('a').first().text().trim();
+      if (!title) title = $el.text().split('\n')[0].trim();
+
+      // Try multiple patterns to find date
+      let date = $el.find('.date, time, .published, [class*="date"], [datetime]').first().text().trim();
+      if (!date) date = $el.find('time').attr('datetime');
+
+      // Try to find URL
+      let url = $el.find('a').first().attr('href');
+      if (!url) url = $el.closest('a').attr('href');
+
+      if (title && title.length > 10 && title.length < 200) {
         news.push({
           source: 'Company Website',
           title,
-          date: date || new Date().toISOString().split('T')[0],
-          url: link || '#'
+          date: date || null,
+          url: url || null
         });
       }
-    }
-  });
-
-  // Add fallback news if none found
-  if (news.length === 0) {
-    const companyName = $('title').text().split('|')[0].trim() || 'Company';
-    news.push(
-      {
-        source: 'TechCrunch',
-        title: `${companyName} Announces Strategic Expansion and New Product Launch`,
-        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        url: '#'
-      },
-      {
-        source: 'Business Wire',
-        title: `${companyName} Reports Strong Q4 Growth and Customer Acquisition`,
-        date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        url: '#'
-      },
-      {
-        source: 'Forbes',
-        title: `${companyName} Named as Industry Leader in Innovation`,
-        date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        url: '#'
-      }
-    );
+    });
+    if (news.length > 0) break;
   }
 
-  return news;
+  // Try JSON-LD schema.org for articles
+  $('script[type="application/ld+json"]').each((i, el) => {
+    try {
+      const json = JSON.parse($(el).html());
+      if (json['@type'] === 'Article' || json['@type'] === 'NewsArticle') {
+        news.push({
+          source: json.publisher?.name || 'Company Website',
+          title: json.headline,
+          date: json.datePublished || null,
+          url: json.url || null
+        });
+      }
+    } catch (e) {}
+  });
+
+  // Return null if no news found - NO FAKE DATA
+  return news.length > 0 ? news : null;
 }
 
 // Extract key clients/partners
