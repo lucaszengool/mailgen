@@ -5458,7 +5458,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                       ))}
                     </>
                   ) : prospects.length === 0 ? (
-                    workflowStatus === 'running' || workflowStatus === 'starting' ? (
+                    workflowStatus === 'running' || workflowStatus === 'starting' || quotaData.workflow?.isRunning ? (
                       // Show searching animation when workflow is active
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
