@@ -3683,9 +3683,10 @@ Output: One search query only`;
         console.log(`   Rate limit: ${this.autonomousSearch.rateLimit.countThisHour}/${this.autonomousSearch.rateLimit.maxPerHour} this hour`);
         console.log(`   Pool size: ${this.autonomousSearch.emailPool.size} emails`);
 
-        // Perform search
+        // Perform search - 📦 BATCHED MODE: Request only 10-15 prospects at a time for faster batches
         const remainingQuota = this.autonomousSearch.rateLimit.maxPerHour - this.autonomousSearch.rateLimit.countThisHour;
-        const searchResults = await this.emailSearchAgent.searchEmails(keyword, Math.min(remainingQuota, 50));
+        const batchSize = 12; // Request 12 prospects per search (allows for duplicates/invalid emails)
+        const searchResults = await this.emailSearchAgent.searchEmails(keyword, Math.min(remainingQuota, batchSize));
 
         this.autonomousSearch.stats.totalSearches++;
         this.autonomousSearch.stats.lastSearchTime = Date.now();
