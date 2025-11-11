@@ -3172,8 +3172,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
     // 🔥 FIX: Get campaignId from context, not just from templateRequest
     // This allows manual template selection to work
-    const campaignIdToUse = templateRequest?.campaignId || currentCampaignId || 'default';
-    console.log('🎨 Using campaignId:', campaignIdToUse, '(from:', templateRequest?.campaignId ? 'websocket' : currentCampaignId ? 'context' : 'default', ')');
+    const contextCampaignId = agentConfig?.campaign?.id || localStorage.getItem('currentCampaignId');
+    const campaignIdToUse = templateRequest?.campaignId || contextCampaignId || 'default';
+    console.log('🎨 Using campaignId:', campaignIdToUse, '(from:', templateRequest?.campaignId ? 'websocket' : contextCampaignId ? 'context' : 'default', ')');
 
     setIsSubmittingTemplate(true);
 

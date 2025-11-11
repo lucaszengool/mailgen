@@ -3592,7 +3592,7 @@ Output: One search query only`;
    * Start continuous autonomous email search with rate limiting
    * This runs in the background and continuously finds new emails
    */
-  async startContinuousSearch(strategy, targetIndustry) {
+  async startContinuousSearch(strategy, targetIndustry, options = {}) {
     if (this.autonomousSearch.isRunning) {
       console.log('⚠️ Continuous search already running');
       return;
@@ -3605,6 +3605,11 @@ Output: One search query only`;
     this.autonomousSearch.currentStrategy = strategy;
     this.autonomousSearch.currentIndustry = targetIndustry;
     this.autonomousSearch.stats.startTime = Date.now();
+
+    // 🔥 Store options for background batch processing
+    this.autonomousSearch.options = options;
+    const { userId = 'default', campaignId = 'default' } = options;
+    console.log(`📦 Continuous search context: userId=${userId}, campaignId=${campaignId}`);
 
     // Initialize keyword queue with initial keywords
     this.refillKeywordQueue();
@@ -3913,26 +3918,29 @@ Output: One search query only`;
       try {
         let batchNumber = 2; // Starting from batch 2 (batch 1 already returned)
         const maxBatches = Math.ceil(targetTotal / batchSize);
+        let totalExtracted = batchSize; // Batch 1 already extracted 10
 
         while (batchNumber <= maxBatches) {
           // Wait for next batch to be ready in the pool
           const batchStart = Date.now();
-          const targetSize = batchNumber * batchSize;
 
-          console.log(`⏳ [${batchKey}] Waiting for BATCH ${batchNumber}... (need ${targetSize} total prospects)`);
+          console.log(`⏳ [${batchKey}] Waiting for BATCH ${batchNumber}... (need ${batchSize} NEW prospects, ${totalExtracted}/${targetTotal} total so far)`);
 
-          while (this.autonomousSearch.emailPool.size < targetSize) {
-            await new Promise(resolve => setTimeout(resolve, 3000)); // Check every 3 seconds
+          // Wait for batch prospects to accumulate in pool
+          while (this.autonomousSearch.emailPool.size < batchSize) {
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Check every 5 seconds
 
-            // Safety timeout: 5 minutes per batch
-            if (Date.now() - batchStart > 300000) {
-              console.log(`⚠️ [${batchKey}] Batch ${batchNumber} timeout, moving on`);
+            // Safety timeout: 10 minutes per batch (longer for Python deduplication)
+            if (Date.now() - batchStart > 600000) {
+              console.log(`⚠️ [${batchKey}] Batch ${batchNumber} timeout after 10 minutes`);
+              // Still try to extract whatever we have
               break;
             }
           }
 
-          // Extract next batch
-          const batchProspects = this.getEmailsFromPool(batchSize);
+          // Extract next batch (get what's available, even if less than batchSize)
+          const availableSize = Math.min(this.autonomousSearch.emailPool.size, batchSize);
+          const batchProspects = availableSize > 0 ? this.getEmailsFromPool(availableSize) : [];
 
           if (batchProspects.length > 0) {
             console.log(`✅ [${batchKey}] BATCH ${batchNumber} complete! Found ${batchProspects.length} prospects`);
@@ -3943,17 +3951,21 @@ Output: One search query only`;
             // Notify via callback (WebSocket)
             if (batchCallback && typeof batchCallback === 'function') {
               try {
+                totalExtracted += batchProspects.length;
                 await batchCallback({
                   userId,
                   campaignId,
                   batchNumber,
                   prospects: enrichedBatch,
-                  totalSoFar: batchNumber * batchSize,
+                  totalSoFar: totalExtracted,
                   targetTotal
                 });
               } catch (callbackError) {
                 console.error(`❌ [${batchKey}] Callback error for batch ${batchNumber}:`, callbackError);
               }
+            } else {
+              // Track even without callback
+              totalExtracted += batchProspects.length;
             }
 
             batchNumber++;
