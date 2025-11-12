@@ -43,7 +43,8 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
         body: JSON.stringify({
           query: searchQuery,
           limit: 7,
-          websiteAnalysis: websiteAnalysis
+          websiteAnalysis: websiteAnalysis,
+          campaignId: initialData?.campaignId || 'default'
         })
       });
 

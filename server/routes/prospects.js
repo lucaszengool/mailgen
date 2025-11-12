@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const EnhancedEmailSearchAgent = require('../agents/EnhancedEmailSearchAgent');
+const db = require('../models/database');
+const { optionalAuth } = require('../middleware/userContext');
 
 /**
  * POST /api/prospects/search
@@ -11,9 +13,10 @@ const EnhancedEmailSearchAgent = require('../agents/EnhancedEmailSearchAgent');
  * - limit: number of prospects to return (default 7)
  * - websiteAnalysis: optional website analysis data
  */
-router.post('/search', async (req, res) => {
+router.post('/search', optionalAuth, async (req, res) => {
   try {
-    const { query, limit = 7, websiteAnalysis } = req.body;
+    const { query, limit = 7, websiteAnalysis, campaignId } = req.body;
+    const userId = req.userId || 'anonymous';
 
     if (!query || query.trim() === '') {
       return res.status(400).json({
@@ -80,6 +83,42 @@ router.post('/search', async (req, res) => {
       console.error(`❌ Stack trace:`, searchError.stack);
       console.log(`🎭 Using fallback mock prospects for testing`);
       formattedProspects = generateMockProspects(industry, targetAudience, businessName, limit);
+    }
+
+    // 💾 Save prospects to database for persistence
+    if (formattedProspects && formattedProspects.length > 0 && isRealData) {
+      try {
+        console.log(`💾 [User: ${userId}] Saving ${formattedProspects.length} prospects to database...`);
+
+        let savedCount = 0;
+        for (const prospect of formattedProspects) {
+          try {
+            await db.saveContact({
+              email: prospect.email,
+              name: prospect.name || 'Unknown',
+              company: prospect.company || 'Unknown',
+              position: prospect.role || 'Unknown',
+              industry: industry,
+              phone: '',
+              address: prospect.location || '',
+              source: prospect.source || searchMethod,
+              tags: '',
+              notes: `Found via ${searchMethod} on ${new Date().toLocaleString()}. Score: ${prospect.score}`
+            }, userId, campaignId || 'default');
+            savedCount++;
+          } catch (saveError) {
+            // Skip if already exists (UNIQUE constraint)
+            if (!saveError.message.includes('UNIQUE constraint')) {
+              console.error(`⚠️ Failed to save prospect ${prospect.email}:`, saveError.message);
+            }
+          }
+        }
+
+        console.log(`✅ [User: ${userId}] Successfully saved ${savedCount}/${formattedProspects.length} prospects to database`);
+      } catch (error) {
+        console.error(`❌ [User: ${userId}] Error saving prospects to database:`, error);
+        // Don't fail the request if database save fails
+      }
     }
 
     res.json({
