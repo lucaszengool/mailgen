@@ -122,7 +122,7 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden">
       {/* Celebration confetti effect */}
       {showCelebration && (
         <div className="fixed inset-0 pointer-events-none z-50">
@@ -141,26 +141,24 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Success Header with Animation */}
-        <div className="text-center mb-10 animate-fade-in">
-          <div className="relative inline-block mb-6">
-            <div className="w-20 h-20 mx-auto rounded-full bg-white border-4 border-[#00f5a0] flex items-center justify-center relative z-10 shadow-lg shadow-[#00f5a0]/20 animate-scale-in">
-              <CheckCircle className="w-10 h-10 text-[#00f5a0]" />
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg animate-fade-in">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto rounded-xl bg-black flex items-center justify-center mb-4 shadow-md animate-scale-in">
+              <CheckCircle className="w-8 h-8 text-[#00f5a0]" />
             </div>
-            {/* Pulse ring */}
-            <div className="absolute inset-0 w-20 h-20 rounded-full bg-[#00f5a0] opacity-20 animate-ping"></div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-3 animate-slide-up" style={{ animationDelay: '100ms' }}>
+              Great News! We Found {prospects.length} Perfect Prospects
+            </h1>
+            <p className="text-gray-700 max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '200ms' }}>
+              Based on your business profile, we've identified these high-quality leads that match your ideal customer profile.
+            </p>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 animate-slide-up" style={{ animationDelay: '100ms' }}>
-            🎉 Great News! We Found {prospects.length} Perfect Prospects
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '200ms' }}>
-            Based on your business profile, we've identified these high-quality leads that match your ideal customer profile.
-          </p>
         </div>
 
         {/* Stats Bar with Animation */}
-        <div className="grid grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-3 gap-6 mb-6">
           {[
             { icon: Users, value: prospects.length, label: 'Prospects Found', delay: '300ms' },
             { icon: Star, value: `${Math.round(prospects.reduce((acc, p) => acc + (p.score || 80), 0) / prospects.length)}%`, label: 'Avg Match Score', delay: '400ms' },
@@ -168,36 +166,40 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
           ].map((stat, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl p-6 text-center border-2 border-gray-100 hover:border-[#00f5a0] transition-all duration-300 hover:shadow-xl hover:shadow-[#00f5a0]/10 animate-scale-in cursor-pointer group"
+              className="bg-white rounded-3xl p-6 text-center border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 animate-scale-in group"
               style={{ animationDelay: stat.delay }}
             >
-              <stat.icon className="w-8 h-8 text-[#00f5a0] mx-auto mb-3 group-hover:scale-110 transition-transform" />
+              <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
+                <stat.icon className="w-6 h-6 text-[#00f5a0]" />
+              </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-              <div className="text-sm text-gray-600">{stat.label}</div>
+              <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Section Title */}
-        <div className="flex items-center gap-3 mb-6 animate-slide-up" style={{ animationDelay: '600ms' }}>
-          <TrendingUp className="w-6 h-6 text-[#00f5a0]" />
-          <h2 className="text-2xl font-bold text-gray-900">Your Top Prospects</h2>
-        </div>
+        {/* Prospects Section */}
+        <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style={{ animationDelay: '600ms' }}>
+          <div className="flex items-center space-x-2 mb-6">
+            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
+              <TrendingUp className="w-5 h-5 text-[#00f5a0]" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Your Top Prospects</h2>
+          </div>
 
-        {/* Prospects Grid with Staggered Animation */}
-        <div className="bg-white rounded-2xl border-2 border-gray-100 overflow-hidden mb-10 shadow-lg">
-          <div className="divide-y divide-gray-100">
+          {/* Prospects Grid with Staggered Animation */}
+          <div className="space-y-4">
             {prospects.map((prospect, index) => (
               <div
                 key={index}
-                className="p-5 hover:bg-gradient-to-r hover:from-[#00f5a0]/5 hover:to-transparent transition-all duration-300 animate-slide-in group cursor-pointer"
+                className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] transition-all duration-300 animate-slide-in group"
                 style={{ animationDelay: `${700 + index * 100}ms` }}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1 min-w-0">
                     {/* Company Favicon with Animation */}
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-xl border-2 border-gray-200 group-hover:border-[#00f5a0] flex items-center justify-center flex-shrink-0 bg-white overflow-hidden transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg">
+                      <div className="w-14 h-14 rounded-xl border-2 border-gray-200 group-hover:border-[#00f5a0] flex items-center justify-center flex-shrink-0 bg-white overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md">
                         <img
                           src={getFaviconUrl(prospect.email)}
                           alt={prospect.company || 'Company'}
@@ -218,28 +220,28 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-[#00f5a0] transition-colors">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">
                         {prospect.name || 'Prospect ' + (index + 1)}
                       </h3>
                       <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                         <Briefcase className="w-4 h-4 flex-shrink-0" />
                         <span className="font-medium">{prospect.role || 'Business Professional'}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-700 mb-2">
-                        <Building2 className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-sm text-gray-900 mb-2">
+                        <Building2 className="w-4 h-4 flex-shrink-0" />
                         <span className="font-semibold">{prospect.company || 'Company Name'}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Mail className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                        <span className="truncate">{prospect.email || 'email@company.com'}</span>
+                        <Mail className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate font-medium">{prospect.email || 'email@company.com'}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Match Score with Animation */}
                   <div className="text-right flex-shrink-0">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00f5a0] text-white font-bold text-lg shadow-lg shadow-[#00f5a0]/30 group-hover:scale-110 transition-transform">
-                      <Star className="w-4 h-4 fill-white" />
+                    <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black text-[#00f5a0] font-bold text-lg shadow-md border-2 border-[#00f5a0]">
+                      <Star className="w-4 h-4 fill-[#00f5a0]" />
                       {prospect.score || 80}%
                     </div>
                   </div>
@@ -251,22 +253,22 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
 
         {/* Success Message with Animation */}
         <div
-          className="bg-white rounded-2xl p-8 mb-10 border-2 border-[#00f5a0]/30 animate-slide-up"
+          className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up"
           style={{ animationDelay: `${700 + prospects.length * 100}ms` }}
         >
           <div className="flex items-start gap-6">
-            <div className="w-14 h-14 rounded-full bg-[#00f5a0] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#00f5a0]/30 animate-bounce-slow">
-              <Sparkles className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 rounded-xl bg-black flex items-center justify-center flex-shrink-0 shadow-md">
+              <Sparkles className="w-7 h-7 text-[#00f5a0]" />
             </div>
             <div className="flex-1">
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
                 Ready to Start Your Campaign
               </h3>
-              <p className="text-gray-700 mb-4 text-lg leading-relaxed">
+              <p className="text-gray-700 mb-4 leading-relaxed">
                 These prospects have been carefully selected based on your business profile and are ready to receive
                 personalized outreach emails. Continue to SMTP setup to configure your email sending.
               </p>
-              <div className="flex items-center gap-3 text-base text-gray-700 bg-white rounded-lg px-4 py-3 border-2 border-[#00f5a0]/20">
+              <div className="flex items-center gap-3 text-gray-700 bg-white rounded-xl px-4 py-3 border-2 border-gray-200">
                 <CheckCircle className="w-5 h-5 text-[#00f5a0] flex-shrink-0" />
                 <span className="font-semibold">All email addresses verified and ready to use</span>
               </div>
@@ -275,19 +277,19 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
         </div>
 
         {/* Navigation Buttons with Animation */}
-        <div className="flex justify-between items-center pt-6 animate-slide-up" style={{ animationDelay: `${800 + prospects.length * 100}ms` }}>
+        <div className="flex justify-between items-center pt-6 border-t border-gray-200 mt-6 animate-slide-up" style={{ animationDelay: `${800 + prospects.length * 100}ms` }}>
           <button
             onClick={onBack}
-            className="px-8 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 hover:scale-105"
+            className="px-8 py-3 bg-white border-2 border-black text-black font-bold rounded-xl hover:bg-gray-50 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
           >
             ← Back
           </button>
           <button
             onClick={handleContinue}
-            className="px-10 py-3 bg-[#00f5a0] text-black font-bold rounded-xl hover:bg-[#00e090] transition-all duration-300 shadow-lg shadow-[#00f5a0]/40 flex items-center gap-3 hover:scale-105 hover:shadow-xl hover:shadow-[#00f5a0]/50"
+            className="px-10 py-3 bg-black text-white font-bold rounded-xl hover:bg-gray-900 transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-xl flex items-center space-x-2"
           >
-            Continue to SMTP Setup
-            <Sparkles className="w-5 h-5" />
+            <span>Continue to SMTP Setup</span>
+            <span className="text-[#00f5a0]">→</span>
           </button>
         </div>
       </div>
