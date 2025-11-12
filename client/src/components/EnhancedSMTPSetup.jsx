@@ -543,23 +543,28 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
 
             {/* SMTP Configuration Form */}
             {selectedProvider && (
-              <div>
-                <h2 className="text-lg font-semibold text-black mb-4">
-                  3. Enter SMTP Configuration
-                </h2>
+              <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg">
+                <div className="flex items-center space-x-2 mb-6">
+                  <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
+                    <Shield className="w-5 h-5 text-[#00f5a0]" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    3. Enter SMTP Configuration
+                  </h2>
+                </div>
 
-                <div className="bg-white border border-gray-300 rounded-lg p-6">
+                <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     {/* SMTP Host */}
                     <div>
-                      <label className="block text-sm font-medium text-black mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         SMTP Host <span className="text-[#00f5a0]">*</span>
                       </label>
                       <input
                         type="text"
                         value={smtpConfig.host}
                         onChange={(e) => handleConfigChange('host', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 font-medium focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all"
                         placeholder="smtp.gmail.com"
                       />
                     </div>
@@ -664,29 +669,28 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
         </div>
 
         {/* Navigation Footer */}
-        <div className="bg-white border-t border-gray-300 p-6">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
+        <div className="bg-white border-t border-gray-200 p-6 shadow-sm">
+          <div className="max-w-5xl mx-auto flex justify-between items-center">
             <button
               onClick={onBack}
-              className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-black transition-colors"
+              className="px-8 py-3 bg-white border-2 border-black text-black font-bold rounded-xl hover:bg-gray-50 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Back to Audience</span>
+              ← Back to Audience
             </button>
 
             <button
               onClick={handleNext}
               disabled={!isFormValid}
               className={`
-                flex items-center space-x-2 px-6 py-2 rounded-lg font-medium transition-all
+                px-10 py-3 font-bold rounded-xl transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-xl flex items-center space-x-2
                 ${isFormValid
-                  ? 'bg-[#00f5a0] text-black hover:bg-[#00e090] shadow-md hover:shadow-lg'
+                  ? 'bg-black text-white hover:bg-gray-900'
                   : 'bg-gray-300 text-gray-600 cursor-not-allowed'
                 }
               `}
             >
               <span>Complete Setup</span>
-              <CheckCircle className="w-4 h-4" />
+              <span className={isFormValid ? 'text-[#00f5a0]' : 'text-gray-600'}>→</span>
             </button>
           </div>
         </div>
