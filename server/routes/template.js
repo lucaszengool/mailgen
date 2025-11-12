@@ -413,11 +413,50 @@ router.post('/select', optionalAuth, async (req, res) => {
 });
 
 // Get current template selection for campaign
-router.get('/selection/:campaignId', (req, res) => {
+router.get('/selection/:campaignId', optionalAuth, async (req, res) => {
   try {
     const { campaignId } = req.params;
+    const userId = req.userId || 'anonymous';
 
-    const selection = global.templateSelections?.[campaignId] || null;
+    // 🔥 FIX: First check memory, then fallback to database
+    let selection = global.templateSelections?.[campaignId] || null;
+
+    // 💾 If not in memory (after restart), load from database
+    if (!selection) {
+      console.log(`📂 Template not in memory, loading from database for campaign: ${campaignId}`);
+      const UserStorageService = require('../services/UserStorageService');
+      const userStorage = new UserStorageService(userId);
+
+      try {
+        const savedTemplate = await userStorage.getSelectedTemplate();
+        if (savedTemplate && savedTemplate.customizations) {
+          // Reconstruct selection from database
+          selection = {
+            templateId: savedTemplate.templateId,
+            templateName: savedTemplate.templateName,
+            selectedAt: savedTemplate.selectedAt,
+            campaignId: campaignId,
+            subject: savedTemplate.customizations.subject,
+            greeting: savedTemplate.customizations.greeting,
+            signature: savedTemplate.customizations.signature,
+            html: savedTemplate.customizations.html,
+            customizations: savedTemplate.customizations.customizations || {},
+            isCustomized: savedTemplate.customizations.isCustomized || false,
+            components: savedTemplate.customizations.components || []
+          };
+
+          // Restore to memory for faster access
+          if (!global.templateSelections) {
+            global.templateSelections = {};
+          }
+          global.templateSelections[campaignId] = selection;
+
+          console.log(`✅ Template customizations restored from database for campaign: ${campaignId}`);
+        }
+      } catch (dbError) {
+        console.error(`⚠️ Failed to load template from database:`, dbError.message);
+      }
+    }
 
     if (!selection) {
       return res.status(404).json({
