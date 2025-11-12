@@ -6516,92 +6516,82 @@ export default function ProfessionalEmailEditor(props) {
 
       {/* Template Confirmation Popup */}
       {showTemplateConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-8">
-          <div className="bg-white rounded-2xl w-full max-w-4xl shadow-lg" style={{
-            minHeight: '500px',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)'
-          }}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-8">
+          <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 border-2 border-[#00f5a0] rounded-3xl shadow-2xl shadow-[#00f5a0]/20 w-full max-w-2xl p-8">
             {/* Close Button */}
-            <div className="flex justify-end p-6">
+            <div className="flex justify-end mb-4">
               <button
                 onClick={() => setShowTemplateConfirmation(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl font-light"
-                style={{lineHeight: '1'}}
+                className="w-8 h-8 rounded-lg flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-colors"
               >
-                ×
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
-            
+
+
             {/* Content */}
-            <div className="px-12 pb-12" style={{paddingTop: '0'}}>
-              <div className="text-center">
-                {/* Large Green Card - mimicking the reference UI */}
-                <div className="mx-auto mb-8 p-12 rounded-3xl" style={{
-                  background: 'linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%)',
-                  maxWidth: '600px'
-                }}>
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-3xl font-bold text-black mb-4">Apply Template to All Emails?</h2>
-                  <p className="text-lg text-black mb-0">
-                    Would you like to apply your current email template and components to all remaining emails in this campaign?
-                  </p>
+            <div className="text-center">
+              {/* Icon */}
+              <div className="flex justify-center mb-6">
+                <div className="w-16 h-16 bg-[#00f5a0] rounded-xl flex items-center justify-center animate-pulse">
+                  <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
-                
-                {/* Info Section - White background with black text */}
-                <div className="bg-white p-6 rounded-xl mb-8 border border-gray-200">
-                  <p className="text-base text-black">
-                    ⚡ <strong>Batch Processing:</strong> This will apply your current email design and content structure to all remaining prospects in the campaign.
-                  </p>
-                  <p className="text-sm text-gray-600 mt-3">
-                    💡 <strong>Not satisfied?</strong> You can choose a different template to regenerate this email.
-                  </p>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-3xl font-bold text-white mb-4">Apply Template to All Emails?</h2>
+              <p className="text-lg text-gray-400 mb-8">
+                Would you like to apply your current email template and components to all remaining emails in this campaign?
+              </p>
+
+              {/* Info Section */}
+              <div className="bg-gray-800/50 border border-gray-700 p-6 rounded-xl mb-8 text-left">
+                <p className="text-base text-gray-300 flex items-start gap-2">
+                  <svg className="w-5 h-5 text-[#00f5a0] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" />
+                  </svg>
+                  <span><strong>Batch Processing:</strong> This will apply your current email design and content structure to all remaining prospects in the campaign.</span>
+                </p>
+                <p className="text-sm text-gray-400 mt-3 flex items-start gap-2">
+                  <svg className="w-5 h-5 text-[#00f5a0] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <span><strong>Not satisfied?</strong> You can choose a different template to regenerate this email.</span>
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex flex-col gap-3">
+                <div className="flex justify-center space-x-3">
+                  <button
+                    onClick={() => handleTemplateConfirmation(false)}
+                    className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-white font-medium transition-colors border border-gray-700"
+                  >
+                    Send Single Email
+                  </button>
+                  <button
+                    onClick={() => handleTemplateConfirmation(true)}
+                    className="px-10 py-3 bg-black hover:bg-gray-900 border-2 border-[#00f5a0] rounded-lg text-[#00f5a0] font-semibold transition-colors"
+                  >
+                    Yes, Use Template
+                  </button>
                 </div>
 
-                {/* Buttons */}
-                <div className="flex flex-col gap-3">
-                  <div className="flex justify-center space-x-3">
-                    <button
-                      onClick={() => handleTemplateConfirmation(false)}
-                      className="px-6 py-3 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
-                    >
-                      Send Single Email
-                    </button>
-                    <button
-                      onClick={() => handleTemplateConfirmation(true)}
-                      className="px-10 py-3 rounded-xl font-semibold text-white transition-colors"
-                      style={{
-                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'translateY(-1px)';
-                        e.target.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
-                      }}
-                    >
-                      Yes, Use Template
-                    </button>
-                  </div>
-
-                  {/* Choose Different Template Button */}
-                  <div className="flex justify-center">
-                    <button
-                      onClick={() => {
-                        setShowTemplateConfirmation(false);
-                        setShowTemplateModal(true);
-                      }}
-                      className="px-8 py-3 border-2 border-blue-500 bg-blue-50 rounded-xl text-blue-700 hover:bg-blue-100 transition-colors font-medium"
-                    >
-                      🎨 Choose Different Template
-                    </button>
-                  </div>
+                {/* Choose Different Template Button */}
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => {
+                      setShowTemplateConfirmation(false);
+                      setShowTemplateModal(true);
+                    }}
+                    className="px-8 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-white font-medium transition-colors border border-gray-700"
+                  >
+                    🎨 Choose Different Template
+                  </button>
                 </div>
               </div>
             </div>

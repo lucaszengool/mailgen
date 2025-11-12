@@ -300,7 +300,7 @@ const ProcessNotifications = ({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity"
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 transition-opacity"
         style={{ opacity: isVisible ? 1 : 0 }}
         onClick={handleClose}
       />
@@ -313,38 +313,29 @@ const ProcessNotifications = ({
           transform: isVisible ? 'translate(-50%, -50%) scale(1)' : 'translate(-50%, -50%) scale(0.9)'
         }}
       >
-        <div className="bg-white rounded-2xl shadow-2xl p-8 relative"
-             style={{
-               border: '1px solid #f0f0f0',
-               boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)'
-             }}>
+        <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 border-2 border-[#00f5a0] rounded-3xl shadow-2xl shadow-[#00f5a0]/20 p-8 relative">
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+            className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-colors"
           >
-            <X className="w-5 h-5" style={{ color: 'rgba(0, 0, 0, 0.45)' }} />
+            <X className="w-5 h-5 text-gray-400" />
           </button>
 
           {/* Icon */}
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center"
-                 style={{
-                   backgroundColor: currentNotification.type === 'error' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(0, 240, 160, 0.1)'
-                 }}>
+            <div className="w-16 h-16 bg-[#00f5a0] rounded-xl flex items-center justify-center animate-pulse">
               {currentNotification.icon}
             </div>
           </div>
 
           {/* Title */}
-          <h2 className="text-2xl font-bold text-center mb-3"
-              style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+          <h2 className="text-2xl font-bold text-center mb-3 text-white">
             {currentNotification.title}
           </h2>
 
           {/* Message */}
-          <p className="text-center mb-6"
-             style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '16px', lineHeight: '1.6' }}>
+          <p className="text-center mb-6 text-gray-400 text-base leading-relaxed">
             {currentNotification.message}
           </p>
 
@@ -352,20 +343,17 @@ const ProcessNotifications = ({
           {currentNotification.showProgress && (
             <div className="mb-6">
               <div className="flex justify-between mb-2">
-                <span className="text-sm" style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+                <span className="text-sm text-gray-400">
                   Progress
                 </span>
-                <span className="text-sm font-semibold" style={{ color: '#00f0a0' }}>
+                <span className="text-sm font-semibold text-[#00f5a0]">
                   {currentNotification.progress}%
                 </span>
               </div>
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full transition-all duration-500"
-                  style={{
-                    width: `${currentNotification.progress}%`,
-                    background: 'linear-gradient(90deg, #00f0a0 0%, #00c98d 100%)'
-                  }}
+                  className="h-full transition-all duration-500 bg-gradient-to-r from-[#00f5a0] to-[#00c98d]"
+                  style={{ width: `${currentNotification.progress}%` }}
                 />
               </div>
             </div>
@@ -375,10 +363,10 @@ const ProcessNotifications = ({
           <div className="space-y-2 mb-6">
             {currentNotification.details.map((detail, index) => (
               <div key={index} className="flex items-start gap-2">
-                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#00f0a0' }} fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#00f5a0]" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
-                <span style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '14px' }}>
+                <span className="text-sm text-gray-300">
                   {detail}
                 </span>
               </div>
@@ -391,26 +379,11 @@ const ProcessNotifications = ({
               <button
                 key={index}
                 onClick={() => handleAction(action.action)}
-                className="flex-1 py-3 px-4 rounded-lg font-semibold transition-all"
-                style={{
-                  backgroundColor: action.primary ? '#00f0a0' : 'white',
-                  color: action.primary ? '#001529' : 'rgba(0, 0, 0, 0.65)',
-                  border: action.primary ? 'none' : '1px solid #d9d9d9'
-                }}
-                onMouseEnter={(e) => {
-                  if (action.primary) {
-                    e.currentTarget.style.backgroundColor = '#28fcaf';
-                  } else {
-                    e.currentTarget.style.backgroundColor = '#fafafa';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (action.primary) {
-                    e.currentTarget.style.backgroundColor = '#00f0a0';
-                  } else {
-                    e.currentTarget.style.backgroundColor = 'white';
-                  }
-                }}
+                className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
+                  action.primary
+                    ? 'bg-black hover:bg-gray-900 text-[#00f5a0] border-2 border-[#00f5a0]'
+                    : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-700'
+                }`}
               >
                 {action.label}
               </button>
@@ -424,16 +397,16 @@ const ProcessNotifications = ({
                 type="checkbox"
                 checked={dontShowAgain}
                 onChange={(e) => setDontShowAgain(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500"
+                className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-[#00f5a0] focus:ring-[#00f5a0]"
               />
-              <span className="ml-2 text-sm" style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+              <span className="ml-2 text-sm text-gray-400">
                 Don't show this notification again
               </span>
             </label>
           </div>
 
           {/* Footer Note */}
-          <p className="text-center mt-2 text-xs" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+          <p className="text-center mt-2 text-xs text-gray-500">
             This reminder is based on your campaign's current status
           </p>
         </div>
