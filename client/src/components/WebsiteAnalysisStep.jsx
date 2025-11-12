@@ -414,8 +414,13 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
 
         {/* Social Media Section */}
         {analysis?.social && Object.keys(analysis.social).length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-8 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Social Media</h2>
+          <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
+                <Globe className="w-5 h-5 text-[#00f5a0]" />
+              </div>
+              Social Media
+            </h2>
             <div className="flex flex-wrap gap-3">
               {analysis.social.twitter && (
                 <a href={analysis.social.twitter} target="_blank" rel="noopener noreferrer"
@@ -465,9 +470,11 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
 
         {/* Technology Stack Section */}
         {analysis?.techStack && analysis.techStack.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-8 mb-6">
+          <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="flex items-center space-x-2 mb-6">
-              <Briefcase className="w-5 h-5 text-[#00f5a0]" />
+              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
+                <Briefcase className="w-5 h-5 text-[#00f5a0]" />
+              </div>
               <h2 className="text-xl font-bold text-gray-900">Technology Stack</h2>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -494,8 +501,13 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
 
         {/* Contact Information Section */}
         {analysis?.contactInfo && (Object.keys(analysis.contactInfo).length > 0) && (
-          <div className="bg-white border border-gray-200 rounded-lg p-8 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Contact Information</h2>
+          <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
+                <Target className="w-5 h-5 text-[#00f5a0]" />
+              </div>
+              Contact Information
+            </h2>
             <div className="grid grid-cols-2 gap-6">
               {analysis.contactInfo.email && (
                 <div>
