@@ -483,7 +483,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                         }}
                         className={`w-full py-2 px-4 text-sm font-medium rounded-lg transition-colors ${
                           ['gmail', 'outlook', 'yahoo'].includes(provider.id)
-                            ? 'bg-black hover:bg-gray-900 text-[#00f5a0]'
+                            ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                             : 'bg-black hover:bg-gray-900 text-[#00f5a0]'
                         }`}
                       >
@@ -517,7 +517,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   <div className="space-y-2">
                     {selectedProviderData.tutorial.map((step, index) => (
                       <div key={index} className="flex items-center space-x-3">
-                        <div className="w-6 h-6 rounded-full border-2 border-[#00f5a0] bg-white text-[#00f5a0] flex items-center justify-center text-sm font-medium">
+                        <div className="w-6 h-6 rounded-full bg-black text-[#00f5a0] flex items-center justify-center text-sm font-medium">
                           {index + 1}
                         </div>
                         <div className="flex-1">
