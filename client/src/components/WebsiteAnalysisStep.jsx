@@ -220,7 +220,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
           <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Business Logo</label>
             <div className="flex items-center space-x-4">
-              <div className="w-20 h-20 bg-gray-50 border-2 border-gray-200 rounded-2xl flex items-center justify-center overflow-hidden shadow-sm hover:shadow-md transition-all">
+              <div className="w-20 h-20 bg-white border-2 border-gray-200 rounded-2xl flex items-center justify-center overflow-hidden shadow-sm hover:shadow-md transition-all">
                 {analysis?.logo ? (
                   <img src={analysis.logo} alt="Business Logo" className="w-full h-full object-contain" />
                 ) : (
@@ -338,7 +338,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
           </div>
           <div className="grid gap-4">
             {analysis?.sellingPoints?.map((point, index) => (
-              <div key={index} className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] transition-all">
+              <div key={index} className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] transition-all">
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-[#00f5a0]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-[#00f5a0] text-sm font-bold">{index + 1}</span>
@@ -378,7 +378,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
           </div>
           <div className="grid gap-4">
             {analysis?.audiences?.map((audience, index) => (
-              <div key={index} className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] transition-all">
+              <div key={index} className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] transition-all">
                 <div className="flex items-start space-x-3">
                   <div className="p-2.5 bg-black rounded-xl flex-shrink-0 shadow-sm">
                     <Target className="w-5 h-5 text-[#00f5a0]" />
@@ -478,23 +478,14 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
               <h2 className="text-xl font-bold text-gray-900">Technology Stack</h2>
             </div>
             <div className="flex flex-wrap gap-3">
-              {analysis.techStack.map((tech, idx) => {
-                const styles = [
-                  'bg-black text-[#00f5a0] border-[#00f5a0]',
-                  'bg-[#00f5a0] text-white',
-                  'bg-gray-900 text-white',
-                  'bg-green-50 text-gray-900 border-green-200'
-                ];
-                const styleClass = styles[idx % styles.length];
-                return (
-                  <span
-                    key={idx}
-                    className={`px-4 py-2.5 ${styleClass} rounded-xl text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer border`}
-                  >
-                    {tech}
-                  </span>
-                );
-              })}
+              {analysis.techStack.map((tech, idx) => (
+                <span
+                  key={idx}
+                  className="px-4 py-2.5 bg-black text-[#00f5a0] border-2 border-[#00f5a0] rounded-xl text-sm font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer"
+                >
+                  {tech}
+                </span>
+              ))}
             </div>
           </div>
         )}
