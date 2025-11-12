@@ -1,0 +1,51 @@
+# RunPod Serverless Configuration
+# Deploy with: runpod deploy
+
+name: ollama-endpoint
+
+# Docker configuration
+docker:
+  # Use official Ollama image or build custom
+  image: ollama/ollama:latest
+
+  # Or build from Dockerfile
+  # file: ./Dockerfile
+
+  # Install dependencies
+  build_args:
+    - PYTHON_VERSION=3.11
+
+# Compute resources
+compute:
+  # GPU selection (A6000 is best value - 48GB for $0.31/hr)
+  gpu: RTX_A6000  # Options: RTX_A5000, RTX_A6000, RTX_3090, RTX_4090
+
+  # CPU & RAM (adjust based on your needs)
+  cpu: 4
+  memory: 16  # GB
+
+  # Storage for models
+  disk: 50  # GB
+
+# Scaling configuration
+scaling:
+  # ⭐ NO min_workers! Only pay when actually processing
+  min_workers: 0  # Scale to zero when idle
+  max_workers: 3  # Max concurrent workers
+
+  # Faster than Modal!
+  idle_timeout: 30  # Seconds before scaling down (vs Modal's 1800)
+
+# Environment variables
+env:
+  OLLAMA_MODEL: qwen2.5:0.5b
+  OLLAMA_HOST: 0.0.0.0:11434
+
+# Endpoints
+endpoints:
+  - path: /generate
+    method: POST
+  - path: /chat
+    method: POST
+  - path: /health
+    method: GET

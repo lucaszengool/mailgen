@@ -169,15 +169,24 @@ router.post('/select', optionalAuth, async (req, res) => {
       global.templateSelections = {};
     }
 
+    // 🔥 CRITICAL FIX: Save ALL user customizations for email generation
     global.templateSelections[key] = {
       templateId,
       templateName: template.name,
       selectedAt: new Date().toISOString(),
       campaignId: campaignId,
-      workflowId: workflowId
+      workflowId: workflowId,
+      // 🎯 Save user customizations
+      subject: subject || null,
+      greeting: greeting || null,
+      signature: signature || null,
+      html: userEditedHtml || null,  // USER'S EDITED HTML
+      customizations: userCustomizations || {},
+      isCustomized: isCustomized || !!(userCustomizations && Object.keys(userCustomizations).length > 0),
+      components: components || []
     };
 
-    console.log(`✅ Template ${template.name} selected for ${key}`);
+    console.log(`✅ Template ${template.name} selected for ${key}${isCustomized ? ' (CUSTOMIZED)' : ''}`);
 
     // 💾 Save user's template selection to persist across sessions
     const UserStorageService = require('../services/UserStorageService');

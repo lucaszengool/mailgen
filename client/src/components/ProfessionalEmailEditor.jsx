@@ -3810,6 +3810,10 @@ export default function ProfessionalEmailEditor(props) {
   const sendTemplateEmailsDirectly = async (templateData, smtpConfig) => {
     console.log('📧 Starting direct template email sending...');
 
+    // Extract SMTP credentials
+    const smtpUser = smtpConfig.auth?.user || smtpConfig.username;
+    const smtpPass = smtpConfig.auth?.pass || smtpConfig.password;
+
     // Get campaign ID from emailData or availableEmails
     const campaignId = emailData?.campaignId ||
                       availableEmails?.[0]?.campaignId ||

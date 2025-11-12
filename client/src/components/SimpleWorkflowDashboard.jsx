@@ -2589,6 +2589,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const templateAlreadySubmittedRef = useRef(false); // 🔥 FIX: Use ref to persist across re-renders
   const [selectedFilters, setSelectedFilters] = useState(new Set());
 
+  // 🚀 Email Generation Status Popup
+  const [showGenerationPopup, setShowGenerationPopup] = useState(false);
+  const [generationInfo, setGenerationInfo] = useState({ templateName: '', prospectCount: 0 });
+
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home, isHome: true },
     { id: 'workflow', label: 'AI Agent', icon: Activity },
@@ -3253,6 +3257,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         duration: 5000,
         icon: '🎨',
       });
+
+      // 🚀 Show email generation status popup
+      setGenerationInfo({
+        templateName: templateToUse.name,
+        prospectCount: prospects?.length || 0
+      });
+      setShowGenerationPopup(true);
 
       // Close template selection modal and mark as submitted
       setShowTemplateSelection(false);
@@ -4049,6 +4060,26 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         setCurrentMicroStepIndex(0);
         setIsAnimating(false);
         setBackgroundWorkflowRunning(false);
+      } else if (data.type === 'prospect_batch_update') {
+        // 📦 Handle background prospect batch updates
+        console.log(`📦 Received prospect batch ${data.data.batchNumber}:`, data.data);
+        console.log(`📦 Batch contains ${data.data.prospects.length} new prospects`);
+        console.log(`📦 Total so far: ${data.data.totalSoFar}/${data.data.targetTotal}`);
+
+        // Append new prospects to existing list (avoid duplicates by email)
+        setProspects(prev => {
+          const existingEmails = new Set(prev.map(p => p.email));
+          const newProspects = data.data.prospects.filter(p => !existingEmails.has(p.email));
+          const updated = [...prev, ...newProspects];
+          console.log(`📦 Updated prospects: ${prev.length} → ${updated.length} (+${newProspects.length} new)`);
+          return updated;
+        });
+
+        // Show toast notification for batch update
+        toast.success(`🎯 Found ${data.data.prospects.length} more prospects! (${data.data.totalSoFar}/${data.data.targetTotal} total)`, {
+          duration: 3000,
+          icon: '📦',
+        });
       } else if (data.type === 'stage_start' || data.type === 'workflow_status_update') {
         // 🚀 NEW: Handle workflow stage/status updates from backend
         console.log(`🚀 Received ${data.type}:`, data);
@@ -6083,6 +6114,126 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           isSubmitting={isSubmittingTemplate}
           templateRequest={templateRequest}
         />,
+        document.body
+      )}
+
+      {/* 🚀 Email Generation Status Popup */}
+      {showGenerationPopup && ReactDOM.createPortal(
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+          <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 border-2 border-[#00f5a0] rounded-3xl p-8 max-w-lg w-full shadow-2xl shadow-[#00f5a0]/20 animate-fadeIn">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-[#00f5a0] rounded-xl flex items-center justify-center animate-pulse">
+                  <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Email Generation Started!</h3>
+                  <p className="text-sm text-gray-400">AI Agent is working...</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGenerationPopup(false)}
+                className="w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Info Cards */}
+            <div className="space-y-4 mb-6">
+              {/* Template Info */}
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-black border border-[#00f5a0] rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-[#00f5a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Selected Template</p>
+                    <p className="text-lg font-semibold text-white">{generationInfo.templateName}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Prospects Info */}
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-black border border-[#00f5a0] rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-[#00f5a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Generating for</p>
+                    <p className="text-lg font-semibold text-white">{generationInfo.prospectCount} Prospects</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time Estimate */}
+              <div className="bg-gradient-to-r from-[#00f5a0]/10 to-transparent border border-[#00f5a0]/30 rounded-xl p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-black border border-[#00f5a0] rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-[#00f5a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Estimated Time</p>
+                    <p className="text-lg font-semibold text-[#00f5a0]">
+                      ~{Math.max(1, Math.ceil(generationInfo.prospectCount * 0.5))} minutes
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Next Steps */}
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4 mb-6">
+              <h4 className="text-sm font-semibold text-white mb-3 flex items-center">
+                <svg className="w-4 h-4 mr-2 text-[#00f5a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                What's Next?
+              </h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li className="flex items-start">
+                  <span className="text-[#00f5a0] mr-2">1.</span>
+                  <span>AI will generate personalized emails for each prospect</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-[#00f5a0] mr-2">2.</span>
+                  <span>Watch the Email tab for generated emails appearing</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-[#00f5a0] mr-2">3.</span>
+                  <span>Review and edit emails before sending</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-[#00f5a0] mr-2">4.</span>
+                  <span>Click "Send Campaign" when ready!</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Action Button */}
+            <button
+              onClick={() => {
+                setShowGenerationPopup(false);
+                setActiveView('email-campaign');
+              }}
+              className="w-full bg-[#00f5a0] hover:bg-[#00d68a] text-black font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-[#00f5a0]/30"
+            >
+              Go to Email Tab
+            </button>
+          </div>
+        </div>,
         document.body
       )}
 

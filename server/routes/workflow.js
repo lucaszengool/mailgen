@@ -1681,11 +1681,15 @@ async function addEmailToWorkflowResults(email, userId = 'anonymous', campaignId
 }
 
 // Get generated email for professional editor
-router.get('/generated-email', async (req, res) => {
+router.get('/generated-email', optionalAuth, async (req, res) => {
   try {
     const { campaignId, prospectId } = req.query;
-    console.log(`📧 Looking for generated email - Campaign: ${campaignId}, Prospect: ${prospectId}`);
-    
+    const userId = req.userId;
+    console.log(`📧 [User: ${userId}] Looking for generated email - Campaign: ${campaignId}, Prospect: ${prospectId}`);
+
+    // 🔥 FIX: Get campaign-specific workflow results
+    const lastWorkflowResults = await getLastWorkflowResults(userId, campaignId);
+
     // Check if we have generated emails from the last workflow
     if (lastWorkflowResults && lastWorkflowResults.emailCampaign && lastWorkflowResults.emailCampaign.emails) {
       let targetEmail = null;

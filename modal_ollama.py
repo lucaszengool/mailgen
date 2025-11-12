@@ -26,9 +26,11 @@ ollama_image = (
 @app.function(
     image=ollama_image,
     gpu="T4",  # Use T4 GPU (cheapest option on Modal)
-    timeout=3600,  # 60 minute timeout (NO MORE TIMEOUTS!)
-    min_containers=1,  # Keep 1 container warm to prevent cold starts
-    scaledown_window=1800,  # Keep container alive for 30 minutes
+    timeout=600,  # 10 minute timeout
+    # ❌ REMOVED min_containers=1 - was costing $432/month!
+    # Only pay when actually processing requests
+    min_containers=0,  # Scale to zero when idle = MASSIVE savings!
+    scaledown_window=60,  # Scale down after 60 seconds (vs 1800)
 )
 @modal.asgi_app()
 def serve():

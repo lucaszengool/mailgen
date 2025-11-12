@@ -575,18 +575,18 @@ export default function ComprehensiveCompanyDetailPage({ prospect, onBack }) {
 
             {/* Competitive Advantages */}
             {companyData.competitiveAdvantages && companyData.competitiveAdvantages.length > 0 && (
-              <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                  <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3">
+              <div className="bg-black border border-gray-800 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <h2 className="text-xl font-bold text-white mb-6 flex items-center">
+                  <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center mr-3 border border-[#00f5a0]">
                     <TrophyIcon className="w-5 h-5 text-[#00f5a0]" />
                   </div>
                   Competitive Advantages
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   {companyData.competitiveAdvantages.map((advantage, idx) => (
-                    <div key={idx} className="p-4 bg-black rounded-2xl hover:shadow-md transition-all group">
+                    <div key={idx} className="p-4 bg-gray-900 border border-gray-800 rounded-2xl hover:border-[#00f5a0] hover:shadow-lg hover:shadow-[#00f5a0]/20 transition-all group">
                       <div className="flex items-start space-x-3">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <div className="w-8 h-8 bg-black border border-[#00f5a0] rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                           <CheckCircleIcon className="w-5 h-5 text-[#00f5a0]" />
                         </div>
                         <span className="text-white font-semibold">{advantage}</span>

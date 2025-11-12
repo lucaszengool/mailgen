@@ -1513,8 +1513,23 @@ class LangGraphMarketingAgent {
       // If we have existing templateData (like user template), merge SMTP data with it
       if (templateData && (templateData.html || templateData.components || templateData.subject)) {
         console.log('🔧 TEMPLATE FIX: Merging SMTP config with existing user template');
-        templateData = { ...templateData, ...smtpData };
+        // 🎯 CRITICAL: Preserve ALL user customizations - only add SMTP fields if missing
+        templateData = {
+          ...templateData, // Keep ALL user customizations first
+          // Only override sender info from SMTP config
+          senderName: smtpData.senderName,
+          senderEmail: smtpData.senderEmail,
+          // Keep company info from template if exists, otherwise use SMTP
+          companyWebsite: templateData.companyWebsite || smtpData.companyWebsite,
+          companyName: templateData.companyName || smtpData.companyName,
+          ctaUrl: templateData.ctaUrl || smtpData.ctaUrl,
+          ctaText: templateData.ctaText || smtpData.ctaText
+        };
         console.log('🔍 TEMPLATE FIX: Merged template has html:', !!templateData.html);
+        console.log('🔍 TEMPLATE FIX: Merged template has subject:', !!templateData.subject);
+        console.log('🔍 TEMPLATE FIX: Merged template has greeting:', !!templateData.greeting);
+        console.log('🔍 TEMPLATE FIX: Merged template has signature:', !!templateData.signature);
+        console.log('🔍 TEMPLATE FIX: Merged template has customizations:', !!templateData.customizations);
         console.log('🔍 TEMPLATE FIX: Merged template has components:', !!templateData.components);
       } else {
         // No existing template, use SMTP data only
