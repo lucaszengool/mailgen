@@ -72,97 +72,112 @@ const EmailReviewModal = ({ isOpen, email, onApprove, onClose, onEdit }) => {
   };
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-8">
-      <div className="bg-white rounded-2xl w-full max-w-4xl shadow-lg" style={{
-        minHeight: '600px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)'
-      }}>
-        {/* Close Button */}
-        <div className="flex justify-end p-6">
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl font-light"
-            style={{lineHeight: '1'}}
-          >
-            ×
-          </button>
-        </div>
-        
-        {/* Content */}
-        <div className="px-12 pb-12" style={{paddingTop: '0'}}>
-          <div className="text-center">
-            {/* Large Green Card - mimicking the reference UI */}
-            <div className="mx-auto mb-8 p-12 rounded-3xl" style={{
-              backgroundColor: '#00f5a0',
-              maxWidth: '600px'
-            }}>
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <Mail className="w-8 h-8 text-black" />
-              </div>
-              <h2 className="text-3xl font-bold text-black mb-4">First Email Generated Successfully!</h2>
-              <p className="text-lg text-black mb-0">
-                Your first email for <strong>{email.to}</strong> is ready for review and editing.
-              </p>
-              <p className="text-sm text-black mt-2">
-                ⚠️ <strong>Important:</strong> All remaining emails are paused until you review this first email. Any edits you make will be used as a template for all subsequent emails.
-              </p>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+      <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 border-2 border-[#00f5a0] rounded-3xl p-8 max-w-lg w-full shadow-2xl shadow-[#00f5a0]/20 animate-fadeIn">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-[#00f5a0] rounded-xl flex items-center justify-center">
+              <Mail className="w-6 h-6 text-black" />
             </div>
-            
-            {/* Email Preview */}
-            {email.body && (
-              <details className="mb-8 text-left">
-                <summary className="cursor-pointer text-base font-medium p-3 bg-white rounded-lg hover:bg-gray-100 transition-colors border-2 border-gray-200">
-                  📄 Preview Generated Email
-                </summary>
-                <div className="mt-4 p-4 bg-white rounded-lg max-h-64 overflow-y-auto border-2 border-gray-200">
-                  <div className="text-sm mb-3 font-medium text-black">
-                    <strong>Subject:</strong> {email.subject}
-                  </div>
-                  <div className="text-sm border-t border-gray-200 pt-3 text-black">
-                    <div
-                      dangerouslySetInnerHTML={{ __html: email.body }}
-                      className="prose prose-sm max-w-none"
-                    />
-                  </div>
-                </div>
-              </details>
-            )}
-            
-            {/* Next Step - White background with black text */}
-            <div className="bg-white p-6 rounded-xl mb-8 border border-gray-200">
-              <p className="text-base text-black">
-                📝 <strong>Next Step:</strong> Go to the <strong>Email Editor</strong> to review, edit, and send your email.
-              </p>
-            </div>
-            
-            {/* Buttons */}
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={onClose}
-                className="px-8 py-3 border-2 border-gray-300 rounded-xl text-black hover:bg-gray-100 transition-colors font-medium"
-              >
-                Later
-              </button>
-              <button
-                onClick={handleGoToEmailEditor}
-                className="px-12 py-4 rounded-2xl font-semibold text-lg text-black transition-colors"
-                style={{
-                  backgroundColor: '#00f5a0',
-                  boxShadow: '0 4px 12px rgba(0, 245, 160, 0.3)'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 6px 16px rgba(0, 245, 160, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(0, 245, 160, 0.3)';
-                }}
-              >
-                Go to Email Editor
-              </button>
+            <div>
+              <h3 className="text-2xl font-bold text-white">First Email Generated!</h3>
+              <p className="text-sm text-gray-400">Ready for review and editing</p>
             </div>
           </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center justify-center transition-colors"
+          >
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Info Cards */}
+        <div className="space-y-4 mb-6">
+          {/* Recipient Info */}
+          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-black border border-[#00f5a0] rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#00f5a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Email Generated For</p>
+                <p className="text-lg font-semibold text-white">{email.to}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Important Note */}
+          <div className="bg-gradient-to-r from-[#00f5a0]/10 to-transparent border border-[#00f5a0]/30 rounded-xl p-4">
+            <div className="flex items-start space-x-3">
+              <div className="w-10 h-10 bg-black border border-[#00f5a0] rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-[#00f5a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white mb-1">Important</p>
+                <p className="text-sm text-gray-300">All remaining emails are paused. Any edits you make will be used as a template for all subsequent emails.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Email Preview */}
+          {email.body && (
+            <details className="bg-gray-800/30 border border-gray-700 rounded-xl">
+              <summary className="cursor-pointer text-sm font-medium p-4 text-white hover:bg-gray-800/50 transition-colors rounded-xl flex items-center justify-between">
+                <span>📄 Preview Generated Email</span>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div className="p-4 border-t border-gray-700">
+                <div className="text-sm mb-3 font-medium text-gray-300">
+                  <strong className="text-white">Subject:</strong> {email.subject}
+                </div>
+                <div className="text-sm border-t border-gray-700 pt-3 text-gray-300 max-h-48 overflow-y-auto">
+                  <div
+                    dangerouslySetInnerHTML={{ __html: email.body }}
+                    className="prose prose-sm prose-invert max-w-none"
+                  />
+                </div>
+              </div>
+            </details>
+          )}
+        </div>
+
+        {/* Next Steps */}
+        <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4 mb-6">
+          <h4 className="text-sm font-semibold text-white mb-3 flex items-center">
+            <svg className="w-4 h-4 mr-2 text-[#00f5a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            Next Step
+          </h4>
+          <p className="text-sm text-gray-300">
+            Go to the <span className="text-[#00f5a0] font-semibold">Email Editor</span> to review, edit, and send your email.
+          </p>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex space-x-3">
+          <button
+            onClick={onClose}
+            className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-xl transition-colors border border-gray-700"
+          >
+            Later
+          </button>
+          <button
+            onClick={handleGoToEmailEditor}
+            className="flex-1 bg-[#00f5a0] hover:bg-[#00d68a] text-black font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-[#00f5a0]/30"
+          >
+            Go to Email Editor
+          </button>
         </div>
       </div>
     </div>
