@@ -1395,6 +1395,9 @@ class LangGraphMarketingAgent {
           // Ensure required fields are present
           id: templateId,
           templateId: templateId,
+          // 🔥 CRITICAL FIX: Explicitly set customization flags so applyComponentTemplate knows this is user-customized
+          isCustomized: userTemplateData.isCustomized || enhancedTemplate.isCustomized || true,
+          userSelected: true,
           senderName: enhancedTemplate.senderName || waitingState.senderName || process.env.SENDER_NAME || 'James',
           senderEmail: enhancedTemplate.senderEmail || waitingState.senderEmail || process.env.SMTP_USER || 'fruitaiofficial@gmail.com',
           companyName: enhancedTemplate.companyName || waitingState.companyName || process.env.COMPANY_NAME || 'FruitAI'
@@ -2708,14 +2711,24 @@ Return ONLY a JSON array of REAL search queries, for example:
     console.log(`📧 为 ${prospect.company || prospect.name} 生成完全真实数据的邮件...`);
     console.log(`🔧 DEBUG: Entered generateOptimizedEmailContent for ${prospect.email}`);
     console.log(`🎨 DEBUG: Template type: ${emailTemplateType || 'auto-select'}, has templateData: ${!!templateData}`);
-    
+
+    // 🔥 CRITICAL CHECK: If user has customized HTML, use it directly!
+    if (templateData && (templateData.isCustomized || templateData.userSelected) && templateData.html) {
+      console.log(`🎯 User has customized template! Using applyComponentTemplate instead...`);
+      console.log(`   ✨ isCustomized: ${templateData.isCustomized}, userSelected: ${templateData.userSelected}`);
+      console.log(`   📄 HTML length: ${templateData.html.length}`);
+
+      // Use applyComponentTemplate which properly handles user customizations
+      return await this.applyComponentTemplate(templateData, prospect, null, businessAnalysis);
+    }
+
     // Initialize variables at the function level to avoid undefined errors
     let subject = '';
     let cleanedBody = '';
     let hasRealSenderData = false;
     let hasRealRecipientData = false;
     let hasRealServiceData = false;
-    
+
     try {
       // ===== 严格验证所有必需的真实数据 =====
     
@@ -5031,14 +5044,21 @@ Return ONLY the JSON object, no other text.`;
           console.log(`✅ Loaded base template: ${baseTemplate.name}`);
 
           // If we have customizations from template selection, merge them
-          if (templateData && (templateData.isCustomized || templateData.components)) {
+          if (templateData && (templateData.isCustomized || templateData.components || templateData.html)) {
             console.log(`✨ Merging customizations with base template`);
+            console.log(`   🔍 Has user HTML: ${!!templateData.html}, length: ${templateData.html?.length || 0}`);
+            console.log(`   🔍 Has customizations: ${!!templateData.customizations}, keys: ${templateData.customizations ? Object.keys(templateData.customizations).join(', ') : 'none'}`);
+            console.log(`   🔍 isCustomized flag: ${templateData.isCustomized}`);
             templateData = {
               ...baseTemplate,
-              ...templateData, // Keep all customizations
+              ...templateData, // Keep all customizations - this MUST come after baseTemplate to override
               templateId: selectedEmailTemplate,
+              // 🔥 CRITICAL: Explicitly preserve user customization flags
+              isCustomized: templateData.isCustomized || true,
+              userSelected: true,
               baseTemplate: baseTemplate // Keep reference to original
             };
+            console.log(`   ✅ Merged template isCustomized: ${templateData.isCustomized}, userSelected: ${templateData.userSelected}`);
           } else {
             // No customizations, use base template
             templateData = {

@@ -452,8 +452,8 @@ class Database {
     return new Promise((resolve, reject) => {
       const stmt = this.db.prepare(`
         INSERT OR REPLACE INTO contacts
-        (email, name, company, position, industry, phone, address, source, tags, notes, user_id, campaign_id, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        (email, name, company, position, industry, phone, address, source, tags, notes, status, user_id, campaign_id, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `);
 
       stmt.run([
@@ -467,6 +467,7 @@ class Database {
         contact.source,
         contact.tags,
         contact.notes,
+        contact.status || 'active',  // 🔥 CRITICAL FIX: Always set status to 'active' by default
         userId,
         campaignId
       ], function(err) {
