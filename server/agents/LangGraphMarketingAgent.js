@@ -1065,8 +1065,30 @@ class LangGraphMarketingAgent {
           console.error(`❌ [Batch ${batchNumber}] Failed to save batch:`, error);
         }
 
-        // Notify frontend via WebSocket
+        // 🔥 CRITICAL FIX: Update workflow state with new batch prospects
         if (this.wsManager) {
+          // Get current workflow state
+          const workflowState = this.wsManager.workflowStates.get(campaignId);
+          if (workflowState) {
+            // Initialize prospects array if it doesn't exist
+            if (!workflowState.data) {
+              workflowState.data = {};
+            }
+            if (!workflowState.data.prospects) {
+              workflowState.data.prospects = [];
+            }
+
+            // Add new batch prospects to the workflow state (avoid duplicates)
+            const existingEmails = new Set(workflowState.data.prospects.map(p => p.email));
+            const newProspects = prospects.filter(p => !existingEmails.has(p.email));
+            workflowState.data.prospects.push(...newProspects);
+
+            console.log(`✅ [Batch ${batchNumber}] Added ${newProspects.length} new prospects to workflow state (total: ${workflowState.data.prospects.length})`);
+          } else {
+            console.warn(`⚠️ [Batch ${batchNumber}] Workflow state not found for campaign: ${campaignId}`);
+          }
+
+          // Notify frontend via WebSocket
           this.wsManager.broadcast({
             type: 'prospect_batch_update',
             data: {

@@ -427,19 +427,46 @@ export default function ProfessionalEmailEditor(props) {
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [previewMode, setPreviewMode] = useState(false);
 
-  // FORCE: Use exact campaign email subject instead of persistence
-  const subject = currentEmail?.subject || '';
-  const setSubject = useCallback((newSubject) => {
-    console.log('🔥 FORCING campaign subject - ignoring persistence:', newSubject);
-    // DO NOTHING - always use campaign email subject
-  }, []);
+  // 🔥 FIX: Enable subject customization with persistence
+  const [subject, setSubject] = useState(currentEmail?.subject || '');
 
-  // FORCE: Use exact campaign email HTML instead of persistence
-  const rootEmailHTML = currentEmail?.html || currentEmail?.body || '';
+  // Update subject when switching emails
+  useEffect(() => {
+    if (currentEmail?.subject) {
+      setSubject(currentEmail.subject);
+    }
+  }, [currentEmail?.to]); // Only update when email recipient changes
+
+  // 🔥 FIX: Enable HTML customization with localStorage persistence
+  const [rootEmailHTML, setRootEmailHTMLState] = useState(() => {
+    // Try to load customized HTML from localStorage first
+    const emailKey = `email_custom_html_${currentEmail?.to}`;
+    const savedHTML = localStorage.getItem(emailKey);
+    return savedHTML || currentEmail?.html || currentEmail?.body || '';
+  });
+
+  // Wrapper to save HTML customizations to localStorage
   const setRootEmailHTML = useCallback((newHTML) => {
-    console.log('🔥 FORCING campaign HTML - ignoring any persistence:', newHTML?.length || 0);
-    // DO NOTHING - always use campaign email HTML
-  }, []);
+    setRootEmailHTMLState(newHTML);
+    if (currentEmail?.to && newHTML) {
+      const emailKey = `email_custom_html_${currentEmail.to}`;
+      localStorage.setItem(emailKey, newHTML);
+      console.log('💾 Saved HTML customization for:', currentEmail.to, 'length:', newHTML.length);
+    }
+  }, [currentEmail?.to]);
+
+  // Update HTML when switching emails
+  useEffect(() => {
+    // Try to load saved customization first
+    const emailKey = `email_custom_html_${currentEmail?.to}`;
+    const savedHTML = localStorage.getItem(emailKey);
+
+    const emailHTML = savedHTML || currentEmail?.html || currentEmail?.body || '';
+    if (emailHTML) {
+      console.log('📧 Loading email HTML for:', currentEmail?.to, '(customized:', !!savedHTML, ') length:', emailHTML.length);
+      setRootEmailHTMLState(emailHTML);
+    }
+  }, [currentEmail?.to]); // Only update when email recipient changes
   const [changes, setChanges] = useState([]);
   const [loading, setLoading] = useState(false);
 

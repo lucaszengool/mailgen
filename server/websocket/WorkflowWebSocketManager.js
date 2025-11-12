@@ -679,6 +679,49 @@ class WorkflowWebSocketManager extends EventEmitter {
         timestamp: new Date().toISOString()
       });
     }
+
+    // 🔥 CRITICAL FIX: Store email campaign data in workflow state if this is the email_generation step
+    if (stepId === 'email_generation' && results && results.emails) {
+      console.log(`📧 Storing ${results.emails.length} emails in workflow state`);
+
+      // Find the most recent workflow or create one
+      let workflowId = null;
+      for (const [id, state] of this.workflowStates) {
+        if (state.status === 'running') {
+          workflowId = id;
+          break;
+        }
+      }
+
+      if (!workflowId) {
+        workflowId = `workflow_${Date.now()}`;
+        this.workflowStates.set(workflowId, {
+          id: workflowId,
+          status: 'running',
+          startTime: new Date().toISOString(),
+          data: {}
+        });
+      }
+
+      // Update the workflow state with email campaign
+      const state = this.workflowStates.get(workflowId);
+      if (state) {
+        if (!state.data) state.data = {};
+        state.data.emailCampaign = results;
+        state.data.totalEmails = results.emails.length;
+        state.data.lastUpdate = new Date().toISOString();
+        console.log(`✅ Email campaign stored in workflow ${workflowId}`);
+      }
+
+      // Also broadcast a specific email_list message
+      this.broadcast({
+        type: 'email_list',
+        workflowId: workflowId,
+        emails: results.emails,
+        total: results.emails.length,
+        timestamp: new Date().toISOString()
+      });
+    }
     
     // Store email campaign data in workflow state if this is the email_campaign or email_generation step
     if ((stepId === 'email_campaign' || stepId === 'email_generation') && results) {
