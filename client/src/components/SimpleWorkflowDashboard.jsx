@@ -4118,7 +4118,33 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           setWorkflowStatus(data.data.status);
         }
 
-        fetchAndTriggerWorkflowSteps();
+        // 🎯 NEW: Handle single email updates in real-time
+        if (data.data?.emailCampaign?.isSingleUpdate && data.data.emailCampaign.emails?.length > 0) {
+          console.log('📧 Real-time email update received:', data.data.emailCampaign.emails[0]);
+          const newEmail = data.data.emailCampaign.emails[0];
+
+          // Add to generated emails immediately
+          setGeneratedEmails(prev => {
+            const existing = prev.find(e => e.to === newEmail.to);
+            if (existing) {
+              return prev.map(e => e.to === newEmail.to ? { ...e, ...newEmail } : e);
+            } else {
+              return [...prev, newEmail];
+            }
+          });
+
+          // Update stats
+          setEmailCampaignStats(prev => ({
+            ...prev,
+            emails: [...prev.emails.filter(e => e.to !== newEmail.to), newEmail],
+            totalSent: prev.totalSent + (newEmail.status === 'sent' ? 1 : 0)
+          }));
+
+          console.log('✅ Email added to UI in real-time!');
+        } else {
+          // Full update - fetch all data
+          fetchAndTriggerWorkflowSteps();
+        }
       } else if (data.type === 'template_selection_required') {
         // 🎨 NEW: Handle template selection required
         console.log('🎨🎨🎨 TEMPLATE SELECTION REQUIRED MESSAGE RECEIVED! 🎨🎨🎨');
@@ -4130,6 +4156,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         // 🎨 NEW: Handle template selected confirmation
         console.log('✅ Template selected confirmed:', data.data);
         handleTemplateSelected(data.data);
+      } else if (data.type === 'workflow_complete') {
+        // 🎯 NEW: Handle workflow completion - fetch final emails
+        console.log('🎉 Workflow complete! Fetching generated emails...');
+        console.log('📊 Workflow complete data:', data.data);
+
+        // Trigger a fetch of workflow results to get all generated emails
+        fetchAndTriggerWorkflowSteps();
+
+        // Update workflow status to completed
+        setBackgroundWorkflowRunning(false);
+        setWorkflowStatus('completed');
+
+        // Show completion notification
+        setAgentStatus('completed');
+        setAgentMessage('Email campaign completed successfully!');
       } else {
         // Use pipeline message handler for general log messages
         processPipelineMessage(data);

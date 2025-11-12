@@ -4992,10 +4992,6 @@ Return ONLY the JSON object, no other text.`;
     }
     
     try {
-      // SKIP PersonalizedEmailGenerator - it's corrupted with syntax errors!
-      // Jump directly to fallback which uses generateOptimizedEmailContent
-      throw new Error('Skipping PersonalizedEmailGenerator - using direct generation instead');
-      
       // Enhanced prospect with persona and template preference
       console.log(`🔍 DEBUG: emailTemplate parameter is: ${emailTemplate}`);
       
