@@ -369,13 +369,15 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
       {/* Main Content */}
       <div className="flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-300 p-6">
-          <div className="max-w-4xl mx-auto">
+        <div className="bg-white border-b border-gray-200 p-6 shadow-sm">
+          <div className="max-w-5xl mx-auto">
             <div className="flex items-center space-x-3 mb-2">
-              <Settings className="w-8 h-8 text-[#00f5a0]" />
-              <h1 className="text-2xl font-bold text-black">Configure Email Service</h1>
+              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
+                <Settings className="w-5 h-5 text-[#00f5a0]" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900">Configure Email Service</h1>
             </div>
-            <p className="text-black">
+            <p className="text-gray-700">
               Set up your SMTP email configuration to start sending automated marketing emails.
               Choose your email provider and follow the guided setup process.
             </p>
@@ -383,14 +385,19 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-4xl mx-auto space-y-8">
-            
+        <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
+          <div className="max-w-5xl mx-auto space-y-6">
+
             {/* Provider Selection */}
-            <div>
-              <h2 className="text-lg font-semibold text-black mb-4">
-                1. Choose Your Email Provider
-              </h2>
+            <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg">
+              <div className="flex items-center space-x-2 mb-6">
+                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
+                  <Mail className="w-5 h-5 text-[#00f5a0]" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  1. Choose Your Email Provider
+                </h2>
+              </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {emailProviders.map((provider) => {
                   const isSelected = selectedProvider === provider.id;
@@ -399,10 +406,10 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                     <div
                       key={provider.id}
                       className={`
-                        relative p-4 rounded-lg border-2 transition-all duration-200
+                        relative p-5 rounded-2xl border-2 transition-all duration-200
                         ${isSelected
-                          ? 'border-[#00f5a0] bg-white shadow-md'
-                          : 'border-gray-300 hover:border-[#00f5a0] hover:shadow-sm'
+                          ? 'border-[#00f5a0] bg-white shadow-lg'
+                          : 'border-gray-200 hover:border-[#00f5a0] hover:shadow-md'
                         }
                       `}
                     >
