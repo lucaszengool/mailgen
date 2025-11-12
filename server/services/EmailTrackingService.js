@@ -137,7 +137,7 @@ class EmailTrackingService {
 
       await this.saveDb(db);
 
-      // Also track in analytics
+      // Also track in analytics (in-memory - DEPRECATED)
       try {
         const analyticsRoutes = require('../routes/analytics');
         const email = db.emails[trackingId];
@@ -148,6 +148,21 @@ class EmailTrackingService {
         );
       } catch (analyticsError) {
         console.error('[Tracking] Analytics error:', analyticsError.message);
+      }
+
+      // 💾 CRITICAL: Save to SQLite database for analytics dashboard
+      try {
+        const dbModule = require('../models/database');
+        await dbModule.logEmailOpen({
+          trackingId: trackingId,
+          openedAt: new Date().toISOString(),
+          userAgent: metadata.userAgent || 'unknown',
+          ip: metadata.ipAddress || 'unknown'
+        });
+        console.log(`[Tracking] ✅ Email open logged to database: ${trackingId}`);
+      } catch (dbError) {
+        console.error('[Tracking] Failed to log open to database:', dbError.message);
+        // Don't fail the request if DB logging fails
       }
 
       console.log(`[Tracking] ✅ Email opened: ${trackingId}`);
@@ -190,7 +205,7 @@ class EmailTrackingService {
 
       await this.saveDb(db);
 
-      // Also track in analytics
+      // Also track in analytics (in-memory - DEPRECATED)
       try {
         const analyticsRoutes = require('../routes/analytics');
         const email = db.emails[trackingId];
@@ -201,6 +216,24 @@ class EmailTrackingService {
         );
       } catch (analyticsError) {
         console.error('[Tracking] Analytics error:', analyticsError.message);
+      }
+
+      // 💾 CRITICAL: Save to SQLite database for analytics dashboard
+      try {
+        const dbModule = require('../models/database');
+        const email = db.emails[trackingId];
+        await dbModule.logEmailClick({
+          campaignId: email.campaignId || 'unknown',
+          linkId: `link_${linkIndex}`,
+          targetUrl: metadata.targetUrl,
+          clickedAt: new Date().toISOString(),
+          userAgent: metadata.userAgent || 'unknown',
+          ipAddress: metadata.ipAddress || 'unknown'
+        });
+        console.log(`[Tracking] ✅ Email click logged to database: ${trackingId}`);
+      } catch (dbError) {
+        console.error('[Tracking] Failed to log click to database:', dbError.message);
+        // Don't fail the request if DB logging fails
       }
 
       console.log(`[Tracking] ✅ Link clicked: ${trackingId}, link ${linkIndex}`);
