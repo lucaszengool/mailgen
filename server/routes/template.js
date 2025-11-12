@@ -188,12 +188,20 @@ router.post('/select', optionalAuth, async (req, res) => {
 
     console.log(`✅ Template ${template.name} selected for ${key}${isCustomized ? ' (CUSTOMIZED)' : ''}`);
 
-    // 💾 Save user's template selection to persist across sessions
+    // 💾 Save user's template selection to persist across sessions (with customizations!)
     const UserStorageService = require('../services/UserStorageService');
     const userStorage = new UserStorageService(userId);
     try {
-      await userStorage.saveSelectedTemplate(templateId, template.name);
-      console.log(`💾 [User: ${userId}] Template preference saved: ${template.name}`);
+      await userStorage.saveSelectedTemplate(templateId, template.name, {
+        subject,
+        greeting,
+        signature,
+        html: userEditedHtml,
+        customizations: userCustomizations,
+        isCustomized,
+        components
+      });
+      console.log(`💾 [User: ${userId}] Template preference saved: ${template.name}${isCustomized ? ' (with customizations)' : ''}`);
     } catch (error) {
       console.error(`❌ Failed to save template preference for user ${userId}:`, error);
       // Don't fail the request if storage fails

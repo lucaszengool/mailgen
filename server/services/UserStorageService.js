@@ -266,17 +266,25 @@ class UserStorageService {
   /**
    * SELECTED TEMPLATE PREFERENCE
    */
-  async saveSelectedTemplate(templateId, templateName) {
+  async saveSelectedTemplate(templateId, templateName, customizations = {}) {
     await this.ensureUserDirectory();
     const filePath = path.join(this.basePath, 'selected-template.json');
     const data = {
       templateId,
       templateName,
       selectedAt: new Date().toISOString(),
-      userId: this.userId
+      userId: this.userId,
+      // Save all customizations
+      subject: customizations.subject || null,
+      greeting: customizations.greeting || null,
+      signature: customizations.signature || null,
+      html: customizations.html || null,
+      customizations: customizations.customizations || {},
+      isCustomized: customizations.isCustomized || false,
+      components: customizations.components || []
     };
     await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-    console.log(`💾 Selected template saved for user: ${this.userId} - ${templateName}`);
+    console.log(`💾 Selected template saved for user: ${this.userId} - ${templateName}${data.isCustomized ? ' (with customizations)' : ''}`);
     return data;
   }
 

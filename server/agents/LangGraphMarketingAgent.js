@@ -188,15 +188,23 @@ class LangGraphMarketingAgent {
         return false;
       }
 
-      // Store template in workflow state (same as when user selects manually)
+      // Store template in workflow state (with customizations!)
       const workflowState = this.wsManager?.workflowStates?.get(campaignId);
       if (workflowState) {
         workflowState.data.selectedTemplate = {
           id: savedTemplate.templateId,
           name: template.name,
-          autoApplied: true // Flag to indicate this was auto-applied
+          autoApplied: true, // Flag to indicate this was auto-applied
+          // Include all saved customizations
+          subject: savedTemplate.subject,
+          greeting: savedTemplate.greeting,
+          signature: savedTemplate.signature,
+          html: savedTemplate.html,
+          customizations: savedTemplate.customizations || {},
+          isCustomized: savedTemplate.isCustomized || false,
+          components: savedTemplate.components || []
         };
-        console.log(`💾 [Campaign: ${campaignId}] Template stored in workflow state`);
+        console.log(`💾 [Campaign: ${campaignId}] Template stored in workflow state${savedTemplate.isCustomized ? ' (with customizations)' : ''}`);
       }
 
       // Broadcast auto-applied template notification
@@ -1023,14 +1031,38 @@ class LangGraphMarketingAgent {
         const { batchNumber, prospects, totalSoFar, targetTotal } = batchData;
         console.log(`📦 [Batch ${batchNumber}] Received ${prospects.length} prospects (${totalSoFar}/${targetTotal} total)`);
 
-        // Save batch to database
-        if (this.userStorageService) {
-          try {
-            await this.userStorageService.saveProspects(userId, campaignId, prospects);
-            console.log(`💾 [Batch ${batchNumber}] Saved to database for user: ${userId}`);
-          } catch (error) {
-            console.error(`❌ [Batch ${batchNumber}] Failed to save:`, error);
+        // Save batch to database using db.saveContact
+        const db = require('../models/database');
+        try {
+          console.log(`💾 [Batch ${batchNumber}] Saving ${prospects.length} prospects to database...`);
+
+          let savedCount = 0;
+          for (const prospect of prospects) {
+            try {
+              await db.saveContact({
+                email: prospect.email,
+                name: prospect.name || 'Unknown',
+                company: prospect.company || 'Unknown',
+                position: prospect.role || prospect.position || 'Unknown',
+                industry: marketingStrategy?.industry || 'Unknown',
+                phone: '',
+                address: '',
+                source: prospect.source || 'background_search',
+                tags: '',
+                notes: `Batch ${batchNumber}: Found via background search on ${new Date().toLocaleString()}`
+              }, userId, campaignId);
+              savedCount++;
+            } catch (saveError) {
+              // Skip if already exists (UNIQUE constraint)
+              if (!saveError.message.includes('UNIQUE constraint')) {
+                console.error(`⚠️ [Batch ${batchNumber}] Failed to save prospect ${prospect.email}:`, saveError.message);
+              }
+            }
           }
+
+          console.log(`✅ [Batch ${batchNumber}] Saved ${savedCount}/${prospects.length} prospects to database for user: ${userId}`);
+        } catch (error) {
+          console.error(`❌ [Batch ${batchNumber}] Failed to save batch:`, error);
         }
 
         // Notify frontend via WebSocket
