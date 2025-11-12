@@ -34,6 +34,10 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
 
       console.log('🔍 Searching for prospects:', searchQuery);
 
+      // Create abort controller for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
       // Call backend API to search for 7 prospects (faster results)
       const response = await fetch('/api/prospects/search', {
         method: 'POST',
@@ -45,11 +49,15 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
           limit: 7,
           websiteAnalysis: websiteAnalysis,
           campaignId: initialData?.campaignId || 'default'
-        })
+        }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error('Failed to search prospects');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to search prospects');
       }
 
       const data = await response.json();
@@ -64,7 +72,16 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
       }
     } catch (err) {
       console.error('❌ Prospect search error:', err);
-      setError(err.message);
+
+      // Provide helpful error messages
+      let errorMessage = err.message;
+      if (err.name === 'AbortError') {
+        errorMessage = 'Prospect search timed out. Please try again or check your internet connection.';
+      } else if (err.message === 'Failed to fetch') {
+        errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+      }
+
+      setError(errorMessage);
 
       // NO FALLBACK DATA - Show error to user
       setProspects([]);

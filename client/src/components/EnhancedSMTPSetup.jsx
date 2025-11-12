@@ -468,7 +468,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             e.stopPropagation();
                             handleOAuthLogin(provider.id);
                           }}
-                          className="w-full mb-2 py-2 px-4 bg-[#00f5a0] hover:bg-[#00e090] text-black text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
+                          className="w-full mb-2 py-2 px-4 bg-black hover:bg-gray-900 text-[#00f5a0] text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
                         >
                           <Shield className="w-4 h-4" />
                           <span>Connect with {provider.name}</span>
@@ -483,8 +483,8 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                         }}
                         className={`w-full py-2 px-4 text-sm font-medium rounded-lg transition-colors ${
                           ['gmail', 'outlook', 'yahoo'].includes(provider.id)
-                            ? 'bg-gray-200 hover:bg-gray-300 text-black'
-                            : 'bg-[#00f5a0] hover:bg-[#00e090] text-black'
+                            ? 'bg-black hover:bg-gray-900 text-[#00f5a0]'
+                            : 'bg-black hover:bg-gray-900 text-[#00f5a0]'
                         }`}
                       >
                         {['gmail', 'outlook', 'yahoo'].includes(provider.id) ? 'Manual Setup' : 'Select Provider'}
