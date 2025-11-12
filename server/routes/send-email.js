@@ -5,6 +5,7 @@ const analyticsRoutes = require('./analytics');
 const trackEmailSent = analyticsRoutes.trackEmailSent;
 const trackEmailDelivered = analyticsRoutes.trackEmailDelivered;
 const db = require('../models/database');
+const trackingService = require('../services/EmailTrackingService'); // 🔥 ADD: Import tracking service
 
 // Initialize email service
 const emailService = new EmailService();
@@ -70,14 +71,37 @@ router.post('/', async (req, res) => {
       };
     }
 
-    // Generate tracking ID if enabled
-    const trackingId = trackingEnabled ? `${campaignId}_${Date.now()}` : null;
+    // 🔥 FIX: Register email for tracking and insert tracking pixels/links
+    let finalHtml = html;
+    let trackingId = null;
+
+    if (trackingEnabled && html) {
+      try {
+        // Register email for tracking
+        trackingId = await trackingService.registerEmail({
+          to,
+          subject,
+          campaignId,
+          sentAt: new Date().toISOString()
+        });
+
+        // Insert tracking pixel and wrap links
+        finalHtml = trackingService.insertTrackingPixel(html, trackingId);
+        finalHtml = trackingService.wrapLinksWithTracking(finalHtml, trackingId);
+
+        console.log(`📊 Email registered for tracking with ID: ${trackingId}`);
+      } catch (trackingError) {
+        console.error('⚠️ Tracking setup failed:', trackingError.message);
+        // Continue sending even if tracking fails
+        trackingId = null;
+      }
+    }
 
     // Send email (pass userId if available from auth middleware)
     const result = await emailServiceInstance.sendEmail({
       to,
       subject,
-      html,
+      html: finalHtml, // Use tracked HTML
       text,
       from,
       trackingId,
@@ -145,14 +169,37 @@ router.post('/send', async (req, res) => {
       });
     }
 
-    // Generate tracking ID if enabled
-    const trackingId = trackingEnabled ? `${campaignId}_${Date.now()}` : null;
+    // 🔥 FIX: Register email for tracking and insert tracking pixels/links
+    let finalHtml = html;
+    let trackingId = null;
+
+    if (trackingEnabled && html) {
+      try {
+        // Register email for tracking
+        trackingId = await trackingService.registerEmail({
+          to,
+          subject,
+          campaignId,
+          sentAt: new Date().toISOString()
+        });
+
+        // Insert tracking pixel and wrap links
+        finalHtml = trackingService.insertTrackingPixel(html, trackingId);
+        finalHtml = trackingService.wrapLinksWithTracking(finalHtml, trackingId);
+
+        console.log(`📊 Email registered for tracking with ID: ${trackingId}`);
+      } catch (trackingError) {
+        console.error('⚠️ Tracking setup failed:', trackingError.message);
+        // Continue sending even if tracking fails
+        trackingId = null;
+      }
+    }
 
     // Send email (pass userId if available from auth middleware)
     const result = await emailService.sendEmail({
       to,
       subject,
-      html,
+      html: finalHtml, // Use tracked HTML
       text,
       from,
       trackingId,
