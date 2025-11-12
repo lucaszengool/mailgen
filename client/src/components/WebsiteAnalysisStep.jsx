@@ -47,7 +47,11 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
         sellingPoints: data.analysis.sellingPoints || ['Innovative solutions', 'Quality service'],
         audiences: data.analysis.targetAudiences || [
           { title: 'Business Decision Makers', description: 'Executives and managers looking for solutions' }
-        ]
+        ],
+        // NEW: Add social media, tech stack, and contact info
+        social: data.analysis.social || {},
+        techStack: data.analysis.techStack || [],
+        contactInfo: data.analysis.contactInfo || {}
       };
 
       console.log('✅ Formatted analysis:', formattedAnalysis);
