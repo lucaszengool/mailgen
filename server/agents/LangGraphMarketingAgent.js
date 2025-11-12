@@ -1166,13 +1166,38 @@ class LangGraphMarketingAgent {
       }
 
       // 💾 CRITICAL: Save FIRST BATCH to database immediately
-      if (this.userStorageService && prospects.length > 0) {
+      if (prospects.length > 0) {
+        const db = require('../models/database');
         try {
           console.log(`💾 [BATCH 1] Saving ${prospects.length} prospects to database for user: ${userId}`);
-          await this.userStorageService.saveProspects(userId, campaignId, prospects);
-          console.log(`✅ [BATCH 1] Prospects saved to database successfully`);
+
+          let savedCount = 0;
+          for (const prospect of prospects) {
+            try {
+              await db.saveContact({
+                email: prospect.email,
+                name: prospect.name || 'Unknown',
+                company: prospect.company || 'Unknown',
+                position: prospect.role || prospect.position || 'Unknown',
+                industry: marketingStrategy?.industry || 'Unknown',
+                phone: '',
+                address: '',
+                source: prospect.source || 'first_batch',
+                tags: '',
+                notes: `Batch 1: Found via initial search on ${new Date().toLocaleString()}`
+              }, userId, campaignId);
+              savedCount++;
+            } catch (saveError) {
+              // Skip if already exists (UNIQUE constraint)
+              if (!saveError.message.includes('UNIQUE constraint')) {
+                console.error(`⚠️ [BATCH 1] Failed to save prospect ${prospect.email}:`, saveError.message);
+              }
+            }
+          }
+
+          console.log(`✅ [BATCH 1] Saved ${savedCount}/${prospects.length} prospects to database successfully`);
         } catch (error) {
-          console.error(`❌ [BATCH 1] Failed to save prospects:`, error);
+          console.error(`❌ [BATCH 1] Failed to save batch:`, error);
         }
       }
 
