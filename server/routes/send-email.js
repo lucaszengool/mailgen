@@ -4,6 +4,7 @@ const EmailService = require('../services/EmailService');
 const analyticsRoutes = require('./analytics');
 const trackEmailSent = analyticsRoutes.trackEmailSent;
 const trackEmailDelivered = analyticsRoutes.trackEmailDelivered;
+const db = require('../models/database');
 
 // Initialize email service
 const emailService = new EmailService();
@@ -83,12 +84,29 @@ router.post('/', async (req, res) => {
       userId: req.userId || 'anonymous' // Include userId for OAuth support
     });
 
-    // Track analytics
+    // Track analytics in memory
     try {
       trackEmailSent(campaignId, { email: to, name: to }, subject, html || text);
       trackEmailDelivered(campaignId, to, result.messageId);
     } catch (analyticsError) {
       console.error('Analytics tracking error:', analyticsError);
+    }
+
+    // Log to database
+    try {
+      await db.logEmailSent({
+        to,
+        subject,
+        campaignId,
+        messageId: result.messageId,
+        status: 'sent',
+        error: null,
+        recipientIndex: 0,
+        sentAt: result.sentAt
+      });
+      console.log('📊 Email logged to database');
+    } catch (dbError) {
+      console.error('Database logging error:', dbError);
     }
 
     res.json({
@@ -141,12 +159,29 @@ router.post('/send', async (req, res) => {
       userId: req.userId || 'anonymous' // Include userId for OAuth support
     });
 
-    // Track analytics
+    // Track analytics in memory
     try {
       trackEmailSent(campaignId, { email: to, name: to }, subject, html || text);
       trackEmailDelivered(campaignId, to, result.messageId);
     } catch (analyticsError) {
       console.error('Analytics tracking error:', analyticsError);
+    }
+
+    // Log to database
+    try {
+      await db.logEmailSent({
+        to,
+        subject,
+        campaignId,
+        messageId: result.messageId,
+        status: 'sent',
+        error: null,
+        recipientIndex: 0,
+        sentAt: result.sentAt
+      });
+      console.log('📊 Email logged to database');
+    } catch (dbError) {
+      console.error('Database logging error:', dbError);
     }
 
     res.json({

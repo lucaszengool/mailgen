@@ -202,11 +202,24 @@ function App() {
     if (!hasSeenOnboarding) {
       // First time user completing setup → show onboarding tour ALWAYS
       console.log('🎓 First time setup complete - showing onboarding tour');
-      localStorage.setItem('hasSeenOnboarding', 'true');
+      // DON'T set hasSeenOnboarding here - let the OnboardingTour component set it when user closes the tour
       localStorage.setItem('pendingNextStep', config.nextStep || 'dashboard'); // Save where to go after tour
       setIsSetupComplete(true);
       setShowOnboardingTour(true);
       setCurrentView('dashboard'); // Show dashboard with tour overlay
+
+      // Ensure default campaign is set
+      if (!currentCampaign) {
+        console.log('🎯 Setting default campaign for first-time user');
+        const defaultCampaign = {
+          id: 'default_campaign_' + Date.now(),
+          name: 'My First Campaign',
+          status: 'active',
+          createdAt: new Date().toISOString()
+        };
+        setCurrentCampaign(defaultCampaign);
+        localStorage.setItem('currentCampaign', JSON.stringify(defaultCampaign));
+      }
       return;
     }
 

@@ -5449,12 +5449,48 @@ Return ONLY the JSON object, no other text.`;
         console.log(`📧 Accepted by Gmail:`, info.accepted);
         console.log(`📧 Response from Gmail:`, info.response);
         console.log(`🔧 DEBUG: Email content successfully delivered - ${mailOptions.html?.length || 0} chars HTML content sent`);
+
+        // Log to database
+        try {
+          const db = require('../models/database');
+          await db.logEmailSent({
+            to: to,
+            subject: subject,
+            campaignId: campaignId || 'unknown',
+            messageId: info.messageId,
+            status: 'sent',
+            error: null,
+            recipientIndex: 0,
+            sentAt: new Date().toISOString()
+          });
+          console.log('📊 Email logged to database');
+        } catch (dbError) {
+          console.error('Database logging error:', dbError.message);
+        }
       } else {
         console.warn(`⚠️ Email NOT accepted by Gmail for ${to}`);
         console.log(`📧 Rejected:`, info.rejected);
         console.log(`📧 Response:`, info.response);
+
+        // Log failed email to database
+        try {
+          const db = require('../models/database');
+          await db.logEmailSent({
+            to: to,
+            subject: subject,
+            campaignId: campaignId || 'unknown',
+            messageId: info.messageId,
+            status: 'failed',
+            error: info.rejected ? info.rejected.join(', ') : 'Email rejected',
+            recipientIndex: 0,
+            sentAt: new Date().toISOString()
+          });
+          console.log('📊 Failed email logged to database');
+        } catch (dbError) {
+          console.error('Database logging error:', dbError.message);
+        }
       }
-      
+
       return {
         success: info.accepted && info.accepted.length > 0,
         messageId: info.messageId,
@@ -5468,6 +5504,24 @@ Return ONLY the JSON object, no other text.`;
       // Ensure we always have a meaningful error message
       const errorMessage = error.message || error.toString() || 'Unknown email sending error';
       console.error(`❌ Failed to send email to ${to}:`, errorMessage);
+
+      // Log failed email to database
+      try {
+        const db = require('../models/database');
+        await db.logEmailSent({
+          to: to,
+          subject: subject,
+          campaignId: campaignId || 'unknown',
+          messageId: null,
+          status: 'failed',
+          error: errorMessage,
+          recipientIndex: 0,
+          sentAt: new Date().toISOString()
+        });
+        console.log('📊 Failed email logged to database');
+      } catch (dbError) {
+        console.error('Database logging error:', dbError.message);
+      }
 
       // Provide specific guidance for authentication errors
       if (error.code === 'EAUTH') {

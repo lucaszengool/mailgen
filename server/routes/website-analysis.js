@@ -112,6 +112,15 @@ router.post('/analyze', async (req, res) => {
       sellingPoints: sellingPoints,
       targetAudiences: targetAudiences,
 
+      // Social media
+      social: metadata.social || {},
+
+      // Technology stack
+      techStack: metadata.techStack || [],
+
+      // Contact information
+      contactInfo: metadata.contactInfo || {},
+
       // Metadata
       analysisMethod: 'ollama_enhanced',
       confidence: 'high',
@@ -140,6 +149,9 @@ router.post('/analyze', async (req, res) => {
       businessIntroduction: '',
       sellingPoints: [],
       targetAudiences: [],
+      social: {},
+      techStack: [],
+      contactInfo: {},
       analysisMethod: 'fallback',
       confidence: 'low',
       analyzedAt: new Date().toISOString()
@@ -567,7 +579,7 @@ function extractCompanyName(url) {
 }
 
 /**
- * 从网站提取额外元数据（logo, 产品类型等）
+ * 从网站提取额外元数据（logo, 产品类型, social media, tech stack, contact info等）
  */
 async function extractAdditionalMetadata(url, basicAnalysis) {
   try {
@@ -639,11 +651,90 @@ async function extractAdditionalMetadata(url, basicAnalysis) {
       }
     }
 
+    // Extract social media links
+    const social = {};
+    const socialPatterns = {
+      twitter: ['twitter.com', 'x.com'],
+      linkedin: ['linkedin.com'],
+      facebook: ['facebook.com'],
+      instagram: ['instagram.com'],
+      youtube: ['youtube.com'],
+      github: ['github.com']
+    };
+
+    $('a[href]').each((i, el) => {
+      const href = $(el).attr('href');
+      if (href) {
+        for (const [platform, patterns] of Object.entries(socialPatterns)) {
+          if (!social[platform] && patterns.some(p => href.includes(p))) {
+            social[platform] = href;
+            break;
+          }
+        }
+      }
+    });
+
+    // Extract technology stack from page source
+    const techStack = [];
+    const htmlContent = response.data.toLowerCase();
+
+    // Detect common technologies
+    const techPatterns = {
+      'React': /react[.-]?(\d+)?/i,
+      'Vue.js': /vue[.-]?(\d+)?/i,
+      'Angular': /angular[.-]?(\d+)?/i,
+      'Next.js': /next[.-]?(\d+)?/i,
+      'WordPress': /wp-content|wordpress/i,
+      'Shopify': /shopify|cdn\.shopify/i,
+      'Google Analytics': /google-analytics|googletagmanager/i,
+      'jQuery': /jquery[.-]?(\d+)?/i,
+      'Bootstrap': /bootstrap[.-]?(\d+)?/i,
+      'Tailwind CSS': /tailwind/i,
+      'Stripe': /stripe\.com|stripe\.js/i,
+      'Cloudflare': /cloudflare/i,
+      'AWS': /amazonaws\.com/i,
+      'Google Cloud': /googleapis\.com/i
+    };
+
+    for (const [tech, pattern] of Object.entries(techPatterns)) {
+      if (pattern.test(htmlContent) && !techStack.includes(tech)) {
+        techStack.push(tech);
+      }
+    }
+
+    // Extract contact information
+    const contactInfo = {};
+
+    // Extract email
+    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+    const emails = bodyText.match(emailRegex);
+    if (emails && emails.length > 0) {
+      // Filter out common non-contact emails
+      const validEmails = emails.filter(e =>
+        !e.includes('example.') &&
+        !e.includes('test@') &&
+        !e.includes('noreply@')
+      );
+      contactInfo.email = validEmails[0];
+    }
+
+    // Extract phone number
+    const phoneRegex = /(\+?\d{1,4}[\s.-]?)?\(?\d{1,4}\)?[\s.-]?\d{1,4}[\s.-]?\d{1,9}/g;
+    const phones = bodyText.match(phoneRegex);
+    if (phones && phones.length > 0) {
+      // Get first phone-like number
+      const validPhones = phones.filter(p => p.length >= 10 && p.length <= 20);
+      contactInfo.phone = validPhones[0];
+    }
+
     return {
       logo: logo || '',
       productType: productType || '',
       benchmarkBrands: benchmarkBrands.slice(0, 5),
-      description: description || basicAnalysis.valueProposition || ''
+      description: description || basicAnalysis.valueProposition || '',
+      social: social,
+      techStack: techStack.slice(0, 10),
+      contactInfo: contactInfo
     };
   } catch (error) {
     console.log(`⚠️ Failed to extract metadata: ${error.message}`);
@@ -651,7 +742,10 @@ async function extractAdditionalMetadata(url, basicAnalysis) {
       logo: '',
       productType: basicAnalysis.industry || '',
       benchmarkBrands: [],
-      description: basicAnalysis.valueProposition || ''
+      description: basicAnalysis.valueProposition || '',
+      social: {},
+      techStack: [],
+      contactInfo: {}
     };
   }
 }
