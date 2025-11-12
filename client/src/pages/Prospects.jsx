@@ -115,7 +115,7 @@ export default function Prospects() {
           // Real-time prospect data update from LangGraphMarketingAgent
           console.log('📊 🔥 CRITICAL: Updating prospects from data_update:', data.data.prospects.length)
           console.log('📊 Raw prospect data:', data.data.prospects)
-          
+
           const updatedProspects = data.data.prospects.map(p => ({
             ...p,
             id: p.id || `prospect_${Date.now()}_${Math.random()}`,
@@ -132,18 +132,25 @@ export default function Prospects() {
               primaryPainPoints: ['efficiency', 'growth', 'innovation']
             }
           }))
-          
+
           console.log('📊 Processed prospects:', updatedProspects.length)
-          
+
           setProspects(prev => {
-            // Clear previous and use new data for real-time campaign results
+            // 🔥 FIX: Merge with existing instead of replacing to avoid losing data
             console.log('📊 Previous prospects:', prev.length, 'New prospects:', updatedProspects.length)
-            return updatedProspects
+            const existingEmails = prev.map(p => p.email);
+            const newProspects = updatedProspects.filter(p => !existingEmails.includes(p.email));
+            const merged = [...newProspects, ...prev];
+            console.log('📊 Merged total:', merged.length, 'New added:', newProspects.length);
+            return merged;
           })
 
-          // 🚀 Immediately fetch from database to ensure persistence
-          console.log('🚀 Data update with prospects - triggering immediate fetch');
-          fetchProspects();
+          // 🚀 Wait 2 seconds for database write to complete, then fetch
+          console.log('🚀 Data update with prospects - scheduling fetch after database write...');
+          setTimeout(() => {
+            console.log('🚀 Fetching from database after 2s delay');
+            fetchProspects();
+          }, 2000);
 
           // toast.success(`🎉 ${data.data.prospects.length} prospects found from AI campaign!`)
         } else if (data.type === 'prospect_list') {
@@ -279,10 +286,17 @@ export default function Prospects() {
 
   const fetchProspects = async () => {
     try {
-      console.log('📊 Fetching prospects from database and workflow with authentication...');
+      // 🔥 CRITICAL: Get current campaign ID to filter prospects
+      const currentCampaignId = localStorage.getItem('currentCampaignId');
+      console.log(`📊 Fetching prospects for campaign: ${currentCampaignId || 'ALL'}`);
 
       // 🔐 Fetch prospects from database with authentication (persisted data)
-      const dbData = await apiGet('/api/contacts?status=active&limit=1000')
+      // 🔥 FIX: Pass campaignId to only get prospects for current campaign
+      const contactsUrl = currentCampaignId
+        ? `/api/contacts?status=active&limit=1000&campaignId=${currentCampaignId}`
+        : '/api/contacts?status=active&limit=1000';
+
+      const dbData = await apiGet(contactsUrl);
       let dbProspects = []
 
       if (dbData.success && dbData.data?.contacts) {
@@ -302,11 +316,16 @@ export default function Prospects() {
           companySize: c.companySize || '1-10',
           techStack: c.techStack || []
         }))
-        console.log(`📊 Loaded ${dbProspects.length} prospects from database for current user`);
+        console.log(`📊 Loaded ${dbProspects.length} prospects from database for campaign: ${currentCampaignId || 'ALL'}`);
       }
 
       // 🔐 Also try to get prospects from workflow results with authentication (in-memory/recent)
-      const workflowData = await apiGet('/api/workflow/results')
+      // 🔥 FIX: Pass campaignId to only get prospects for current campaign
+      const workflowUrl = currentCampaignId
+        ? `/api/workflow/results?campaignId=${currentCampaignId}`
+        : '/api/workflow/results';
+
+      const workflowData = await apiGet(workflowUrl);
       let workflowProspects = []
 
       if (workflowData.success && workflowData.data.prospects) {
