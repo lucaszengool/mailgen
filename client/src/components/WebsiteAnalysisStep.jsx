@@ -23,14 +23,22 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
     }));
 
     try {
+      // Create abort controller for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
       const response = await fetch('/api/website-analysis/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetWebsite })
+        body: JSON.stringify({ targetWebsite }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error('Failed to analyze website');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to analyze website');
       }
 
       const data = await response.json();
@@ -63,7 +71,16 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
       }));
     } catch (err) {
       console.error('Analysis error:', err);
-      setError(err.message);
+
+      // Provide helpful error messages
+      let errorMessage = err.message;
+      if (err.name === 'AbortError') {
+        errorMessage = 'Analysis timed out. Please try again or check your internet connection.';
+      } else if (err.message === 'Failed to fetch') {
+        errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
