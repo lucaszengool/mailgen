@@ -3719,6 +3719,16 @@ Output: One search query only`;
               newEmailsAdded++;
               this.autonomousSearch.rateLimit.countThisHour++;
               this.autonomousSearch.stats.totalEmailsFound++;
+
+              // 🔥 IMMEDIATE SAVE: Save each prospect to database as soon as it's found
+              if (this.autonomousSearch.options) {
+                const { userId, campaignId } = this.autonomousSearch.options;
+                if (userId && campaignId) {
+                  this.saveProspectToDatabase(prospect, userId, campaignId).catch(err => {
+                    console.error(`⚠️ Failed to save prospect ${prospect.email}:`, err.message);
+                  });
+                }
+              }
             }
           }
 
@@ -3987,6 +3997,35 @@ Output: One search query only`;
         console.error(`❌ [${batchKey}] Background batch error:`, error);
       }
     });
+  }
+
+  /**
+   * Helper: immediately save prospect to database
+   */
+  async saveProspectToDatabase(prospect, userId, campaignId) {
+    const db = require('../models/database');
+
+    try {
+      await db.saveContact({
+        email: prospect.email,
+        name: prospect.name || 'Unknown',
+        company: prospect.company || prospect.domain || 'Unknown',
+        position: prospect.role || prospect.position || 'Unknown',
+        industry: prospect.industry || 'Unknown',
+        phone: '',
+        address: '',
+        source: prospect.source || 'autonomous_search',
+        tags: '',
+        notes: `Auto-discovered via continuous search on ${new Date().toLocaleString()}`
+      }, userId, campaignId);
+
+      console.log(`💾 [INSTANT SAVE] Saved prospect: ${prospect.email} (Campaign: ${campaignId})`);
+    } catch (error) {
+      // Skip if already exists
+      if (!error.message.includes('UNIQUE constraint')) {
+        throw error;
+      }
+    }
   }
 
   /**

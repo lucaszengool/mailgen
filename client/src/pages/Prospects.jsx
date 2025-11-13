@@ -74,12 +74,21 @@ export default function Prospects() {
     fetchProspects()
     connectWebSocket()
 
+    // 🔥 AUTO-REFRESH: Poll for new prospects every 5 seconds while searching
+    const pollInterval = setInterval(() => {
+      if (workflowStatus === 'finding_prospects') {
+        console.log('🔄 Auto-refreshing prospects...');
+        fetchProspects();
+      }
+    }, 5000);
+
     return () => {
       if (ws.current) {
         ws.current.close()
       }
+      clearInterval(pollInterval);
     }
-  }, [])
+  }, [workflowStatus])
 
   const connectWebSocket = () => {
     try {
