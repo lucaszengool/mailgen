@@ -44,12 +44,23 @@ const UserActionReminder = ({ userId, onNavigate }) => {
           const workflowStatus = result.data.status || 'idle';
           const isOnboarding = workflowStatus === 'starting' || workflowStatus === 'idle' ||
                               workflowStatus === 'websiteAnalysisStarting' ||
-                              workflowStatus === 'prospectSearchStarting';
+                              workflowStatus === 'prospectSearchStarting' ||
+                              workflowStatus === 'waiting_for_template' ||
+                              workflowStatus === 'template_selection' ||
+                              workflowStatus === 'setup' ||
+                              workflowStatus === 'completed' ||
+                              workflowStatus === 'reconstructed_from_db';
+
+          // 🔥 Don't show if prospects are from initial workflow setup (not from dashboard)
+          const isInitialSetup = result.data.source === 'initial_setup' ||
+                                result.data.source === 'web_analysis' ||
+                                result.data.source === 'stored';
 
           if (prospects.length > 0 &&
               (!emailCampaign || !emailCampaign.emails || emailCampaign.emails.length === 0) &&
               !dismissedReminders.has(selectTemplateKey) &&
-              !isOnboarding) {  // 🔥 Don't show during onboarding
+              !isOnboarding &&  // 🔥 Don't show during onboarding
+              !isInitialSetup) {  // 🔥 Don't show for initial setup prospects
             actionNeeded = {
               type: 'select_template',
               dismissKey: selectTemplateKey,

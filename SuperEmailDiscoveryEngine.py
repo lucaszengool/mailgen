@@ -85,21 +85,28 @@ class SuperEmailDiscoveryEngine:
         self.logger.addHandler(console_handler)
         self.logger.addHandler(file_handler)
 
-    def get_cache_filename(self, industry):
-        """生成缓存文件名（基于行业名称的hash）"""
+    def get_cache_filename(self, industry, session_id=None):
+        """生成缓存文件名（基于行业名称和session ID的hash）"""
         # Create a hash of the industry to use as filename
         industry_hash = hashlib.md5(industry.lower().strip().encode()).hexdigest()[:12]
-        return os.path.join(self.cache_dir, f'returned_emails_{industry_hash}.txt')
 
-    def load_returned_emails_cache(self, industry):
+        # 🔥 FIX: Use session_id if provided to create campaign-specific cache
+        if session_id:
+            session_hash = hashlib.md5(str(session_id).encode()).hexdigest()[:8]
+            return os.path.join(self.cache_dir, f'returned_emails_{industry_hash}_{session_hash}.txt')
+        else:
+            return os.path.join(self.cache_dir, f'returned_emails_{industry_hash}.txt')
+
+    def load_returned_emails_cache(self, industry, session_id=None):
         """加载已返回的邮箱缓存"""
-        cache_file = self.get_cache_filename(industry)
+        cache_file = self.get_cache_filename(industry, session_id)
         if os.path.exists(cache_file):
             try:
                 with open(cache_file, 'r', encoding='utf-8') as f:
                     cached_emails = {line.strip() for line in f if line.strip()}
                     self.already_returned_emails = cached_emails
-                    self.logger.info(f"📂 加载缓存: {len(cached_emails)} 个已返回邮箱 (行业: {industry})")
+                    session_info = f" (Session: {session_id})" if session_id else ""
+                    self.logger.info(f"📂 加载缓存: {len(cached_emails)} 个已返回邮箱 (行业: {industry}{session_info})")
                     return len(cached_emails)
             except Exception as e:
                 self.logger.warning(f"⚠️ 加载缓存失败: {e}")
@@ -109,9 +116,9 @@ class SuperEmailDiscoveryEngine:
             self.already_returned_emails = set()
         return 0
 
-    def save_returned_emails_cache(self, industry, new_emails):
+    def save_returned_emails_cache(self, industry, new_emails, session_id=None):
         """保存新返回的邮箱到缓存"""
-        cache_file = self.get_cache_filename(industry)
+        cache_file = self.get_cache_filename(industry, session_id)
         try:
             # Append new emails to cache file
             with open(cache_file, 'a', encoding='utf-8') as f:
@@ -156,14 +163,50 @@ class SuperEmailDiscoveryEngine:
                 f'{industry} expert contact',
                 f'{industry} advisor email'
             ]
-        else:
-            # 后续轮次：简短扩展搜索
+        elif round_num == 4:
+            # 第四轮：创业与企业搜索
             base_strategies = [
                 f'{industry} startup email',
+                f'{industry} entrepreneur contact',
+                f'{industry} business owner email',
+                f'{industry} partner contact',
+                f'{industry} investor email'
+            ]
+        elif round_num == 5:
+            # 第五轮：部门与职能搜索
+            base_strategies = [
+                f'{industry} marketing email',
+                f'{industry} operations contact',
+                f'{industry} product manager email',
+                f'{industry} customer success contact',
+                f'{industry} growth email'
+            ]
+        elif round_num % 3 == 0:
+            # 每3轮：地域与市场搜索
+            base_strategies = [
+                f'{industry} North America email',
+                f'{industry} Europe contact',
+                f'{industry} Asia Pacific email',
+                f'{industry} global contact',
+                f'{industry} international email'
+            ]
+        elif round_num % 3 == 1:
+            # 每3轮+1：技术与专业搜索
+            base_strategies = [
+                f'{industry} CTO email',
+                f'{industry} developer contact',
+                f'{industry} engineer email',
+                f'{industry} architect contact',
+                f'{industry} technical lead email'
+            ]
+        else:
+            # 其他轮次：混合搜索
+            base_strategies = [
                 f'{industry} company email',
                 f'{industry} business contact',
                 f'{industry} executive email',
-                f'{industry} owner contact'
+                f'{industry} leadership contact',
+                f'{industry} decision maker email'
             ]
         
         self.logger.info(f"   ✅ 生成{len(base_strategies)}个专业级搜索策略")
@@ -359,16 +402,18 @@ class SuperEmailDiscoveryEngine:
             self.logger.error(f"   ❌ 爬取失败 {url}: {str(e)}")
             return []
     
-    def execute_persistent_discovery(self, industry, target_count=5, max_rounds=20):
+    def execute_persistent_discovery(self, industry, target_count=5, max_rounds=100, session_id=None):
         """执行无限制持续搜索 - 越多越准确"""
         self.logger.info(f"🚀 启动无限制超级邮箱搜索 - {industry}")
-        self.logger.info(f"   🎯 目标: {target_count}个邮箱")
-        self.logger.info(f"   🔄 最大轮数: {max_rounds} (大幅增加)")
+        self.logger.info(f"   🎯 目标: {target_count}个NEW邮箱 (跳过已返回)")
+        self.logger.info(f"   🔄 最大轮数: {max_rounds} (足够找到新邮箱)")
         self.logger.info(f"   📊 使用2024年最佳搜索实践")
-        self.logger.info(f"   ⏰ 无时间限制 - 搜索越多越准确")
+        self.logger.info(f"   ⏰ 无时间限制 - 持续搜索直到找到足够新邮箱")
+        if session_id:
+            self.logger.info(f"   🔑 Session ID: {session_id} (campaign-specific cache)")
 
-        # 🔥 NEW: Load cache of already-returned emails
-        cached_count = self.load_returned_emails_cache(industry)
+        # 🔥 FIX: Load cache of already-returned emails with session_id
+        cached_count = self.load_returned_emails_cache(industry, session_id)
         if cached_count > 0:
             self.logger.info(f"   🔄 跳过已返回的 {cached_count} 个邮箱，寻找新邮箱...")
 
@@ -376,6 +421,8 @@ class SuperEmailDiscoveryEngine:
         all_emails = []
         round_num = 1
         consecutive_empty_rounds = 0
+        total_emails_found = 0  # 🔥 FIX: Track total including duplicates
+        total_cached_skipped = 0  # 🔥 FIX: Track how many cached emails skipped
         
         while len(all_emails) < target_count and round_num <= max_rounds:
             self.logger.info(f"\n📍 第{round_num}轮搜索 (已找到 {len(all_emails)}/{target_count})")
@@ -401,8 +448,10 @@ class SuperEmailDiscoveryEngine:
                     emails = self.extract_emails_advanced(text, f"搜索预览 {i}")
 
                     for email in emails:
+                        total_emails_found += 1  # 🔥 FIX: Count all emails found
                         # 🔥 NEW: Skip already-returned emails
                         if email in self.already_returned_emails:
+                            total_cached_skipped += 1  # 🔥 FIX: Track skipped
                             continue
                         if not any(e['email'] == email for e in preview_emails):
                             preview_emails.append({
@@ -442,8 +491,10 @@ class SuperEmailDiscoveryEngine:
                             website_emails = future.result()
 
                             for email in website_emails:
+                                total_emails_found += 1  # 🔥 FIX: Count all emails found
                                 # 🔥 NEW: Skip already-returned emails
                                 if email in self.already_returned_emails:
+                                    total_cached_skipped += 1  # 🔥 FIX: Track skipped
                                     continue
                                 if not any(e['email'] == email for e in round_emails):
                                     round_emails.append({
@@ -471,8 +522,11 @@ class SuperEmailDiscoveryEngine:
             all_emails.extend(round_emails)
             all_unique = {e['email']: e for e in all_emails}
             all_emails = list(all_unique.values())
-            
-            self.logger.info(f"📊 第{round_num}轮结果: 新增{len(round_emails)}个，总计{len(all_emails)}个唯一邮箱")
+
+            # 🔥 FIX: Show detailed statistics including cached skips
+            self.logger.info(f"📊 第{round_num}轮结果: 新增{len(round_emails)}个，总计{len(all_emails)}个NEW邮箱")
+            if total_cached_skipped > 0:
+                self.logger.info(f"   🔄 已跳过 {total_cached_skipped} 个重复/缓存邮箱 (总发现{total_emails_found}个)")
             
             # 检查是否需要调整策略，但不轻易放弃
             if len(round_emails) == 0:
@@ -500,19 +554,20 @@ class SuperEmailDiscoveryEngine:
         # 更新统计
         self.search_stats['emails_found'] = len(final_emails)
 
-        # 🔥 NEW: Save newly returned emails to cache
+        # 🔥 FIX: Save newly returned emails to cache with session_id
         new_email_addresses = [e['email'] for e in final_emails]
         if new_email_addresses:
-            self.save_returned_emails_cache(industry, new_email_addresses)
+            self.save_returned_emails_cache(industry, new_email_addresses, session_id)
             self.logger.info(f"   ✅ 已保存 {len(new_email_addresses)} 个新邮箱到缓存")
 
         self.logger.info(f"\n🎊 超级搜索完成！")
-        self.logger.info(f"   📧 最终邮箱: {len(final_emails)}个 (全部为新发现)")
+        self.logger.info(f"   📧 最终邮箱: {len(final_emails)}个NEW邮箱 (全部为新发现)")
         self.logger.info(f"   🔄 搜索轮数: {round_num-1}")
         self.logger.info(f"   ⏱️ 总耗时: {total_time:.1f}秒")
         self.logger.info(f"   📊 成功率: {self.search_stats['successful_queries']}/{self.search_stats['total_queries']}")
         self.logger.info(f"   🌐 爬取网站: {self.search_stats['websites_scraped']}个")
         self.logger.info(f"   🏢 发现域名: {len(self.search_stats['unique_domains'])}个")
+        self.logger.info(f"   🔄 总发现: {total_emails_found}个 (跳过{total_cached_skipped}个重复)")
         self.logger.info(f"   🗂️ 缓存总数: {len(self.already_returned_emails)} 个历史邮箱")
 
         # 显示发现的邮箱
@@ -544,15 +599,16 @@ class SuperEmailDiscoveryEngine:
 
 def main():
     if len(sys.argv) < 2:
-        print('使用方法: python3 SuperEmailDiscoveryEngine.py "行业名称" [邮箱数量]')
-        print('示例: python3 SuperEmailDiscoveryEngine.py "AI startup" 5')
+        print('使用方法: python3 SuperEmailDiscoveryEngine.py "行业名称" [邮箱数量] [session_id]')
+        print('示例: python3 SuperEmailDiscoveryEngine.py "AI startup" 5 campaign_123')
         return
-    
+
     industry = sys.argv[1]
     target_count = int(sys.argv[2]) if len(sys.argv) > 2 else 5
-    
+    session_id = sys.argv[3] if len(sys.argv) > 3 else None  # 🔥 FIX: Accept session_id
+
     engine = SuperEmailDiscoveryEngine()
-    results = engine.execute_persistent_discovery(industry, target_count)
+    results = engine.execute_persistent_discovery(industry, target_count, session_id)
     
     print("\n" + "="*90)
     print("🎯 超级邮箱搜索引擎 - 最终报告")

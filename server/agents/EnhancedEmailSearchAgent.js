@@ -12,22 +12,28 @@ class EnhancedEmailSearchAgent {
     this.emailVerifier = new GmailEmailVerifier();
   }
 
-  async searchEmails(industry, targetCount = 5) {
+  async searchEmails(industry, targetCount = 5, sessionId = null) {
     console.log(`🚀 使用超级邮箱搜索引擎搜索: ${industry}`);
-    
-    // 检查缓存
-    const cacheKey = `${industry}_${targetCount}`;
-    if (this.searchCache.has(cacheKey)) {
-      const cached = this.searchCache.get(cacheKey);
-      if (Date.now() - cached.timestamp < 1800000) { // 30分钟缓存
-        console.log('📦 使用缓存的搜索结果');
-        return cached.data;
+
+    // 🔥 FIX: Skip cache if sessionId is provided (campaign-specific search)
+    if (!sessionId) {
+      // 检查缓存
+      const cacheKey = `${industry}_${targetCount}`;
+      if (this.searchCache.has(cacheKey)) {
+        const cached = this.searchCache.get(cacheKey);
+        if (Date.now() - cached.timestamp < 1800000) { // 30分钟缓存
+          console.log('📦 使用缓存的搜索结果');
+          return cached.data;
+        }
       }
+    } else {
+      console.log(`🔑 使用会话ID: ${sessionId} (跳过缓存，获取新结果)`);
     }
 
     try {
-      // 调用Python超级搜索引擎 - 无超时限制
-      const command = `SCRAPINGDOG_API_KEY=${this.apiKey} python3 "${this.pythonScriptPath}" "${industry}" ${targetCount}`;
+      // 🔥 FIX: Pass sessionId to Python script for campaign-specific caching
+      const sessionArg = sessionId ? ` "${sessionId}"` : '';
+      const command = `SCRAPINGDOG_API_KEY=${this.apiKey} python3 "${this.pythonScriptPath}" "${industry}" ${targetCount}${sessionArg}`;
       console.log(`🔍 执行命令: ${command}`);
       
       // 不设置超时，让搜索有充足时间

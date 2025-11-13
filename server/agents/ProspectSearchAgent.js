@@ -184,7 +184,9 @@ class ProspectSearchAgent {
         console.log(`\n🔍 Search attempt ${totalSearches + 1}/${maxSearches} with keyword: "${searchTerm}"`);
 
         // UNLIMITED: Use a very high number (1000) as target count - Python script will find all it can
-        const prospectSearchResults = await this.emailSearchAgent.searchEmails(searchTerm, 1000);
+        // 🔥 FIX: Pass campaignId as session_id for campaign-specific caching
+        const campaignId = options.campaignId || null;
+        const prospectSearchResults = await this.emailSearchAgent.searchEmails(searchTerm, 1000, campaignId);
 
         totalSearches++;
 
@@ -3694,7 +3696,10 @@ Output: One search query only`;
         const batchSize = 12; // Request 12 prospects - Python skips already-returned emails
         const actualRequest = Math.min(remainingQuota, batchSize);
         console.log(`📨 Requesting ${actualRequest} NEW prospects (Python handles deduplication)`);
-        const searchResults = await this.emailSearchAgent.searchEmails(keyword, actualRequest);
+
+        // 🔥 FIX: Pass campaignId as session_id for campaign-specific caching
+        const { campaignId } = this.autonomousSearch.options || {};
+        const searchResults = await this.emailSearchAgent.searchEmails(keyword, actualRequest, campaignId);
 
         this.autonomousSearch.stats.totalSearches++;
         this.autonomousSearch.stats.lastSearchTime = Date.now();
@@ -3900,7 +3905,12 @@ Output: One search query only`;
       .sort((a, b) => b.foundAt - a.foundAt) // Most recent first
       .slice(0, count);
 
-    console.log(`📧 Retrieved ${emails.length} emails from pool`);
+    // 🔥 CRITICAL FIX: Remove extracted emails from pool so next batch gets NEW prospects
+    for (const email of emails) {
+      this.autonomousSearch.emailPool.delete(email.email);
+    }
+
+    console.log(`📧 Retrieved ${emails.length} emails from pool (${this.autonomousSearch.emailPool.size} remaining)`);
     return emails;
   }
 
