@@ -7049,7 +7049,23 @@ Write ONLY the content paragraph - no greetings, signatures, or extra formatting
       if (!templateId) {
         throw new Error('No templateId provided in componentTemplate');
       }
-      const templateData = TemplatePromptService.getTemplate(templateId);
+
+      // 🔥 CRITICAL: Use customized template HTML if provided in componentTemplate
+      let templateData;
+      if (componentTemplate.html || componentTemplate.templateData?.html) {
+        // Use customized HTML from componentTemplate (user edited)
+        const baseTemplate = TemplatePromptService.getTemplate(templateId);
+        templateData = {
+          ...baseTemplate,
+          html: componentTemplate.html || componentTemplate.templateData?.html || baseTemplate?.html,
+          subject: componentTemplate.subject || componentTemplate.templateData?.subject || baseTemplate?.subject,
+          isCustomized: true
+        };
+        console.log(`✨ Using CUSTOMIZED template with user-edited HTML for ${prospect.company}`);
+      } else {
+        // Use default template
+        templateData = TemplatePromptService.getTemplate(templateId);
+      }
 
       if (templateData && !componentTemplate.isCustomized) {
         console.log(`🎨 Using NEW template system for ${templateData.name} with ${prospect.company}`);

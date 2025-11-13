@@ -215,6 +215,65 @@ Keep it professional, concise, and personalized for ${prospect.name || 'the reci
   static getTemplate(templateId) {
     return EMAIL_TEMPLATES[templateId] || null;
   }
+
+  /**
+   * Get template with user customizations (checks UserStorageService first)
+   * @param {string} templateId - Template ID
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID (optional, for backward compatibility)
+   * @returns {Promise<Object>} - Template with customizations or default
+   */
+  static async getTemplateWithCustomizations(templateId, userId = null, campaignId = null) {
+    try {
+      // 🔥 CRITICAL: Check UserStorageService for user-customized template FIRST
+      if (userId) {
+        const UserStorageService = require('./UserStorageService');
+        const userStorage = new UserStorageService(userId);
+        const savedTemplate = await userStorage.getSelectedTemplate();
+
+        if (savedTemplate && savedTemplate.templateId === templateId && savedTemplate.customizations) {
+          console.log(`✅ [TEMPLATE] Loaded customized template: ${templateId} for user: ${userId}`);
+
+          // Get base template structure
+          const baseTemplate = EMAIL_TEMPLATES[templateId];
+          if (!baseTemplate) {
+            console.warn(`⚠️ [TEMPLATE] Base template not found: ${templateId}`);
+            return null;
+          }
+
+          // Merge base template with user customizations
+          const customizedTemplate = {
+            ...baseTemplate,
+            // 🎯 CRITICAL: Override with user's edited HTML if provided
+            html: savedTemplate.customizations.html || baseTemplate.html,
+            subject: savedTemplate.customizations.subject || baseTemplate.subject,
+            greeting: savedTemplate.customizations.greeting || baseTemplate.greeting,
+            signature: savedTemplate.customizations.signature || baseTemplate.signature,
+            components: savedTemplate.customizations.components || baseTemplate.components,
+            customizations: savedTemplate.customizations.customizations || {},
+            isCustomized: savedTemplate.customizations.isCustomized || false
+          };
+
+          console.log(`✨ [TEMPLATE] Using ${customizedTemplate.isCustomized ? 'CUSTOMIZED' : 'DEFAULT'} template with ${customizedTemplate.html ? 'edited HTML' : 'default HTML'}`);
+          return customizedTemplate;
+        }
+      }
+
+      // Fallback to default template if no customization found
+      const defaultTemplate = EMAIL_TEMPLATES[templateId];
+      if (defaultTemplate) {
+        console.log(`📋 [TEMPLATE] Using default template: ${templateId}`);
+        return defaultTemplate;
+      }
+
+      console.warn(`⚠️ [TEMPLATE] Template not found: ${templateId}`);
+      return null;
+    } catch (error) {
+      console.error(`❌ [TEMPLATE] Error loading template ${templateId}:`, error.message);
+      // Fallback to default on error
+      return EMAIL_TEMPLATES[templateId] || null;
+    }
+  }
 }
 
 module.exports = TemplatePromptService;
