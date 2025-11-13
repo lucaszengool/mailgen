@@ -38,9 +38,18 @@ const UserActionReminder = ({ userId, onNavigate }) => {
           // Case 1: Prospects found but no template selected
           // Only show if: prospects exist, no emails generated, AND user hasn't dismissed this specific reminder
           const selectTemplateKey = `select_template_${prospects.length}`;
+
+          // 🔥 FIX: Don't show if this is onboarding prospects (check if campaign is recent)
+          // If workflow status is still "starting" or "idle", these are onboarding prospects
+          const workflowStatus = result.data.status || 'idle';
+          const isOnboarding = workflowStatus === 'starting' || workflowStatus === 'idle' ||
+                              workflowStatus === 'websiteAnalysisStarting' ||
+                              workflowStatus === 'prospectSearchStarting';
+
           if (prospects.length > 0 &&
               (!emailCampaign || !emailCampaign.emails || emailCampaign.emails.length === 0) &&
-              !dismissedReminders.has(selectTemplateKey)) {
+              !dismissedReminders.has(selectTemplateKey) &&
+              !isOnboarding) {  // 🔥 Don't show during onboarding
             actionNeeded = {
               type: 'select_template',
               dismissKey: selectTemplateKey,
