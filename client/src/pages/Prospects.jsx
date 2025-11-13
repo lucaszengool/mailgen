@@ -111,6 +111,15 @@ export default function Prospects() {
           // 🚀 Immediately fetch from database to ensure persistence
           console.log('🚀 New prospect received - triggering immediate fetch');
           fetchProspects();
+        } else if (data.type === 'prospect_batch_update') {
+          // 🔥 NEW: Handle later prospect batches arriving
+          console.log(`📦 🔥 Batch ${data.data.batchNumber} received: ${data.data.prospects.length} new prospects (${data.data.totalSoFar}/${data.data.targetTotal} total)`);
+
+          // Immediately fetch from database to get all prospects including new batch
+          fetchProspects();
+
+          // Optionally show a toast notification
+          toast.success(`Found ${data.data.prospects.length} more prospects! (Batch ${data.data.batchNumber})`);
         } else if (data.type === 'data_update' && data.data?.prospects) {
           // Real-time prospect data update from LangGraphMarketingAgent
           console.log('📊 🔥 CRITICAL: Updating prospects from data_update:', data.data.prospects.length)
