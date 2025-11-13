@@ -2712,16 +2712,6 @@ Return ONLY a JSON array of REAL search queries, for example:
     console.log(`🔧 DEBUG: Entered generateOptimizedEmailContent for ${prospect.email}`);
     console.log(`🎨 DEBUG: Template type: ${emailTemplateType || 'auto-select'}, has templateData: ${!!templateData}`);
 
-    // 🔥 CRITICAL CHECK: If user has customized HTML, use it directly!
-    if (templateData && (templateData.isCustomized || templateData.userSelected) && templateData.html) {
-      console.log(`🎯 User has customized template! Using applyComponentTemplate instead...`);
-      console.log(`   ✨ isCustomized: ${templateData.isCustomized}, userSelected: ${templateData.userSelected}`);
-      console.log(`   📄 HTML length: ${templateData.html.length}`);
-
-      // Use applyComponentTemplate which properly handles user customizations
-      return await this.applyComponentTemplate(templateData, prospect, null, businessAnalysis);
-    }
-
     // Initialize variables at the function level to avoid undefined errors
     let subject = '';
     let cleanedBody = '';
@@ -5143,7 +5133,9 @@ Return ONLY the JSON object, no other text.`;
           // Final placeholder replacement for any remaining template variables
           personalizedHtml = personalizedHtml
             .replace(/\{+companyName\}+/gi, prospect.company || 'Your Company')
+            .replace(/\{+company\}+/gi, prospect.company || 'Your Company')  // 🔥 Add simple {company}
             .replace(/\{+recipientName\}+/gi, prospect.name || 'there')
+            .replace(/\{+name\}+/gi, prospect.name || 'there')  // 🔥 Add simple {name}
             .replace(/\{+senderName\}+/gi, templateData.senderName || 'AI Marketing')
             .replace(/\{+websiteUrl\}+/gi, businessAnalysis?.websiteUrl || 'https://example.com');
 
@@ -6345,7 +6337,24 @@ Return ONLY the JSON object, no other text.`;
   extractContentBlocks(html) {
     const blocks = [];
 
-    // Extract header/hero sections
+    // 🔥 FIX: First, look for [GENERATED CONTENT X: ...] placeholders
+    const placeholderMatches = html.matchAll(/\[GENERATED CONTENT \d+:([^\]]+)\]/g);
+    for (const match of placeholderMatches) {
+      blocks.push({
+        type: 'placeholder',
+        description: match[1].trim(),
+        content: match[0],  // The full placeholder text
+        fullMatch: match[0]  // Same as content for placeholders
+      });
+    }
+
+    // If we found placeholder blocks, return those
+    if (blocks.length > 0) {
+      console.log(`📋 Extracted ${blocks.length} placeholder content blocks`);
+      return blocks;
+    }
+
+    // Fallback: Extract header/hero sections
     const headerMatch = html.match(/<div[^>]*class="header"[^>]*>([\s\S]*?)<\/div>/i);
     if (headerMatch) {
       blocks.push({ type: 'header', content: headerMatch[1], fullMatch: headerMatch[0] });
@@ -6377,7 +6386,31 @@ Return ONLY the JSON object, no other text.`;
     for (const block of contentBlocks) {
       let newContent = block.content;
 
-      if (block.type === 'header') {
+      if (block.type === 'placeholder') {
+        // 🔥 NEW: Generate content for [GENERATED CONTENT X: ...] placeholders
+        const description = block.description;
+        console.log(`🤖 Generating content for placeholder: "${description}"`);
+
+        const prompt = `Write personalized email content for ${prospect.name || 'the recipient'} at ${prospect.company || 'their company'}.
+
+Task: ${description}
+
+Business: ${businessAnalysis?.companyName || 'Our Company'}
+Value Proposition: ${businessAnalysis?.valueProposition || 'AI-powered solutions'}
+Recipient Role: ${prospect.position || prospect.role || 'business professional'}
+
+Write 1-2 paragraphs that ${description.toLowerCase()}. Be specific, professional, and engaging. Output only the content text, no HTML tags.`;
+
+        try {
+          const aiContent = await this.callOllamaAPI(prompt, 'qwen2.5:0.5b');
+          if (aiContent && aiContent.trim().length > 20) {
+            newContent = aiContent.trim();
+            console.log(`✅ Generated ${newContent.length} chars for: "${description.substring(0, 40)}..."`);
+          }
+        } catch (error) {
+          console.error(`❌ Failed to generate content for placeholder "${description}":`, error.message);
+        }
+      } else if (block.type === 'header') {
         // Generate new header content
         newContent = `<h1>Partnership Opportunity with ${prospect.company || 'Your Company'}</h1>`;
       } else if (block.type === 'content' || block.type === 'body') {
