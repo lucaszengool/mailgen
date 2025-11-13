@@ -15,10 +15,12 @@ class EnhancedEmailSearchAgent {
   async searchEmails(industry, targetCount = 5, sessionId = null) {
     console.log(`🚀 使用超级邮箱搜索引擎搜索: ${industry}`);
 
+    // 🔥 FIX: Define cacheKey outside if block so it can be used later
+    const cacheKey = `${industry}_${targetCount}`;
+
     // 🔥 FIX: Skip cache if sessionId is provided (campaign-specific search)
     if (!sessionId) {
       // 检查缓存
-      const cacheKey = `${industry}_${targetCount}`;
       if (this.searchCache.has(cacheKey)) {
         const cached = this.searchCache.get(cacheKey);
         if (Date.now() - cached.timestamp < 1800000) { // 30分钟缓存
@@ -170,11 +172,13 @@ class EnhancedEmailSearchAgent {
           method: 'super_email_discovery_engine_with_verification'
         };
 
-        // 缓存结果
-        this.searchCache.set(cacheKey, {
-          data: result,
-          timestamp: Date.now()
-        });
+        // 🔥 FIX: Only cache in Node.js if no sessionId (Python handles campaign-specific caching)
+        if (!sessionId) {
+          this.searchCache.set(cacheKey, {
+            data: result,
+            timestamp: Date.now()
+          });
+        }
 
         return result;
       } else {
