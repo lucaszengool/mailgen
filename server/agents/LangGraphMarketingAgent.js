@@ -2920,8 +2920,17 @@ NOW WRITE THE EMAIL:`;
         console.log(`   🎨 Template-specific response: treating entire output as email body`);
 
         // The entire response is the email body
-        // Clean up markdown formatting
-        const cleanedContent = aiContent
+        // 🔥 STEP 1: Replace placeholders with actual values BEFORE cleaning
+        let contentWithReplacements = aiContent
+          .replace(/\[Company Name\]/gi, recipientCompany || 'your company')
+          .replace(/\[Your Name\]/gi, senderName || 'the team')
+          .replace(/\[Your Company\]/gi, senderCompany || 'our company')
+          .replace(/\[Recipient Name\]/gi, recipientName || 'there')
+          .replace(/\[INSERT[^\]]*\]/gi, '')  // Remove INSERT placeholders
+          .replace(/\[WRITE[^\]]*\]/gi, '')   // Remove WRITE placeholders
+
+        // STEP 2: Clean up markdown formatting
+        const cleanedContent = contentWithReplacements
           .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold
           .replace(/\*([^*]+)\*/g, '$1') // Remove italic
           .trim();
@@ -2962,12 +2971,19 @@ NOW WRITE THE EMAIL:`;
           .replace(/\*([^*]+)\*/g, '$1') // Italic to plain text
           .replace(/__([^_]+)__/g, '$1') // Underline to plain text
           .replace(/_([^_]+)_/g, '$1') // Single underscore to plain text
-          
-          // Remove all placeholder patterns (ultra-comprehensive)
+
+          // 🔥 CRITICAL: Replace placeholders with actual values BEFORE removing them
+          .replace(/\[Company Name\]/gi, recipientCompany || 'your company')
+          .replace(/\[Your Name\]/gi, senderName || 'the team')
+          .replace(/\[Your Company\]/gi, senderCompany || 'our company')
+          .replace(/\[Recipient Name\]/gi, recipientName || 'there')
+          .replace(/\[Sender Name\]/gi, senderName || 'our team')
+
+          // Remove remaining placeholder patterns
           .replace(/\{\{[^}]*\}\}/g, '') // Handlebars {{}}
           .replace(/\[([A-Z_\s]+)\]/g, '') // [PLACEHOLDER]
-          .replace(/\[Your[^\]]*\]/g, '') // [Your Name], [Your Company], etc.
-          .replace(/\[Company[^\]]*\]/g, '') // [Company Name], etc.
+          .replace(/\[Your[^\]]*\]/g, '') // Any remaining [Your...] placeholders
+          .replace(/\[Company[^\]]*\]/g, '') // Any remaining [Company...] placeholders
           .replace(/\[Recipient[^\]]*\]/g, '') // [Recipient], etc.
           .replace(/\[INSERT[^\]]*\]/g, '') // [INSERT...]
           .replace(/\[WRITE[^\]]*\]/g, '') // [WRITE...]
@@ -2975,7 +2991,7 @@ NOW WRITE THE EMAIL:`;
           .replace(/\[Add[^\]]*\]/g, '') // [Add details]
           .replace(/\[Enter[^\]]*\]/g, '') // [Enter information]
           .replace(/\[Please[^\]]*\]/g, '') // [Please...]
-          
+
           // Clean up extra whitespace and artifacts
           .replace(/\n\s*\n\s*\n/g, '\n\n') // Multiple line breaks to double
           .replace(/^\s*[\-\*\+]\s*/gm, '') // Remove list markers
