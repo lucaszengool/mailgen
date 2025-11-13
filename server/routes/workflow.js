@@ -884,8 +884,15 @@ router.get('/results', optionalAuth, async (req, res) => {
       try {
         console.log(`💾 [User: ${userId}] No in-memory results, fetching from database...`);
 
+        // 🔥 FIX: Handle "LATEST" campaign - convert to null to get all campaigns
+        let dbCampaignFilter = campaignId;
+        if (campaignId === 'LATEST' || campaignId === 'latest' || campaignId === 'current') {
+          console.log(`🔄 Converting "${campaignId}" to null - will fetch all campaigns and sort by date`);
+          dbCampaignFilter = null;
+        }
+
         // Fetch prospects from database with campaign filter
-        const dbFilter = campaignId ? { status: 'active', campaignId } : { status: 'active' };
+        const dbFilter = dbCampaignFilter ? { status: 'active', campaignId: dbCampaignFilter } : { status: 'active' };
         const dbProspects = await db.getContacts(userId, dbFilter, 1000);
         if (dbProspects && dbProspects.length > 0) {
           prospects = dbProspects.map(c => ({
