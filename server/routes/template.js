@@ -264,13 +264,42 @@ router.post('/select', optionalAuth, async (req, res) => {
         // Continue with email generation using selected template
         setTimeout(async () => {
           try {
+                    // 🔥 FIX: Generate HTML from customizations if no HTML provided
+            let finalHtml = userEditedHtml;
+
+            if (!finalHtml && userCustomizations && Object.keys(userCustomizations).length > 0) {
+              // Apply customizations to base template HTML
+              console.log(`🎨 Applying ${Object.keys(userCustomizations).length} customizations to template HTML`);
+              finalHtml = template.html || '';
+
+              // Apply customization replacements
+              const customizations = userCustomizations;
+              if (customizations.logo) {
+                finalHtml = finalHtml.replace(/\{logo\}/g, customizations.logo);
+                finalHtml = finalHtml.replace(/COMPANY/g, `<img src="${customizations.logo}" alt="Logo" style="max-width:160px;height:auto;" />`);
+              }
+              if (customizations.headerTitle) {
+                finalHtml = finalHtml.replace(/\{headerTitle\}/g, customizations.headerTitle);
+              }
+              if (customizations.primaryColor) {
+                finalHtml = finalHtml.replace(/#10b981/g, customizations.primaryColor);
+                finalHtml = finalHtml.replace(/#00f5a0/g, customizations.primaryColor);
+              }
+              if (customizations.buttonText) {
+                finalHtml = finalHtml.replace(/Schedule Meeting/g, customizations.buttonText);
+                finalHtml = finalHtml.replace(/Schedule Your Free Demo/g, customizations.buttonText);
+              }
+
+              console.log(`✅ Generated HTML from customizations: ${finalHtml.length} characters`);
+            }
+
             // 🎯 RECONSTRUCT templateData with proper structure INCLUDING EDITED HTML
             const templateData = {
               templateId,
               subject: subject || null,
               greeting: greeting || null,
               signature: signature || null,
-              html: userEditedHtml || null,  // 🎯 USER'S EDITED TEMPLATE HTML
+              html: finalHtml || null,  // 🎯 USER'S EDITED TEMPLATE HTML (or generated from customizations)
               customizations: userCustomizations || {},
               isCustomized: isCustomized || !!(userCustomizations && Object.keys(userCustomizations).length > 0)
             };
@@ -331,13 +360,42 @@ router.post('/select', optionalAuth, async (req, res) => {
 
             console.log('🚀 Attempting to resume with stored results...');
 
+            // 🔥 FIX: Generate HTML from customizations if no HTML provided
+            let finalHtml = userEditedHtml;
+
+            if (!finalHtml && userCustomizations && Object.keys(userCustomizations).length > 0) {
+              // Apply customizations to base template HTML
+              console.log(`🎨 [Stored Results] Applying ${Object.keys(userCustomizations).length} customizations to template HTML`);
+              finalHtml = template.html || '';
+
+              // Apply customization replacements
+              const customizations = userCustomizations;
+              if (customizations.logo) {
+                finalHtml = finalHtml.replace(/\{logo\}/g, customizations.logo);
+                finalHtml = finalHtml.replace(/COMPANY/g, `<img src="${customizations.logo}" alt="Logo" style="max-width:160px;height:auto;" />`);
+              }
+              if (customizations.headerTitle) {
+                finalHtml = finalHtml.replace(/\{headerTitle\}/g, customizations.headerTitle);
+              }
+              if (customizations.primaryColor) {
+                finalHtml = finalHtml.replace(/#10b981/g, customizations.primaryColor);
+                finalHtml = finalHtml.replace(/#00f5a0/g, customizations.primaryColor);
+              }
+              if (customizations.buttonText) {
+                finalHtml = finalHtml.replace(/Schedule Meeting/g, customizations.buttonText);
+                finalHtml = finalHtml.replace(/Schedule Your Free Demo/g, customizations.buttonText);
+              }
+
+              console.log(`✅ [Stored Results] Generated HTML from customizations: ${finalHtml.length} characters`);
+            }
+
             // 🎯 CRITICAL: Create templateData for stored results path too INCLUDING EDITED HTML
             const templateData = {
               templateId,
               subject: subject || null,
               greeting: greeting || null,
               signature: signature || null,
-              html: userEditedHtml || null,  // 🎯 USER'S EDITED TEMPLATE HTML
+              html: finalHtml || null,  // 🎯 USER'S EDITED TEMPLATE HTML (or generated from customizations)
               customizations: userCustomizations || {},
               isCustomized: isCustomized || !!(userCustomizations && Object.keys(userCustomizations).length > 0)
             };

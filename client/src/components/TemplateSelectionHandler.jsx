@@ -50,8 +50,11 @@ const TemplateSelectionHandler = () => {
     setSelectedTemplate(template);
   };
 
-  const handleConfirm = async () => {
-    if (!selectedTemplate || !templateRequest) {
+  const handleConfirm = async (templateWithCustomizations) => {
+    // 🔥 FIX: Use template passed from modal (includes customizations)
+    const template = templateWithCustomizations || selectedTemplate;
+
+    if (!template || !templateRequest) {
       toast.error('Please select a template first');
       return;
     }
@@ -59,15 +62,20 @@ const TemplateSelectionHandler = () => {
     setIsSubmitting(true);
 
     try {
-      console.log('🎨 Confirming template selection:', selectedTemplate.id);
+      console.log('🎨 Confirming template selection:', template.id);
+      console.log('✨ Template has customizations:', !!template.customizations);
+      console.log('📊 Customization keys:', template.customizations ? Object.keys(template.customizations) : []);
 
+      // 🔥 FIX: Pass customizations and components to backend
       await TemplateSelectionService.selectTemplate(
-        selectedTemplate.id,
+        template.id,
         templateRequest.campaignId || 'default',
-        templateRequest.workflowId || 'default'
+        templateRequest.workflowId || 'default',
+        template,  // Pass entire template object (includes customizations)
+        template.components || []
       );
 
-      toast.success(`Using ${selectedTemplate.name} template for all emails!`);
+      toast.success(`Using ${template.name} template for all emails!`);
 
       // The WebSocket will handle closing the modal via onTemplateSelected
 

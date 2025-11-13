@@ -1459,6 +1459,8 @@ class LangGraphMarketingAgent {
       console.log(`🎨 Template customization status: ${templateData.isCustomized ? 'CUSTOMIZED' : 'DEFAULT'}`);
       if (templateData.isCustomized) {
         console.log(`✨ Custom properties:`, Object.keys(templateData.customizations));
+        console.log(`📄 User HTML length: ${templateData.html?.length || 0} characters`);
+        console.log(`📄 First 200 chars of user HTML: ${templateData.html?.substring(0, 200) || 'NO HTML'}`);
       }
 
       // 🎯 CRITICAL FIX: Store the selected template globally for all emails in this campaign
@@ -1469,6 +1471,7 @@ class LangGraphMarketingAgent {
         isUserCustomized: templateData.isCustomized || !!enhancedTemplate
       };
       console.log(`📦 Stored selected template globally: ${templateId}`);
+      console.log(`   📄 Stored HTML length: ${this.state.selectedCampaignTemplate.templateData.html?.length || 0}`);
 
       // Resume email generation with the selected template
       console.log('📧 Resuming email generation with selected template...');
@@ -5034,6 +5037,40 @@ Return ONLY the JSON object, no other text.`;
   }
 
   /**
+   * 🔥 NEW: Remove placeholders from generated email content
+   */
+  removePlaceholders(text) {
+    if (!text) return text;
+
+    // Remove common placeholder patterns
+    let cleaned = text
+      // Remove [Name], [Company], etc. in brackets
+      .replace(/\[Name\]/gi, '')
+      .replace(/\[Company\]/gi, '')
+      .replace(/\[Position\]/gi, '')
+      .replace(/\[Industry\]/gi, '')
+      .replace(/\[Title\]/gi, '')
+      .replace(/\[Role\]/gi, '')
+      .replace(/\[Email\]/gi, '')
+      .replace(/\[GENERATED CONTENT[^\]]*\]/gi, '')
+
+      // Remove "Dear [Name]," patterns
+      .replace(/Dear\s+\[Name\],?/gi, '')
+      .replace(/Hello\s+\[Name\],?/gi, '')
+      .replace(/Hi\s+\[Name\],?/gi, '')
+
+      // Remove any remaining bracket placeholders
+      .replace(/\[[A-Z][a-zA-Z\s]*\]/g, '')
+
+      // Clean up multiple spaces and line breaks
+      .replace(/\n\s*\n\s*\n/g, '\n\n') // Max 2 line breaks
+      .replace(/  +/g, ' ') // Multiple spaces to single
+      .trim();
+
+    return cleaned;
+  }
+
+  /**
    * Generate optimized email content using persona and PersonalizedEmailGenerator
    */
   async generateOptimizedEmailContentWithPersona(prospect, userPersona, marketingStrategy, emailOptimization, businessAnalysis, emailTemplate = null, templateData = null, targetAudience = null, sequenceIndex = 0) {
@@ -5045,7 +5082,24 @@ Return ONLY the JSON object, no other text.`;
     try {
       // Enhanced prospect with persona and template preference
       console.log(`🔍 DEBUG: emailTemplate parameter is: ${emailTemplate}`);
-      
+
+      // 🔍 DEBUG: Log current template state
+      console.log(`\n📋 TEMPLATE SELECTION DEBUG for ${prospect.name || prospect.email}:`);
+      console.log(`   1. state.selectedCampaignTemplate exists: ${!!this.state.selectedCampaignTemplate}`);
+      if (this.state.selectedCampaignTemplate) {
+        console.log(`      - templateId: ${this.state.selectedCampaignTemplate.templateId}`);
+        console.log(`      - isUserCustomized: ${this.state.selectedCampaignTemplate.isUserCustomized}`);
+        console.log(`      - templateData.isCustomized: ${this.state.selectedCampaignTemplate.templateData?.isCustomized}`);
+        console.log(`      - templateData.html length: ${this.state.selectedCampaignTemplate.templateData?.html?.length || 0}`);
+      }
+      console.log(`   2. templateData param exists: ${!!templateData}`);
+      if (templateData) {
+        console.log(`      - templateId: ${templateData.templateId}`);
+        console.log(`      - isCustomized: ${templateData.isCustomized}`);
+        console.log(`      - html length: ${templateData.html?.length || 0}`);
+      }
+      console.log(`   3. emailTemplate param: ${emailTemplate}\n`);
+
       // 🎯 CRITICAL FIX: Always prefer the actual template ID from selection
       let selectedEmailTemplate = emailTemplate;
 
@@ -5053,9 +5107,10 @@ Return ONLY the JSON object, no other text.`;
       if (this.state.selectedCampaignTemplate && this.state.selectedCampaignTemplate.templateId) {
         selectedEmailTemplate = this.state.selectedCampaignTemplate.templateId;
         templateData = this.state.selectedCampaignTemplate.templateData;
-        console.log(`🎯 Using campaign-selected template: ${selectedEmailTemplate}`);
+        console.log(`✅ Using campaign-selected template: ${selectedEmailTemplate}`);
         console.log(`   ✨ Has customizations: ${templateData.isCustomized || false}`);
         console.log(`   🧩 Has components: ${templateData.components ? templateData.components.length : 0}`);
+        console.log(`   📄 HTML length: ${templateData.html?.length || 0} chars`);
       }
       // Second priority: Use template from templateData if it has a templateId
       else if (templateData && templateData.templateId) {
@@ -5140,7 +5195,10 @@ Return ONLY the JSON object, no other text.`;
         const subject = templateData.subject;
         const html = templateData.html || templateData.body;
 
-        console.log(`🔍 DEBUG: Using html content length:`, html.length);
+        console.log(`🔍 DEBUG: Using html content length:`, html?.length || 0);
+        console.log(`🔍 DEBUG: HTML source: ${templateData.html ? 'templateData.html' : 'templateData.body'}`);
+        console.log(`🔍 DEBUG: First 200 chars of HTML: ${html?.substring(0, 200) || 'NO HTML'}`);
+        console.log(`🔍 DEBUG: templateData.isCustomized: ${templateData.isCustomized}`);
 
         // ✨ FIXED: Check if this is a component-based template with user components
         if (templateData.components && templateData.components.length > 0) {
@@ -5149,12 +5207,16 @@ Return ONLY the JSON object, no other text.`;
           // Apply component template with personalized content
           const personalizedResult = await this.applyComponentTemplate(templateData, prospect, userPersona, businessAnalysis);
 
+          // 🔥 FIX: Remove placeholders from generated content
+          const cleanedBody = this.removePlaceholders(personalizedResult.body);
+          const cleanedSubject = this.removePlaceholders(personalizedResult.subject);
+
           console.log(`✅ Generated NEW personalized content for ${prospect.company || 'prospect'} using component template`);
-          console.log(`📊 Component template result: ${personalizedResult.body.length} chars`);
+          console.log(`📊 Component template result: ${cleanedBody.length} chars`);
 
           return {
-            subject: personalizedResult.subject,
-            body: personalizedResult.body,
+            subject: cleanedSubject,
+            body: cleanedBody,
             template: templateData.id || templateData.templateId || 'professional_partnership',
             templateData: templateData,
             personalizationLevel: 'Component Template',
@@ -5315,13 +5377,17 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
             // Step 4: Generate personalized subject line
             const personalizedSubject = subject || `${prospect.company || 'Partnership Opportunity'} - ${this.generatePersonalizedSubjectLine(prospect, userPersona)}`;
 
+            // 🔥 FIX: Remove placeholders from generated content
+            const cleanedHtml = this.removePlaceholders(personalizedHtml);
+            const cleanedSubject = this.removePlaceholders(personalizedSubject);
+
             console.log(`✅ User template processed with AI-generated content`);
-            console.log(`📊 Original HTML: ${html.length} chars → Final HTML: ${personalizedHtml.length} chars`);
-            console.log(`📧 Subject: ${personalizedSubject}`);
+            console.log(`📊 Original HTML: ${html.length} chars → Final HTML: ${cleanedHtml.length} chars`);
+            console.log(`📧 Subject: ${cleanedSubject}`);
 
             return {
-              subject: personalizedSubject,
-              body: personalizedHtml,
+              subject: cleanedSubject,
+              body: cleanedHtml,
               template: templateData.id || templateData.templateId || 'user_template',
               templateData: templateData,
               personalizationLevel: 'AI + User Template',
@@ -5352,12 +5418,16 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
             .replace(/\{+senderName\}+/gi, templateData.senderName || 'AI Marketing')
             .replace(/\{+websiteUrl\}+/gi, businessAnalysis?.websiteUrl || 'https://example.com');
 
+          // 🔥 FIX: Remove placeholders from generated content
+          const cleanedHtml = this.removePlaceholders(personalizedHtml);
+          const cleanedSubject = this.removePlaceholders(personalizedSubject);
+
           console.log(`✅ Generated NEW personalized content for ${prospect.company || 'prospect'} using HTML template structure`);
-          console.log(`📊 Template HTML length: ${html.length} → Personalized HTML length: ${personalizedHtml.length}`);
+          console.log(`📊 Template HTML length: ${html.length} → Personalized HTML length: ${cleanedHtml.length}`);
 
           return {
-            subject: personalizedSubject,
-            body: personalizedHtml,
+            subject: cleanedSubject,
+            body: cleanedHtml,
             template: 'user_template',
             templateData: templateData,
             personalizationLevel: 'HTML Template',

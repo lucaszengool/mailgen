@@ -75,8 +75,13 @@ export default function Prospects() {
     connectWebSocket()
 
     // 🔥 AUTO-REFRESH: Poll for new prospects every 5 seconds while searching
+    // Keep polling for up to 3 minutes to catch all background batches
+    const startTime = Date.now();
     const pollInterval = setInterval(() => {
-      if (workflowStatus === 'finding_prospects') {
+      const elapsed = Date.now() - startTime;
+      const shouldPoll = workflowStatus === 'finding_prospects' || elapsed < 180000; // 3 minutes
+
+      if (shouldPoll) {
         console.log('🔄 Auto-refreshing prospects...');
         fetchProspects();
       }
@@ -371,12 +376,9 @@ export default function Prospects() {
 
       setProspects(uniqueProspects)
 
-      // Clear workflow status if we have prospects
-      if (uniqueProspects.length > 0 && workflowStatus === 'finding_prospects') {
-        console.log('✅ Prospects found, clearing searching status')
-        setWorkflowStatus(null)
-        toast.dismiss('finding_prospects')
-      }
+      // 🔥 FIX: Don't clear workflow status yet - background batches may still be arriving
+      // The workflow status will be cleared when we receive a 'complete' status from backend
+      // This keeps the auto-refresh polling active so batch 2+ prospects show up
     } catch (error) {
       console.error('❌ Failed to fetch prospects:', error)
       toast.error('Failed to load prospects')
