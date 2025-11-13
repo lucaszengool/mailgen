@@ -1103,6 +1103,38 @@ class LangGraphMarketingAgent {
           });
           console.log(`📡 [Batch ${batchNumber}] WebSocket notification sent`);
         }
+
+        // 🔥 CRITICAL FIX: Update in-memory workflow results so /api/workflow/results returns all batches
+        try {
+          const workflowRoute = require('../routes/workflow');
+          if (workflowRoute.getLastWorkflowResults && workflowRoute.setLastWorkflowResults) {
+            // Get current workflow results
+            const currentResults = await workflowRoute.getLastWorkflowResults(userId, campaignId);
+
+            if (currentResults) {
+              // Add new batch prospects to existing results (avoid duplicates)
+              const existingEmails = new Set((currentResults.prospects || []).map(p => p.email));
+              const newProspectsForResults = prospects.filter(p => !existingEmails.has(p.email));
+              currentResults.prospects = [...(currentResults.prospects || []), ...newProspectsForResults];
+
+              // Update workflow results with merged prospects
+              await workflowRoute.setLastWorkflowResults(currentResults, userId, campaignId);
+              console.log(`✅ [Batch ${batchNumber}] Updated in-memory workflow results with ${newProspectsForResults.length} new prospects (total: ${currentResults.prospects.length})`);
+            } else {
+              // No existing results, create new ones with this batch
+              const newResults = {
+                campaignId: campaignId,
+                prospects: prospects,
+                status: 'prospect_search_in_progress',
+                timestamp: new Date().toISOString()
+              };
+              await workflowRoute.setLastWorkflowResults(newResults, userId, campaignId);
+              console.log(`✅ [Batch ${batchNumber}] Created new workflow results with ${prospects.length} prospects`);
+            }
+          }
+        } catch (error) {
+          console.error(`❌ [Batch ${batchNumber}] Failed to update workflow results:`, error);
+        }
       };
 
       // Call searchProspects with batching options
@@ -5133,6 +5165,171 @@ Return ONLY the JSON object, no other text.`;
           // FALLBACK: Use HTML-based template processing
           console.log(`🎨 Using HTML-BASED template processing as fallback`);
 
+          // 🔥 CRITICAL FIX: Check if template is user-customized
+          if (templateData.isCustomized) {
+            console.log(`✨ Template is user-customized - generating AI content for user template`);
+            console.log(`📋 Template ID: ${templateData.id || templateData.templateId || 'unknown'}`);
+
+            // Step 1: Get template-specific Ollama prompt
+            const TemplatePromptService = require('../services/TemplatePromptService');
+            const templateId = templateData.id || templateData.templateId || 'professional_partnership';
+
+            console.log(`🎨 Using template-specific prompt for: ${templateId}`);
+
+            // Get the base template to access its ollamaPrompt
+            const baseTemplate = TemplatePromptService.getTemplate(templateId);
+
+            let emailContentPrompt;
+            if (baseTemplate && baseTemplate.ollamaPrompt) {
+              console.log(`✅ Found template-specific Ollama prompt for ${baseTemplate.name}`);
+
+              // Use the template's custom prompt and replace placeholders
+              emailContentPrompt = baseTemplate.ollamaPrompt
+                .replace(/\{senderName\}/g, templateData.senderName || businessAnalysis?.companyName || 'Our Company')
+                .replace(/\{companyName\}/g, businessAnalysis?.companyName || templateData.companyName || 'Our Company')
+                .replace(/\{recipientName\}/g, prospect.name || 'there')
+                .replace(/\{company\}/g, prospect.company || 'your company')
+                .replace(/\{title\}/g, prospect.role || prospect.position || 'team member')
+                .replace(/\{industry\}/g, prospect.industry || businessAnalysis?.industry || 'your industry');
+
+              // Add persona context to the prompt
+              emailContentPrompt = `${emailContentPrompt}
+
+PERSONA CONTEXT for ${prospect.name || 'recipient'}:
+- Type: ${userPersona?.type || 'Professional'}
+- Communication Style: ${userPersona?.communicationStyle || 'Professional'}
+- Decision Level: ${userPersona?.decisionLevel || 'Medium'}
+${userPersona?.painPoints ? `- Pain Points: ${userPersona.painPoints.join(', ')}` : ''}
+
+BUSINESS CONTEXT:
+- Our Company: ${businessAnalysis?.companyName || templateData.companyName || 'Our Company'}
+- Industry: ${businessAnalysis?.industry || 'Technology'}
+- Value Proposition: ${businessAnalysis?.valueProposition || 'innovative solutions'}
+- Website: ${businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com'}
+
+Remember: Write ONLY the email content. Make it feel like ${templateData.senderName || 'you'} personally wrote it for ${prospect.name || 'them'} at ${prospect.company || 'their company'}.`;
+
+            } else {
+              console.log(`⚠️ No template-specific prompt found, using generic prompt`);
+              // Fallback to generic prompt if template-specific not found
+              emailContentPrompt = `Write a professional, personalized email to ${prospect.name || 'the recipient'} at ${prospect.company || 'their company'}.
+
+Context:
+- Recipient: ${prospect.name || 'N/A'}
+- Company: ${prospect.company || 'N/A'}
+- Role: ${prospect.role || prospect.position || 'N/A'}
+- Sender: ${templateData.senderName || 'Our Company'}
+- Persona Type: ${userPersona?.type || 'Professional'}
+- Communication Style: ${userPersona?.communicationStyle || 'Professional'}
+
+Business Context:
+- Company: ${businessAnalysis?.companyName || templateData.companyName || 'Our Company'}
+- Industry: ${businessAnalysis?.industry || 'Technology'}
+- Value Proposition: ${businessAnalysis?.valueProposition || 'innovative solutions'}
+
+Requirements:
+1. Write a warm, personalized greeting
+2. Explain why you're reaching out (reference their company/role)
+3. Present the value proposition clearly
+4. Include a clear call-to-action
+5. Professional closing
+6. Keep it concise (200-300 words)
+7. Make it feel personal, not templated
+
+Generate ONLY the email body text (no subject line, no placeholders). Make it feel like a real person wrote it specifically for ${prospect.name || 'them'}.`;
+            }
+
+            // Step 2: Generate personalized email content using Ollama with template-specific prompt
+            console.log(`🤖 Generating personalized email content for ${prospect.company || prospect.name}`);
+
+            let generatedContent = '';
+            try {
+              generatedContent = await this.callOllama(emailContentPrompt, 'email', { temperature: 0.8 });
+              console.log(`✅ Generated ${generatedContent.length} characters of personalized content`);
+            } catch (error) {
+              console.error(`❌ Failed to generate content with Ollama:`, error.message);
+              // Fallback to simple content
+              generatedContent = `Hi ${prospect.name || 'there'},\n\nI hope this email finds you well. I'm reaching out from ${templateData.companyName || businessAnalysis?.companyName || 'our company'} because I believe we could help ${prospect.company || 'your organization'} achieve its goals.\n\n${businessAnalysis?.valueProposition || 'We provide innovative solutions that drive results.'}\n\nWould you be interested in a brief conversation to explore how we might work together?\n\nBest regards,\n${templateData.senderName || 'The Team'}`;
+            }
+
+            // Step 2: Use user's HTML template and insert the generated content
+            let personalizedHtml = html;
+
+            // First, replace any content generation placeholders with the AI-generated content
+            const contentPlaceholders = personalizedHtml.match(/\[GENERATED CONTENT[^\]]*\]/gi);
+            if (contentPlaceholders && contentPlaceholders.length > 0) {
+              console.log(`📝 Found ${contentPlaceholders.length} content placeholders to replace`);
+              // Replace all content placeholders with the generated content
+              contentPlaceholders.forEach((placeholder, index) => {
+                personalizedHtml = personalizedHtml.replace(placeholder, generatedContent);
+                console.log(`   ✅ Replaced placeholder ${index + 1}: ${placeholder}`);
+              });
+            } else {
+              // If no placeholders found, try to insert content into common patterns
+              console.log(`📝 No content placeholders found, looking for insertion points`);
+
+              // Try to find and replace common content areas
+              const bodyRegex = /<p[^>]*>.*?<\/p>/gi;
+              const paragraphs = personalizedHtml.match(bodyRegex);
+              if (paragraphs && paragraphs.length > 0) {
+                // Convert generated content to HTML paragraphs
+                const htmlContent = generatedContent.split('\n\n').map(para =>
+                  `<p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 16px 0;">${para.trim()}</p>`
+                ).join('\n');
+
+                // Replace the first significant paragraph (usually the main content)
+                let replaced = false;
+                for (let i = 0; i < paragraphs.length; i++) {
+                  if (paragraphs[i].length > 50 && !paragraphs[i].includes('unsubscribe')) {
+                    personalizedHtml = personalizedHtml.replace(paragraphs[i], htmlContent);
+                    replaced = true;
+                    console.log(`   ✅ Inserted AI content into paragraph ${i + 1}`);
+                    break;
+                  }
+                }
+                if (!replaced) {
+                  console.log(`   ⚠️ Could not find suitable insertion point, appending content`);
+                }
+              }
+            }
+
+            // Step 3: Replace all variable placeholders with actual values
+            personalizedHtml = personalizedHtml
+              .replace(/\{\{companyName\}\}/gi, prospect.company || 'Your Company')
+              .replace(/\{\{company\}\}/gi, prospect.company || 'Your Company')
+              .replace(/\{companyName\}/gi, prospect.company || 'Your Company')
+              .replace(/\{company\}/gi, prospect.company || 'Your Company')
+              .replace(/\{\{recipientName\}\}/gi, prospect.name || 'there')
+              .replace(/\{\{name\}\}/gi, prospect.name || 'there')
+              .replace(/\{recipientName\}/gi, prospect.name || 'there')
+              .replace(/\{name\}/gi, prospect.name || 'there')
+              .replace(/\{\{senderName\}\}/gi, templateData.senderName || 'AI Marketing')
+              .replace(/\{senderName\}/gi, templateData.senderName || 'AI Marketing')
+              .replace(/\{\{websiteUrl\}\}/gi, businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com')
+              .replace(/\{websiteUrl\}/gi, businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com')
+              .replace(/\{\{ctaUrl\}\}/gi, templateData.ctaUrl || businessAnalysis?.websiteUrl || 'https://example.com')
+              .replace(/\{ctaUrl\}/gi, templateData.ctaUrl || businessAnalysis?.websiteUrl || 'https://example.com')
+              .replace(/\{\{ctaText\}\}/gi, templateData.ctaText || 'Learn More')
+              .replace(/\{ctaText\}/gi, templateData.ctaText || 'Learn More');
+
+            // Step 4: Generate personalized subject line
+            const personalizedSubject = subject || `${prospect.company || 'Partnership Opportunity'} - ${this.generatePersonalizedSubjectLine(prospect, userPersona)}`;
+
+            console.log(`✅ User template processed with AI-generated content`);
+            console.log(`📊 Original HTML: ${html.length} chars → Final HTML: ${personalizedHtml.length} chars`);
+            console.log(`📧 Subject: ${personalizedSubject}`);
+
+            return {
+              subject: personalizedSubject,
+              body: personalizedHtml,
+              template: templateData.id || templateData.templateId || 'user_template',
+              templateData: templateData,
+              personalizationLevel: 'AI + User Template',
+              confidence: 0.95,
+              optimization_applied: 'ai_content_in_user_template'
+            };
+          }
+
           // Generate personalized subject
           const personalizedSubject = `${prospect.company || 'Partnership Opportunity'} - ${this.generatePersonalizedSubjectLine(prospect, userPersona)}`;
 
@@ -6608,13 +6805,59 @@ Keep the tone ${persona.communicationStyle || 'professional'} and engaging. Outp
     const senderName = componentTemplate.senderName || 'James';
     const companyName = componentTemplate.companyName || businessAnalysis?.companyName || 'FruitAI';
     const templateName = componentTemplate.name || 'Professional Partnership';
+    const templateId = componentTemplate.id || componentTemplate.templateId || 'professional_partnership';
 
-    // Build section descriptions
-    const sectionDescriptions = contentSections.map((section, index) =>
-      `${index + 1}. ${section}`
-    ).join('\n');
+    // 🎯 CRITICAL: Get template-specific Ollama prompt
+    const TemplatePromptService = require('../services/TemplatePromptService');
+    const baseTemplate = TemplatePromptService.getTemplate(templateId);
 
-    const prompt = `Write a professional partnership email from ${senderName} at ${companyName} to ${prospectName} at ${prospectCompany}.
+    let prompt;
+    if (baseTemplate && baseTemplate.ollamaPrompt) {
+      console.log(`✅ Using template-specific prompt for ${baseTemplate.name}`);
+
+      // Use the template's custom prompt and replace placeholders
+      prompt = baseTemplate.ollamaPrompt
+        .replace(/\{senderName\}/g, senderName)
+        .replace(/\{companyName\}/g, companyName)
+        .replace(/\{recipientName\}/g, prospectName)
+        .replace(/\{company\}/g, prospectCompany)
+        .replace(/\{title\}/g, prospect.role || prospect.position || 'team member')
+        .replace(/\{industry\}/g, prospect.industry || businessAnalysis?.industry || 'your industry');
+
+      // Add persona context if available
+      if (persona) {
+        prompt += `
+
+PERSONA CONTEXT for ${prospectName}:
+- Type: ${persona.type || 'Professional'}
+- Communication Style: ${persona.communicationStyle || 'Professional'}
+- Decision Level: ${persona.decisionLevel || 'Medium'}
+${persona.painPoints ? `- Pain Points: ${persona.painPoints.join(', ')}` : ''}`;
+      }
+
+      // Add business context
+      prompt += `
+
+BUSINESS CONTEXT:
+- Our Company: ${companyName}
+- Industry: ${businessAnalysis?.industry || 'Technology'}
+- Value Proposition: ${businessAnalysis?.valueProposition || 'innovative solutions'}
+
+CRITICAL REMINDERS:
+- DO NOT include subject line or email headers
+- DO NOT include any notes like "Note: Make sure to replace..." or placeholder instructions
+- DO NOT include subtitles or section headers like "Our partnership offers several benefits:"
+- DO NOT include bullet points with colons like "Shared Expertise:" or "Enhanced Collaboration:"
+- DO NOT include any meta-commentary or instructions to the reader
+- Write as ONE flowing message, NOT separate disconnected sections
+
+Write the complete email now:`;
+
+    } else {
+      console.log(`⚠️ No template-specific prompt found for ${templateId}, using generic prompt`);
+
+      // Fallback to generic prompt if template not found
+      prompt = `Write a professional partnership email from ${senderName} at ${companyName} to ${prospectName} at ${prospectCompany}.
 
 Write a SINGLE coherent business email that flows naturally from beginning to end.
 
@@ -6642,6 +6885,7 @@ DO NOT include:
 - Any meta-commentary or instructions to the reader
 
 Write the complete email now as a simple, flowing message (without subject line or email headers):`;
+    }
 
     return prompt;
   }
