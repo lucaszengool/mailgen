@@ -402,11 +402,17 @@ class SuperEmailDiscoveryEngine:
             self.logger.error(f"   ❌ 爬取失败 {url}: {str(e)}")
             return []
     
-    def execute_persistent_discovery(self, industry, target_count=5, max_rounds=100, session_id=None):
+    def execute_persistent_discovery(self, industry, target_count=5, max_rounds=None, session_id=None):
         """执行无限制持续搜索 - 越多越准确"""
+        # 🔥 FIX: Scale max_rounds based on target_count
+        # Each round finds ~5-15 new emails on average (after filtering cached)
+        # Use at least 100 rounds, scale up for larger requests, cap at 500 for safety
+        if max_rounds is None:
+            max_rounds = min(500, max(100, target_count // 5))  # ~5 emails per round, max 500 rounds
+
         self.logger.info(f"🚀 启动无限制超级邮箱搜索 - {industry}")
         self.logger.info(f"   🎯 目标: {target_count}个NEW邮箱 (跳过已返回)")
-        self.logger.info(f"   🔄 最大轮数: {max_rounds} (足够找到新邮箱)")
+        self.logger.info(f"   🔄 最大轮数: {max_rounds} (动态调整，确保找到足够新邮箱)")
         self.logger.info(f"   📊 使用2024年最佳搜索实践")
         self.logger.info(f"   ⏰ 无时间限制 - 持续搜索直到找到足够新邮箱")
         if session_id:
@@ -608,7 +614,8 @@ def main():
     session_id = sys.argv[3] if len(sys.argv) > 3 else None  # 🔥 FIX: Accept session_id
 
     engine = SuperEmailDiscoveryEngine()
-    results = engine.execute_persistent_discovery(industry, target_count, session_id)
+    # 🔥 FIX: Let max_rounds be calculated dynamically based on target_count
+    results = engine.execute_persistent_discovery(industry, target_count, session_id=session_id)
     
     print("\n" + "="*90)
     print("🎯 超级邮箱搜索引擎 - 最终报告")
