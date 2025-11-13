@@ -2332,6 +2332,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           totalClicked: 0
         });
         setWorkflowStatus('idle');
+        setHasShownProspectNotification(false); // 🔥 Reset notification flag for new campaign
 
         // 🔥 AUTO-LOAD: Immediately fetch data for this campaign
         console.log('📥 [AUTO-LOAD] Loading data for campaign:', currentCampaignId);
@@ -2432,6 +2433,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
           if (prospectsFromAPI && prospectsFromAPI.length > 0) {
             console.log(`✅ [INITIAL LOAD] Loaded ${prospectsFromAPI.length} prospects for campaign ${campaignId}`);
+            // 🔥 NEW FIX: Suppress prospect notification for initial load (onboarding prospects)
+            // Only show notification for NEW prospects from background search
+            setHasShownProspectNotification(true);
+            console.log(`🔕 [INITIAL LOAD] Suppressed prospect notification - these are onboarding prospects`);
           } else {
             console.log(`📭 [INITIAL LOAD] No prospects found for campaign ${campaignId} - cleared prospects state`);
           }
@@ -2497,6 +2502,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       setNotificationStage('websiteAnalysisStarting');
       setShowProcessNotification(true);
       setWorkflowStatus('starting');
+      setHasShownProspectNotification(false); // 🔥 Reset notification flag for new campaign
 
       // Clear the flag so it doesn't show again on re-render
       // We do this by not modifying agentConfig directly, just consuming the flag
