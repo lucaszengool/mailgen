@@ -264,33 +264,71 @@ router.post('/select', optionalAuth, async (req, res) => {
         // Continue with email generation using selected template
         setTimeout(async () => {
           try {
-                    // 🔥 FIX: Generate HTML from customizations if no HTML provided
+                    // 🔥 FIX: Generate HTML from customizations - ALWAYS if customizations exist
             let finalHtml = userEditedHtml;
 
-            if (!finalHtml && userCustomizations && Object.keys(userCustomizations).length > 0) {
-              // Apply customizations to base template HTML
+            if (userCustomizations && Object.keys(userCustomizations).length > 0) {
               console.log(`🎨 Applying ${Object.keys(userCustomizations).length} customizations to template HTML`);
-              finalHtml = template.html || '';
 
-              // Apply customization replacements
+              // Start with base template HTML
+              finalHtml = template.html || '';
               const customizations = userCustomizations;
+
+              // Apply ALL customizations comprehensively
               if (customizations.logo) {
                 finalHtml = finalHtml.replace(/\{logo\}/g, customizations.logo);
                 finalHtml = finalHtml.replace(/COMPANY/g, `<img src="${customizations.logo}" alt="Logo" style="max-width:160px;height:auto;" />`);
+                // Also replace in style attributes
+                finalHtml = finalHtml.replace(/LOGO_URL_PLACEHOLDER/g, customizations.logo);
               }
+
               if (customizations.headerTitle) {
                 finalHtml = finalHtml.replace(/\{headerTitle\}/g, customizations.headerTitle);
+                finalHtml = finalHtml.replace(/Building Strategic Partnerships/g, customizations.headerTitle);
               }
+
+              if (customizations.mainHeading) {
+                finalHtml = finalHtml.replace(/\{mainHeading\}/g, customizations.mainHeading);
+              }
+
               if (customizations.primaryColor) {
-                finalHtml = finalHtml.replace(/#10b981/g, customizations.primaryColor);
-                finalHtml = finalHtml.replace(/#00f5a0/g, customizations.primaryColor);
+                // Replace ALL instances of the default green color
+                finalHtml = finalHtml.replace(/#10b981/gi, customizations.primaryColor);
+                finalHtml = finalHtml.replace(/#00f5a0/gi, customizations.primaryColor);
+                finalHtml = finalHtml.replace(/#00d991/gi, customizations.primaryColor);
+                finalHtml = finalHtml.replace(/rgba\(0,245,160/g, `rgba(${hexToRgb(customizations.primaryColor)}`);
               }
+
+              if (customizations.accentColor) {
+                finalHtml = finalHtml.replace(/#047857/gi, customizations.accentColor);
+              }
+
               if (customizations.buttonText) {
                 finalHtml = finalHtml.replace(/Schedule Meeting/g, customizations.buttonText);
                 finalHtml = finalHtml.replace(/Schedule Your Free Demo/g, customizations.buttonText);
+                finalHtml = finalHtml.replace(/Get Started/g, customizations.buttonText);
+              }
+
+              if (customizations.testimonialText) {
+                finalHtml = finalHtml.replace(/"Great results from our partnership exceeded all expectations"/g, customizations.testimonialText);
+                finalHtml = finalHtml.replace(/"This solution transformed our operations[^"]*"/g, customizations.testimonialText);
+              }
+
+              if (customizations.testimonialAuthor) {
+                finalHtml = finalHtml.replace(/— CEO, Fortune 500 Company/g, customizations.testimonialAuthor);
+                finalHtml = finalHtml.replace(/CEO, Industry Leader/g, customizations.testimonialAuthor);
               }
 
               console.log(`✅ Generated HTML from customizations: ${finalHtml.length} characters`);
+              console.log(`📝 Applied: logo=${!!customizations.logo}, primaryColor=${!!customizations.primaryColor}, buttonText=${!!customizations.buttonText}`);
+            }
+
+            // Helper function to convert hex to RGB
+            function hexToRgb(hex) {
+              const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+              return result
+                ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}`
+                : '0,245,160'; // Default fallback
             }
 
             // 🎯 RECONSTRUCT templateData with proper structure INCLUDING EDITED HTML
@@ -360,33 +398,61 @@ router.post('/select', optionalAuth, async (req, res) => {
 
             console.log('🚀 Attempting to resume with stored results...');
 
-            // 🔥 FIX: Generate HTML from customizations if no HTML provided
+            // 🔥 FIX: Generate HTML from customizations - ALWAYS if customizations exist
             let finalHtml = userEditedHtml;
 
-            if (!finalHtml && userCustomizations && Object.keys(userCustomizations).length > 0) {
-              // Apply customizations to base template HTML
+            if (userCustomizations && Object.keys(userCustomizations).length > 0) {
               console.log(`🎨 [Stored Results] Applying ${Object.keys(userCustomizations).length} customizations to template HTML`);
-              finalHtml = template.html || '';
 
-              // Apply customization replacements
+              // Start with base template HTML
+              finalHtml = template.html || '';
               const customizations = userCustomizations;
+
+              // Apply ALL customizations comprehensively
               if (customizations.logo) {
                 finalHtml = finalHtml.replace(/\{logo\}/g, customizations.logo);
                 finalHtml = finalHtml.replace(/COMPANY/g, `<img src="${customizations.logo}" alt="Logo" style="max-width:160px;height:auto;" />`);
+                finalHtml = finalHtml.replace(/LOGO_URL_PLACEHOLDER/g, customizations.logo);
               }
+
               if (customizations.headerTitle) {
                 finalHtml = finalHtml.replace(/\{headerTitle\}/g, customizations.headerTitle);
+                finalHtml = finalHtml.replace(/Building Strategic Partnerships/g, customizations.headerTitle);
               }
+
+              if (customizations.mainHeading) {
+                finalHtml = finalHtml.replace(/\{mainHeading\}/g, customizations.mainHeading);
+              }
+
               if (customizations.primaryColor) {
-                finalHtml = finalHtml.replace(/#10b981/g, customizations.primaryColor);
-                finalHtml = finalHtml.replace(/#00f5a0/g, customizations.primaryColor);
+                finalHtml = finalHtml.replace(/#10b981/gi, customizations.primaryColor);
+                finalHtml = finalHtml.replace(/#00f5a0/gi, customizations.primaryColor);
+                finalHtml = finalHtml.replace(/#00d991/gi, customizations.primaryColor);
+                finalHtml = finalHtml.replace(/rgba\(0,245,160/g, `rgba(${hexToRgb(customizations.primaryColor)}`);
               }
+
+              if (customizations.accentColor) {
+                finalHtml = finalHtml.replace(/#047857/gi, customizations.accentColor);
+              }
+
               if (customizations.buttonText) {
                 finalHtml = finalHtml.replace(/Schedule Meeting/g, customizations.buttonText);
                 finalHtml = finalHtml.replace(/Schedule Your Free Demo/g, customizations.buttonText);
+                finalHtml = finalHtml.replace(/Get Started/g, customizations.buttonText);
+              }
+
+              if (customizations.testimonialText) {
+                finalHtml = finalHtml.replace(/"Great results from our partnership exceeded all expectations"/g, customizations.testimonialText);
+                finalHtml = finalHtml.replace(/"This solution transformed our operations[^"]*"/g, customizations.testimonialText);
+              }
+
+              if (customizations.testimonialAuthor) {
+                finalHtml = finalHtml.replace(/— CEO, Fortune 500 Company/g, customizations.testimonialAuthor);
+                finalHtml = finalHtml.replace(/CEO, Industry Leader/g, customizations.testimonialAuthor);
               }
 
               console.log(`✅ [Stored Results] Generated HTML from customizations: ${finalHtml.length} characters`);
+              console.log(`📝 [Stored Results] Applied: logo=${!!customizations.logo}, primaryColor=${!!customizations.primaryColor}, buttonText=${!!customizations.buttonText}`);
             }
 
             // 🎯 CRITICAL: Create templateData for stored results path too INCLUDING EDITED HTML

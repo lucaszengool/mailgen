@@ -5229,6 +5229,55 @@ Return ONLY the JSON object, no other text.`;
 
           // 🔥 CRITICAL FIX: Check if template is user-customized
           if (templateData.isCustomized) {
+            console.log(`✨ Template is user-customized - USING DIRECTLY without AI generation`);
+            console.log(`📋 Template ID: ${templateData.id || templateData.templateId || 'unknown'}`);
+            console.log(`📄 User HTML length: ${html?.length || 0} characters`);
+
+            // 🔥 FIX: For customized templates, use HTML directly with simple placeholder replacement
+            // DO NOT generate AI content - the user already customized the template!
+            let personalizedHtml = html
+              .replace(/\{\{companyName\}\}/gi, prospect.company || 'Your Company')
+              .replace(/\{\{company\}\}/gi, prospect.company || 'Your Company')
+              .replace(/\{companyName\}/gi, prospect.company || 'Your Company')
+              .replace(/\{company\}/gi, prospect.company || 'Your Company')
+              .replace(/\{\{recipientName\}\}/gi, prospect.name || 'there')
+              .replace(/\{\{name\}\}/gi, prospect.name || 'there')
+              .replace(/\{recipientName\}/gi, prospect.name || 'there')
+              .replace(/\{name\}/gi, prospect.name || 'there')
+              .replace(/\{\{senderName\}\}/gi, templateData.senderName || 'AI Marketing')
+              .replace(/\{senderName\}/gi, templateData.senderName || 'AI Marketing')
+              .replace(/\{\{websiteUrl\}\}/gi, businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com')
+              .replace(/\{websiteUrl\}/gi, businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com')
+              .replace(/\{\{ctaUrl\}\}/gi, templateData.ctaUrl || businessAnalysis?.websiteUrl || 'https://example.com')
+              .replace(/\{ctaUrl\}/gi, templateData.ctaUrl || businessAnalysis?.websiteUrl || 'https://example.com')
+              .replace(/\{\{ctaText\}\}/gi, templateData.ctaText || 'Learn More')
+              .replace(/\{ctaText\}/gi, templateData.ctaText || 'Learn More');
+
+            // Generate personalized subject line
+            const personalizedSubject = subject || `${prospect.company || 'Partnership Opportunity'} - ${this.generatePersonalizedSubjectLine(prospect, userPersona)}`;
+
+            // 🔥 FIX: Remove placeholders from final output
+            const cleanedHtml = this.removePlaceholders(personalizedHtml);
+            const cleanedSubject = this.removePlaceholders(personalizedSubject);
+
+            console.log(`✅ User customized template used directly (no AI generation)`);
+            console.log(`📊 Original HTML: ${html.length} chars → Final HTML: ${cleanedHtml.length} chars`);
+            console.log(`📧 Subject: ${cleanedSubject}`);
+
+            return {
+              subject: cleanedSubject,
+              body: cleanedHtml,
+              template: templateData.id || templateData.templateId || 'user_template',
+              templateData: templateData,
+              personalizationLevel: 'User Customized (No AI)',
+              confidence: 0.95,
+              optimization_applied: 'user_customizations_applied'
+            };
+          }
+
+          // 🚨 OLD CODE BELOW - Only for NON-customized templates
+          // If we reach here, template is NOT customized, so generate AI content
+          if (false) {  // This entire block is now skipped for customized templates
             console.log(`✨ Template is user-customized - generating AI content for user template`);
             console.log(`📋 Template ID: ${templateData.id || templateData.templateId || 'unknown'}`);
 
