@@ -71,6 +71,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       senderName: '{senderName}',
       cta: 'Schedule Your Free Demo →',
       signature: 'Best regards,\n{senderName}\n{company}',
+      userEdited: false,  // 🔥 TRACK IF USER ACTUALLY EDITED ANYTHING
       customizations: {
         logo: scrapedLogo,  // 🖼️ PRE-POPULATE WITH SCRAPED LOGO
         headerTitle: template.name === 'Modern Tech' ? 'Transform Your Business with AI' : 'Partnership Opportunity',
@@ -101,6 +102,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
         const [parent, child] = field.split('.');
         return {
           ...prev,
+          userEdited: true,  // 🔥 MARK AS EDITED
           [parent]: {
             ...prev[parent],
             [child]: value
@@ -109,6 +111,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       }
       return {
         ...prev,
+        userEdited: true,  // 🔥 MARK AS EDITED
         [field]: value
       };
     });
