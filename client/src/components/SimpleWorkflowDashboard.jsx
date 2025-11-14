@@ -3210,11 +3210,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       // Extract customization data from templateToUse
       const baseTemplate = EMAIL_TEMPLATES[templateToUse.id];
 
-      // 🔥 FIX: Check if user ACTUALLY customized (different from defaults), not just if properties exist
+      // 🔥 FIX: ONLY check explicit flags, NOT customizations object (has default values)
       const hasActualCustomizations = !!(
-        (templateToUse.customizations && Object.keys(templateToUse.customizations).length > 0) || // Has customization object with values
         (templateToUse.userEdited) || // Explicit flag that user edited something
         (templateToUse.isCustomized === true) // Explicit customized flag
+        // NOTE: Do NOT check customizations object - it has default values even when not edited!
       );
 
       const customizations = {
