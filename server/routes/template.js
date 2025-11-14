@@ -182,7 +182,8 @@ router.post('/select', optionalAuth, async (req, res) => {
       signature: signature || null,
       html: userEditedHtml || null,  // USER'S EDITED HTML
       customizations: userCustomizations || {},
-      isCustomized: isCustomized || !!(userCustomizations && Object.keys(userCustomizations).length > 0),
+      // FIXED: Respect explicit isCustomized flag from frontend, don't override based on customizations object
+      isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0),
       components: components || []
     };
 
@@ -342,7 +343,8 @@ router.post('/select', optionalAuth, async (req, res) => {
               signature: signature || null,
               html: finalHtml || null,  // 🎯 USER'S EDITED TEMPLATE HTML (or generated from customizations)
               customizations: userCustomizations || {},
-              isCustomized: isCustomized || !!(userCustomizations && Object.keys(userCustomizations).length > 0)
+              // FIXED: Respect explicit isCustomized flag from frontend
+              isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0)
             };
 
             console.log(`✨ Passing templateData to agent:`, {
@@ -466,7 +468,8 @@ router.post('/select', optionalAuth, async (req, res) => {
               signature: signature || null,
               html: finalHtml || null,  // 🎯 USER'S EDITED TEMPLATE HTML (or generated from customizations)
               customizations: userCustomizations || {},
-              isCustomized: isCustomized || !!(userCustomizations && Object.keys(userCustomizations).length > 0)
+              // FIXED: Respect explicit isCustomized flag from frontend
+              isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0)
             };
 
             console.log(`✨ Passing templateData to agent (stored results path):`, {
