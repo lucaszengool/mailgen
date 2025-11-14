@@ -1303,7 +1303,10 @@ class LangGraphMarketingAgent {
 
         // 🎯 NEW: Check if user has saved template preference first
         const userId = this.userId || 'anonymous';
-        const campaignId = this.state.currentCampaign?.id;
+        // 🔥 CRITICAL FIX: Get campaignId from campaignConfig, not from currentCampaign (which is just a string)
+        const campaignId = this.campaignConfig?.campaignId || this.state.currentCampaign;
+        console.log(`🔍 DEBUG: Using campaignId: ${campaignId} (from: ${this.campaignConfig?.campaignId ? 'campaignConfig' : 'currentCampaign'})`);
+
         const hasAutoAppliedTemplate = await this.checkAndApplySavedTemplate(userId, campaignId);
 
         if (hasAutoAppliedTemplate) {
@@ -1316,9 +1319,11 @@ class LangGraphMarketingAgent {
           if (this.wsManager) {
             console.log('🎨🎨🎨 BROADCASTING TEMPLATE SELECTION REQUIRED MESSAGE (LOCATION 2) 🎨🎨🎨');
             console.log('🎨 Prospects found:', prospects.length);
+            console.log('🎨 Campaign ID:', campaignId);
             const message = {
               type: 'template_selection_required',
               data: {
+                campaignId: campaignId,  // 🔥 FIX: Include campaignId in message
                 prospectsFound: prospects.length,
                 sampleProspects: prospects.slice(0, 3).map(p => ({
                   name: p.name || 'Unknown',
@@ -1339,11 +1344,12 @@ class LangGraphMarketingAgent {
 
           // 🛑 CRITICAL PAUSE: Wait for template selection before proceeding
           console.log('🛑 PAUSING WORKFLOW: Waiting for user to select email template...');
+          console.log(`🔍 DEBUG: Storing campaignId in waitingForTemplateSelection: ${campaignId}`);
 
           // Set workflow state to waiting for template selection
           this.state.waitingForTemplateSelection = {
             prospects: prospects,
-            campaignId: campaignId,
+            campaignId: campaignId,  // 🔥 FIX: Now this will have the correct value
             businessAnalysis: this.businessAnalysisData || this.state.currentCampaign?.businessAnalysis,
             marketingStrategy: this.marketingStrategyData || this.state.currentCampaign?.marketingStrategy,
             smtpConfig: this.campaignConfig?.smtpConfig || null, // 🔥 CRITICAL FIX: Include SMTP config
@@ -1384,7 +1390,7 @@ class LangGraphMarketingAgent {
       console.log('🔥 continueWithSelectedTemplate CALLED!');
       console.log('🔥🔥🔥 ===============================================');
       console.log(`🎨 Continuing workflow with template: ${templateId}`);
-      console.log(`📊 Processing ${waitingState.prospects.length} prospects`);
+      console.log(`📊 Processing ${waitingState.prospects?.length || 0} prospects`);
       console.log(`📧 SMTP Config from waitingState: ${waitingState.smtpConfig ? 'Found ✅' : 'Missing ❌'}`);
       console.log(`🔍 waitingState keys: ${Object.keys(waitingState).join(', ')}`);
       console.log(`🔍 enhancedTemplate provided: ${!!enhancedTemplate}`);
@@ -1515,6 +1521,12 @@ class LangGraphMarketingAgent {
       console.log(`📧 Template data customized: ${templateData.isCustomized}`);
       console.log(`🎨 Template has components: ${templateData.components ? templateData.components.length : 0}`);
 
+      console.log(`🚀🚀🚀 About to call executeEmailCampaignWithLearning...`);
+      console.log(`   Prospects: ${waitingState.prospects?.length || 0}`);
+      console.log(`   Template: ${emailTemplateType}`);
+      console.log(`   Template customized: ${templateData.isCustomized}`);
+      console.log(`   Template HTML length: ${templateData.html?.length || 0}`);
+
       const emailCampaign = await this.executeEmailCampaignWithLearning(
         waitingState.prospects,
         finalMarketingStrategy, // Pass marketing strategy
@@ -1525,6 +1537,9 @@ class LangGraphMarketingAgent {
         null, // targetAudience
         businessAnalysis // Pass business analysis
       );
+
+      console.log(`✅✅✅ executeEmailCampaignWithLearning returned!`);
+      console.log(`   Emails generated: ${emailCampaign?.emails?.length || 0}`);
 
       // 🔥 CRITICAL FIX: Save email campaign results to workflow storage
       console.log('💾 Saving email campaign results to workflow storage...');
@@ -1571,7 +1586,13 @@ class LangGraphMarketingAgent {
       console.log('✅ Email generation resumed successfully with selected template');
 
     } catch (error) {
-      console.error('❌ Failed to continue with selected template:', error);
+      console.error('❌❌❌ ===============================================');
+      console.error('❌ CRITICAL ERROR in continueWithSelectedTemplate!');
+      console.error('❌❌❌ ===============================================');
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('❌❌❌ ===============================================');
 
       // Notify via WebSocket that resume failed
       if (this.wsManager) {
@@ -1579,7 +1600,8 @@ class LangGraphMarketingAgent {
           type: 'workflow_error',
           data: {
             error: 'Failed to resume workflow with selected template',
-            details: error.message
+            details: error.message,
+            stack: error.stack
           }
         });
       }
@@ -4442,20 +4464,39 @@ ${senderName || senderCompany}`;
   async waitForUserDecision(campaignData) {
     return new Promise((resolve) => {
       console.log('⏸️ Workflow paused, waiting for user decision...');
-      
+      console.log('🔔 NO TIMEOUT - Will wait indefinitely for user approval');
+
       // Store campaign data and promise resolver
       this.state.workflowPaused = true;
       this.state.pausedCampaignData = campaignData;
       this.state.userDecisionPromise = resolve;
-      
-      // Set up timeout (15 minutes) - give users more time to edit
-      setTimeout(() => {
-        if (this.state.workflowPaused) {
-          console.log('⏰ User decision timeout after 15 minutes, continuing with default workflow');
-          console.log('⏰ To use custom templates, please edit and send emails within 15 minutes');
-          this.resumeWorkflow('continue');
+
+      // 🔥 FIX: REMOVED 15-minute timeout
+      // Workflow will wait indefinitely for user to review and approve first email
+
+      // 🔔 Set up reminder popup (every 5 minutes)
+      const reminderInterval = setInterval(() => {
+        if (this.state.workflowPaused && this.wsManager) {
+          console.log('🔔 Sending reminder to user to review first email...');
+          this.wsManager.broadcast({
+            type: 'reminder_review_email',
+            data: {
+              message: '⏳ Please review and approve the first email to continue generating emails for remaining prospects',
+              campaignId: campaignData.campaignId,
+              action: 'review_and_send',
+              reminderCount: (this.state.reminderCount || 0) + 1,
+              timestamp: new Date().toISOString()
+            }
+          });
+          this.state.reminderCount = (this.state.reminderCount || 0) + 1;
+        } else {
+          // User made decision, clear interval
+          clearInterval(reminderInterval);
         }
-      }, 900000); // 15 minutes
+      }, 300000); // 5 minutes
+
+      // Store interval ID so we can clear it when decision is made
+      this.state.reminderIntervalId = reminderInterval;
     });
   }
 
@@ -4469,6 +4510,14 @@ ${senderName || senderCompany}`;
     }
 
     console.log(`▶️ Resuming workflow with decision: ${decision}`);
+
+    // 🔥 FIX: Clear reminder interval
+    if (this.state.reminderIntervalId) {
+      clearInterval(this.state.reminderIntervalId);
+      this.state.reminderIntervalId = null;
+      this.state.reminderCount = 0;
+      console.log('✅ Cleared email review reminder interval');
+    }
 
     this.state.workflowPaused = false;
     this.state.userDecision = decision;

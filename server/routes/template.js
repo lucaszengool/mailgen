@@ -275,11 +275,14 @@ router.post('/select', optionalAuth, async (req, res) => {
               const customizations = userCustomizations;
 
               // Apply ALL customizations comprehensively
-              if (customizations.logo) {
+              if (customizations.logo && customizations.logo.trim() !== '') {
+                console.log(`  ✅ Applying logo: ${customizations.logo.substring(0, 50)}...`);
                 finalHtml = finalHtml.replace(/\{logo\}/g, customizations.logo);
                 finalHtml = finalHtml.replace(/COMPANY/g, `<img src="${customizations.logo}" alt="Logo" style="max-width:160px;height:auto;" />`);
                 // Also replace in style attributes
                 finalHtml = finalHtml.replace(/LOGO_URL_PLACEHOLDER/g, customizations.logo);
+              } else {
+                console.log(`  ⏭️ Skipping logo (empty or not provided)`);
               }
 
               if (customizations.headerTitle) {

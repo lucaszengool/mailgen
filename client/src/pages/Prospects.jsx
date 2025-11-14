@@ -58,6 +58,7 @@ export default function Prospects() {
   const [selectedProspect, setSelectedProspect] = useState(null)
   const [showCompanyDetails, setShowCompanyDetails] = useState(false) // Track company details view
   const [generatingProfiles, setGeneratingProfiles] = useState(new Set()) // Track which profiles are being generated
+  const [newBatchArrived, setNewBatchArrived] = useState(null) // 🔥 NEW: Track when new batch arrives for visual feedback
 
   // WebSocket connection for real-time updates
   const ws = useRef(null)
@@ -74,18 +75,18 @@ export default function Prospects() {
     fetchProspects()
     connectWebSocket()
 
-    // 🔥 AUTO-REFRESH: Poll for new prospects every 5 seconds while searching
-    // Keep polling for up to 3 minutes to catch all background batches
+    // 🔥 AUTO-REFRESH: Poll for new prospects every 30 seconds as fallback
+    // WebSocket handles real-time updates, polling is just a backup to catch any missed updates
     const startTime = Date.now();
     const pollInterval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const shouldPoll = workflowStatus === 'finding_prospects' || elapsed < 180000; // 3 minutes
 
       if (shouldPoll) {
-        console.log('🔄 Auto-refreshing prospects...');
+        console.log('🔄 Fallback polling (WebSocket handles real-time updates)...');
         fetchProspects();
       }
-    }, 5000);
+    }, 30000); // 30 seconds instead of 5 (WebSocket provides instant updates)
 
     return () => {
       if (ws.current) {
@@ -126,14 +127,52 @@ export default function Prospects() {
           console.log('🚀 New prospect received - triggering immediate fetch');
           fetchProspects();
         } else if (data.type === 'prospect_batch_update') {
-          // 🔥 NEW: Handle later prospect batches arriving
+          // 🔥 FIX: Handle later prospect batches arriving - UPDATE STATE IMMEDIATELY
           console.log(`📦 🔥 Batch ${data.data.batchNumber} received: ${data.data.prospects.length} new prospects (${data.data.totalSoFar}/${data.data.targetTotal} total)`);
+          console.log(`📦 Raw batch prospects:`, data.data.prospects);
 
-          // Immediately fetch from database to get all prospects including new batch
-          fetchProspects();
+          // 🚀 INSTANT UPDATE: Add new prospects to state immediately (don't wait for slow fetch)
+          const batchProspects = data.data.prospects.map(p => ({
+            ...p,
+            id: p.id || `prospect_${Date.now()}_${Math.random()}`,
+            source: p.source || 'AI Campaign',
+            confidence: p.confidence || 80,
+            created_at: p.created_at || new Date().toISOString(),
+            responseRate: p.responseRate || Math.floor(Math.random() * 50) + 10,
+            companySize: p.companySize || '1-10',
+            techStack: p.techStack || ['React', 'Node.js']
+          }));
 
-          // Optionally show a toast notification
-          toast.success(`Found ${data.data.prospects.length} more prospects! (Batch ${data.data.batchNumber})`);
+          setProspects(prevProspects => {
+            console.log('📊 Previous prospects:', prevProspects.length, 'Batch prospects:', batchProspects.length);
+
+            // Deduplicate by email
+            const existingEmails = new Set(prevProspects.map(p => p.email));
+            const newProspects = batchProspects.filter(p => !existingEmails.has(p.email));
+
+            console.log(`📦 Adding ${newProspects.length} NEW prospects to state (total will be: ${prevProspects.length + newProspects.length})`);
+
+            // 🔥 NEW: Set visual feedback for new batch arrival
+            if (newProspects.length > 0) {
+              setNewBatchArrived({
+                count: newProspects.length,
+                batchNumber: data.data.batchNumber,
+                timestamp: Date.now()
+              });
+
+              // Clear the badge after 5 seconds
+              setTimeout(() => setNewBatchArrived(null), 5000);
+            }
+
+            // Return merged array with new prospects at the end
+            return [...prevProspects, ...newProspects];
+          });
+
+          // Show a toast notification
+          toast.success(`Found ${data.data.prospects.length} more prospects! (Batch ${data.data.batchNumber})`, {
+            duration: 2000,
+            position: 'bottom-right'
+          });
         } else if (data.type === 'data_update' && data.data?.prospects) {
           // Real-time prospect data update from LangGraphMarketingAgent
           console.log('📊 🔥 CRITICAL: Updating prospects from data_update:', data.data.prospects.length)
@@ -836,8 +875,17 @@ export default function Prospects() {
           </div>
           
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-            <div className="text-sm text-gray-600">
-              Showing {sortedProspects.length} of {prospects.length} prospects
+            <div className="flex items-center space-x-3">
+              <div className="text-sm text-gray-600">
+                Showing {sortedProspects.length} of {prospects.length} prospects
+              </div>
+              {/* 🔥 NEW: Show badge when new batch arrives */}
+              {newBatchArrived && (
+                <div className="animate-bounce bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center space-x-1">
+                  <span>+{newBatchArrived.count} NEW</span>
+                  <span className="inline-block w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">

@@ -14,6 +14,65 @@ const UserActionReminder = ({ userId, onNavigate }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [dismissedReminders, setDismissedReminders] = useState(new Set());
 
+  // 🔔 NEW: Listen for reminder_review_email WebSocket messages
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/workflow`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('🔔 UserActionReminder WebSocket connected');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+
+        // Handle reminder_review_email message
+        if (message.type === 'reminder_review_email') {
+          console.log('🔔 Received email review reminder:', message.data);
+
+          const reminderKey = `review_email_${message.data.campaignId}`;
+
+          // Don't show if user dismissed this reminder
+          if (!dismissedReminders.has(reminderKey)) {
+            setReminderData({
+              type: 'review_first_email',
+              dismissKey: reminderKey,
+              icon: Mail,
+              title: '⏳ First Email Awaiting Your Review',
+              message: message.data.message,
+              buttonText: 'Review & Approve Email',
+              buttonAction: 'email-campaign',
+              color: '#ff9800',  // Orange for urgency
+              details: [
+                'Review and approve the first email',
+                'Click "Send" to continue with remaining prospects',
+                `Reminder ${message.data.reminderCount || 1}`
+              ],
+              urgent: true
+            });
+            setIsVisible(true);
+          }
+        }
+      } catch (error) {
+        console.error('🔔 Error parsing WebSocket message:', error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('🔔 WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('🔔 UserActionReminder WebSocket disconnected');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [dismissedReminders]);
+
   useEffect(() => {
     // Check backend state every 10 seconds
     const checkBackendState = async () => {
