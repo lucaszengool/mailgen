@@ -5229,15 +5229,24 @@ Return ONLY the JSON object, no other text.`;
         console.log(`🔍 DEBUG: templateData keys:`, Object.keys(templateData || {}));
         console.log(`🔍 DEBUG: templateData.html length:`, templateData.html?.length || 0);
         console.log(`🔍 DEBUG: templateData.body length:`, templateData.body?.length || 0);
+        console.log(`🔍 DEBUG: templateData.isCustomized:`, templateData.isCustomized);
 
-        // NO FALLBACK: Require template to have subject and content
-        if (!templateData.subject || (!templateData.html && !templateData.body)) {
-          const errorMsg = `❌ CRITICAL ERROR: Template missing required fields (subject or content)`;
+        // 🔥 FIX: Only require subject if template is CUSTOMIZED
+        // For default templates, Ollama will generate the subject/content
+        if (templateData.isCustomized && !templateData.subject) {
+          const errorMsg = `❌ CRITICAL ERROR: Customized template missing subject`;
           console.error(errorMsg);
           console.error('🔍 Template data:');
           console.error(`   - has subject: ${!!templateData.subject}`);
           console.error(`   - has html: ${!!templateData.html}`);
           console.error(`   - has body: ${!!templateData.body}`);
+          throw new Error(errorMsg);
+        }
+
+        // For default templates, we just need the HTML structure
+        if (!templateData.isCustomized && !templateData.html && !templateData.body) {
+          const errorMsg = `❌ ERROR: Template missing HTML structure`;
+          console.error(errorMsg);
           throw new Error(errorMsg);
         }
 
@@ -5324,10 +5333,10 @@ Return ONLY the JSON object, no other text.`;
             };
           }
 
-          // 🚨 OLD CODE BELOW - Only for NON-customized templates
+          // 🎯 FOR NON-CUSTOMIZED TEMPLATES - Generate AI content with Ollama
           // If we reach here, template is NOT customized, so generate AI content
-          if (false) {  // This entire block is now skipped for customized templates
-            console.log(`✨ Template is user-customized - generating AI content for user template`);
+          if (true) {  // 🔥 FIX: Enable AI generation for default templates
+            console.log(`🎨 Using DEFAULT template - generating AI content with Ollama`);
             console.log(`📋 Template ID: ${templateData.id || templateData.templateId || 'unknown'}`);
 
             // Step 1: Get template-specific Ollama prompt

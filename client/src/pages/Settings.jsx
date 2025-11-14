@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ArrowLeftIcon,
-  ServerIcon,
-  GlobeAltIcon,
-  Cog6ToothIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  InformationCircleIcon
-} from '@heroicons/react/24/outline';
+  ArrowLeft,
+  Server,
+  Globe,
+  Settings as SettingsIcon,
+  CheckCircle,
+  AlertCircle,
+  Info,
+  Loader2
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { apiGet, apiPost } from '../utils/apiClient';
@@ -107,9 +108,9 @@ export default function Settings() {
   };
 
   const tabs = [
-    { id: 'smtp', label: 'SMTP Settings', icon: ServerIcon },
-    { id: 'website', label: 'Website Analysis', icon: GlobeAltIcon },
-    { id: 'campaign', label: 'Campaign Config', icon: Cog6ToothIcon }
+    { id: 'smtp', label: 'SMTP Settings', icon: Server },
+    { id: 'website', label: 'Website Analysis', icon: Globe },
+    { id: 'campaign', label: 'Campaign Config', icon: SettingsIcon }
   ];
 
   return (
@@ -122,7 +123,7 @@ export default function Settings() {
               onClick={() => navigate(-1)}
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
             >
-              <ArrowLeftIcon className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Back</span>
             </button>
             <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
