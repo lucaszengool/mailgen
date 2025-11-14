@@ -439,10 +439,19 @@ export default function ProfessionalEmailEditor(props) {
 
   // 🔥 FIX: Enable HTML customization with localStorage persistence
   const [rootEmailHTML, setRootEmailHTMLState] = useState(() => {
-    // Try to load customized HTML from localStorage first
-    const emailKey = `email_custom_html_${currentEmail?.to}`;
-    const savedHTML = localStorage.getItem(emailKey);
-    return savedHTML || currentEmail?.html || currentEmail?.body || '';
+    // CRITICAL FIX: Prioritize AI-generated content over localStorage
+    const emailHTML = currentEmail?.html || currentEmail?.body || '';
+
+    // Only use localStorage if no AI-generated content exists
+    if (!emailHTML || emailHTML.length < 100) {
+      const emailKey = `email_custom_html_${currentEmail?.to}`;
+      const savedHTML = localStorage.getItem(emailKey);
+      console.log('📧 No AI content found, using localStorage:', !!savedHTML);
+      return savedHTML || '';
+    }
+
+    console.log('📧 Loading AI-generated HTML, length:', emailHTML.length);
+    return emailHTML;
   });
 
   // Wrapper to save HTML customizations to localStorage
@@ -457,16 +466,29 @@ export default function ProfessionalEmailEditor(props) {
 
   // Update HTML when switching emails
   useEffect(() => {
-    // Try to load saved customization first
-    const emailKey = `email_custom_html_${currentEmail?.to}`;
-    const savedHTML = localStorage.getItem(emailKey);
+    // CRITICAL FIX: Prioritize AI-generated content over localStorage
+    const emailHTML = currentEmail?.html || currentEmail?.body || '';
 
-    const emailHTML = savedHTML || currentEmail?.html || currentEmail?.body || '';
-    if (emailHTML) {
-      console.log('📧 Loading email HTML for:', currentEmail?.to, '(customized:', !!savedHTML, ') length:', emailHTML.length);
-      setRootEmailHTMLState(emailHTML);
+    // Only check localStorage if no AI-generated content
+    if (!emailHTML || emailHTML.length < 100) {
+      const emailKey = `email_custom_html_${currentEmail?.to}`;
+      const savedHTML = localStorage.getItem(emailKey);
+
+      if (savedHTML) {
+        console.log('📧 Loading HTML from localStorage for:', currentEmail?.to, 'length:', savedHTML.length);
+        setRootEmailHTMLState(savedHTML);
+        return;
+      }
     }
-  }, [currentEmail?.to]); // Only update when email recipient changes
+
+    // Use AI-generated content
+    if (emailHTML && emailHTML.length >= 100) {
+      console.log('📧 Loading AI-generated HTML for:', currentEmail?.to, 'length:', emailHTML.length);
+      setRootEmailHTMLState(emailHTML);
+    } else {
+      console.log('⚠️ No HTML content found for:', currentEmail?.to);
+    }
+  }, [currentEmail?.to, currentEmail?.html, currentEmail?.body]); // Watch for HTML changes
   const [changes, setChanges] = useState([]);
   const [loading, setLoading] = useState(false);
 

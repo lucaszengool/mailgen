@@ -2285,26 +2285,31 @@ class LangGraphMarketingAgent {
           to: prospect.email,
           subject: emailContent.subject,
           body: emailContent.body,
+          html: emailContent.body, // CRITICAL FIX: Ensure html field is set for email editor
           status: emailStatus,
           sent: emailStatus === 'sent',
           sent_at: sentAt,
           sentAt: sentAt,
           template_used: emailContent.template_used || emailContent.template || emailTemplate,
           templateUsed: emailContent.template_used || emailContent.template || emailTemplate,
-          
+
           // Recipient information
           name: prospect.name,
           recipient_name: prospect.name,
           company: prospect.company,
           recipient_company: prospect.company,
-          
+
           // Campaign metadata
           campaign_id: campaignId,
           generated_at: new Date().toISOString(),
           generatedAt: new Date().toISOString(),
           sequence_position: i + 1,
           sequencePosition: i + 1,
-          
+
+          // Template and customization data
+          template: emailContent.template,
+          templateData: emailContent.templateData || templateData,
+
           // Additional data for backend processing
           prospect: prospect,
           userPersona: userPersona,
@@ -5424,14 +5429,76 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
             // Step 2: Use user's HTML template and insert the generated content
             let personalizedHtml = html;
 
+            // Helper function to convert markdown to HTML
+            const markdownToHtml = (text) => {
+              return text
+                // Bold text: **text** or __text__ -> <strong>text</strong>
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/__(.+?)__/g, '<strong>$1</strong>')
+                // Italic text: *text* or _text_ -> <em>text</em>
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/_(.+?)_/g, '<em>$1</em>')
+                // Remove stray ** or __ that weren't matched
+                .replace(/\*\*/g, '')
+                .replace(/__/g, '');
+            };
+
             // First, replace any content generation placeholders with the AI-generated content
             const contentPlaceholders = personalizedHtml.match(/\[GENERATED CONTENT[^\]]*\]/gi);
             if (contentPlaceholders && contentPlaceholders.length > 0) {
               console.log(`📝 Found ${contentPlaceholders.length} content placeholders to replace`);
-              // Replace all content placeholders with the generated content
+
+              // Split the generated content into separate paragraphs
+              // Try different splitting strategies
+              let contentParagraphs = [];
+
+              // Strategy 1: Split by double newlines
+              let rawParagraphs = generatedContent.split(/\n\s*\n/).filter(p => p.trim());
+
+              // Strategy 2: If we got too few paragraphs, try splitting by single newlines
+              if (rawParagraphs.length < contentPlaceholders.length) {
+                rawParagraphs = generatedContent.split(/\n/).filter(p => p.trim() && p.length > 30);
+              }
+
+              // Strategy 3: If still too few, split into roughly equal parts
+              if (rawParagraphs.length < contentPlaceholders.length) {
+                const sentences = generatedContent.match(/[^.!?]+[.!?]+/g) || [generatedContent];
+                const sentencesPerParagraph = Math.ceil(sentences.length / contentPlaceholders.length);
+                rawParagraphs = [];
+                for (let i = 0; i < contentPlaceholders.length; i++) {
+                  const start = i * sentencesPerParagraph;
+                  const end = start + sentencesPerParagraph;
+                  const para = sentences.slice(start, end).join(' ').trim();
+                  if (para) rawParagraphs.push(para);
+                }
+              }
+
+              // Clean and convert markdown to HTML for each paragraph
+              contentParagraphs = rawParagraphs.slice(0, contentPlaceholders.length).map(para => {
+                // Remove leading/trailing whitespace and clean up
+                let cleaned = para.trim()
+                  .replace(/^[-*•]\s+/, '') // Remove bullet points at start
+                  .replace(/^\d+\.\s+/, '') // Remove numbered list markers at start
+                  .trim();
+
+                // Convert markdown to HTML
+                cleaned = markdownToHtml(cleaned);
+
+                return cleaned;
+              });
+
+              // Ensure we have enough paragraphs (pad with generic content if needed)
+              while (contentParagraphs.length < contentPlaceholders.length) {
+                contentParagraphs.push("We believe there's great potential for collaboration between our organizations.");
+              }
+
+              console.log(`✅ Split content into ${contentParagraphs.length} paragraphs for ${contentPlaceholders.length} placeholders`);
+
+              // Replace each placeholder with its corresponding paragraph
               contentPlaceholders.forEach((placeholder, index) => {
-                personalizedHtml = personalizedHtml.replace(placeholder, generatedContent);
-                console.log(`   ✅ Replaced placeholder ${index + 1}: ${placeholder}`);
+                const paragraphContent = contentParagraphs[index] || contentParagraphs[0];
+                personalizedHtml = personalizedHtml.replace(placeholder, paragraphContent);
+                console.log(`   ✅ Replaced placeholder ${index + 1}: ${placeholder.substring(0, 50)}... with ${paragraphContent.substring(0, 50)}...`);
               });
             } else {
               // If no placeholders found, try to insert content into common patterns

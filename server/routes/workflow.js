@@ -682,11 +682,13 @@ router.get('/results', optionalAuth, async (req, res) => {
       console.log('🔧 DEBUG: Emails count:', processedResults.emailCampaign?.emails?.length || 0);
       
       if (processedResults.emailCampaign && processedResults.emailCampaign.emails) {
-        processedResults.emailCampaign.emails = processedResults.emailCampaign.emails.map(email => {
+        console.log(`🔍 Processing ${processedResults.emailCampaign.emails.length} emails for template variable replacement`);
+
+        processedResults.emailCampaign.emails = processedResults.emailCampaign.emails.map((email, index) => {
           // Helper function to replace template variables
           const replaceTemplateVariables = (content, emailData) => {
             if (!content || typeof content !== 'string') return content;
-            
+
             const variables = {
               '{{companyName}}': emailData.recipient_company || 'Your Company',
               '{{recipientName}}': emailData.recipient_name || 'there',
@@ -694,25 +696,50 @@ router.get('/results', optionalAuth, async (req, res) => {
               '{{websiteUrl}}': emailData.website_url || 'https://example.com',
               '{{campaignId}}': emailData.campaign_id || 'default'
             };
-            
+
             let processedContent = content;
             Object.entries(variables).forEach(([placeholder, value]) => {
               const regex = new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g');
               processedContent = processedContent.replace(regex, value);
             });
-            
+
             return processedContent;
           };
-          
-          // Replace template variables in subject and body
-          return {
+
+          // Log email structure for debugging
+          if (index === 0) {
+            console.log(`📧 Email ${index + 1} structure:`, {
+              to: email.to || email.recipient_email,
+              subject: email.subject?.substring(0, 50) + '...',
+              hasBody: !!email.body,
+              bodyLength: email.body?.length || 0,
+              hasHTML: !!email.html,
+              htmlLength: email.html?.length || 0,
+              template: email.template
+            });
+          }
+
+          // CRITICAL FIX: Ensure both html and body fields are set
+          const processedEmail = {
             ...email,
             subject: replaceTemplateVariables(email.subject, email),
-            body: replaceTemplateVariables(email.body, email),
+            body: replaceTemplateVariables(email.body || email.html, email),
+            html: replaceTemplateVariables(email.html || email.body, email), // Ensure HTML field is set
             _raw_subject: email.subject, // Keep original for reference
             _raw_body: email.body
           };
+
+          if (index === 0) {
+            console.log(`✅ Email ${index + 1} after processing:`, {
+              bodyLength: processedEmail.body?.length || 0,
+              htmlLength: processedEmail.html?.length || 0
+            });
+          }
+
+          return processedEmail;
         });
+
+        console.log(`✅ Processed ${processedResults.emailCampaign.emails.length} emails with template variables replaced`);
       }
       
       console.log('🔧 Template variables replaced in stored results');
