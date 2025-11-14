@@ -3210,6 +3210,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       // Extract customization data from templateToUse
       const baseTemplate = EMAIL_TEMPLATES[templateToUse.id];
 
+      // 🔥 FIX: Check if user ACTUALLY customized (different from defaults), not just if properties exist
+      const hasActualCustomizations = !!(
+        (templateToUse.customizations && Object.keys(templateToUse.customizations).length > 0) || // Has customization object with values
+        (templateToUse.userEdited) || // Explicit flag that user edited something
+        (templateToUse.isCustomized === true) // Explicit customized flag
+      );
+
       const customizations = {
         subject: templateToUse.subject || baseTemplate?.subject,
         greeting: templateToUse.greeting || 'Hi {name},',
@@ -3220,14 +3227,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         // 🎯 INCLUDE THE EDITED TEMPLATE HTML if user customized it
         html: templateToUse.html || baseTemplate?.html,
         components: baseTemplate?.structure?.components || [],
-        // Mark as customized if we have custom data
-        isCustomized: !!(
-          templateToUse.customizations ||
-          templateToUse.subject ||
-          templateToUse.greeting ||
-          templateToUse.signature ||
-          templateToUse.html  // Also mark as customized if HTML was edited
-        )
+        // FIXED: Only mark as customized if user actually edited something
+        isCustomized: hasActualCustomizations
       };
 
       // 🎯 CRITICAL: Log all customizations being sent
