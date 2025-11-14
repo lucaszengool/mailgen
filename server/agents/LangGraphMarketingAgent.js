@@ -1433,8 +1433,8 @@ class LangGraphMarketingAgent {
           // Ensure required fields are present
           id: templateId,
           templateId: templateId,
-          // 🔥 CRITICAL FIX: Explicitly set customization flags so applyComponentTemplate knows this is user-customized
-          isCustomized: userTemplateData.isCustomized || enhancedTemplate.isCustomized || true,
+          // 🔥 CRITICAL FIX: Only set isCustomized if actually customized (FIXED: removed || true)
+          isCustomized: !!(userTemplateData.isCustomized || enhancedTemplate.isCustomized),
           userSelected: true,
           senderName: enhancedTemplate.senderName || waitingState.senderName || process.env.SENDER_NAME || 'James',
           senderEmail: enhancedTemplate.senderEmail || waitingState.senderEmail || process.env.SMTP_USER || 'fruitaiofficial@gmail.com',
@@ -5195,8 +5195,8 @@ Return ONLY the JSON object, no other text.`;
               ...baseTemplate,
               ...templateData, // Keep all customizations - this MUST come after baseTemplate to override
               templateId: selectedEmailTemplate,
-              // 🔥 CRITICAL: Explicitly preserve user customization flags
-              isCustomized: templateData.isCustomized || true,
+              // 🔥 CRITICAL: Explicitly preserve user customization flags (FIXED: only true if actually customized)
+              isCustomized: !!templateData.isCustomized,  // Only true if user actually customized it
               userSelected: true,
               baseTemplate: baseTemplate // Keep reference to original
             };
