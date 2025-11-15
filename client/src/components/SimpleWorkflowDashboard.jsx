@@ -1733,6 +1733,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     }
   }, [campaign?.id]);
 
+  // 🔥 CRITICAL FIX: Update localStorage whenever campaign object changes (not just ID)
+  // This ensures campaign ID stays in sync when navigating between campaigns
+  useEffect(() => {
+    if (campaign && campaign.id) {
+      console.log('🔥 [CAMPAIGN CHANGE] Updating localStorage currentCampaignId:', campaign.id);
+      localStorage.setItem('currentCampaignId', campaign.id);
+    }
+  }, [campaign]); // Watch entire campaign object
+
   // Load campaign-specific configuration
   useEffect(() => {
     if (campaign && campaign.id) {
@@ -3210,11 +3219,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       // Extract customization data from templateToUse
       const baseTemplate = EMAIL_TEMPLATES[templateToUse.id];
 
-      // 🔥 FIX: ONLY check explicit flags, NOT customizations object (has default values)
+      // 🔥 FIX: Check for ACTUAL edits - compare HTML or check for real customization values
       const hasActualCustomizations = !!(
         (templateToUse.userEdited) || // Explicit flag that user edited something
-        (templateToUse.isCustomized === true) // Explicit customized flag
-        // NOTE: Do NOT check customizations object - it has default values even when not edited!
+        (templateToUse.isCustomized === true) || // Explicit customized flag
+        (templateToUse.html && templateToUse.html !== baseTemplate?.html) || // HTML was edited
+        (templateToUse.customizations && Object.keys(templateToUse.customizations).some(
+          key => templateToUse.customizations[key] !== undefined &&
+                 templateToUse.customizations[key] !== null &&
+                 templateToUse.customizations[key] !== '' &&
+                 templateToUse.customizations[key] !== baseTemplate?.customizations?.[key]
+        ))
       );
 
       const customizations = {
@@ -3263,11 +3278,26 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       console.log('🧩 Template components:', templateComponents);
 
       // Use TemplateSelectionService to send data with customizations AND components
+      // 🔥 CRITICAL FIX: Always pass customizations if HTML was edited OR has real customization values
+      const shouldPassCustomizations =
+        (customizations.html && customizations.html !== baseTemplate?.html) ||
+        Object.keys(customizations.customizations || {}).some(
+          key => customizations.customizations[key] !== undefined &&
+                 customizations.customizations[key] !== null &&
+                 customizations.customizations[key] !== ''
+        );
+
+      console.log('🔥 CRITICAL: shouldPassCustomizations =', shouldPassCustomizations, {
+        hasHTML: !!customizations.html,
+        htmlDifferent: customizations.html !== baseTemplate?.html,
+        hasCustomizationValues: Object.keys(customizations.customizations || {}).length > 0
+      });
+
       const result = await TemplateSelectionService.selectTemplate(
         templateToUse.id,
         campaignIdToUse,
         templateRequest?.workflowId || campaignIdToUse,
-        customizations.isCustomized ? customizations : null,
+        shouldPassCustomizations ? customizations : null,
         templateComponents  // <-- NOW INCLUDING COMPONENTS!
       );
 
