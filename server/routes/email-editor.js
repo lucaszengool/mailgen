@@ -412,12 +412,23 @@ router.post('/remove-pending', (req, res) => {
 router.get('/pending-approval', async (req, res) => {
   try {
     const { campaignId } = req.query; // 🔥 CRITICAL FIX: Get campaignId from query params
-    console.log(`📧 Getting pending approval emails for editor... (Campaign: ${campaignId || 'all'})`);
+
+    console.log(`\n${'▬'.repeat(80)}`);
+    console.log(`📧 [EMAIL EDITOR] Get pending approval emails`);
+    console.log(`   🆔 Campaign ID filter: ${campaignId || 'ALL campaigns'}`);
+    console.log(`   🌐 Request URL: ${req.url}`);
+    console.log(`   📦 Query params:`, req.query);
 
     // CRITICAL FIX: Pass campaignId to filter emails by campaign
     const pendingEmails = await emailEditor.getPendingApprovalEmails(campaignId);
 
-    console.log(`📧 Found ${pendingEmails ? pendingEmails.length : 0} pending emails for campaign: ${campaignId || 'all'}`);
+    console.log(`\n✅ [EMAILS RETRIEVED] Found ${pendingEmails ? pendingEmails.length : 0} pending email(s)`);
+    if (pendingEmails && pendingEmails.length > 0) {
+      pendingEmails.forEach((email, idx) => {
+        console.log(`   ${idx + 1}. ${email.to} | Campaign: ${email.campaignId || 'NOT SET'} | Subject: ${email.subject?.substring(0, 40)}...`);
+      });
+    }
+    console.log(`${'▬'.repeat(80)}\n`);
 
     if (pendingEmails && pendingEmails.length > 0) {
       // Return the most recent email

@@ -5092,6 +5092,7 @@ Return ONLY the JSON object, no other text.`;
 
   /**
    * 🔥 NEW: Remove placeholders from generated email content
+   * This is the AGGRESSIVE version used for AI-generated content
    */
   removePlaceholders(text) {
     if (!text) return text;
@@ -5121,6 +5122,39 @@ Return ONLY the JSON object, no other text.`;
       .replace(/  +/g, ' ') // Multiple spaces to single
       .trim();
 
+    return cleaned;
+  }
+
+  /**
+   * 🔥 CRITICAL: Gentle placeholder removal for user-customized HTML
+   * Removes only bracketed placeholders, preserves ALL formatting and HTML structure
+   */
+  removeHTMLPlaceholders(html) {
+    if (!html) return html;
+
+    console.log(`🧹 Removing placeholders from customized HTML (${html.length} chars)...`);
+
+    // Only remove bracketed placeholders, preserve all HTML structure and whitespace
+    let cleaned = html
+      // Remove [GENERATED CONTENT X: ...] placeholders
+      .replace(/\[GENERATED CONTENT[^\]]*\]/gi, '')
+
+      // Remove common [Name], [Company], etc. placeholders
+      .replace(/\[Name\]/gi, '')
+      .replace(/\[Company\]/gi, '')
+      .replace(/\[Position\]/gi, '')
+      .replace(/\[Industry\]/gi, '')
+      .replace(/\[Title\]/gi, '')
+      .replace(/\[Role\]/gi, '')
+      .replace(/\[Email\]/gi, '')
+
+      // Remove any other [CAPITALIZED PLACEHOLDER] patterns
+      .replace(/\[[A-Z][A-Z\s:,]*\]/g, '');
+
+    // DO NOT remove whitespace, line breaks, or any HTML formatting
+    // The user designed this structure intentionally
+
+    console.log(`✅ Placeholder removal complete (${cleaned.length} chars)`);
     return cleaned;
   }
 
@@ -5319,18 +5353,19 @@ Return ONLY the JSON object, no other text.`;
             // Generate personalized subject line
             const personalizedSubject = subject || `${prospect.company || 'Partnership Opportunity'} - ${this.generatePersonalizedSubjectLine(prospect, userPersona)}`;
 
-            // 🔥 CRITICAL FIX: For user-customized templates, DO NOT run removePlaceholders on HTML
-            // This function strips whitespace and breaks HTML structure that users carefully designed
-            // Only clean the subject line to remove bracketed placeholders like [Name], [Company]
+            // 🔥 CRITICAL FIX: For user-customized templates, use GENTLE placeholder removal
+            // This preserves HTML structure and formatting while removing placeholder brackets
             const cleanedSubject = this.removePlaceholders(personalizedSubject);
+            const cleanedHtml = this.removeHTMLPlaceholders(personalizedHtml); // Use gentle removal
 
             console.log(`✅ User customized template used directly (no AI generation)`);
-            console.log(`📊 Preserving user's HTML exactly as customized: ${html.length} chars`);
+            console.log(`📊 HTML preserved with gentle placeholder removal:`);
+            console.log(`   Original: ${html.length} chars → Personalized: ${personalizedHtml.length} chars → Final: ${cleanedHtml.length} chars`);
             console.log(`📧 Subject: ${cleanedSubject}`);
 
             return {
               subject: cleanedSubject,
-              body: personalizedHtml, // Use personalizedHtml directly, NOT cleanedHtml
+              body: cleanedHtml, // Use HTML with placeholders gently removed
               template: templateData.id || templateData.templateId || 'user_template',
               templateData: templateData,
               personalizationLevel: 'User Customized (No AI)',

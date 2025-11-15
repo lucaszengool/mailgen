@@ -662,7 +662,12 @@ router.get('/results', optionalAuth, async (req, res) => {
   try {
     const userId = req.userId;
     const campaignId = req.query.campaignId || null;  // 🔥 PRODUCTION: Campaign filter
-    console.log(`🔍 [PRODUCTION] Fetching results - User: ${userId}, Campaign: ${campaignId || 'LATEST'}`);
+    console.log(`\n${'='.repeat(80)}`);
+    console.log(`🔍 [WORKFLOW RESULTS] Fetching results for User: ${userId}`);
+    console.log(`📋 Campaign ID requested: ${campaignId || 'LATEST (most recent)'}`);
+    console.log(`🌐 Request URL: ${req.url}`);
+    console.log(`📦 Query params:`, req.query);
+    console.log(`${'='.repeat(80)}`);
 
     // Get user-specific workflow state and results
     const workflowState = getUserWorkflowState(userId);
@@ -672,8 +677,12 @@ router.get('/results', optionalAuth, async (req, res) => {
     // 🎯 FIX: Also check for emails, not just prospects
     if (lastWorkflowResults &&
         (lastWorkflowResults.prospects?.length > 0 || lastWorkflowResults.emailCampaign?.emails?.length > 0)) {
-      console.log(`✅ Found stored workflow results for user ${userId} with ${lastWorkflowResults.prospects?.length || 0} prospects and ${lastWorkflowResults.emailCampaign?.emails?.length || 0} emails`);
-      console.log('🔧 DEBUG: Starting template replacement process...');
+      console.log(`\n✅ [RESULTS FOUND] Stored workflow results located:`);
+      console.log(`   📊 Prospects: ${lastWorkflowResults.prospects?.length || 0}`);
+      console.log(`   📧 Emails: ${lastWorkflowResults.emailCampaign?.emails?.length || 0}`);
+      console.log(`   🆔 Campaign ID in results: ${lastWorkflowResults.campaignId || 'NOT SET'}`);
+      console.log(`   📅 Last update: ${lastWorkflowResults.timestamp || 'unknown'}`);
+      console.log('\n🔧 [TEMPLATE PROCESSING] Starting template variable replacement...');
       
       // CRITICAL FIX: Replace template variables in email campaign data before returning
       const processedResults = JSON.parse(JSON.stringify(lastWorkflowResults)); // Deep clone
@@ -1612,26 +1621,46 @@ async function setLastWorkflowResults(results, userId = 'anonymous', campaignId 
 // 🚀 PRODUCTION: Function to get workflow results per user AND per campaign
 // Includes database fallback for Railway/production restarts
 async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
+  console.log(`\n${'─'.repeat(80)}`);
+  console.log(`📂 [GET RESULTS] Retrieving workflow results`);
+  console.log(`   👤 User: ${userId}`);
+  console.log(`   🎯 Campaign ID: ${campaignId || 'LATEST (most recent)'}`);
+
   const userCampaigns = userCampaignWorkflowResults.get(userId);
 
   // Try in-memory first
   if (userCampaigns) {
+    console.log(`   💾 In-memory campaigns found: ${userCampaigns.size}`);
+    console.log(`   📋 Campaign IDs in memory: [${Array.from(userCampaigns.keys()).join(', ')}]`);
+
     // If campaignId specified, return that campaign's results
     if (campaignId) {
       const result = userCampaigns.get(campaignId);
       if (result) {
-        console.log(`📦 [MEMORY] Found results for User: ${userId}, Campaign: ${campaignId}`);
+        console.log(`   ✅ [MEMORY HIT] Found results for Campaign: ${campaignId}`);
+        console.log(`   📊 Prospects: ${result.prospects?.length || 0}, Emails: ${result.emailCampaign?.emails?.length || 0}`);
+        console.log(`${'─'.repeat(80)}\n`);
         return result;
+      } else {
+        console.log(`   ⚠️  [MEMORY MISS] Campaign ${campaignId} not found in memory`);
       }
     } else {
       // Otherwise return most recent campaign
       const campaigns = Array.from(userCampaigns.values());
       if (campaigns.length > 0) {
-        console.log(`📦 [MEMORY] Found ${campaigns.length} campaigns for User: ${userId}`);
-        return campaigns[campaigns.length - 1];
+        const mostRecent = campaigns[campaigns.length - 1];
+        console.log(`   ✅ [MEMORY HIT] Returning most recent of ${campaigns.length} campaigns`);
+        console.log(`   🆔 Most recent Campaign ID: ${mostRecent.campaignId}`);
+        console.log(`   📊 Prospects: ${mostRecent.prospects?.length || 0}, Emails: ${mostRecent.emailCampaign?.emails?.length || 0}`);
+        console.log(`${'─'.repeat(80)}\n`);
+        return mostRecent;
       }
     }
+  } else {
+    console.log(`   ⚠️  No in-memory campaigns found for user: ${userId}`);
   }
+
+  console.log(`${'─'.repeat(80)}\n`);
 
   // 🔥 RAILWAY FIX: If not in memory, reconstruct from database
   console.log(`💾 [DATABASE FALLBACK] Reconstructing from DB - User: ${userId}, Campaign: ${campaignId || 'LATEST'}`);
@@ -1689,9 +1718,18 @@ async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
 
 // Function to add a new email to the workflow results (user-specific, campaign-specific)
 async function addEmailToWorkflowResults(email, userId = 'anonymous', campaignId = null) {
+  console.log(`\n${'━'.repeat(80)}`);
+  console.log(`📧 [ADD EMAIL] Adding email to workflow results`);
+  console.log(`   👤 User: ${userId}`);
+  console.log(`   🆔 Campaign ID: ${campaignId || 'NOT PROVIDED'}`);
+  console.log(`   📬 Email to: ${email.to}`);
+  console.log(`   📋 Email subject: ${email.subject?.substring(0, 50)}...`);
+  console.log(`${'━'.repeat(80)}`);
+
   let lastWorkflowResults = await getLastWorkflowResults(userId, campaignId);
 
   if (!lastWorkflowResults) {
+    console.log(`⚠️  No existing workflow results found, creating new structure`);
     lastWorkflowResults = { emailCampaign: { emails: [] } };
   }
   if (!lastWorkflowResults.emailCampaign) {
@@ -1706,12 +1744,21 @@ async function addEmailToWorkflowResults(email, userId = 'anonymous', campaignId
 
   // Store back with campaign ID
   const finalCampaignId = campaignId || lastWorkflowResults.campaignId || 'default';
+  console.log(`📦 [STORAGE] Storing email with final Campaign ID: ${finalCampaignId}`);
+
   if (!userCampaignWorkflowResults.has(userId)) {
     userCampaignWorkflowResults.set(userId, new Map());
+    console.log(`   ✨ Created new campaign map for user: ${userId}`);
   }
+
+  // Ensure campaignId is stored in the results object
+  lastWorkflowResults.campaignId = finalCampaignId;
+
   userCampaignWorkflowResults.get(userId).set(finalCampaignId, lastWorkflowResults);
 
-  console.log(`📧 [User: ${userId}, Campaign: ${finalCampaignId}] Added email ${email.to}. Total: ${lastWorkflowResults.emailCampaign.emails.length}`);
+  console.log(`✅ [EMAIL ADDED] Campaign: ${finalCampaignId} | Total emails: ${lastWorkflowResults.emailCampaign.emails.length}`);
+  console.log(`📊 [STORAGE STATUS] User has ${userCampaignWorkflowResults.get(userId).size} campaign(s) in memory`);
+  console.log(`${'━'.repeat(80)}\n`);
 }
 
 // Get generated email for professional editor
