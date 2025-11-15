@@ -5319,17 +5319,18 @@ Return ONLY the JSON object, no other text.`;
             // Generate personalized subject line
             const personalizedSubject = subject || `${prospect.company || 'Partnership Opportunity'} - ${this.generatePersonalizedSubjectLine(prospect, userPersona)}`;
 
-            // 🔥 FIX: Remove placeholders from final output
-            const cleanedHtml = this.removePlaceholders(personalizedHtml);
+            // 🔥 CRITICAL FIX: For user-customized templates, DO NOT run removePlaceholders on HTML
+            // This function strips whitespace and breaks HTML structure that users carefully designed
+            // Only clean the subject line to remove bracketed placeholders like [Name], [Company]
             const cleanedSubject = this.removePlaceholders(personalizedSubject);
 
             console.log(`✅ User customized template used directly (no AI generation)`);
-            console.log(`📊 Original HTML: ${html.length} chars → Final HTML: ${cleanedHtml.length} chars`);
+            console.log(`📊 Preserving user's HTML exactly as customized: ${html.length} chars`);
             console.log(`📧 Subject: ${cleanedSubject}`);
 
             return {
               subject: cleanedSubject,
-              body: cleanedHtml,
+              body: personalizedHtml, // Use personalizedHtml directly, NOT cleanedHtml
               template: templateData.id || templateData.templateId || 'user_template',
               templateData: templateData,
               personalizationLevel: 'User Customized (No AI)',

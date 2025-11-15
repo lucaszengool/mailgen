@@ -796,7 +796,9 @@ class EmailEditorService {
         ...emailData,
         id: emailData.id || `pending_${Date.now()}`,
         storedAt: new Date().toISOString(),
-        status: 'pending_approval'
+        status: 'pending_approval',
+        // 🔥 CRITICAL FIX: Ensure campaignId is preserved (normalize field names)
+        campaignId: emailData.campaignId || emailData.campaign_id
       };
 
       // CRITICAL FIX: Store in Redis for persistence across server restarts
@@ -814,6 +816,7 @@ class EmailEditorService {
       }
 
       console.log(`📧 Stored pending approval email in Redis: ${pendingEmail.id}`);
+      console.log(`   - Campaign ID: ${pendingEmail.campaignId || pendingEmail.campaign_id || 'MISSING'}`); // 🔥 CRITICAL: Log campaignId
       console.log(`   - Template: ${pendingEmail.template}`);
       console.log(`   - HTML length: ${pendingEmail.html?.length || 0}`);
       console.log(`   - Subject: ${pendingEmail.subject}`);
@@ -827,12 +830,23 @@ class EmailEditorService {
 
   /**
    * Get all emails pending approval
+   * @param {string} campaignId - Optional campaign ID to filter emails
    */
-  async getPendingApprovalEmails() {
+  async getPendingApprovalEmails(campaignId = null) {
     try {
       // First check memory for immediate access
       if (this.pendingApprovalEmails.length > 0) {
         console.log(`📧 Found ${this.pendingApprovalEmails.length} pending emails in memory`);
+
+        // 🔥 CRITICAL FIX: Filter by campaignId if provided
+        if (campaignId) {
+          const filteredEmails = this.pendingApprovalEmails.filter(email =>
+            email.campaignId === campaignId
+          );
+          console.log(`📧 Filtered to ${filteredEmails.length} emails for campaign: ${campaignId}`);
+          return filteredEmails;
+        }
+
         return this.pendingApprovalEmails;
       }
 
@@ -849,15 +863,19 @@ class EmailEditorService {
             const emailData = await this.redisClient.get(`pending_email:${id}`);
             if (emailData) {
               const email = JSON.parse(emailData);
-              pendingEmails.push(email);
-              console.log(`   ✅ Loaded email ${id} from Redis - Template: ${email.template}`);
+
+              // 🔥 CRITICAL FIX: Filter by campaignId if provided
+              if (!campaignId || email.campaignId === campaignId) {
+                pendingEmails.push(email);
+                console.log(`   ✅ Loaded email ${id} from Redis - Campaign: ${email.campaignId}, Template: ${email.template}`);
+              }
             }
           } catch (parseError) {
             console.error(`Failed to parse email ${id}:`, parseError);
           }
         }
 
-        // Update memory cache
+        // Update memory cache (with all emails, filtering happens on return)
         this.pendingApprovalEmails = pendingEmails;
         return pendingEmails;
       }
@@ -867,6 +885,9 @@ class EmailEditorService {
     } catch (error) {
       console.error('Failed to get pending emails from Redis:', error);
       // Fallback to memory
+      if (campaignId) {
+        return this.pendingApprovalEmails.filter(email => email.campaignId === campaignId);
+      }
       return this.pendingApprovalEmails;
     }
   }

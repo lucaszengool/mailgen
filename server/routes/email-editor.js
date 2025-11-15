@@ -411,12 +411,13 @@ router.post('/remove-pending', (req, res) => {
 // Get latest generated email waiting for approval
 router.get('/pending-approval', async (req, res) => {
   try {
-    console.log('📧 Getting pending approval emails for editor...');
+    const { campaignId } = req.query; // 🔥 CRITICAL FIX: Get campaignId from query params
+    console.log(`📧 Getting pending approval emails for editor... (Campaign: ${campaignId || 'all'})`);
 
-    // CRITICAL FIX: Use async method to check both Redis and memory
-    const pendingEmails = await emailEditor.getPendingApprovalEmails();
+    // CRITICAL FIX: Pass campaignId to filter emails by campaign
+    const pendingEmails = await emailEditor.getPendingApprovalEmails(campaignId);
 
-    console.log(`📧 Found ${pendingEmails ? pendingEmails.length : 0} pending emails`);
+    console.log(`📧 Found ${pendingEmails ? pendingEmails.length : 0} pending emails for campaign: ${campaignId || 'all'}`);
 
     if (pendingEmails && pendingEmails.length > 0) {
       // Return the most recent email
