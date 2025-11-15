@@ -256,7 +256,14 @@ export default function ProfessionalEmailEditorPage() {
       console.log('⚠️ No pending emails found, checking workflow results as fallback...');
 
       // PRIORITY 2: Try to load from workflow results as fallback ONLY if no pending emails
-      const response = await fetch('/api/workflow/results');
+      // 🔥 CRITICAL FIX: Pass campaignId to filter results
+      const currentCampaignId = localStorage.getItem('currentCampaignId');
+      const resultsUrl = currentCampaignId
+        ? `/api/workflow/results?campaignId=${currentCampaignId}`
+        : '/api/workflow/results';
+      console.log(`📊 Fetching workflow results${currentCampaignId ? ` for campaign: ${currentCampaignId}` : ' (latest)'}`);
+
+      const response = await fetch(resultsUrl);
       console.log('Workflow response status:', response.ok);
       console.log('Workflow response:', response);
       if (response.ok) {

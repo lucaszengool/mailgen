@@ -12,7 +12,12 @@ const ProspectsPage = () => {
   const fetchProspects = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/workflow/results')
+      // 🔥 CRITICAL FIX: Pass campaignId to filter prospects by campaign
+      const currentCampaignId = localStorage.getItem('currentCampaignId');
+      const resultsUrl = currentCampaignId
+        ? `/api/workflow/results?campaignId=${currentCampaignId}`
+        : '/api/workflow/results';
+      const response = await fetch(resultsUrl)
       const data = await response.json()
       
       if (data.success && data.data?.prospects) {

@@ -268,10 +268,13 @@ router.post('/select', optionalAuth, async (req, res) => {
                     // 🔥 FIX: Generate HTML from customizations - ALWAYS if customizations exist
             let finalHtml = userEditedHtml;
 
-            if (userCustomizations && Object.keys(userCustomizations).length > 0) {
+            // 🎯 CRITICAL FIX: Only apply customizations if user didn't manually edit HTML
+            if (userEditedHtml) {
+              console.log(`✨ Using user's manually edited HTML (${userEditedHtml.length} chars) - skipping customization application`);
+            } else if (userCustomizations && Object.keys(userCustomizations).length > 0) {
               console.log(`🎨 Applying ${Object.keys(userCustomizations).length} customizations to template HTML`);
 
-              // Start with base template HTML
+              // Start with base template HTML ONLY if no manual edits
               finalHtml = template.html || '';
               const customizations = userCustomizations;
 
@@ -406,10 +409,13 @@ router.post('/select', optionalAuth, async (req, res) => {
             // 🔥 FIX: Generate HTML from customizations - ALWAYS if customizations exist
             let finalHtml = userEditedHtml;
 
-            if (userCustomizations && Object.keys(userCustomizations).length > 0) {
+            // 🎯 CRITICAL FIX: Only apply customizations if user didn't manually edit HTML
+            if (userEditedHtml) {
+              console.log(`✨ [Stored Results] Using user's manually edited HTML (${userEditedHtml.length} chars) - skipping customization application`);
+            } else if (userCustomizations && Object.keys(userCustomizations).length > 0) {
               console.log(`🎨 [Stored Results] Applying ${Object.keys(userCustomizations).length} customizations to template HTML`);
 
-              // Start with base template HTML
+              // Start with base template HTML ONLY if no manual edits
               finalHtml = template.html || '';
               const customizations = userCustomizations;
 

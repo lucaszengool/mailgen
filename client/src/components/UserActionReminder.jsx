@@ -80,7 +80,12 @@ const UserActionReminder = ({ userId, onNavigate }) => {
         setIsLoading(true);
 
         // Fetch workflow results to check current state
-        const result = await apiGet('/api/workflow/results');
+        // 🔥 CRITICAL FIX: Pass campaignId to filter results by campaign
+        const currentCampaignId = localStorage.getItem('currentCampaignId');
+        const resultsUrl = currentCampaignId
+          ? `/api/workflow/results?campaignId=${currentCampaignId}`
+          : '/api/workflow/results';
+        const result = await apiGet(resultsUrl);
 
         if (result.success && result.data) {
           const { prospects = [], emailCampaign = null } = result.data;

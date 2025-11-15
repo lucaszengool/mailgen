@@ -40,7 +40,11 @@ const COLORS = ['#00f0a0', '#28fcaf', '#52ffba', '#a3ffd4', '#e6fff2', '#00c98d'
 
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState('30d')
-  const [selectedCampaign, setSelectedCampaign] = useState('all')
+  // 🔥 CRITICAL FIX: Default to current campaign instead of 'all' to prevent data leakage
+  const [selectedCampaign, setSelectedCampaign] = useState(() => {
+    const currentCampaignId = localStorage.getItem('currentCampaignId');
+    return currentCampaignId || 'all';
+  })
   const [emailMetrics, setEmailMetrics] = useState(null)
   const [campaignPerformance, setCampaignPerformance] = useState([])
   const [deliverabilityData, setDeliverabilityData] = useState(null)
