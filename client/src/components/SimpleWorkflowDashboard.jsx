@@ -3909,7 +3909,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const checkForEmailUpdates = async () => {
     try {
       console.log('🔄 Checking for email updates with authentication...');
-      const result = await apiGet('/api/workflow/results');
+      // 🔥 CRITICAL FIX: Pass campaignId to filter emails by campaign
+      const currentCampaignId = localStorage.getItem('currentCampaignId');
+      const url = currentCampaignId
+        ? `/api/workflow/results?campaignId=${currentCampaignId}`
+        : '/api/workflow/results';
+      console.log(`🔍 [EMAIL UPDATES DEBUG] Checking campaign: ${currentCampaignId || 'ALL'}`);
+      const result = await apiGet(url);
 
       if (result.success && result.data) {
         const { emailCampaign, generatedEmails: emailsFromAPI } = result.data;

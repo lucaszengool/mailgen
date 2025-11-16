@@ -138,13 +138,16 @@ export default function Analytics() {
     try {
       console.log('📊 Fetching analytics data...')
       setLoading(true)
+      // 🔥 CRITICAL FIX: Pass campaign ID to ALL analytics endpoints for proper data isolation
       const [metricsRes, campaignsRes, deliveryRes, trendsRes, recipientsRes] = await Promise.all([
         fetch(`/api/analytics/email-metrics?timeRange=${timeRange}&campaign=${selectedCampaign}`),
-        fetch(`/api/analytics/campaign-performance?timeRange=${timeRange}`),
-        fetch(`/api/analytics/deliverability?timeRange=${timeRange}`),
-        fetch(`/api/analytics/engagement-trends?timeRange=${timeRange}`),
-        fetch(`/api/analytics/recipient-analytics?timeRange=${timeRange}`)
+        fetch(`/api/analytics/campaign-performance?timeRange=${timeRange}&campaign=${selectedCampaign}`),
+        fetch(`/api/analytics/deliverability?timeRange=${timeRange}&campaign=${selectedCampaign}`),
+        fetch(`/api/analytics/engagement-trends?timeRange=${timeRange}&campaign=${selectedCampaign}`),
+        fetch(`/api/analytics/recipient-analytics?timeRange=${timeRange}&campaign=${selectedCampaign}`)
       ])
+
+      console.log(`🔍 [ANALYTICS DEBUG] Fetching data for campaign: ${selectedCampaign}, timeRange: ${timeRange}`)
 
       console.log('📊 API Responses:', {
         metrics: metricsRes.status,

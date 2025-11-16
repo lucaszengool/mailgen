@@ -5353,99 +5353,239 @@ Return ONLY the JSON object, no other text.`;
           // FALLBACK: Use HTML-based template processing
           console.log(`🎨 Using HTML-BASED template processing as fallback`);
 
-          // 🔥 CRITICAL FIX: Check if template is user-customized
-          if (templateData.isCustomized) {
-            console.log(`\n${'='.repeat(80)}`);
-            console.log(`✨ TEMPLATE PERSONALIZATION - User Customized Template`);
-            console.log(`${'='.repeat(80)}`);
-            console.log(`📋 Template ID: ${templateData.id || templateData.templateId || 'unknown'}`);
-            console.log(`📄 User HTML length: ${html?.length || 0} characters`);
-            console.log(`📝 Original Subject: "${subject}"`);
-            console.log(`\n📊 Prospect Data:`);
-            console.log(`   👤 Name: ${prospect.name || 'NOT SET'}`);
-            console.log(`   🏢 Company: ${prospect.company || 'NOT SET'}`);
-            console.log(`   📧 Email: ${prospect.email}`);
-            console.log(`\n🔧 Template Data:`);
-            console.log(`   📮 Sender Name: ${templateData.senderName || 'NOT SET'}`);
-            console.log(`   📧 Sender Email: ${templateData.senderEmail || 'NOT SET'}`);
-            console.log(`   🌐 Website: ${businessAnalysis?.websiteUrl || templateData.companyWebsite || 'NOT SET'}`);
-            console.log(`   🔗 CTA URL: ${templateData.ctaUrl || 'NOT SET'}`);
-            console.log(`   🔘 CTA Text: ${templateData.ctaText || 'Learn More'}`);
+          // 🔥 CRITICAL FIX: Process customized templates WITH AI content generation
+          const isCustomized = templateData.isCustomized;
+          console.log(`\n${'='.repeat(80)}`);
+          console.log(`✨ TEMPLATE PERSONALIZATION - ${isCustomized ? 'User Customized Template' : 'Default Template'}`);
+          console.log(`${'='.repeat(80)}`);
+          console.log(`📋 Template ID: ${templateData.id || templateData.templateId || 'unknown'}`);
+          console.log(`📄 User HTML length: ${html?.length || 0} characters`);
+          console.log(`📝 Original Subject: "${subject}"`);
+          console.log(`\n📊 Prospect Data:`);
+          console.log(`   👤 Name: ${prospect.name || 'NOT SET'}`);
+          console.log(`   🏢 Company: ${prospect.company || 'NOT SET'}`);
+          console.log(`   📧 Email: ${prospect.email}`);
+          console.log(`\n🔧 Template Data:`);
+          console.log(`   📮 Sender Name: ${templateData.senderName || 'NOT SET'}`);
+          console.log(`   📧 Sender Email: ${templateData.senderEmail || 'NOT SET'}`);
+          console.log(`   🌐 Website: ${businessAnalysis?.websiteUrl || templateData.companyWebsite || 'NOT SET'}`);
+          console.log(`   🔗 CTA URL: ${templateData.ctaUrl || 'NOT SET'}`);
+          console.log(`   🔘 CTA Text: ${templateData.ctaText || 'Learn More'}`);
 
-            // 🔥 FIX: For customized templates, use HTML directly with simple placeholder replacement
-            // DO NOT generate AI content - the user already customized the template!
-            console.log(`\n🔄 Step 1: Replacing placeholders in HTML...`);
-            let personalizedHtml = html
-              .replace(/\{\{companyName\}\}/gi, prospect.company || 'Your Company')
-              .replace(/\{\{company\}\}/gi, prospect.company || 'Your Company')
-              .replace(/\{companyName\}/gi, prospect.company || 'Your Company')
-              .replace(/\{company\}/gi, prospect.company || 'Your Company')
-              .replace(/\{\{recipientName\}\}/gi, prospect.name || 'there')
-              .replace(/\{\{name\}\}/gi, prospect.name || 'there')
-              .replace(/\{recipientName\}/gi, prospect.name || 'there')
-              .replace(/\{name\}/gi, prospect.name || 'there')
-              .replace(/\{\{senderName\}\}/gi, templateData.senderName || 'AI Marketing')
-              .replace(/\{senderName\}/gi, templateData.senderName || 'AI Marketing')
-              .replace(/\{\{websiteUrl\}\}/gi, businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com')
-              .replace(/\{websiteUrl\}/gi, businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com')
-              .replace(/\{\{ctaUrl\}\}/gi, templateData.ctaUrl || businessAnalysis?.websiteUrl || 'https://example.com')
-              .replace(/\{ctaUrl\}/gi, templateData.ctaUrl || businessAnalysis?.websiteUrl || 'https://example.com')
-              .replace(/\{\{ctaText\}\}/gi, templateData.ctaText || 'Learn More')
-              .replace(/\{ctaText\}/gi, templateData.ctaText || 'Learn More');
-            console.log(`   ✅ HTML placeholders replaced (${html.length} → ${personalizedHtml.length} chars)`);
+          // 🎯 STEP 1: Generate AI content for BOTH customized and default templates
+          console.log(`\n🤖 STEP 1: Generating AI content with Ollama...`);
+          const TemplatePromptService = require('../services/TemplatePromptService');
+          const templateId = templateData.id || templateData.templateId || 'professional_partnership';
+          const baseTemplate = TemplatePromptService.getTemplate(templateId);
 
-            // 🔥 CRITICAL FIX: Personalize subject line with same replacement as HTML
-            console.log(`\n🔄 Step 2: Replacing placeholders in Subject...`);
-            let personalizedSubject = subject || `Partnership Opportunity with ${prospect.company || 'Your Company'}`;
-            console.log(`   Original subject: "${personalizedSubject}"`);
+          let emailContentPrompt;
+          if (baseTemplate && baseTemplate.ollamaPrompt) {
+            console.log(`✅ Using template-specific Ollama prompt for ${baseTemplate.name}`);
+            emailContentPrompt = baseTemplate.ollamaPrompt
+              .replace(/\{senderName\}/g, templateData.senderName || businessAnalysis?.companyName || 'Our Company')
+              .replace(/\{companyName\}/g, businessAnalysis?.companyName || templateData.companyName || 'Our Company')
+              .replace(/\{recipientName\}/g, prospect.name || 'there')
+              .replace(/\{company\}/g, prospect.company || 'your company')
+              .replace(/\{title\}/g, prospect.role || prospect.position || 'team member')
+              .replace(/\{industry\}/g, prospect.industry || businessAnalysis?.industry || 'your industry');
 
-            // Replace placeholders in subject line
-            personalizedSubject = personalizedSubject
-              .replace(/\{\{companyName\}\}/gi, prospect.company || 'Your Company')
-              .replace(/\{\{company\}\}/gi, prospect.company || 'Your Company')
-              .replace(/\{companyName\}/gi, prospect.company || 'Your Company')
-              .replace(/\{company\}/gi, prospect.company || 'Your Company')
-              .replace(/\{\{recipientName\}\}/gi, prospect.name || 'there')
-              .replace(/\{\{name\}\}/gi, prospect.name || 'there')
-              .replace(/\{recipientName\}/gi, prospect.name || 'there')
-              .replace(/\{name\}/gi, prospect.name || 'there')
-              .replace(/\{\{senderName\}\}/gi, templateData.senderName || 'AI Marketing')
-              .replace(/\{senderName\}/gi, templateData.senderName || 'AI Marketing');
-            console.log(`   ✅ Subject placeholders replaced: "${personalizedSubject}"`);
+            emailContentPrompt = `${emailContentPrompt}
 
-            // 🔥 CRITICAL FIX: For user-customized templates, use GENTLE placeholder removal
-            // This preserves HTML structure and formatting while removing placeholder brackets
-            console.log(`\n🔄 Step 3: Removing remaining placeholder brackets...`);
-            const cleanedSubject = this.removePlaceholders(personalizedSubject);
-            const cleanedHtml = this.removeHTMLPlaceholders(personalizedHtml); // Use gentle removal
-            console.log(`   ✅ Subject cleaned: "${cleanedSubject}"`);
-            console.log(`   ✅ HTML cleaned (${personalizedHtml.length} → ${cleanedHtml.length} chars)`);
+PERSONA CONTEXT for ${prospect.name || 'recipient'}:
+- Type: ${userPersona?.type || 'Professional'}
+- Communication Style: ${userPersona?.communicationStyle || 'Professional'}
+- Decision Level: ${userPersona?.decisionLevel || 'Medium'}
+${userPersona?.painPoints ? `- Pain Points: ${userPersona.painPoints.join(', ')}` : ''}
 
-            console.log(`\n✅ TEMPLATE PERSONALIZATION COMPLETE`);
-            console.log(`📊 Final Statistics:`);
-            console.log(`   • Original HTML: ${html.length} chars`);
-            console.log(`   • After Personalization: ${personalizedHtml.length} chars`);
-            console.log(`   • After Cleanup: ${cleanedHtml.length} chars`);
-            console.log(`   • Final Subject: "${cleanedSubject}"`);
-            console.log(`   • Final Body Preview: ${cleanedHtml.substring(0, 150)}...`);
-            console.log(`${'='.repeat(80)}\n`);
+BUSINESS CONTEXT:
+- Our Company: ${businessAnalysis?.companyName || templateData.companyName || 'Our Company'}
+- Industry: ${businessAnalysis?.industry || 'Technology'}
+- Value Proposition: ${businessAnalysis?.valueProposition || 'innovative solutions'}
+- Website: ${businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com'}
 
-            return {
-              subject: cleanedSubject,
-              body: cleanedHtml, // Use HTML with placeholders gently removed
-              template: templateData.id || templateData.templateId || 'user_template',
-              templateData: templateData,
-              personalizationLevel: 'User Customized (No AI)',
-              confidence: 0.95,
-              optimization_applied: 'user_customizations_applied'
-            };
+Remember: Write ONLY the email content paragraphs. Make it feel like ${templateData.senderName || 'you'} personally wrote it for ${prospect.name || 'them'} at ${prospect.company || 'their company'}.`;
+          } else {
+            console.log(`⚠️ No template-specific prompt found, using generic prompt`);
+            emailContentPrompt = `Write a professional, personalized email to ${prospect.name || 'the recipient'} at ${prospect.company || 'their company'}.
+
+Context:
+- Recipient: ${prospect.name || 'N/A'}
+- Company: ${prospect.company || 'N/A'}
+- Role: ${prospect.role || prospect.position || 'N/A'}
+- Sender: ${templateData.senderName || 'Our Company'}
+- Persona Type: ${userPersona?.type || 'Professional'}
+- Communication Style: ${userPersona?.communicationStyle || 'Professional'}
+
+Business Context:
+- Company: ${businessAnalysis?.companyName || templateData.companyName || 'Our Company'}
+- Industry: ${businessAnalysis?.industry || 'Technology'}
+- Value Proposition: ${businessAnalysis?.valueProposition || 'innovative solutions'}
+
+Requirements:
+1. Write 2-3 concise, engaging paragraphs
+2. Reference their company/role personally
+3. Present our value proposition clearly
+4. Make it feel personal, not templated
+5. Each paragraph should be 2-3 sentences max
+
+Generate ONLY the email body paragraphs (no subject, no greeting, no signature). Make it feel like a real person wrote it for ${prospect.name || 'them'}.`;
           }
 
-          // 🎯 FOR NON-CUSTOMIZED TEMPLATES - Generate AI content with Ollama
-          // If we reach here, template is NOT customized, so generate AI content
-          if (true) {  // 🔥 FIX: Enable AI generation for default templates
-            console.log(`🎨 Using DEFAULT template - generating AI content with Ollama`);
-            console.log(`📋 Template ID: ${templateData.id || templateData.templateId || 'unknown'}`);
+          let generatedContent = '';
+          try {
+            generatedContent = await this.callOllama(emailContentPrompt, 'email', { temperature: 0.8 });
+            console.log(`✅ Generated ${generatedContent.length} characters of AI content`);
+            console.log(`📝 Content preview: ${generatedContent.substring(0, 200)}...`);
+          } catch (error) {
+            console.error(`❌ Failed to generate AI content:`, error.message);
+            generatedContent = `I'm reaching out from ${templateData.companyName || businessAnalysis?.companyName || 'our company'} because I believe we could help ${prospect.company || 'your organization'} achieve its goals.\n\n${businessAnalysis?.valueProposition || 'We provide innovative solutions that drive results.'}\n\nWould you be interested in a brief conversation to explore how we might work together?`;
+          }
+
+          // Helper function to convert markdown to HTML
+          const markdownToHtml = (text) => {
+            return text
+              .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+              .replace(/__(.+?)__/g, '<strong>$1</strong>')
+              .replace(/\*(.+?)\*/g, '<em>$1</em>')
+              .replace(/_(.+?)_/g, '<em>$1</em>')
+              .replace(/\*\*/g, '')
+              .replace(/__/g, '');
+          };
+
+          // 🎯 STEP 2: Split AI content into paragraphs
+          console.log(`\n📝 STEP 2: Splitting AI content into paragraphs...`);
+          let contentParagraphs = [];
+          let rawParagraphs = generatedContent.split(/\n\s*\n/).filter(p => p.trim());
+
+          if (rawParagraphs.length < 2) {
+            rawParagraphs = generatedContent.split(/\n/).filter(p => p.trim() && p.length > 30);
+          }
+
+          if (rawParagraphs.length < 2) {
+            const sentences = generatedContent.match(/[^.!?]+[.!?]+/g) || [generatedContent];
+            const numParagraphs = 3; // Default to 3 paragraphs
+            const sentencesPerParagraph = Math.ceil(sentences.length / numParagraphs);
+            rawParagraphs = [];
+            for (let i = 0; i < numParagraphs; i++) {
+              const start = i * sentencesPerParagraph;
+              const end = start + sentencesPerParagraph;
+              const para = sentences.slice(start, end).join(' ').trim();
+              if (para) rawParagraphs.push(para);
+            }
+          }
+
+          contentParagraphs = rawParagraphs.slice(0, 3).map(para => {
+            let cleaned = para.trim()
+              .replace(/^[-*•]\s+/, '')
+              .replace(/^\d+\.\s+/, '')
+              .trim();
+            cleaned = markdownToHtml(cleaned);
+            return cleaned;
+          });
+
+          while (contentParagraphs.length < 3) {
+            contentParagraphs.push("We believe there's great potential for collaboration between our organizations.");
+          }
+
+          console.log(`✅ Split into ${contentParagraphs.length} paragraphs:`);
+          contentParagraphs.forEach((p, i) => {
+            console.log(`   📄 Paragraph ${i + 1}: ${p.substring(0, 80)}${p.length > 80 ? '...' : ''}`);
+          });
+
+          // 🎯 STEP 3: Replace placeholders in HTML
+          console.log(`\n🔄 STEP 3: Replacing placeholders in HTML...`);
+          let personalizedHtml = html
+            .replace(/\{\{companyName\}\}/gi, prospect.company || 'Your Company')
+            .replace(/\{\{company\}\}/gi, prospect.company || 'Your Company')
+            .replace(/\{companyName\}/gi, prospect.company || 'Your Company')
+            .replace(/\{company\}/gi, prospect.company || 'Your Company')
+            .replace(/\{\{recipientName\}\}/gi, prospect.name || 'there')
+            .replace(/\{\{name\}\}/gi, prospect.name || 'there')
+            .replace(/\{recipientName\}/gi, prospect.name || 'there')
+            .replace(/\{name\}/gi, prospect.name || 'there')
+            .replace(/\{\{senderName\}\}/gi, templateData.senderName || 'AI Marketing')
+            .replace(/\{senderName\}/gi, templateData.senderName || 'AI Marketing')
+            .replace(/\{\{websiteUrl\}\}/gi, businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com')
+            .replace(/\{websiteUrl\}/gi, businessAnalysis?.websiteUrl || templateData.companyWebsite || 'https://example.com')
+            .replace(/\{\{ctaUrl\}\}/gi, templateData.ctaUrl || businessAnalysis?.websiteUrl || 'https://example.com')
+            .replace(/\{ctaUrl\}/gi, templateData.ctaUrl || businessAnalysis?.websiteUrl || 'https://example.com')
+            .replace(/\{\{ctaText\}\}/gi, templateData.ctaText || 'Learn More')
+            .replace(/\{ctaText\}/gi, templateData.ctaText || 'Learn More');
+          console.log(`   ✅ Placeholders replaced (${html.length} → ${personalizedHtml.length} chars)`);
+
+          // 🎯 STEP 4: Insert AI content into generated-paragraph divs
+          console.log(`\n🚀 STEP 4: Inserting AI content into generated-paragraph divs...`);
+          for (let i = 0; i < contentParagraphs.length; i++) {
+            const paragraphNum = i + 1;
+            const paragraphContent = contentParagraphs[i];
+
+            // Look for <div id="generated-paragraph-X"> with empty <p> tag
+            const divPattern = new RegExp(
+              `(<div[^>]*id="generated-paragraph-${paragraphNum}"[^>]*>\\s*<p[^>]*>)\\s*(</p>\\s*</div>)`,
+              'i'
+            );
+
+            if (divPattern.test(personalizedHtml)) {
+              personalizedHtml = personalizedHtml.replace(
+                divPattern,
+                `$1\n              ${paragraphContent}\n            $2`
+              );
+              console.log(`   ✅ Inserted paragraph ${paragraphNum}: "${paragraphContent.substring(0, 60)}..."`);
+            } else {
+              console.log(`   ⚠️  No div found for generated-paragraph-${paragraphNum}`);
+            }
+          }
+
+          // 🎯 STEP 5: Personalize subject line
+          console.log(`\n🔄 STEP 5: Personalizing subject line...`);
+          let personalizedSubject = subject || `Partnership Opportunity with ${prospect.company || 'Your Company'}`;
+          personalizedSubject = personalizedSubject
+            .replace(/\{\{companyName\}\}/gi, prospect.company || 'Your Company')
+            .replace(/\{\{company\}\}/gi, prospect.company || 'Your Company')
+            .replace(/\{companyName\}/gi, prospect.company || 'Your Company')
+            .replace(/\{company\}/gi, prospect.company || 'Your Company')
+            .replace(/\{\{recipientName\}\}/gi, prospect.name || 'there')
+            .replace(/\{\{name\}\}/gi, prospect.name || 'there')
+            .replace(/\{recipientName\}/gi, prospect.name || 'there')
+            .replace(/\{name\}/gi, prospect.name || 'there')
+            .replace(/\{\{senderName\}\}/gi, templateData.senderName || 'AI Marketing')
+            .replace(/\{senderName\}/gi, templateData.senderName || 'AI Marketing');
+          console.log(`   ✅ Subject personalized: "${personalizedSubject}"`);
+
+          // 🎯 STEP 6: Clean up remaining placeholders
+          console.log(`\n🧹 STEP 6: Cleaning up remaining placeholders...`);
+          const cleanedSubject = this.removePlaceholders(personalizedSubject);
+          const cleanedHtml = this.removeHTMLPlaceholders(personalizedHtml);
+          console.log(`   ✅ Subject cleaned: "${cleanedSubject}"`);
+          console.log(`   ✅ HTML cleaned (${personalizedHtml.length} → ${cleanedHtml.length} chars)`);
+
+          console.log(`\n✅ TEMPLATE PERSONALIZATION COMPLETE`);
+          console.log(`📊 Final Statistics:`);
+          console.log(`   • Original HTML: ${html.length} chars`);
+          console.log(`   • After Personalization: ${personalizedHtml.length} chars`);
+          console.log(`   • After AI Content Insertion: ${cleanedHtml.length} chars`);
+          console.log(`   • Final Subject: "${cleanedSubject}"`);
+          console.log(`   • AI Paragraphs Inserted: ${contentParagraphs.length}`);
+          console.log(`   • Template Type: ${isCustomized ? 'Customized with AI Content' : 'Default with AI Content'}`);
+          console.log(`${'='.repeat(80)}\n`);
+
+          return {
+            subject: cleanedSubject,
+            body: cleanedHtml,
+            template: templateData.id || templateData.templateId || 'user_template',
+            templateData: templateData,
+            personalizationLevel: isCustomized ? 'User Customized (With AI Content)' : 'Default (With AI Content)',
+            confidence: 0.95,
+            optimization_applied: 'ai_content_inserted'
+          };
+
+          // NOTE: Old duplicate code removed - above return statement exits the function
+        }
+
+        // NOTE: This code below is old and should not be reached due to early returns above
+        // Keeping for now to avoid breaking any edge cases, but should be cleaned up later
+        {
+            console.log(`📋 LEGACY CODE - This should not execute`);
 
             // Step 1: Get template-specific Ollama prompt
             const TemplatePromptService = require('../services/TemplatePromptService');

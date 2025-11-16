@@ -126,7 +126,9 @@ export default function ProfessionalEmailEditorPage() {
   const checkForPendingEmails = async () => {
     try {
       console.log('🔍 Checking for pending emails...');
-      const response = await fetch('/api/email-editor/pending-approval');
+      console.log(`🔍 [EMAIL EDITOR DEBUG] Campaign ID: ${campaignId}`);
+      // 🔥 CRITICAL FIX: Pass campaignId to filter pending emails by campaign
+      const response = await fetch(`/api/email-editor/pending-approval?campaignId=${campaignId}`);
       if (response.ok) {
         const data = await response.json();
         console.log('📧 Pending emails response:', data);
@@ -204,7 +206,9 @@ export default function ProfessionalEmailEditorPage() {
 
       // CRITICAL FIX: ALWAYS check for pending approval emails FIRST and use them exclusively
       console.log('📞 PRIORITY 1: Checking for pending approval emails...');
-      const pendingResponse = await fetch('/api/email-editor/pending-approval');
+      console.log(`🔍 [EMAIL EDITOR DEBUG] Campaign ID: ${campaignId}`);
+      // 🔥 CRITICAL FIX: Pass campaignId to filter pending emails by campaign
+      const pendingResponse = await fetch(`/api/email-editor/pending-approval?campaignId=${campaignId}`);
       if (pendingResponse.ok) {
         const pendingData = await pendingResponse.json();
         console.log('📧 Pending approval response:', pendingData);
