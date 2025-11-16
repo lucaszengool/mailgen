@@ -2284,8 +2284,8 @@ class LangGraphMarketingAgent {
           id: `email_${campaignId}_${i + 1}`,
           to: prospect.email,
           subject: emailContent.subject,
-          body: emailContent.body,
-          html: emailContent.body, // CRITICAL FIX: Ensure html field is set for email editor
+          body: emailContent.body, // Keep body field for backward compatibility
+          html: emailContent.body || emailContent.html, // 🔥 FIX: Ensure html field contains the actual HTML template
           status: emailStatus,
           sent: emailStatus === 'sent',
           sent_at: sentAt,
@@ -2323,8 +2323,9 @@ class LangGraphMarketingAgent {
         try {
           const workflowModule = require('../routes/workflow');
           if (workflowModule.addEmailToWorkflowResults) {
-            workflowModule.addEmailToWorkflowResults(emailRecord, this.userId);
-            console.log(`   ✅ [User: ${this.userId}] Email added to workflow results for frontend access`);
+            // 🔥 FIX: Pass campaignId for proper data isolation
+            workflowModule.addEmailToWorkflowResults(emailRecord, this.userId, campaignId);
+            console.log(`   ✅ [User: ${this.userId}, Campaign: ${campaignId}] Email added to workflow results for frontend access`);
           }
         } catch (error) {
           console.log('⚠️ Could not update workflow results:', error.message);

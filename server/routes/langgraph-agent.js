@@ -415,12 +415,17 @@ router.get('/status', async (req, res) => {
 router.get('/analytics', async (req, res) => {
   try {
     const { agent, wsManager } = getAgentAndWS(req);
-    
+
+    // 🔥 FIX: Get campaign ID from query params for proper filtering
+    const campaignId = req.query.campaignId || 'current';
+    console.log(`📊 Analytics Request for campaign: ${campaignId}`);
+
     // 获取基础分析数据
-    const analytics = await agent.getCampaignAnalytics('current');
-    
+    const analytics = await agent.getCampaignAnalytics(campaignId);
+
     // 模拟实时数据（实际项目中从数据库获取）
     const realTimeData = {
+      campaignId: campaignId,
       totalProspects: analytics?.totalSearches || 0,
       emailsSent: analytics?.totalEmails || 0,
       emailsOpened: Math.round((analytics?.totalEmails || 0) * 0.25),
@@ -430,12 +435,12 @@ router.get('/analytics', async (req, res) => {
       conversionRate: 0.125, // 12.5%
       lastUpdate: new Date().toISOString()
     };
-    
+
     res.json({
       success: true,
       data: realTimeData
     });
-    
+
   } catch (error) {
     console.error('❌ Analytics Error:', error.message);
     res.status(500).json({
