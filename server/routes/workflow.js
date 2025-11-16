@@ -2389,10 +2389,10 @@ router.get('/stats', optionalAuth, async (req, res) => {
     }
     console.log(`📊 Generated emails: ${generatedEmailsCount}`);
 
-    // Count sent emails from database
-    const emailDrafts = await db.getEmailDrafts(userId);
+    // 🔥 FIX: Count sent emails from database WITH campaign filter
+    const emailDrafts = await db.getEmailDrafts(userId, campaignId);
     const sentEmailsCount = emailDrafts.filter(e => e.status === 'sent').length;
-    console.log(`📊 Sent emails: ${sentEmailsCount}`);
+    console.log(`📊 [Campaign: ${campaignId || 'ALL'}] Sent emails: ${sentEmailsCount}`);
 
     // Calculate time until reset (1 hour from now)
     const now = Date.now();

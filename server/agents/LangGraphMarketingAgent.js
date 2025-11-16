@@ -2036,7 +2036,15 @@ class LangGraphMarketingAgent {
 
         // 🎯 NEW: Show popup ONLY after first email is fully generated and ready
         if (i === 0) { // First email is completely ready
-          console.log('🎉 First email generated! Showing editor popup...');
+          console.log(`\n${'🎉'.repeat(40)}`);
+          console.log(`🎉 FIRST EMAIL GENERATED - TRIGGERING POPUP NOTIFICATION`);
+          console.log(`${'🎉'.repeat(40)}`);
+          console.log(`📧 Email Details:`);
+          console.log(`   • To: ${prospect.email}`);
+          console.log(`   • Subject: "${emailContent.subject}"`);
+          console.log(`   • Body Length: ${emailContent.body?.length || 0} chars`);
+          console.log(`   • Campaign ID: ${campaignId}`);
+          console.log(`   • User ID: ${this.userId}`);
 
           // Update workflow state with real email data
           const realEmailData = {
@@ -2055,57 +2063,77 @@ class LangGraphMarketingAgent {
           if (this.workflowState) {
             this.workflowState.firstEmailGenerated = realEmailData;
             this.workflowState.waitingForUserApproval = true;
+            console.log(`✅ Updated internal workflow state`);
           }
 
           // 🎯 CRITICAL FIX: Add first email to workflow results immediately AND set user workflow state
           try {
             const workflowModule = require('../routes/workflow');
+            console.log(`\n📦 Storing email in workflow module...`);
+
             if (workflowModule.addEmailToWorkflowResults) {
-              workflowModule.addEmailToWorkflowResults(realEmailData, this.userId);
-              console.log(`   ✅ [User: ${this.userId}] First email added to workflow results for frontend polling`);
+              await workflowModule.addEmailToWorkflowResults(realEmailData, this.userId, campaignId);
+              console.log(`   ✅ [User: ${this.userId}, Campaign: ${campaignId}] First email added to workflow results`);
             }
 
             // 🎯 CRITICAL: Also update the user-specific workflow state that frontend polls!
             if (workflowModule.setUserWorkflowState) {
               workflowModule.setUserWorkflowState(this.userId, {
                 waitingForUserApproval: true,
-                firstEmailGenerated: realEmailData
+                firstEmailGenerated: realEmailData,
+                campaignId: campaignId
               });
               console.log(`   ✅ [User: ${this.userId}] Workflow state updated for frontend polling`);
             }
 
             // 🔥 IMMEDIATE BROADCAST: Send state update via WebSocket for instant delivery
+            console.log(`\n📡 Broadcasting via WebSocket...`);
             if (this.wsManager) {
-              this.wsManager.broadcast({
+              const broadcastData = {
                 type: 'first_email_ready',
                 data: {
                   waitingForUserApproval: true,
                   firstEmailGenerated: realEmailData,
-                  userId: this.userId
+                  userId: this.userId,
+                  campaignId: campaignId,
+                  timestamp: new Date().toISOString()
                 }
-              });
-              console.log(`   🔔 [User: ${this.userId}] First email state broadcasted via WebSocket`);
+              };
+              this.wsManager.broadcast(broadcastData);
+              console.log(`   ✅ Broadcasted 'first_email_ready' event`);
+              console.log(`   📡 Broadcast data:`, JSON.stringify(broadcastData, null, 2));
+            } else {
+              console.warn(`   ⚠️  WebSocket Manager not available!`);
             }
           } catch (error) {
-            console.log('⚠️ Could not update workflow results with first email:', error.message);
+            console.error(`❌ Error updating workflow results:`, error);
+            console.error(`   Stack:`, error.stack);
           }
 
           // Send email preview to frontend for review
-          this.wsManager.broadcast({
-            type: 'email_preview_generated',
-            data: {
-              campaignId: campaignId,
-              prospectId: prospect.email,
-              preview: {
-                subject: emailContent.subject,
-                body: emailContent.body || emailContent.html,
-                recipientName: prospect.name || prospect.email,
-                company: prospect.company || 'Unknown Company',
-                quality_score: emailContent.qualityScore || 85
-              },
-              timestamp: new Date().toISOString()
-            }
-          });
+          console.log(`\n📧 Broadcasting email preview...`);
+          if (this.wsManager) {
+            const previewData = {
+              type: 'email_preview_generated',
+              data: {
+                campaignId: campaignId,
+                prospectId: prospect.email,
+                preview: {
+                  subject: emailContent.subject,
+                  body: emailContent.body || emailContent.html,
+                  recipientName: prospect.name || prospect.email,
+                  company: prospect.company || 'Unknown Company',
+                  quality_score: emailContent.qualityScore || 85
+                },
+                timestamp: new Date().toISOString()
+              }
+            };
+            this.wsManager.broadcast(previewData);
+            console.log(`   ✅ Broadcasted 'email_preview_generated' event`);
+          }
+
+          console.log(`\n✅ ALL NOTIFICATION BROADCASTS COMPLETE`);
+          console.log(`${'='.repeat(80)}\n`);
 
           // Wait for user decision
           const userDecisionData = await this.waitForUserDecision({
@@ -5327,12 +5355,26 @@ Return ONLY the JSON object, no other text.`;
 
           // 🔥 CRITICAL FIX: Check if template is user-customized
           if (templateData.isCustomized) {
-            console.log(`✨ Template is user-customized - USING DIRECTLY without AI generation`);
+            console.log(`\n${'='.repeat(80)}`);
+            console.log(`✨ TEMPLATE PERSONALIZATION - User Customized Template`);
+            console.log(`${'='.repeat(80)}`);
             console.log(`📋 Template ID: ${templateData.id || templateData.templateId || 'unknown'}`);
             console.log(`📄 User HTML length: ${html?.length || 0} characters`);
+            console.log(`📝 Original Subject: "${subject}"`);
+            console.log(`\n📊 Prospect Data:`);
+            console.log(`   👤 Name: ${prospect.name || 'NOT SET'}`);
+            console.log(`   🏢 Company: ${prospect.company || 'NOT SET'}`);
+            console.log(`   📧 Email: ${prospect.email}`);
+            console.log(`\n🔧 Template Data:`);
+            console.log(`   📮 Sender Name: ${templateData.senderName || 'NOT SET'}`);
+            console.log(`   📧 Sender Email: ${templateData.senderEmail || 'NOT SET'}`);
+            console.log(`   🌐 Website: ${businessAnalysis?.websiteUrl || templateData.companyWebsite || 'NOT SET'}`);
+            console.log(`   🔗 CTA URL: ${templateData.ctaUrl || 'NOT SET'}`);
+            console.log(`   🔘 CTA Text: ${templateData.ctaText || 'Learn More'}`);
 
             // 🔥 FIX: For customized templates, use HTML directly with simple placeholder replacement
             // DO NOT generate AI content - the user already customized the template!
+            console.log(`\n🔄 Step 1: Replacing placeholders in HTML...`);
             let personalizedHtml = html
               .replace(/\{\{companyName\}\}/gi, prospect.company || 'Your Company')
               .replace(/\{\{company\}\}/gi, prospect.company || 'Your Company')
@@ -5350,19 +5392,43 @@ Return ONLY the JSON object, no other text.`;
               .replace(/\{ctaUrl\}/gi, templateData.ctaUrl || businessAnalysis?.websiteUrl || 'https://example.com')
               .replace(/\{\{ctaText\}\}/gi, templateData.ctaText || 'Learn More')
               .replace(/\{ctaText\}/gi, templateData.ctaText || 'Learn More');
+            console.log(`   ✅ HTML placeholders replaced (${html.length} → ${personalizedHtml.length} chars)`);
 
-            // Generate personalized subject line
-            const personalizedSubject = subject || `${prospect.company || 'Partnership Opportunity'} - ${this.generatePersonalizedSubjectLine(prospect, userPersona)}`;
+            // 🔥 CRITICAL FIX: Personalize subject line with same replacement as HTML
+            console.log(`\n🔄 Step 2: Replacing placeholders in Subject...`);
+            let personalizedSubject = subject || `Partnership Opportunity with ${prospect.company || 'Your Company'}`;
+            console.log(`   Original subject: "${personalizedSubject}"`);
+
+            // Replace placeholders in subject line
+            personalizedSubject = personalizedSubject
+              .replace(/\{\{companyName\}\}/gi, prospect.company || 'Your Company')
+              .replace(/\{\{company\}\}/gi, prospect.company || 'Your Company')
+              .replace(/\{companyName\}/gi, prospect.company || 'Your Company')
+              .replace(/\{company\}/gi, prospect.company || 'Your Company')
+              .replace(/\{\{recipientName\}\}/gi, prospect.name || 'there')
+              .replace(/\{\{name\}\}/gi, prospect.name || 'there')
+              .replace(/\{recipientName\}/gi, prospect.name || 'there')
+              .replace(/\{name\}/gi, prospect.name || 'there')
+              .replace(/\{\{senderName\}\}/gi, templateData.senderName || 'AI Marketing')
+              .replace(/\{senderName\}/gi, templateData.senderName || 'AI Marketing');
+            console.log(`   ✅ Subject placeholders replaced: "${personalizedSubject}"`);
 
             // 🔥 CRITICAL FIX: For user-customized templates, use GENTLE placeholder removal
             // This preserves HTML structure and formatting while removing placeholder brackets
+            console.log(`\n🔄 Step 3: Removing remaining placeholder brackets...`);
             const cleanedSubject = this.removePlaceholders(personalizedSubject);
             const cleanedHtml = this.removeHTMLPlaceholders(personalizedHtml); // Use gentle removal
+            console.log(`   ✅ Subject cleaned: "${cleanedSubject}"`);
+            console.log(`   ✅ HTML cleaned (${personalizedHtml.length} → ${cleanedHtml.length} chars)`);
 
-            console.log(`✅ User customized template used directly (no AI generation)`);
-            console.log(`📊 HTML preserved with gentle placeholder removal:`);
-            console.log(`   Original: ${html.length} chars → Personalized: ${personalizedHtml.length} chars → Final: ${cleanedHtml.length} chars`);
-            console.log(`📧 Subject: ${cleanedSubject}`);
+            console.log(`\n✅ TEMPLATE PERSONALIZATION COMPLETE`);
+            console.log(`📊 Final Statistics:`);
+            console.log(`   • Original HTML: ${html.length} chars`);
+            console.log(`   • After Personalization: ${personalizedHtml.length} chars`);
+            console.log(`   • After Cleanup: ${cleanedHtml.length} chars`);
+            console.log(`   • Final Subject: "${cleanedSubject}"`);
+            console.log(`   • Final Body Preview: ${cleanedHtml.substring(0, 150)}...`);
+            console.log(`${'='.repeat(80)}\n`);
 
             return {
               subject: cleanedSubject,
