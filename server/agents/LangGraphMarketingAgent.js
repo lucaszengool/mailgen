@@ -5852,8 +5852,7 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
             optimization_applied: 'html_template_applied'
           };
         }
-      }
-      
+
       // 🚫 REMOVED: No more automatic template selection - workflow should pause instead
       if (!selectedEmailTemplate || selectedEmailTemplate === 'null') {
         console.log(`❌ No template selected - this should not happen as workflow should pause for template selection`);
