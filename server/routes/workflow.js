@@ -681,6 +681,8 @@ router.get('/results', optionalAuth, async (req, res) => {
       console.log(`   📊 Prospects: ${lastWorkflowResults.prospects?.length || 0}`);
       console.log(`   📧 Emails: ${lastWorkflowResults.emailCampaign?.emails?.length || 0}`);
       console.log(`   🆔 Campaign ID in results: ${lastWorkflowResults.campaignId || 'NOT SET'}`);
+      console.log(`   🆔 Campaign ID requested: ${campaignId || 'LATEST'}`);
+      console.log(`   ✅ Campaign ID match: ${lastWorkflowResults.campaignId === campaignId ? 'YES' : 'NO'}`);
       console.log(`   📅 Last update: ${lastWorkflowResults.timestamp || 'unknown'}`);
       console.log('\n🔧 [TEMPLATE PROCESSING] Starting template variable replacement...');
       
@@ -691,6 +693,18 @@ router.get('/results', optionalAuth, async (req, res) => {
       console.log('🔧 DEBUG: Emails count:', processedResults.emailCampaign?.emails?.length || 0);
       
       if (processedResults.emailCampaign && processedResults.emailCampaign.emails) {
+        console.log(`\n🔍 =====================================================`);
+        console.log(`🔍 EMAIL CAMPAIGN DATA - CAMPAIGN ISOLATION CHECK`);
+        console.log(`🔍 =====================================================`);
+        console.log(`   🆔 Campaign ID: ${processedResults.campaignId}`);
+        console.log(`   📧 Total Emails: ${processedResults.emailCampaign.emails.length}`);
+        console.log(`   👤 User ID: ${userId}`);
+        console.log(`\n   📋 Email Recipients in this campaign:`);
+        processedResults.emailCampaign.emails.forEach((email, i) => {
+          console.log(`      ${i + 1}. ${email.to} (${email.recipientName || 'No Name'} @ ${email.recipientCompany || email.company || 'No Company'})`);
+        });
+        console.log(`🔍 =====================================================\n`);
+
         console.log(`🔍 Processing ${processedResults.emailCampaign.emails.length} emails for template variable replacement`);
 
         processedResults.emailCampaign.emails = processedResults.emailCampaign.emails.map((email, index) => {

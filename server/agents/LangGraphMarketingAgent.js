@@ -2087,8 +2087,19 @@ class LangGraphMarketingAgent {
             }
 
             // 🔥 IMMEDIATE BROADCAST: Send state update via WebSocket for instant delivery
-            console.log(`\n📡 Broadcasting via WebSocket...`);
+            console.log(`\n📡 =====================================================`);
+            console.log(`📡 IMMEDIATE WEBSOCKET BROADCAST - FIRST EMAIL READY`);
+            console.log(`📡 =====================================================`);
+            console.log(`   🆔 User ID: ${this.userId}`);
+            console.log(`   🎯 Campaign ID: ${campaignId}`);
+            console.log(`   📧 Email To: ${realEmailData.to}`);
+            console.log(`   ⏰ Timestamp: ${new Date().toISOString()}`);
+
             if (this.wsManager) {
+              console.log(`   ✅ WebSocket Manager is available`);
+              console.log(`   📊 DEBUG: wsManager type: ${typeof this.wsManager}`);
+              console.log(`   📊 DEBUG: wsManager.broadcast type: ${typeof this.wsManager.broadcast}`);
+
               const broadcastData = {
                 type: 'first_email_ready',
                 data: {
@@ -2099,12 +2110,37 @@ class LangGraphMarketingAgent {
                   timestamp: new Date().toISOString()
                 }
               };
-              this.wsManager.broadcast(broadcastData);
-              console.log(`   ✅ Broadcasted 'first_email_ready' event`);
-              console.log(`   📡 Broadcast data:`, JSON.stringify(broadcastData, null, 2));
+
+              console.log(`   📤 Broadcasting payload:`, JSON.stringify(broadcastData, null, 2));
+
+              try {
+                // Broadcast to all clients
+                this.wsManager.broadcast(broadcastData);
+                console.log(`   ✅ Successfully broadcasted 'first_email_ready' event`);
+
+                // Also send targeted message to specific user if possible
+                if (this.wsManager.sendToUser) {
+                  console.log(`   📤 Also sending targeted message to user: ${this.userId}`);
+                  this.wsManager.sendToUser(this.userId, broadcastData);
+                  console.log(`   ✅ Targeted message sent`);
+                }
+
+                // Force immediate flush if available
+                if (this.wsManager.flush) {
+                  this.wsManager.flush();
+                  console.log(`   💨 WebSocket buffer flushed`);
+                }
+
+              } catch (broadcastError) {
+                console.error(`   ❌ Error during broadcast:`, broadcastError);
+                console.error(`   📊 Error stack:`, broadcastError.stack);
+              }
             } else {
-              console.warn(`   ⚠️  WebSocket Manager not available!`);
+              console.error(`   ❌ CRITICAL: WebSocket Manager not available!`);
+              console.error(`   📊 this.wsManager is: ${this.wsManager}`);
+              console.error(`   📊 typeof this.wsManager: ${typeof this.wsManager}`);
             }
+            console.log(`📡 =====================================================\n`);
           } catch (error) {
             console.error(`❌ Error updating workflow results:`, error);
             console.error(`   Stack:`, error.stack);
@@ -3554,18 +3590,34 @@ ${senderName || senderCompany}`;
         // 🎯 PRIORITIZE USER'S EDITED HTML over default template HTML
         let templateHtml = null;
 
+        console.log(`\n🔍 =====================================================`);
+        console.log(`🔍 TEMPLATE HTML SELECTION - CRITICAL DEBUG`);
+        console.log(`🔍 =====================================================`);
+        console.log(`   📋 Selected Template: ${selectedTemplate}`);
+        console.log(`   🔍 templateData exists: ${!!templateData}`);
+        console.log(`   🔍 templateData.html exists: ${!!templateData?.html}`);
+        console.log(`   🔍 templateData.html length: ${templateData?.html?.length || 0}`);
+        console.log(`   🔍 templateData.isCustomized: ${!!templateData?.isCustomized}`);
+        console.log(`   🔍 fullTemplateDefinition exists: ${!!fullTemplateDefinition}`);
+        console.log(`   🔍 fullTemplateDefinition.html exists: ${!!fullTemplateDefinition?.html}`);
+
         // First, check if user sent edited HTML (from template customization)
-        if (templateData && templateData.html) {
+        if (templateData && templateData.html && templateData.html.length > 100) {
           templateHtml = templateData.html;
-          console.log(`✅ Using USER'S EDITED template HTML for ${selectedTemplate} (${templateHtml.length} chars)`);
+          console.log(`   ✅ USING USER'S EDITED HTML (${templateHtml.length} chars)`);
+          console.log(`   📄 First 200 chars: ${templateHtml.substring(0, 200)}...`);
+          console.log(`   🎨 User customizations will be preserved!`);
         }
         // Otherwise, load default template HTML from emailTemplates.js
         else if (fullTemplateDefinition && fullTemplateDefinition.html) {
           templateHtml = fullTemplateDefinition.html;
-          console.log(`✅ Using DEFAULT template HTML for ${selectedTemplate} (${templateHtml.length} chars)`);
+          console.log(`   ✅ USING DEFAULT template HTML (${templateHtml.length} chars)`);
+          console.log(`   ⚠️  No user customizations detected`);
         } else {
-          console.log(`⚠️ Template HTML not found for ${selectedTemplate}, using fallback`);
+          console.log(`   ❌ ERROR: No template HTML found for ${selectedTemplate}!`);
+          console.log(`   🔍 templateData keys: ${templateData ? Object.keys(templateData).join(', ') : 'NO TEMPLATEDATA'}`);
         }
+        console.log(`🔍 =====================================================\n`);
 
         // Define template-specific color schemes and styles
         const templateStyles = {
@@ -5321,10 +5373,27 @@ Return ONLY the JSON object, no other text.`;
         const subject = templateData.subject;
         const html = templateData.html || templateData.body;
 
-        console.log(`🔍 DEBUG: Using html content length:`, html?.length || 0);
-        console.log(`🔍 DEBUG: HTML source: ${templateData.html ? 'templateData.html' : 'templateData.body'}`);
-        console.log(`🔍 DEBUG: First 200 chars of HTML: ${html?.substring(0, 200) || 'NO HTML'}`);
-        console.log(`🔍 DEBUG: templateData.isCustomized: ${templateData.isCustomized}`);
+        console.log(`\n🔍 =====================================================`);
+        console.log(`🔍 TEMPLATE HTML DEBUG - BEFORE PERSONALIZATION`);
+        console.log(`🔍 =====================================================`);
+        console.log(`   📊 HTML length: ${html?.length || 0} chars`);
+        console.log(`   📍 HTML source: ${templateData.html ? 'templateData.html' : 'templateData.body'}`);
+        console.log(`   🎨 Is customized: ${templateData.isCustomized}`);
+        console.log(`   📋 Has subject: ${!!templateData.subject}`);
+        console.log(`   📋 Has greeting: ${!!templateData.greeting}`);
+        console.log(`   📋 Has signature: ${!!templateData.signature}`);
+        console.log(`   📋 Has customizations object: ${!!templateData.customizations}`);
+        if (templateData.customizations) {
+          console.log(`   🎨 Customization keys: ${Object.keys(templateData.customizations).join(', ')}`);
+        }
+        console.log(`   📄 First 300 chars of HTML:`);
+        console.log(`      ${html?.substring(0, 300) || 'NO HTML'}...`);
+        console.log(`   🔍 Checking for generated-paragraph divs...`);
+        for (let i = 1; i <= 5; i++) {
+          const hasDiv = html?.includes(`id="generated-paragraph-${i}"`);
+          console.log(`      - generated-paragraph-${i}: ${hasDiv ? '✅ FOUND' : '❌ NOT FOUND'}`);
+        }
+        console.log(`🔍 =====================================================\n`);
 
         // ✨ FIXED: Check if this is a component-based template with user components
         if (templateData.components && templateData.components.length > 0) {
@@ -5513,28 +5582,115 @@ Generate ONLY the email body paragraphs (no subject, no greeting, no signature).
             .replace(/\{ctaText\}/gi, templateData.ctaText || 'Learn More');
           console.log(`   ✅ Placeholders replaced (${html.length} → ${personalizedHtml.length} chars)`);
 
-          // 🎯 STEP 4: Insert AI content into generated-paragraph divs
+          // 🎯 STEP 4: Insert AI content into generated-paragraph divs (WITH MULTIPLE STRATEGIES)
           console.log(`\n🚀 STEP 4: Inserting AI content into generated-paragraph divs...`);
+          console.log(`📊 DEBUG: Have ${contentParagraphs.length} AI paragraphs to insert`);
+          console.log(`📊 DEBUG: HTML length before insertion: ${personalizedHtml.length} chars`);
+
+          let insertionSuccessCount = 0;
+
           for (let i = 0; i < contentParagraphs.length; i++) {
             const paragraphNum = i + 1;
             const paragraphContent = contentParagraphs[i];
+            let inserted = false;
 
-            // Look for <div id="generated-paragraph-X"> with empty <p> tag
-            const divPattern = new RegExp(
+            console.log(`\n🔍 DEBUG: Processing paragraph ${paragraphNum}...`);
+            console.log(`   Content preview: "${paragraphContent.substring(0, 80)}..."`);
+
+            // STRATEGY 1: Look for <div id="generated-paragraph-X"> with empty <p> tag
+            const emptyPPattern = new RegExp(
               `(<div[^>]*id="generated-paragraph-${paragraphNum}"[^>]*>\\s*<p[^>]*>)\\s*(</p>\\s*</div>)`,
               'i'
             );
 
-            if (divPattern.test(personalizedHtml)) {
+            if (emptyPPattern.test(personalizedHtml)) {
+              console.log(`   ✅ Strategy 1: Found empty <p> tag for paragraph ${paragraphNum}`);
               personalizedHtml = personalizedHtml.replace(
-                divPattern,
+                emptyPPattern,
                 `$1\n              ${paragraphContent}\n            $2`
               );
-              console.log(`   ✅ Inserted paragraph ${paragraphNum}: "${paragraphContent.substring(0, 60)}..."`);
+              inserted = true;
+              insertionSuccessCount++;
+            }
+
+            // STRATEGY 2: Look for <div id="generated-paragraph-X"> with ANY content in <p> tag
+            if (!inserted) {
+              const anyContentPattern = new RegExp(
+                `(<div[^>]*id="generated-paragraph-${paragraphNum}"[^>]*>\\s*<p[^>]*>)([^<]*)(</p>\\s*</div>)`,
+                'i'
+              );
+
+              if (anyContentPattern.test(personalizedHtml)) {
+                console.log(`   ✅ Strategy 2: Found <p> tag with content for paragraph ${paragraphNum}, replacing...`);
+                personalizedHtml = personalizedHtml.replace(
+                  anyContentPattern,
+                  `$1\n              ${paragraphContent}\n            $3`
+                );
+                inserted = true;
+                insertionSuccessCount++;
+              }
+            }
+
+            // STRATEGY 3: Look for <div id="generated-paragraph-X"> without nested <p> tag
+            if (!inserted) {
+              const noNestedPPattern = new RegExp(
+                `(<div[^>]*id="generated-paragraph-${paragraphNum}"[^>]*>)([\\s\\S]*?)(</div>)`,
+                'i'
+              );
+
+              if (noNestedPPattern.test(personalizedHtml)) {
+                console.log(`   ✅ Strategy 3: Found div for paragraph ${paragraphNum} (no nested <p>), inserting...`);
+                personalizedHtml = personalizedHtml.replace(
+                  noNestedPPattern,
+                  `$1\n            <p style="font-size: 16px; line-height: 1.6; color: #343a40; margin: 0;">\n              ${paragraphContent}\n            </p>\n          $3`
+                );
+                inserted = true;
+                insertionSuccessCount++;
+              }
+            }
+
+            // STRATEGY 4: Look for [GENERATED CONTENT X] placeholder
+            if (!inserted) {
+              const placeholderPattern = new RegExp(
+                `\\[GENERATED CONTENT ${paragraphNum}\\]`,
+                'gi'
+              );
+
+              if (placeholderPattern.test(personalizedHtml)) {
+                console.log(`   ✅ Strategy 4: Found [GENERATED CONTENT ${paragraphNum}] placeholder, replacing...`);
+                personalizedHtml = personalizedHtml.replace(
+                  placeholderPattern,
+                  paragraphContent
+                );
+                inserted = true;
+                insertionSuccessCount++;
+              }
+            }
+
+            if (!inserted) {
+              console.log(`   ⚠️  WARNING: Could not insert paragraph ${paragraphNum} with any strategy!`);
+              console.log(`   📊 DEBUG: Checking if div exists at all...`);
+              const divCheck = personalizedHtml.includes(`id="generated-paragraph-${paragraphNum}"`);
+              console.log(`   📊 DEBUG: Div with id="generated-paragraph-${paragraphNum}" exists: ${divCheck}`);
+
+              if (divCheck) {
+                // Extract the div to see its structure
+                const divExtractPattern = new RegExp(
+                  `<div[^>]*id="generated-paragraph-${paragraphNum}"[^>]*>([\\s\\S]{0,200})`,
+                  'i'
+                );
+                const match = personalizedHtml.match(divExtractPattern);
+                if (match) {
+                  console.log(`   📊 DEBUG: Div structure: ${match[0]}`);
+                }
+              }
             } else {
-              console.log(`   ⚠️  No div found for generated-paragraph-${paragraphNum}`);
+              console.log(`   ✅ Successfully inserted paragraph ${paragraphNum}`);
             }
           }
+
+          console.log(`\n📊 INSERTION SUMMARY: ${insertionSuccessCount}/${contentParagraphs.length} paragraphs inserted successfully`);
+          console.log(`📊 DEBUG: HTML length after insertion: ${personalizedHtml.length} chars`);
 
           // 🎯 STEP 5: Personalize subject line
           console.log(`\n🔄 STEP 5: Personalizing subject line...`);
