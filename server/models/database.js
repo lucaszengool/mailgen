@@ -27,6 +27,7 @@ class Database {
         to_email TEXT NOT NULL,
         subject TEXT,
         campaign_id TEXT,
+        user_id TEXT NOT NULL DEFAULT 'anonymous',
         message_id TEXT,
         status TEXT DEFAULT 'pending',
         error_message TEXT,
@@ -35,6 +36,28 @@ class Database {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // 🔥 MIGRATION: Add user_id column to existing email_logs tables
+    // Check if user_id column exists
+    this.db.all(`PRAGMA table_info(email_logs)`, (err, columns) => {
+      if (!err && columns) {
+        const hasUserId = columns.some(col => col.name === 'user_id');
+        if (!hasUserId) {
+          console.log('🔄 MIGRATION: Adding user_id column to email_logs table...');
+          this.db.run(`ALTER TABLE email_logs ADD COLUMN user_id TEXT NOT NULL DEFAULT 'anonymous'`, (err) => {
+            if (err) {
+              console.error('❌ Failed to add user_id column:', err);
+            } else {
+              console.log('✅ Successfully added user_id column to email_logs table');
+            }
+          });
+        } else {
+          console.log('✅ user_id column already exists in email_logs table');
+        }
+      } else if (err) {
+        console.error('❌ Failed to check email_logs table structure:', err);
+      }
+    });
 
     // 邮件打开跟踪表
     this.db.run(`
@@ -246,17 +269,18 @@ class Database {
   }
 
   // 记录邮件发送
-  logEmailSent(emailData) {
+  logEmailSent(emailData, userId = 'anonymous') {
     return new Promise((resolve, reject) => {
       const stmt = this.db.prepare(`
-        INSERT INTO email_logs (to_email, subject, campaign_id, message_id, status, error_message, recipient_index, sent_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO email_logs (to_email, subject, campaign_id, user_id, message_id, status, error_message, recipient_index, sent_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
-      
+
       stmt.run([
         emailData.to,
         emailData.subject,
         emailData.campaignId,
+        userId, // 🔥 CRITICAL FIX: Add user_id for multi-user isolation
         emailData.messageId,
         emailData.status,
         emailData.error,
@@ -269,8 +293,47 @@ class Database {
           resolve(this.lastID);
         }
       });
-      
+
       stmt.finalize();
+    });
+  }
+
+  // 🔥 NEW: Get email logs with user and campaign filtering (like getContacts for prospects)
+  getEmailLogs(userId = 'anonymous', filter = {}, limit = 100) {
+    return new Promise((resolve, reject) => {
+      let query = 'SELECT * FROM email_logs WHERE user_id = ?';
+      const params = [userId];
+
+      // 🔥 CRITICAL: Filter by campaign_id if provided
+      if (filter.campaignId) {
+        query += ' AND campaign_id = ?';
+        params.push(filter.campaignId);
+      }
+
+      if (filter.status) {
+        query += ' AND status = ?';
+        params.push(filter.status);
+      }
+
+      if (filter.toEmail) {
+        query += ' AND to_email LIKE ?';
+        params.push('%' + filter.toEmail + '%');
+      }
+
+      query += ' ORDER BY sent_at DESC LIMIT ?';
+      params.push(limit);
+
+      console.log(`📧 [getEmailLogs] Query: ${query}`);
+      console.log(`📧 [getEmailLogs] Params:`, params);
+
+      this.db.all(query, params, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          console.log(`📧 [getEmailLogs] Found ${rows?.length || 0} email logs for user=${userId}, campaign=${filter.campaignId || 'all'}`);
+          resolve(rows);
+        }
+      });
     });
   }
 

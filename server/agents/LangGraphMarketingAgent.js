@@ -5308,18 +5308,31 @@ Return ONLY the JSON object, no other text.`;
           // If we have customizations from template selection, merge them
           if (templateData && (templateData.isCustomized || templateData.components || templateData.html)) {
             console.log(`✨ Merging customizations with base template`);
-            console.log(`   🔍 Has user HTML: ${!!templateData.html}, length: ${templateData.html?.length || 0}`);
+            console.log(`   🔍 BEFORE MERGE - User HTML: ${!!templateData.html}, length: ${templateData.html?.length || 0}`);
+            console.log(`   🔍 BEFORE MERGE - Base HTML: ${!!baseTemplate.html}, length: ${baseTemplate.html?.length || 0}`);
+            console.log(`   🔍 BEFORE MERGE - User HTML first 200 chars: ${templateData.html?.substring(0, 200) || 'NO HTML'}`);
             console.log(`   🔍 Has customizations: ${!!templateData.customizations}, keys: ${templateData.customizations ? Object.keys(templateData.customizations).join(', ') : 'none'}`);
             console.log(`   🔍 isCustomized flag: ${templateData.isCustomized}`);
+
+            // 🔥 CRITICAL FIX: Preserve user's customized HTML by storing it BEFORE merge
+            const userCustomizedHtml = templateData.html;
+            const userCustomizations = templateData.customizations;
+            const isUserCustomized = !!templateData.isCustomized;
+
             templateData = {
               ...baseTemplate,
               ...templateData, // Keep all customizations - this MUST come after baseTemplate to override
+              // 🔥 CRITICAL: Explicitly re-apply user's HTML AFTER merge to ensure it's not overwritten
+              html: userCustomizedHtml || templateData.html,
+              customizations: userCustomizations || templateData.customizations,
               templateId: selectedEmailTemplate,
               // 🔥 CRITICAL: Explicitly preserve user customization flags (FIXED: only true if actually customized)
-              isCustomized: !!templateData.isCustomized,  // Only true if user actually customized it
+              isCustomized: isUserCustomized,
               userSelected: true,
               baseTemplate: baseTemplate // Keep reference to original
             };
+            console.log(`   ✅ AFTER MERGE - Final HTML length: ${templateData.html?.length || 0}`);
+            console.log(`   ✅ AFTER MERGE - Final HTML first 200 chars: ${templateData.html?.substring(0, 200) || 'NO HTML'}`);
             console.log(`   ✅ Merged template isCustomized: ${templateData.isCustomized}, userSelected: ${templateData.userSelected}`);
           } else {
             // No customizations, use base template

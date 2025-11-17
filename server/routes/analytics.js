@@ -322,42 +322,48 @@ function trackEmailBounced(campaignId, recipientEmail, timestamp = new Date()) {
 // Get email metrics overview
 router.get('/email-metrics', async (req, res) => {
   try {
-    const { timeRange = '30d', campaign = 'all' } = req.query;
+    const { timeRange = '30d', campaign = 'all', userId = 'anonymous' } = req.query;
     const sinceDate = getTimeRangeFilter(timeRange);
     const sinceTimestamp = sinceDate.toISOString();
 
-    // Query database for real data
-    const emailLogsQuery = campaign === 'all'
-      ? `SELECT * FROM email_logs WHERE sent_at >= ?`
-      : `SELECT * FROM email_logs WHERE sent_at >= ? AND campaign_id = ?`;
+    console.log(`📊 [EMAIL-METRICS] User: ${userId}, Campaign: ${campaign}, TimeRange: ${timeRange}`);
 
-    const emailLogsParams = campaign === 'all' ? [sinceTimestamp] : [sinceTimestamp, campaign];
+    // 🔥 CRITICAL FIX: Query database with user_id filter (like prospect pipeline)
+    const emailLogsQuery = campaign === 'all'
+      ? `SELECT * FROM email_logs WHERE user_id = ? AND sent_at >= ?`
+      : `SELECT * FROM email_logs WHERE user_id = ? AND sent_at >= ? AND campaign_id = ?`;
+
+    const emailLogsParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
+    console.log(`📊 [EMAIL-METRICS] Query: ${emailLogsQuery}`);
+    console.log(`📊 [EMAIL-METRICS] Params:`, emailLogsParams);
+
     const emailLogs = await queryDB(emailLogsQuery, emailLogsParams);
+    console.log(`📊 [EMAIL-METRICS] Found ${emailLogs.length} email logs for user=${userId}, campaign=${campaign}`);
 
     // Count emails by status
     const totalSent = emailLogs.filter(log => log.status === 'sent').length;
     const totalFailed = emailLogs.filter(log => log.status === 'failed').length;
     const totalDelivered = totalSent; // Assume all sent emails are delivered for now
 
-    // Query for opens and clicks
+    // 🔥 CRITICAL FIX: Query for opens and clicks WITH user_id filter
     const opensQuery = campaign === 'all'
       ? `SELECT COUNT(DISTINCT tracking_id) as count FROM email_opens o
          INNER JOIN email_logs e ON o.tracking_id LIKE e.campaign_id || '%'
-         WHERE e.sent_at >= ?`
+         WHERE e.user_id = ? AND e.sent_at >= ?`
       : `SELECT COUNT(DISTINCT tracking_id) as count FROM email_opens o
          INNER JOIN email_logs e ON o.tracking_id LIKE e.campaign_id || '%'
-         WHERE e.sent_at >= ? AND e.campaign_id = ?`;
+         WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
 
     const clicksQuery = campaign === 'all'
       ? `SELECT COUNT(*) as count FROM email_clicks c
          INNER JOIN email_logs e ON c.campaign_id = e.campaign_id
-         WHERE e.sent_at >= ?`
+         WHERE e.user_id = ? AND e.sent_at >= ?`
       : `SELECT COUNT(*) as count FROM email_clicks c
          INNER JOIN email_logs e ON c.campaign_id = e.campaign_id
-         WHERE e.sent_at >= ? AND e.campaign_id = ?`;
+         WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
 
-    const opensParams = campaign === 'all' ? [sinceTimestamp] : [sinceTimestamp, campaign];
-    const clicksParams = campaign === 'all' ? [sinceTimestamp] : [sinceTimestamp, campaign];
+    const opensParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
+    const clicksParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
 
     const opensResult = await queryDB(opensQuery, opensParams);
     const clicksResult = await queryDB(clicksQuery, clicksParams);
@@ -402,19 +408,23 @@ router.get('/email-metrics', async (req, res) => {
 // Get campaign performance data
 router.get('/campaign-performance', async (req, res) => {
   try {
-    const { timeRange = '30d' } = req.query;
+    const { timeRange = '30d', userId = 'anonymous' } = req.query;
     const sinceDate = getTimeRangeFilter(timeRange);
     const sinceTimestamp = sinceDate.toISOString();
 
-    // Get campaigns from database
+    console.log(`📊 [CAMPAIGN-PERFORMANCE] User: ${userId}, TimeRange: ${timeRange}`);
+
+    // 🔥 CRITICAL FIX: Get campaigns from database WITH user_id filter
     const emailLogs = await queryDB(
       `SELECT campaign_id, COUNT(*) as sent,
        SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as delivered
        FROM email_logs
-       WHERE sent_at >= ?
+       WHERE user_id = ? AND sent_at >= ?
        GROUP BY campaign_id`,
-      [sinceTimestamp]
+      [userId, sinceTimestamp]
     );
+
+    console.log(`📊 [CAMPAIGN-PERFORMANCE] Found ${emailLogs.length} campaigns for user=${userId}`);
 
     // Get opens and clicks for each campaign
     const campaigns = await Promise.all(emailLogs.map(async (log) => {
@@ -479,22 +489,26 @@ router.get('/deliverability', (req, res) => {
 // Get engagement trends
 router.get('/engagement-trends', async (req, res) => {
   try {
-    const { timeRange = '30d' } = req.query;
+    const { timeRange = '30d', userId = 'anonymous' } = req.query;
     const sinceDate = getTimeRangeFilter(timeRange);
     const sinceTimestamp = sinceDate.toISOString();
 
-    // Get daily stats from database
+    console.log(`📊 [ENGAGEMENT-TRENDS] User: ${userId}, TimeRange: ${timeRange}`);
+
+    // 🔥 CRITICAL FIX: Get daily stats from database WITH user_id filter
     const dailyStats = await queryDB(
       `SELECT
         DATE(sent_at) as date,
         COUNT(*) as sent,
         SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as delivered
        FROM email_logs
-       WHERE sent_at >= ?
+       WHERE user_id = ? AND sent_at >= ?
        GROUP BY DATE(sent_at)
        ORDER BY date ASC`,
-      [sinceTimestamp]
+      [userId, sinceTimestamp]
     );
+
+    console.log(`📊 [ENGAGEMENT-TRENDS] Found ${dailyStats.length} days of data for user=${userId}`);
 
     // Get opens and clicks for each day
     const trends = await Promise.all(dailyStats.map(async (stat) => {
@@ -502,16 +516,16 @@ router.get('/engagement-trends', async (req, res) => {
         `SELECT COUNT(DISTINCT o.tracking_id) as opens
          FROM email_opens o
          INNER JOIN email_logs e ON o.tracking_id LIKE e.campaign_id || '%'
-         WHERE DATE(e.sent_at) = ?`,
-        [stat.date]
+         WHERE e.user_id = ? AND DATE(e.sent_at) = ?`,
+        [userId, stat.date]
       );
 
       const clicksResult = await queryDB(
         `SELECT COUNT(*) as clicks
          FROM email_clicks c
          INNER JOIN email_logs e ON c.campaign_id = e.campaign_id
-         WHERE DATE(e.sent_at) = ?`,
-        [stat.date]
+         WHERE e.user_id = ? AND DATE(e.sent_at) = ?`,
+        [userId, stat.date]
       );
 
       return {
@@ -572,29 +586,34 @@ router.get('/recipient-analytics', (req, res) => {
 // Get realtime stats
 router.get('/realtime', async (req, res) => {
   try {
+    const { userId = 'anonymous' } = req.query;
     const today = new Date().toISOString().split('T')[0];
 
-    // Get today's stats from database
+    console.log(`📊 [REALTIME] User: ${userId}, Date: ${today}`);
+
+    // 🔥 CRITICAL FIX: Get today's stats from database WITH user_id filter
     const todayStats = await queryDB(
-      `SELECT COUNT(*) as sent FROM email_logs WHERE DATE(sent_at) = ?`,
-      [today]
+      `SELECT COUNT(*) as sent FROM email_logs WHERE user_id = ? AND DATE(sent_at) = ?`,
+      [userId, today]
     );
 
     const todayOpens = await queryDB(
       `SELECT COUNT(DISTINCT o.tracking_id) as opens
        FROM email_opens o
        INNER JOIN email_logs e ON o.tracking_id LIKE e.campaign_id || '%'
-       WHERE DATE(e.sent_at) = ?`,
-      [today]
+       WHERE e.user_id = ? AND DATE(e.sent_at) = ?`,
+      [userId, today]
     );
 
-    // Count active campaigns (campaigns with emails sent in last 7 days)
+    // 🔥 CRITICAL FIX: Count active campaigns WITH user_id filter
     const activeCampaigns = await queryDB(
       `SELECT COUNT(DISTINCT campaign_id) as count
        FROM email_logs
-       WHERE sent_at >= datetime('now', '-7 days')`,
-      []
+       WHERE user_id = ? AND sent_at >= datetime('now', '-7 days')`,
+      [userId]
     );
+
+    console.log(`📊 [REALTIME] Sent today: ${todayStats[0]?.sent || 0}, Active campaigns: ${activeCampaigns[0]?.count || 0}`);
 
     const totalSentToday = todayStats[0]?.sent || 0;
     const totalOpensToday = todayOpens[0]?.opens || 0;
@@ -807,16 +826,19 @@ function trackEmailBouncedWithWS(campaignId, recipientEmail, timestamp = new Dat
 // Backfill analytics from database
 router.post('/backfill-from-database', async (req, res) => {
   try {
+    const { userId = 'anonymous' } = req.body;
     const db = require('../models/database');
 
-    // Get all email logs from database
-    db.db.all('SELECT * FROM email_logs WHERE status = "sent" ORDER BY sent_at ASC', (err, rows) => {
+    console.log(`📊 [BACKFILL] User: ${userId}`);
+
+    // 🔥 CRITICAL FIX: Get email logs filtered by user_id
+    db.db.all('SELECT * FROM email_logs WHERE user_id = ? AND status = "sent" ORDER BY sent_at ASC', [userId], (err, rows) => {
       if (err) {
         console.error('Error reading email logs:', err);
         return res.status(500).json({ success: false, error: err.message });
       }
 
-      console.log(`📊 Backfilling analytics with ${rows.length} emails from database`);
+      console.log(`📊 Backfilling analytics with ${rows.length} emails from database for user=${userId}`);
 
       // Track each email in analytics
       rows.forEach(row => {
