@@ -155,6 +155,19 @@ class Database {
       )
     `);
 
+    // 用户配置表 (for website analysis, campaign settings, etc.)
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS user_configs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL UNIQUE,
+        smtp_config TEXT,
+        website_config TEXT,
+        campaign_config TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // 迁移现有数据：为旧数据添加 user_id
     this.migrateExistingData();
 
@@ -805,6 +818,68 @@ class Database {
           }
         });
       });
+    });
+  }
+
+  // 🔧 Get user configuration
+  getUserConfig(userId) {
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        'SELECT * FROM user_configs WHERE user_id = ?',
+        [userId],
+        (err, row) => {
+          if (err) {
+            console.error('❌ Failed to get user config:', err);
+            reject(err);
+          } else if (row) {
+            // Parse JSON fields
+            try {
+              resolve({
+                smtp: row.smtp_config ? JSON.parse(row.smtp_config) : null,
+                website: row.website_config ? JSON.parse(row.website_config) : null,
+                campaign: row.campaign_config ? JSON.parse(row.campaign_config) : null
+              });
+            } catch (parseError) {
+              console.error('❌ Failed to parse user config:', parseError);
+              resolve({ smtp: null, website: null, campaign: null });
+            }
+          } else {
+            // No config found, return null
+            resolve({ smtp: null, website: null, campaign: null });
+          }
+        }
+      );
+    });
+  }
+
+  // 💾 Save user configuration
+  saveUserConfig(userId, config) {
+    return new Promise((resolve, reject) => {
+      const smtpConfigJson = config.smtp ? JSON.stringify(config.smtp) : null;
+      const websiteConfigJson = config.website ? JSON.stringify(config.website) : null;
+      const campaignConfigJson = config.campaign ? JSON.stringify(config.campaign) : null;
+
+      // Use INSERT OR REPLACE to update existing or create new
+      this.db.run(
+        `INSERT OR REPLACE INTO user_configs (user_id, smtp_config, website_config, campaign_config, updated_at)
+         VALUES (
+           ?,
+           ?,
+           ?,
+           ?,
+           CURRENT_TIMESTAMP
+         )`,
+        [userId, smtpConfigJson, websiteConfigJson, campaignConfigJson],
+        function(err) {
+          if (err) {
+            console.error('❌ Failed to save user config:', err);
+            reject(err);
+          } else {
+            console.log(`✅ User config saved for user: ${userId}`);
+            resolve({ success: true, userId });
+          }
+        }
+      );
     });
   }
 

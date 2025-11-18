@@ -1261,6 +1261,55 @@ const SettingsView = () => {
     };
   });
 
+  const [websiteConfig, setWebsiteConfig] = useState({
+    targetWebsite: '',
+    businessName: '',
+    productType: '',
+    businessIntro: ''
+  });
+
+  const [campaignConfig, setCampaignConfig] = useState({
+    defaultProspectCount: 10,
+    searchStrategy: 'balanced',
+    emailFrequency: 'daily',
+    followUpEnabled: true,
+    followUpDays: 3
+  });
+
+  // 🔧 Load current config from backend on mount
+  useEffect(() => {
+    const loadCurrentConfig = async () => {
+      try {
+        console.log('🔧 Loading current configuration from backend...');
+        const response = await apiGet('/config/current');
+
+        if (response.success) {
+          console.log('✅ Config loaded:', response);
+
+          // Update SMTP config if available
+          if (response.smtp && Object.keys(response.smtp).length > 0) {
+            setSmtpConfig(response.smtp);
+          }
+
+          // Update Website config if available
+          if (response.website && Object.keys(response.website).length > 0) {
+            setWebsiteConfig(response.website);
+          }
+
+          // Update Campaign config if available
+          if (response.campaign && Object.keys(response.campaign).length > 0) {
+            setCampaignConfig(response.campaign);
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not load config from backend:', error);
+        // Fallback to localStorage is already handled by useState initializers
+      }
+    };
+
+    loadCurrentConfig();
+  }, []); // Run once on mount
+
   const testSmtpConnection = async () => {
     if (!smtpConfig.host || !smtpConfig.username || !smtpConfig.password) {
       toast.error('Please fill in all required SMTP fields');
@@ -1289,15 +1338,28 @@ const SettingsView = () => {
   const updateSmtpConfig = async () => {
     setIsSaving(true);
     try {
+      // Save to localStorage for backwards compatibility
       localStorage.setItem('smtpConfig', JSON.stringify(smtpConfig));
-      await fetch('/api/settings/smtp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ smtpConfig }),
+      localStorage.setItem('websiteConfig', JSON.stringify(websiteConfig));
+      localStorage.setItem('campaignConfig', JSON.stringify(campaignConfig));
+
+      // Save to backend (new unified API)
+      console.log('💾 Saving configuration to backend...');
+      const response = await apiPost('/config/update', {
+        smtp: smtpConfig,
+        website: websiteConfig,
+        campaign: campaignConfig
       });
-      toast.success('SMTP Configuration Updated Successfully!');
+
+      if (response.success) {
+        toast.success('Configuration saved! Future campaigns will use these settings ✅');
+        console.log('✅ Configuration saved successfully');
+      } else {
+        throw new Error(response.error || 'Unknown error');
+      }
     } catch (error) {
-      toast.error(`Could not save SMTP settings. ${error.message}. Your settings are saved locally but may not sync with the server.`, { duration: 6000 });
+      console.error('❌ Failed to save config:', error);
+      toast.error(`Could not save settings to server. ${error.message}. Settings saved locally only.`, { duration: 6000 });
     } finally {
       setIsSaving(false);
     }

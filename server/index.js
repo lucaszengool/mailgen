@@ -74,6 +74,7 @@ app.use('/api/campaigns', require('./routes/campaigns'));
 app.use('/api/contacts', require('./routes/contacts'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/marketing', require('./routes/marketing'));
+app.use('/api/config', require('./routes/config'));
 
 // Debug endpoint for client-side logging
 app.post('/api/debug-log', (req, res) => {
