@@ -159,7 +159,7 @@ class EmailTrackingService {
           userAgent: metadata.userAgent || 'unknown',
           ip: metadata.ipAddress || 'unknown'
         });
-        console.log(`[Tracking] ✅ Email open logged to database: ${trackingId}`);
+        console.log(`[Tracking] ✅ Email open tracked in database: ${trackingId}`);
       } catch (dbError) {
         console.error('[Tracking] Failed to log open to database:', dbError.message);
         // Don't fail the request if DB logging fails

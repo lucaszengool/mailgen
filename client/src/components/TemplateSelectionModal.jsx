@@ -287,7 +287,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
         return (
           <div className="space-y-3">
             {[1, 2, 3, 4].map(num => (
-              <div key={num} className="p-2 bg-gray-50 rounded">
+              <div key={num} className="p-2 bg-white border border-gray-200 rounded">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Feature {num} Title</label>
                 <input
                   type="text"
@@ -313,7 +313,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
         return (
           <div className="space-y-3">
             {[1, 2, 3].map(num => (
-              <div key={num} className="p-2 bg-gray-50 rounded">
+              <div key={num} className="p-2 bg-white border border-gray-200 rounded">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Stat {num} Value</label>
                 <input
                   type="text"
@@ -424,7 +424,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Feature Grid Items */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Feature Grid (4 Items)</h5>
             {[0, 1, 2, 3].map((idx) => (
               <div key={idx} className="mb-4 p-3 bg-white rounded border border-gray-200">
@@ -476,7 +476,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Button Configuration */}
-          <div className="mb-6 p-4 bg-green-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">CTA Button</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">Button Text</label>
@@ -519,7 +519,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
               Company Logo
             </label>
             {customTemplateData.customizations?.logo ? (
-              <div className="mb-3 flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
+              <div className="mb-3 flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-white">
                 <div className="flex items-center gap-3">
                   <img
                     src={customTemplateData.customizations.logo}
@@ -544,7 +544,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                 </button>
               </div>
             ) : (
-              <div className="mb-3 p-3 border border-dashed border-gray-300 rounded-lg bg-gray-50 text-center">
+              <div className="mb-3 p-3 border border-dashed border-gray-300 rounded-lg bg-white text-center">
                 <p className="text-sm text-gray-500">No logo set. Upload or enter URL below.</p>
               </div>
             )}
@@ -601,7 +601,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Testimonial */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Testimonial</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">Testimonial Text</label>
@@ -632,7 +632,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Button Configuration */}
-          <div className="mb-6 p-4 bg-green-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">CTA Button</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">Button Text</label>
@@ -670,7 +670,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       return (
         <>
           {/* Executive Header */}
-          <div className="mb-6 p-4 bg-purple-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Executive Header</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">Header Title</label>
@@ -701,7 +701,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Stats Showcase */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Stats Showcase (3 Stats)</h5>
             {[1, 2, 3].map((num) => (
               <div key={num} className="mb-3 p-2 bg-white rounded border border-gray-200">
@@ -732,7 +732,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Testimonial */}
-          <div className="mb-6 p-4 bg-green-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Testimonial</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">Testimonial Text</label>
@@ -773,7 +773,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Button Configuration */}
-          <div className="mb-6 p-4 bg-gray-100 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">CTA Button</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">Button Text</label>
@@ -809,7 +809,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       return (
         <>
           {/* Product Hero */}
-          <div className="mb-6 p-4 bg-purple-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Product Hero</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">Hero Title</label>
@@ -838,7 +838,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Feature Highlights */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Feature Highlights (4 Features)</h5>
             {[1, 2, 3, 4].map((num) => (
               <div key={num} className="mb-3 p-2 bg-white rounded border border-gray-200">
@@ -933,7 +933,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Button Configuration */}
-          <div className="mb-6 p-4 bg-green-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">CTA Button</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">Button Text</label>
@@ -998,7 +998,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Methodology */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Methodology (3 Steps)</h5>
             {[1, 2, 3].map((num) => (
               <div key={num} className="mb-3 p-2 bg-white rounded border border-gray-200">
@@ -1029,7 +1029,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Case Study */}
-          <div className="mb-6 p-4 bg-green-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Case Study</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">Case Study Title</label>
@@ -1159,7 +1159,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Agenda Timeline */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Agenda Timeline (3 Items)</h5>
             {[1, 2, 3].map((num) => (
               <div key={num} className="mb-3 p-2 bg-white rounded border border-gray-200">
@@ -1201,7 +1201,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Speaker Showcase */}
-          <div className="mb-6 p-4 bg-purple-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Speaker Showcase (2 Speakers)</h5>
             {[1, 2].map((num) => (
               <div key={num} className="mb-3 p-2 bg-white rounded border border-gray-200">
@@ -1243,7 +1243,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
           </div>
 
           {/* Registration CTA */}
-          <div className="mb-6 p-4 bg-green-50 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-700 mb-4">Registration CTA</h5>
             <div className="mb-3">
               <label className="block text-xs font-medium text-gray-700 mb-1">CTA Text</label>
@@ -1303,7 +1303,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+        <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
           <h5 className="text-sm font-semibold text-gray-700 mb-4">Button Configuration</h5>
           <div className="mb-3">
             <label className="block text-xs font-medium text-gray-700 mb-1">Button Text</label>
@@ -3102,8 +3102,10 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                           onDragLeave={() => setDropZoneActive(null)}
                           onDrop={(e) => {
                             e.preventDefault();
+
+                            // Handle media drop
                             const mediaIndex = parseInt(e.dataTransfer.getData('mediaIndex'));
-                            if (draggedMedia) {
+                            if (draggedMedia && !isNaN(mediaIndex)) {
                               const newMedia = [...(customTemplateData.customizations?.customMedia || [])];
                               newMedia[mediaIndex] = { ...newMedia[mediaIndex], insertAfter: insertPoint };
                               setCustomTemplateData(prev => ({
@@ -3111,25 +3113,108 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                                 customizations: { ...prev.customizations, customMedia: newMedia }
                               }));
                             }
+
+                            // Handle component drop
+                            const componentType = e.dataTransfer.getData('componentType');
+                            if (componentType) {
+                              const newComponent = {
+                                id: Date.now() + Math.random(),
+                                type: componentType,
+                                properties: getDefaultPropertiesForComponent(componentType),
+                                insertAfter: insertPoint
+                              };
+                              setCustomTemplateData(prev => ({
+                                ...prev,
+                                customizations: {
+                                  ...prev.customizations,
+                                  customComponents: [...(prev.customizations?.customComponents || []), newComponent]
+                                }
+                              }));
+                            }
+
                             setDropZoneActive(null);
                             setDraggedMedia(null);
                           }}
                           className={`transition-all ${
                             dropZoneActive === insertPoint
                               ? 'h-16 bg-green-100 border-2 border-dashed border-green-500 rounded-lg flex items-center justify-center my-2'
-                              : draggedMedia
+                              : (draggedMedia || selectedTemplate === 'custom_template')
                               ? 'h-8 bg-green-50 border border-dashed border-green-300 rounded flex items-center justify-center opacity-50 hover:opacity-100 my-1'
                               : 'h-0'
                           }`}
                         >
-                          {draggedMedia && (
+                          {(draggedMedia || selectedTemplate === 'custom_template') && (
                             <div className="text-xs text-green-600 font-medium">
-                              {dropZoneActive === insertPoint ? `⬇ Drop here (${label})` : label}
+                              {dropZoneActive === insertPoint ? `⬇ Drop here (${label})` : `Drop ${label}`}
                             </div>
                           )}
                         </div>
                       );
 
+                      // For custom template, render components in their drop positions
+                      if (selectedTemplate === 'custom_template') {
+                        const customComponents = customTemplateData.customizations?.customComponents || [];
+                        const insertPoints = ['start', 'logo', 'greeting', 'paragraph-1', 'paragraph-2', 'paragraph-3', 'cta', 'testimonial', 'signature', 'end'];
+
+                        return (
+                          <div className="space-y-2">
+                            {insertPoints.map(point => (
+                              <React.Fragment key={point}>
+                                {renderDropZone(point, point.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()))}
+
+                                {/* Render components inserted at this point */}
+                                {customComponents
+                                  .filter(comp => comp.insertAfter === point)
+                                  .map((comp, idx) => (
+                                    <div key={comp.id} className="relative group bg-white border-2 border-blue-200 rounded-lg p-4 my-2">
+                                      {/* Component header with controls */}
+                                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                          onClick={() => {
+                                            const newComponents = customTemplateData.customizations.customComponents.filter(c => c.id !== comp.id);
+                                            setCustomTemplateData(prev => ({
+                                              ...prev,
+                                              customizations: { ...prev.customizations, customComponents: newComponents }
+                                            }));
+                                          }}
+                                          className="bg-red-500 text-white p-1.5 rounded hover:bg-red-600"
+                                          title="Delete component"
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                          </svg>
+                                        </button>
+                                      </div>
+
+                                      {/* Component label */}
+                                      <div className="text-xs font-medium text-blue-600 mb-2">
+                                        {comp.type.charAt(0).toUpperCase() + comp.type.slice(1)} Component
+                                      </div>
+
+                                      {/* Render component preview using EmailTemplateRenderer */}
+                                      <EmailTemplateRenderer
+                                        templateId="custom_template"
+                                        customizations={{
+                                          customComponents: [comp],
+                                          ...customTemplateData.customizations
+                                        }}
+                                        isEditable={false}
+                                        sampleData={{
+                                          name: 'Sarah',
+                                          company: 'TechCorp',
+                                          senderName: 'James Wilson',
+                                          senderCompany: 'Your Company'
+                                        }}
+                                      />
+                                    </div>
+                                  ))}
+                              </React.Fragment>
+                            ))}
+                          </div>
+                        );
+                      }
+
+                      // For other templates, use the standard rendering
                       return (
                         <>
                           {renderDropZone('start', 'Before Email')}

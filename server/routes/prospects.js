@@ -143,6 +143,131 @@ router.post('/search', optionalAuth, async (req, res) => {
 });
 
 /**
+ * POST /api/prospects/batch-search
+ * Start a background batch search for prospects
+ */
+router.post('/batch-search', optionalAuth, async (req, res) => {
+  try {
+    const { industry, region, keywords, campaignId } = req.body;
+    const userId = req.userId || 'anonymous';
+
+    if (!industry && !keywords) {
+      return res.status(400).json({
+        success: false,
+        error: 'Industry or keywords required'
+      });
+    }
+
+    console.log(`🚀 Starting batch prospect search for user: ${userId}, campaign: ${campaignId}`);
+    console.log(`   Industry: ${industry}`);
+    console.log(`   Region: ${region}`);
+    console.log(`   Keywords: ${keywords}`);
+
+    // Generate unique search ID
+    const searchId = `batch_${Date.now()}_${userId}_${campaignId || 'default'}`;
+
+    // Start background search (non-blocking)
+    setImmediate(async () => {
+      try {
+        console.log(`📦 [${searchId}] Starting background batch search...`);
+
+        // Construct search query combining industry, region, and keywords
+        let searchQuery = industry || keywords;
+        if (region) {
+          searchQuery += ` ${region}`;
+        }
+        if (keywords && industry !== keywords) {
+          searchQuery += ` ${keywords}`;
+        }
+
+        console.log(`🔍 [${searchId}] Search query: "${searchQuery}"`);
+
+        // Use EnhancedEmailSearchAgent to search for prospects
+        const emailSearchAgent = new EnhancedEmailSearchAgent();
+        const result = await emailSearchAgent.searchEmails(searchQuery, 50, campaignId);
+
+        if (result.success && result.prospects && result.prospects.length > 0) {
+          console.log(`✅ [${searchId}] Found ${result.prospects.length} prospects`);
+
+          // Save prospects to database
+          let savedCount = 0;
+          for (const prospect of result.prospects) {
+            try {
+              await db.saveContact({
+                email: prospect.email,
+                name: prospect.name || 'Unknown',
+                company: prospect.company || 'Unknown',
+                position: prospect.role || prospect.estimatedRole || 'Unknown',
+                industry: industry || 'Unknown',
+                phone: '',
+                address: region || prospect.location || '',
+                source: `Batch Search: ${searchQuery}`,
+                tags: keywords || '',
+                notes: `Batch search on ${new Date().toLocaleString()}. Region: ${region || 'N/A'}`
+              }, userId, campaignId || 'default');
+              savedCount++;
+            } catch (saveError) {
+              // Skip if already exists
+              if (!saveError.message.includes('UNIQUE constraint')) {
+                console.error(`⚠️ [${searchId}] Failed to save prospect ${prospect.email}:`, saveError.message);
+              }
+            }
+          }
+
+          console.log(`✅ [${searchId}] Saved ${savedCount}/${result.prospects.length} prospects to database`);
+
+          // Send WebSocket notification about completion
+          const wsManager = require('../websocket/WorkflowWebSocketManager');
+          wsManager.broadcastToWorkflow(campaignId || 'default', {
+            type: 'batch_search_complete',
+            data: {
+              searchId,
+              totalFound: savedCount,
+              industry,
+              region,
+              keywords
+            }
+          });
+
+          console.log(`🎉 [${searchId}] Batch search complete!`);
+        } else {
+          console.warn(`⚠️ [${searchId}] No prospects found`);
+
+          // Send notification even if no results
+          const wsManager = require('../websocket/WorkflowWebSocketManager');
+          wsManager.broadcastToWorkflow(campaignId || 'default', {
+            type: 'batch_search_complete',
+            data: {
+              searchId,
+              totalFound: 0,
+              industry,
+              region,
+              keywords
+            }
+          });
+        }
+      } catch (error) {
+        console.error(`❌ [${searchId}] Background batch search failed:`, error);
+      }
+    });
+
+    // Return immediately with searchId
+    res.json({
+      success: true,
+      searchId,
+      message: 'Batch search started in background'
+    });
+
+  } catch (error) {
+    console.error('❌ Batch search error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
  * Generate mock prospects as fallback when real search fails
  */
 function generateMockProspects(industry, targetAudience, businessName, limit = 7) {

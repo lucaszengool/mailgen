@@ -29,11 +29,13 @@ import {
   ChartBarIcon,
   GlobeAltIcon,
   AcademicCapIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import toast from 'react-hot-toast'
 import ComprehensiveCompanyDetailPage from '../components/ComprehensiveCompanyDetailPage'
+import BatchSearchModal from '../components/BatchSearchModal'
 
 export default function Prospects() {
   const [prospects, setProspects] = useState([])
@@ -59,6 +61,7 @@ export default function Prospects() {
   const [showCompanyDetails, setShowCompanyDetails] = useState(false) // Track company details view
   const [generatingProfiles, setGeneratingProfiles] = useState(new Set()) // Track which profiles are being generated
   const [newBatchArrived, setNewBatchArrived] = useState(null) // 🔥 NEW: Track when new batch arrives for visual feedback
+  const [showBatchSearchModal, setShowBatchSearchModal] = useState(false) // Batch search modal visibility
 
   // WebSocket connection for real-time updates
   const ws = useRef(null)
@@ -304,6 +307,15 @@ export default function Prospects() {
             toast.success('✅ Campaign complete!')
             setWorkflowStatus(null) // Clear workflow status
           }
+        } else if (data.type === 'batch_search_complete') {
+          // Batch search completion notification
+          console.log('🎉 Batch search complete:', data.data)
+          toast.success(`✅ Batch search complete! Found ${data.data.totalFound} new prospects`, {
+            duration: 5000
+          })
+
+          // Refresh prospects to show new results
+          fetchProspects()
         }
       }
       
@@ -429,10 +441,10 @@ export default function Prospects() {
   const generateProspectProfile = async (prospect) => {
     try {
       console.log('🎭 Generating AI profile for:', prospect.email)
-      
+
       // Add to generating set
       setGeneratingProfiles(prev => new Set(prev).add(prospect.email))
-      
+
       // Call backend API to generate persona
       const response = await fetch('/api/prospects/generate-persona', {
         method: 'POST',
@@ -447,25 +459,69 @@ export default function Prospects() {
           position: prospect.position
         })
       })
-      
+
       const result = await response.json()
-      
+
       if (result.success) {
         console.log('✅ Profile generation initiated for:', prospect.email)
         toast.success('🎭 AI is generating the profile... Check back in a few moments!')
       } else {
         throw new Error(result.error || 'Failed to generate profile')
       }
-      
+
     } catch (error) {
       console.error('Profile generation failed:', error)
       toast.error('Failed to generate AI profile')
-      
+
       // Remove from generating set on error
       setGeneratingProfiles(prev => {
         const newSet = new Set(prev)
         newSet.delete(prospect.email)
         return newSet
+      })
+    }
+  }
+
+  const handleBatchSearch = async (searchParams) => {
+    try {
+      const currentCampaignId = localStorage.getItem('currentCampaignId')
+
+      console.log('🔍 Starting batch prospect search:', searchParams)
+
+      // Show starting notification
+      toast.loading('🚀 Starting batch prospect search...', {
+        id: 'batch-search-start',
+        duration: 3000
+      })
+
+      // Call backend API to start batch search
+      const response = await fetch('/api/prospects/batch-search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...searchParams,
+          campaignId: currentCampaignId
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        console.log('✅ Batch search initiated:', result.searchId)
+        toast.success(`🎉 Batch search started! Searching for prospects in ${searchParams.industry}...`, {
+          id: 'batch-search-start',
+          duration: 5000
+        })
+      } else {
+        throw new Error(result.error || 'Failed to start batch search')
+      }
+
+    } catch (error) {
+      console.error('Batch search failed:', error)
+      toast.error('Failed to start batch search: ' + error.message, {
+        id: 'batch-search-start'
       })
     }
   }
@@ -576,6 +632,13 @@ export default function Prospects() {
 
   return (
     <div className="min-h-screen bg-white flex">
+      {/* Batch Search Modal */}
+      <BatchSearchModal
+        isOpen={showBatchSearchModal}
+        onClose={() => setShowBatchSearchModal(false)}
+        onStartSearch={handleBatchSearch}
+      />
+
       {/* JobRight.ai 左侧深色导航栏 */}
       <div className="w-64 bg-gray-800 text-white flex flex-col">
         <div className="p-6">
@@ -694,6 +757,13 @@ export default function Prospects() {
           >
             <ArrowPathIcon className="h-5 w-5" />
             <span>Refresh</span>
+          </button>
+          <button
+            onClick={() => setShowBatchSearchModal(true)}
+            className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 flex items-center space-x-2 transition-all shadow-md"
+          >
+            <SparklesIcon className="h-5 w-5" />
+            <span>Batch Search</span>
           </button>
         </div>
       </div>
