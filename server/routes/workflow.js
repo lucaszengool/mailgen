@@ -700,25 +700,27 @@ router.get('/results', optionalAuth, async (req, res) => {
         console.log(`   📧 Total Emails BEFORE filtering: ${processedResults.emailCampaign.emails.length}`);
         console.log(`   👤 User ID: ${userId}`);
 
-        // ✅ CRITICAL FIX: Filter emails to only include those from THIS campaign
+        // 🔒 CRITICAL: Filter emails by campaignId to ensure campaign isolation
         const emailsBeforeFilter = processedResults.emailCampaign.emails.length;
         processedResults.emailCampaign.emails = processedResults.emailCampaign.emails.filter(email => {
-          const emailCampaignId = email.campaignId || email.campaign_id;
-          // Include email if:
-          // 1. It has the matching campaign ID
-          // 2. OR it has no campaign ID (legacy emails)
-          const matches = !emailCampaignId || emailCampaignId === campaignId;
-          if (!matches) {
-            console.log(`   🗑️  Filtering out email from campaign ${emailCampaignId}: ${email.to}`);
+          // Check all possible campaign ID fields
+          const emailCampaignId = email.campaignId || email.campaign_id || email.campaign;
+          const matches = emailCampaignId === campaignId || emailCampaignId === String(campaignId);
+
+          if (!matches && emailCampaignId) {
+            console.log(`   ⚠️  Filtering out email with campaignId: ${emailCampaignId} (requested: ${campaignId})`);
           }
+
           return matches;
         });
-        const emailsAfterFilter = processedResults.emailCampaign.emails.length;
 
-        console.log(`   📧 Total Emails AFTER filtering: ${emailsAfterFilter}`);
-        if (emailsBeforeFilter !== emailsAfterFilter) {
-          console.log(`   ✅ Filtered ${emailsBeforeFilter - emailsAfterFilter} emails from other campaigns`);
+        console.log(`   🔒 Campaign isolation: ${emailsBeforeFilter} total → ${processedResults.emailCampaign.emails.length} for campaign ${campaignId}`);
+
+        if (processedResults.emailCampaign.emails.length === 0 && emailsBeforeFilter > 0) {
+          console.warn(`   ⚠️  WARNING: All ${emailsBeforeFilter} emails were filtered out! Campaign ID mismatch!`);
         }
+
+        console.log(`   📧 Total Emails AFTER filtering: ${processedResults.emailCampaign.emails.length}`);
 
         console.log(`\n   📋 Email Recipients in this campaign:`);
         processedResults.emailCampaign.emails.forEach((email, i) => {
