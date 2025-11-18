@@ -6578,8 +6578,8 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
             error: null,
             recipientIndex: 0,
             sentAt: new Date().toISOString()
-          });
-          console.log('📊 Email logged to database');
+          }, userId); // 🔥 FIX: Pass userId to properly associate email with user
+          console.log(`📊 Email logged to database for user: ${userId}`);
         } catch (dbError) {
           console.error('Database logging error:', dbError.message);
         }
@@ -6600,8 +6600,8 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
             error: info.rejected ? info.rejected.join(', ') : 'Email rejected',
             recipientIndex: 0,
             sentAt: new Date().toISOString()
-          });
-          console.log('📊 Failed email logged to database');
+          }, userId); // 🔥 FIX: Pass userId to properly associate email with user
+          console.log(`📊 Failed email logged to database for user: ${userId}`);
         } catch (dbError) {
           console.error('Database logging error:', dbError.message);
         }
@@ -6633,8 +6633,8 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
           error: errorMessage,
           recipientIndex: 0,
           sentAt: new Date().toISOString()
-        });
-        console.log('📊 Failed email logged to database');
+        }, userId); // 🔥 FIX: Pass userId to properly associate email with user
+        console.log(`📊 Failed email logged to database for user: ${userId}`);
       } catch (dbError) {
         console.error('Database logging error:', dbError.message);
       }
