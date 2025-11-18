@@ -1744,53 +1744,47 @@ const SettingsView = () => {
 };
 
 // Confirmation Modal Component for Destructive Actions
-const ConfirmationModal = ({ isOpen, title, message, confirmText, cancelText, onConfirm, onCancel, danger }) => {
-  if (!isOpen) {
-    return null;
-  }
-
-  return (
+const ConfirmationModal = ({ isOpen, title, message, confirmText, cancelText, onConfirm, onCancel, danger }) => isOpen ? (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.2 }}
+    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+  >
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.95, opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="bg-white rounded-lg max-w-md w-full shadow-xl"
     >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="bg-white rounded-lg max-w-md w-full shadow-xl"
-      >
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-          <p className="text-gray-600 whitespace-pre-line">{message}</p>
-        </div>
-        <div className="flex gap-3 px-6 pb-6 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 active:scale-95 transition-all duration-150 font-medium focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={onConfirm}
-            className={`px-4 py-2 rounded-lg font-medium active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              danger
-                ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
-                : 'text-white hover:opacity-90 focus:ring-green-500'
-            }`}
-            style={danger ? {} : { backgroundColor: '#00f0a0', color: '#000' }}
-          >
-            {confirmText}
-          </button>
-        </div>
-      </motion.div>
+      <div className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+        <p className="text-gray-600 whitespace-pre-line">{message}</p>
+      </div>
+      <div className="flex gap-3 px-6 pb-6 justify-end">
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 active:scale-95 transition-all duration-150 font-medium focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+        >
+          {cancelText}
+        </button>
+        <button
+          onClick={onConfirm}
+          className={`px-4 py-2 rounded-lg font-medium active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+            danger
+              ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+              : 'text-white hover:opacity-90 focus:ring-green-500'
+          }`}
+          style={danger ? {} : { backgroundColor: '#00f0a0', color: '#000' }}
+        >
+          {confirmText}
+        </button>
+      </div>
     </motion.div>
-  )
-};
+  </motion.div>
+) : null;
 
 // Loading Skeleton Components for Professional UX
 const ProspectCardSkeleton = () => (
