@@ -705,10 +705,17 @@ router.get('/results', optionalAuth, async (req, res) => {
         processedResults.emailCampaign.emails = processedResults.emailCampaign.emails.filter(email => {
           // Check all possible campaign ID fields
           const emailCampaignId = email.campaignId || email.campaign_id || email.campaign;
+
+          // 🔒 STRICT MATCHING: Email MUST have a campaignId AND it MUST match requested campaign
+          if (!emailCampaignId) {
+            console.log(`   ⚠️  Filtering out email WITHOUT campaignId: ${email.to} (will cause mixing!)`);
+            return false; // Reject emails without campaignId
+          }
+
           const matches = emailCampaignId === campaignId || emailCampaignId === String(campaignId);
 
-          if (!matches && emailCampaignId) {
-            console.log(`   ⚠️  Filtering out email with campaignId: ${emailCampaignId} (requested: ${campaignId})`);
+          if (!matches) {
+            console.log(`   🗑️  Filtering out email from campaign ${emailCampaignId}: ${email.to} (requested: ${campaignId})`);
           }
 
           return matches;
@@ -1723,15 +1730,28 @@ async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
           source: p.source
         })),
         emailCampaign: {
-          emails: emails.map(e => ({
-            to: e.metadata?.recipient || '',
-            subject: e.subject,
-            body: e.html,
-            html: e.html,
-            recipientName: e.metadata?.recipientName,
-            recipientCompany: e.metadata?.recipientCompany,
-            status: e.status || 'generated'
-          }))
+          emails: emails.map(e => {
+            // 🔒 CRITICAL: Only use email's campaignId if it exists, otherwise use requested campaignId
+            const emailCampaignId = e.campaignId || campaignId;
+
+            return {
+              to: e.metadata?.recipient || '',
+              subject: e.subject,
+              body: e.html,
+              html: e.html,
+              recipientName: e.metadata?.recipientName,
+              recipientCompany: e.metadata?.recipientCompany,
+              status: e.status || 'generated',
+              campaignId: emailCampaignId // 🔒 Always has a valid campaignId
+            };
+          }).filter(e => {
+            // 🔒 CRITICAL: Only include emails that match the requested campaignId
+            if (campaignId && e.campaignId !== campaignId && e.campaignId !== String(campaignId)) {
+              console.log(`   🗑️  [DB RECONSTRUCTION] Filtering out email from campaign ${e.campaignId} (requested: ${campaignId})`);
+              return false;
+            }
+            return true;
+          })
         },
         status: 'reconstructed_from_db',
         timestamp: new Date().toISOString()
@@ -1774,6 +1794,18 @@ async function addEmailToWorkflowResults(email, userId = 'anonymous', campaignId
   }
   if (!lastWorkflowResults.emailCampaign.emails) {
     lastWorkflowResults.emailCampaign.emails = [];
+  }
+
+  // 🔒 CRITICAL: Ensure email has campaignId BEFORE adding to array
+  if (!email.campaignId && campaignId) {
+    email.campaignId = campaignId;
+    console.log(`   ✅ Added missing campaignId to email: ${campaignId}`);
+  }
+
+  // Verify email has campaignId
+  console.log(`   🔍 Email campaignId check: ${email.campaignId || 'MISSING!'}`);
+  if (!email.campaignId) {
+    console.warn(`   ⚠️  WARNING: Email being stored WITHOUT campaignId! This will cause isolation issues.`);
   }
 
   // Add the new email to the campaign
