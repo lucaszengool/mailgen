@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/database');
-const { optionalAuth } = require('../middleware/auth');
+const { optionalAuth } = require('../middleware/userContext');
 
 /**
  * GET /api/config/current
