@@ -453,7 +453,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
     return (
       <div className="p-8 space-y-6 bg-gradient-to-br from-white via-gray-50 to-green-50">
         {/* Search Progress */}
-        <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('workflow-icon') }}>
               <Radar className="w-5 h-5 text-white" />
@@ -605,7 +605,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
     return (
       <div className="p-8 space-y-6 bg-gradient-to-br from-white via-gray-50 to-green-50">
         {/* Verification Progress */}
-        <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('workflow-icon') }}>
               <Shield className="w-5 h-5 text-white" />
@@ -727,7 +727,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
     return (
       <div className="p-8 space-y-6 bg-gradient-to-br from-white via-green-50 to-green-100">
         {/* Persona Generation Progress */}
-        <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('ai-icon') }}>
               <Brain className="w-5 h-5 text-white" />
@@ -895,7 +895,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
     return (
       <div className="p-8 space-y-6 bg-gradient-to-br from-white via-green-50 to-green-100">
         {/* Email Generation Progress */}
-        <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('workflow-icon') }}>
               <Mail className="w-5 h-5 text-white" />
@@ -1153,7 +1153,7 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
   return (
     <div className="p-6 space-y-6 bg-gradient-to-br from-white via-gray-50 to-green-50">
       {/* Progress Header */}
-      <div className="flex items-center justify-between mb-4 p-3 bg-white rounded-xl shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-4 p-3 bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: getMultiColorRainbowPattern('workflow-icon') }}>
             {title.includes('Website') ? <Globe className="w-4 h-4 text-white" /> : 
@@ -1310,16 +1310,17 @@ const SettingsView = () => {
   ];
 
   return (
-    <div className="p-6 bg-white min-h-full">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
-        <p className="mt-2 text-gray-600">Configure your email marketing system parameters</p>
-      </div>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
+          <p className="mt-2 text-gray-600">Configure your email marketing system parameters</p>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Sidebar Navigation */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar Navigation */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <nav className="space-y-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -1327,13 +1328,13 @@ const SettingsView = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
+                    className={`w-full flex items-center px-4 py-3 rounded-lg transition-all ${
                       activeTab === tab.id
-                        ? 'bg-green-100 text-green-700 font-medium'
-                        : 'text-gray-600 hover:bg-gray-50'
+                        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-gray-900 font-semibold shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-50 border border-transparent'
                     }`}
                   >
-                    <Icon className="h-5 w-5 mr-3" />
+                    <Icon className={`h-5 w-5 mr-3 ${activeTab === tab.id ? 'text-green-600' : 'text-gray-500'}`} />
                     {tab.label}
                   </button>
                 );
@@ -1346,9 +1347,11 @@ const SettingsView = () => {
         <div className="lg:col-span-3">
           {/* SMTP Settings */}
           {activeTab === 'smtp' && (
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center mb-6">
-                <Mail className="h-6 w-6 text-green-600 mr-3" />
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-3">
+                  <Mail className="h-5 w-5 text-green-600" />
+                </div>
                 <h2 className="text-xl font-semibold text-gray-900">SMTP Email Server Settings</h2>
               </div>
 
@@ -1359,7 +1362,7 @@ const SettingsView = () => {
                     type="text"
                     value={smtpConfig.name}
                     onChange={(e) => setSmtpConfig(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                     placeholder="e.g., Company Email Server"
                   />
                 </div>
@@ -1371,7 +1374,7 @@ const SettingsView = () => {
                       type="text"
                       value={smtpConfig.host}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, host: e.target.value }))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                       placeholder="smtp.gmail.com"
                     />
                   </div>
@@ -1381,7 +1384,7 @@ const SettingsView = () => {
                       type="number"
                       value={smtpConfig.port}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, port: parseInt(e.target.value) }))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                       placeholder="587"
                     />
                   </div>
@@ -1406,7 +1409,7 @@ const SettingsView = () => {
                       type="email"
                       value={smtpConfig.username}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, username: e.target.value }))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                       placeholder="your-email@gmail.com"
                     />
                   </div>
@@ -1416,7 +1419,7 @@ const SettingsView = () => {
                       type="password"
                       value={smtpConfig.password}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, password: e.target.value }))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                       placeholder="App-specific password"
                     />
                   </div>
@@ -1424,7 +1427,12 @@ const SettingsView = () => {
 
                 {/* Marketing Campaign Configuration */}
                 <div className="border-t border-gray-200 pt-6">
-                  <h4 className="text-lg font-medium text-gray-900 mb-4">Marketing Campaign Configuration</h4>
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center mr-2">
+                      <Target className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <h4 className="text-lg font-medium text-gray-900">Marketing Campaign Configuration</h4>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Sender Name *</label>
@@ -1432,7 +1440,7 @@ const SettingsView = () => {
                         type="text"
                         value={smtpConfig.senderName}
                         onChange={(e) => setSmtpConfig(prev => ({ ...prev, senderName: e.target.value }))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                         placeholder="James Wilson"
                       />
                     </div>
@@ -1442,7 +1450,7 @@ const SettingsView = () => {
                         type="text"
                         value={smtpConfig.companyName}
                         onChange={(e) => setSmtpConfig(prev => ({ ...prev, companyName: e.target.value }))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                         placeholder="FruitAI"
                       />
                     </div>
@@ -1455,7 +1463,7 @@ const SettingsView = () => {
                         type="url"
                         value={smtpConfig.companyWebsite}
                         onChange={(e) => setSmtpConfig(prev => ({ ...prev, companyWebsite: e.target.value }))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                         placeholder="https://fruitai.org"
                       />
                     </div>
@@ -1465,7 +1473,7 @@ const SettingsView = () => {
                         type="text"
                         value={smtpConfig.ctaText}
                         onChange={(e) => setSmtpConfig(prev => ({ ...prev, ctaText: e.target.value }))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                         placeholder="Schedule a Meeting"
                       />
                     </div>
@@ -1477,7 +1485,7 @@ const SettingsView = () => {
                       type="url"
                       value={smtpConfig.ctaUrl}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, ctaUrl: e.target.value }))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                       placeholder="https://calendly.com/your-calendar"
                     />
                     <p className="text-xs text-gray-500 mt-1">
@@ -1487,13 +1495,18 @@ const SettingsView = () => {
                 </div>
 
                 {/* Common SMTP Configurations */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Common SMTP Configurations</h4>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100">
+                  <div className="flex items-center mb-3">
+                    <div className="w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center mr-2">
+                      <Mail className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900">Common SMTP Configurations</h4>
+                  </div>
                   <div className="text-sm text-gray-700 space-y-2">
-                    <div><strong>Gmail:</strong> smtp.gmail.com, Port 587 (TLS) or 465 (SSL)</div>
-                    <div><strong>Outlook:</strong> smtp.office365.com, Port 587 (TLS)</div>
-                    <div><strong>Yahoo:</strong> smtp.mail.yahoo.com, Port 465 (SSL)</div>
-                    <div><strong>Corporate Email:</strong> Contact your IT administrator for configuration</div>
+                    <div className="flex items-center"><span className="w-32 font-medium text-gray-900">Gmail:</span> <span className="text-gray-700">smtp.gmail.com, Port 587 (TLS) or 465 (SSL)</span></div>
+                    <div className="flex items-center"><span className="w-32 font-medium text-gray-900">Outlook:</span> <span className="text-gray-700">smtp.office365.com, Port 587 (TLS)</span></div>
+                    <div className="flex items-center"><span className="w-32 font-medium text-gray-900">Yahoo:</span> <span className="text-gray-700">smtp.mail.yahoo.com, Port 465 (SSL)</span></div>
+                    <div className="flex items-center"><span className="w-32 font-medium text-gray-900">Corporate:</span> <span className="text-gray-700">Contact your IT administrator</span></div>
                   </div>
                 </div>
 
@@ -1502,14 +1515,14 @@ const SettingsView = () => {
                   <button
                     onClick={testSmtpConnection}
                     disabled={testingConnection}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                    className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 font-medium shadow-sm"
                   >
                     {testingConnection ? 'Testing...' : 'Test Connection'}
                   </button>
                   <button
                     onClick={updateSmtpConfig}
                     disabled={isSaving}
-                    className="px-6 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors disabled:opacity-50"
+                    className="px-6 py-2.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-all disabled:opacity-50 shadow-sm hover:shadow-md"
                   >
                     {isSaving ? 'Updating...' : 'Update Configuration'}
                   </button>
@@ -1520,9 +1533,11 @@ const SettingsView = () => {
 
           {/* Website Analysis Settings */}
           {activeTab === 'website' && (
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center mb-6">
-                <Globe className="h-6 w-6 text-green-600 mr-3" />
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-3">
+                  <Globe className="h-5 w-5 text-green-600" />
+                </div>
                 <h2 className="text-xl font-semibold text-gray-900">Website Analysis</h2>
               </div>
               <div className="space-y-6">
@@ -1531,7 +1546,7 @@ const SettingsView = () => {
                   <input
                     type="url"
                     placeholder="https://example.com"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                   />
                 </div>
 
@@ -1540,7 +1555,7 @@ const SettingsView = () => {
                   <input
                     type="text"
                     placeholder="FruitAI"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                   />
                 </div>
 
@@ -1549,7 +1564,7 @@ const SettingsView = () => {
                   <input
                     type="text"
                     placeholder="Food Technology"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                   />
                 </div>
 
@@ -1558,12 +1573,12 @@ const SettingsView = () => {
                   <textarea
                     rows={4}
                     placeholder="AI-powered fruit and vegetable freshness analyzer..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                   />
                 </div>
 
                 <div className="flex justify-end pt-4 border-t border-gray-200">
-                  <button className="px-6 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors">
+                  <button className="px-6 py-2.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-all shadow-sm hover:shadow-md">
                     Update Website Analysis
                   </button>
                 </div>
@@ -1573,15 +1588,17 @@ const SettingsView = () => {
 
           {/* Campaign Configuration */}
           {activeTab === 'campaign' && (
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center mb-6">
-                <Target className="h-6 w-6 text-green-600 mr-3" />
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-3">
+                  <Target className="h-5 w-5 text-green-600" />
+                </div>
                 <h2 className="text-xl font-semibold text-gray-900">Campaign Configuration</h2>
               </div>
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Campaign Goal</label>
-                  <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                  <select className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900">
                     <option value="partnership">Partnership Outreach</option>
                     <option value="sales">Sales Prospecting</option>
                     <option value="recruitment">Talent Recruitment</option>
@@ -1594,7 +1611,7 @@ const SettingsView = () => {
                   <input
                     type="text"
                     placeholder="Technology, Healthcare, Finance..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                   />
                   <p className="text-xs text-gray-500 mt-1">Separate multiple industries with commas</p>
                 </div>
@@ -1604,7 +1621,7 @@ const SettingsView = () => {
                   <input
                     type="text"
                     placeholder="CEO, CTO, Marketing Director..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                   />
                   <p className="text-xs text-gray-500 mt-1">Separate multiple roles with commas</p>
                 </div>
@@ -1614,13 +1631,18 @@ const SettingsView = () => {
                   <input
                     type="text"
                     placeholder="AI, machine learning, automation..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                   />
                   <p className="text-xs text-gray-500 mt-1">Keywords to help find relevant prospects</p>
                 </div>
 
                 <div className="border-t border-gray-200 pt-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Email Limits</h4>
+                  <div className="flex items-center mb-3">
+                    <div className="w-6 h-6 rounded-md bg-orange-50 flex items-center justify-center mr-2">
+                      <Clock className="h-4 w-4 text-orange-600" />
+                    </div>
+                    <h4 className="text-sm font-semibold text-gray-900">Email Limits</h4>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Max Emails per Hour</label>
@@ -1629,7 +1651,7 @@ const SettingsView = () => {
                         defaultValue={10}
                         min={1}
                         max={100}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                       />
                     </div>
                     <div>
@@ -1639,14 +1661,14 @@ const SettingsView = () => {
                         defaultValue={50}
                         min={1}
                         max={500}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end pt-4 border-t border-gray-200">
-                  <button className="px-6 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors">
+                  <button className="px-6 py-2.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-all shadow-sm hover:shadow-md">
                     Update Campaign Config
                   </button>
                 </div>

@@ -315,7 +315,7 @@ export default function Analytics() {
           <select
             value={selectedCampaign}
             onChange={(e) => setSelectedCampaign(e.target.value)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-green-500 focus:ring-green-500"
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-green-500 focus:ring-green-500"
           >
             <option value="all">All Campaigns</option>
             {displayCampaignPerformance.map(campaign => (
@@ -325,7 +325,7 @@ export default function Analytics() {
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-green-500 focus:ring-green-500"
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-green-500 focus:ring-green-500"
           >
             {timeRangeOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -517,7 +517,7 @@ export default function Analytics() {
 
                 <a
                   href="/settings"
-                  className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors"
+                  className="inline-flex items-center px-6 py-3 border border-gray-200 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors"
                 >
                   <BuildingOfficeIcon className="h-5 w-5 mr-2" />
                   Configure Email Settings
@@ -525,7 +525,7 @@ export default function Analytics() {
 
                 <button
                   onClick={() => window.open('https://support.google.com/mail/answer/7126229', '_blank')}
-                  className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors"
+                  className="inline-flex items-center px-6 py-3 border border-gray-200 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors"
                 >
                   <GlobeAltIcon className="h-5 w-5 mr-2" />
                   Setup Guide

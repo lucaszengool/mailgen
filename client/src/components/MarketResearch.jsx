@@ -263,10 +263,10 @@ const MarketResearch = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
-        className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden hover:shadow-lg transition-all"
+        className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-gray-50 to-white p-6 border-b-2 border-gray-200">
+        <div className="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-100">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: '#00f5a0' }}>
@@ -277,7 +277,7 @@ const MarketResearch = () => {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-900">{insight.title}</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-600 mt-1">
                   {new Date(insight.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -306,7 +306,7 @@ const MarketResearch = () => {
         {/* Executive Summary */}
         <div className="p-6">
           <div className="mb-6">
-            <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3 flex items-center">
+            <h4 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-3 flex items-center">
               <FileText className="w-4 h-4 mr-2" />
               Executive Summary
             </h4>
@@ -565,7 +565,9 @@ const MarketResearch = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <Brain className="w-8 h-8 mr-3" style={{ color: '#00f5a0' }} />
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-3">
+                  <Brain className="w-6 h-6 text-green-600" />
+                </div>
                 Market Research & Intelligence
               </h1>
               <p className="text-gray-600 mt-2">
@@ -618,14 +620,14 @@ const MarketResearch = () => {
 
               <button
                 onClick={saveConfiguration}
-                className="px-6 py-3 rounded-xl font-semibold bg-white border-2 border-gray-200 text-gray-700 flex items-center space-x-2 hover:border-gray-300"
+                className="px-6 py-3 rounded-lg font-semibold bg-white border border-gray-200 text-gray-700 flex items-center space-x-2 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
               >
                 <Settings className="w-5 h-5" />
                 <span>Save Config</span>
               </button>
 
               <button
-                className="px-6 py-3 rounded-xl font-semibold bg-white border-2 border-gray-200 text-gray-700 flex items-center space-x-2 hover:border-gray-300"
+                className="px-6 py-3 rounded-lg font-semibold bg-white border border-gray-200 text-gray-700 flex items-center space-x-2 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
               >
                 <Download className="w-5 h-5" />
                 <span>Export PDF</span>
@@ -665,11 +667,15 @@ const MarketResearch = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Configuration Panel */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl border-2 border-gray-200 p-6 sticky top-32">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                <Settings className="w-5 h-5 mr-2" style={{ color: '#00f5a0' }} />
-                Research Configuration
-              </h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-32">
+              <div className="flex items-center mb-6">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-2">
+                  <Settings className="w-4 h-4 text-green-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Research Configuration
+                </h2>
+              </div>
 
               {/* Industry */}
               <div className="mb-6">
@@ -681,7 +687,7 @@ const MarketResearch = () => {
                   value={researchConfig.industry}
                   onChange={(e) => setResearchConfig(prev => ({ ...prev, industry: e.target.value }))}
                   placeholder="e.g., SaaS, FinTech, Marketing"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-gray-400 focus:outline-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
                 />
               </div>
 
@@ -697,11 +703,11 @@ const MarketResearch = () => {
                     onChange={(e) => setNewCompetitor(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addCompetitor()}
                     placeholder="Competitor name"
-                    className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
                   />
                   <button
                     onClick={addCompetitor}
-                    className="px-4 py-2 rounded-lg font-medium text-black"
+                    className="px-4 py-2.5 rounded-lg font-medium text-black transition-all shadow-sm hover:shadow-md"
                     style={{ backgroundColor: '#00f5a0' }}
                   >
                     <Plus className="w-5 h-5" />
@@ -711,14 +717,14 @@ const MarketResearch = () => {
                   {researchConfig.competitors.map((competitor, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm"
+                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 text-gray-700 text-sm font-medium"
                     >
                       {competitor}
                       <button
                         onClick={() => removeCompetitor(competitor)}
-                        className="ml-2 text-gray-500 hover:text-red-600"
+                        className="ml-2 text-gray-600 hover:text-red-600 transition-colors"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </span>
                   ))}
@@ -737,11 +743,11 @@ const MarketResearch = () => {
                     onChange={(e) => setNewTopic(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addTopic()}
                     placeholder="e.g., Pricing strategies"
-                    className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
                   />
                   <button
                     onClick={addTopic}
-                    className="px-4 py-2 rounded-lg font-medium text-black"
+                    className="px-4 py-2.5 rounded-lg font-medium text-black transition-all shadow-sm hover:shadow-md"
                     style={{ backgroundColor: '#00f5a0' }}
                   >
                     <Plus className="w-5 h-5" />
@@ -751,14 +757,14 @@ const MarketResearch = () => {
                   {researchConfig.topics.map((topic, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm"
+                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 text-gray-700 text-sm font-medium"
                     >
                       {topic}
                       <button
                         onClick={() => removeTopic(topic)}
-                        className="ml-2 text-gray-500 hover:text-red-600"
+                        className="ml-2 text-gray-600 hover:text-red-600 transition-colors"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </span>
                   ))}
@@ -773,7 +779,7 @@ const MarketResearch = () => {
                 <select
                   value={researchConfig.geography}
                   onChange={(e) => setResearchConfig(prev => ({ ...prev, geography: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-gray-400 focus:outline-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
                 >
                   <option value="Global">Global</option>
                   <option value="North America">North America</option>
@@ -791,7 +797,7 @@ const MarketResearch = () => {
                 <select
                   value={researchConfig.frequency}
                   onChange={(e) => setResearchConfig(prev => ({ ...prev, frequency: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-gray-400 focus:outline-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -801,11 +807,13 @@ const MarketResearch = () => {
               </div>
 
               {/* Info Box */}
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4">
                 <div className="flex items-start space-x-3">
-                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-blue-900">
-                    <p className="font-medium mb-1">Powered by AI</p>
+                  <div className="w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    <p className="font-semibold text-gray-900 mb-1">Powered by AI</p>
                     <p>Our AI agent conducts comprehensive market analysis using web search and Ollama, generating professional reports with actionable insights for your campaigns.</p>
                   </div>
                 </div>
@@ -824,9 +832,11 @@ const MarketResearch = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-white rounded-xl border-2 border-gray-200 p-5 hover:shadow-lg transition-all">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-2">
-                  <Globe className="w-6 h-6" style={{ color: '#00f5a0' }} />
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
+                    <Globe className="w-5 h-5 text-green-600" />
+                  </div>
                   <span className="text-2xl font-bold text-gray-900">
                     {insights.filter(i => i && i.type === 'market').length}
                   </span>
@@ -834,9 +844,11 @@ const MarketResearch = () => {
                 <p className="text-sm text-gray-600 font-medium">Market Analysis</p>
               </div>
 
-              <div className="bg-white rounded-xl border-2 border-gray-200 p-5 hover:shadow-lg transition-all">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-2">
-                  <Target className="w-6 h-6" style={{ color: '#3b82f6' }} />
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+                    <Target className="w-5 h-5 text-blue-600" />
+                  </div>
                   <span className="text-2xl font-bold text-gray-900">
                     {insights.filter(i => i && i.type === 'competitor').length}
                   </span>
@@ -844,9 +856,11 @@ const MarketResearch = () => {
                 <p className="text-sm text-gray-600 font-medium">Competitor Intel</p>
               </div>
 
-              <div className="bg-white rounded-xl border-2 border-gray-200 p-5 hover:shadow-lg transition-all">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-2">
-                  <TrendingUp className="w-6 h-6" style={{ color: '#8b5cf6' }} />
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-50 to-violet-50 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                  </div>
                   <span className="text-2xl font-bold text-gray-900">
                     {insights.filter(i => i && i.type === 'trend').length}
                   </span>
@@ -854,9 +868,11 @@ const MarketResearch = () => {
                 <p className="text-sm text-gray-600 font-medium">Industry Trends</p>
               </div>
 
-              <div className="bg-white rounded-xl border-2 border-gray-200 p-5 hover:shadow-lg transition-all">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-2">
-                  <Sparkles className="w-6 h-6" style={{ color: '#f59e0b' }} />
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-orange-600" />
+                  </div>
                   <span className="text-2xl font-bold text-gray-900">
                     {insights.filter(i => i && i.type === 'opportunity').length}
                   </span>
@@ -868,14 +884,16 @@ const MarketResearch = () => {
             {/* Reports List */}
             <div className="space-y-6">
               {insights.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                  <Brain className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center mx-auto mb-4">
+                    <Brain className="w-8 h-8 text-gray-400" />
+                  </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No research reports yet</h3>
                   <p className="text-gray-600 mb-6">Configure your research parameters and start your first analysis</p>
                   <button
                     onClick={startResearch}
                     disabled={!researchConfig.industry || researchConfig.competitors.length === 0}
-                    className="px-8 py-3 rounded-xl font-semibold text-black inline-flex items-center space-x-2 disabled:opacity-50"
+                    className="px-8 py-3 rounded-lg font-semibold text-black inline-flex items-center space-x-2 disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
                     style={{ backgroundColor: '#00f5a0' }}
                   >
                     <Play className="w-5 h-5" />
