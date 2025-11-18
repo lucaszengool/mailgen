@@ -1889,6 +1889,15 @@ class LangGraphMarketingAgent {
         console.log(`🎯 Final email template type: ${emailTemplateType}`);
         console.log(`📧 Final template data source: ${finalTemplateData?.name || finalTemplateData?.templateId || 'unknown'}`);
 
+        // 🔍 DEBUG: Log template data structure being passed
+        console.log('\n🔍 [TEMPLATE DATA DEBUG] Template data being passed to generator:');
+        console.log('   Template ID:', emailTemplateType);
+        console.log('   Has HTML?', !!finalTemplateData?.html);
+        console.log('   Has components?', !!finalTemplateData?.components?.length);
+        console.log('   Has customizations?', !!finalTemplateData?.customizations);
+        console.log('   Customization keys:', finalTemplateData?.customizations ? Object.keys(finalTemplateData.customizations) : 'NONE');
+        console.log('   Is customized?', finalTemplateData?.isCustomized);
+
         emailContent = await this.generateOptimizedEmailContentWithPersona(
           prospect,
           userPersona,
@@ -2049,15 +2058,25 @@ class LangGraphMarketingAgent {
           // Update workflow state with real email data
           const realEmailData = {
             id: `${campaignId}_${prospect.email}`,
-            campaignId: campaignId,
+            campaignId: campaignId, // ✅ CRITICAL: Always include campaignId
             to: prospect.email,
             recipientName: prospect.name || prospect.email,
             company: prospect.company || 'Unknown Company',
             subject: emailContent.subject,
-            body: emailContent.body || emailContent.html,
+            body: emailContent.body || emailContent.html, // ✅ Full HTML with customizations
+            html: emailContent.body || emailContent.html, // ✅ Also include as html field
             quality_score: emailContent.qualityScore || 85,
             timestamp: new Date().toISOString()
           };
+
+          // 🔍 DEBUG: Log email data before storage
+          console.log('\n🔍 [EMAIL DEBUG] First email data before storage:');
+          console.log('   Subject:', realEmailData.subject);
+          console.log('   Subject length:', realEmailData.subject?.length);
+          console.log('   Body length:', realEmailData.body?.length);
+          console.log('   Body is HTML:', realEmailData.body?.includes('<'));
+          console.log('   Has customizations:', realEmailData.body?.includes('style='));
+          console.log('   Campaign ID:', realEmailData.campaignId);
 
           // Set the workflow state firstEmailGenerated
           if (this.workflowState) {
@@ -4749,6 +4768,7 @@ ${senderName || senderCompany}`;
         // Add to campaign results
         const newEmail = {
           id: `email_${campaignId}_${i + 1}`,
+          campaignId: campaignId, // ✅ CRITICAL: Always include campaignId for isolation
           to: prospect.email,
           subject: emailContent.subject,
           body: emailContent.body,
@@ -4759,6 +4779,14 @@ ${senderName || senderCompany}`;
           recipient_name: prospect.name,
           recipient_company: prospect.company
         };
+
+        // 🔍 DEBUG: Log email data
+        console.log('\n🔍 [EMAIL DEBUG] Sequential email data:');
+        console.log('   To:', newEmail.to);
+        console.log('   Subject:', newEmail.subject);
+        console.log('   Subject length:', newEmail.subject?.length);
+        console.log('   Body length:', newEmail.body?.length);
+        console.log('   Campaign ID:', newEmail.campaignId);
 
         emailCampaign.emails.push(newEmail);
 
@@ -5422,9 +5450,18 @@ Return ONLY the JSON object, no other text.`;
           console.log(`✅ Generated NEW personalized content for ${prospect.company || 'prospect'} using component template`);
           console.log(`📊 Component template result: ${cleanedBody.length} chars`);
 
+          // 🔍 DEBUG: Verify component template output
+          console.log('\n🔍 [COMPONENT EMAIL DEBUG] Email content before return:');
+          console.log('   📋 Subject:', cleanedSubject);
+          console.log('   📋 Subject length:', cleanedSubject?.length);
+          console.log('   📄 Body length:', cleanedBody?.length);
+          console.log('   📄 Body is HTML:', cleanedBody?.includes('<'));
+          console.log('   📄 Has styles:', cleanedBody?.includes('style='));
+
           return {
             subject: cleanedSubject,
-            body: cleanedBody,
+            body: cleanedBody, // ✅ Full HTML with all customizations
+            html: cleanedBody, // ✅ Also include as html field for compatibility
             template: templateData.id || templateData.templateId || 'professional_partnership',
             templateData: templateData,
             personalizationLevel: 'Component Template',
@@ -5738,9 +5775,20 @@ Generate ONLY the email body paragraphs (no subject, no greeting, no signature).
           console.log(`   • Template Type: ${isCustomized ? 'Customized with AI Content' : 'Default with AI Content'}`);
           console.log(`${'='.repeat(80)}\n`);
 
+          // 🔍 CRITICAL DEBUG: Verify HTML before returning
+          console.log('\n🔍 [FINAL EMAIL DEBUG] Email content before return:');
+          console.log('   📋 Subject:', cleanedSubject);
+          console.log('   📋 Subject length:', cleanedSubject?.length);
+          console.log('   📄 Body length:', cleanedHtml?.length);
+          console.log('   📄 Body is HTML:', cleanedHtml?.includes('<'));
+          console.log('   📄 Has styles:', cleanedHtml?.includes('style='));
+          console.log('   📄 Has colors:', cleanedHtml?.includes('color:') || cleanedHtml?.includes('background'));
+          console.log('   📄 First 300 chars:', cleanedHtml?.substring(0, 300));
+
           return {
             subject: cleanedSubject,
-            body: cleanedHtml,
+            body: cleanedHtml, // ✅ Full HTML with all customizations
+            html: cleanedHtml, // ✅ Also include as html field for compatibility
             template: templateData.id || templateData.templateId || 'user_template',
             templateData: templateData,
             personalizationLevel: isCustomized ? 'User Customized (With AI Content)' : 'Default (With AI Content)',
@@ -7813,9 +7861,15 @@ Write ONLY the content paragraph - no greetings, signatures, or extra formatting
         }
 
         // 🎨 CRITICAL FIX: Apply user customizations (colors, text, etc.) to the HTML
+        console.log('\n🔍 [CUSTOMIZATION DEBUG] Checking for user customizations...');
+        console.log('   Has customizations?', !!componentTemplate.customizations);
+        console.log('   Customizations keys:', componentTemplate.customizations ? Object.keys(componentTemplate.customizations) : 'NONE');
+        console.log('   Template has HTML?', !!componentTemplate.html);
+        console.log('   Template has components?', !!componentTemplate.components?.length);
+
         if (componentTemplate.customizations) {
           console.log(`🎨 Applying user customizations:`, Object.keys(componentTemplate.customizations));
-          console.log(`🎨 HTML preview (first 500 chars):`, personalizedHTML.substring(0, 500));
+          console.log(`🎨 HTML before customization (first 500 chars):`, personalizedHTML.substring(0, 500));
 
           const customizations = componentTemplate.customizations;
 
@@ -7943,19 +7997,38 @@ Write ONLY the content paragraph - no greetings, signatures, or extra formatting
             personalizedHTML = personalizedHTML.replace(/Hello \{name\}!/g, greetingText);
             console.log(`🎨 Applied greeting: ${greetingText}`);
           }
+
+          console.log('\n🔍 [CUSTOMIZATION RESULT] After applying all customizations:');
+          console.log('   HTML after customization (first 500 chars):', personalizedHTML.substring(0, 500));
+          console.log('   HTML has inline styles?', personalizedHTML.includes('style='));
+          console.log('   HTML has colors?', personalizedHTML.includes('color:') || personalizedHTML.includes('background'));
+          console.log('   HTML length:', personalizedHTML.length, 'chars');
+        } else {
+          console.log('⚠️ [CUSTOMIZATION WARNING] No customizations to apply - using base template');
         }
 
         console.log(`✅ Using USER'S customized template with personalization and customizations applied`);
         console.log(`📊 Personalized HTML length: ${personalizedHTML.length} chars`);
 
-        return {
+        const finalEmail = {
           subject: userSubject.replace(/\{company\}/g, prospect.company || 'your company'),
-          body: personalizedHTML,
+          body: personalizedHTML, // ✅ Full HTML with all customizations
+          html: personalizedHTML, // ✅ Also include as html field for compatibility
           components: componentTemplate.components || [],
           template: 'user_customized',
           templateData: componentTemplate,
           preservedUserContent: true
         };
+
+        console.log('\n🔍 [FINAL EMAIL DEBUG] Returning email object:');
+        console.log('   Subject:', finalEmail.subject);
+        console.log('   Subject length:', finalEmail.subject?.length);
+        console.log('   Body length:', finalEmail.body?.length);
+        console.log('   Body is HTML:', finalEmail.body?.includes('<'));
+        console.log('   Has styles:', finalEmail.body?.includes('style='));
+        console.log('   Template:', finalEmail.template);
+
+        return finalEmail;
       }
 
       // Only use template generation for non-customized templates
