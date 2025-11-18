@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Check, Eye, Edit3, Zap, ChevronLeft } from 'lucide-react';
+import { X, Check, Eye, Edit3, Zap, ChevronLeft, Wand2, Edit } from 'lucide-react';
 import { EMAIL_TEMPLATES } from '../data/emailTemplatesConsistent.js';
 import EmailTemplateRenderer from './EmailTemplateRenderer.jsx';
+import WYSIWYGEmailEditor from './WYSIWYGEmailEditor.jsx';
 
 const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, isSubmitting = false, templateRequest = null }) => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -11,6 +12,10 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
   const [customTemplateData, setCustomTemplateData] = useState({});
   const [draggedMedia, setDraggedMedia] = useState(null);
   const [dropZoneActive, setDropZoneActive] = useState(null);
+
+  // 🎨 NEW: Template mode - 'ai' for AI-generated content, 'manual' for WYSIWYG editor
+  const [templateMode, setTemplateMode] = useState('ai');
+  const [manualEmailContent, setManualEmailContent] = useState('');
 
   if (!isOpen) return null;
 
@@ -2455,15 +2460,17 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                     // 🔥 FIX: Pass template directly to avoid React state race condition
                     const template = EMAIL_TEMPLATES[selectedTemplate];
                     const finalTemplate = Object.keys(customTemplateData).length > 0
-                      ? { ...template, ...customTemplateData, id: selectedTemplate }
-                      : { ...template, id: selectedTemplate };
+                      ? { ...template, ...customTemplateData, id: selectedTemplate, templateMode, manualContent: manualEmailContent }
+                      : { ...template, id: selectedTemplate, templateMode, manualContent: manualEmailContent };
                     onConfirm(finalTemplate);
                   }
                 }}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+                className={`px-4 py-2 text-white rounded-lg transition-colors flex items-center gap-2 ${
+                  templateMode === 'manual' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
+                }`}
               >
-                <Zap size={16} />
-                Use Customized Template
+                {templateMode === 'manual' ? <Edit size={16} /> : <Zap size={16} />}
+                {templateMode === 'manual' ? 'Use Manual Email' : 'Use Customized Template'}
               </button>
             </div>
 
@@ -2472,8 +2479,87 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
               <div className="grid grid-cols-2 h-full">
                 {/* Left Panel - Controls */}
                 <div className="overflow-y-auto p-6 border-r border-gray-200">
-                  <h4 className="text-lg font-semibold mb-6">Template Properties</h4>
+                  <h4 className="text-lg font-semibold mb-4">Template Properties</h4>
 
+                  {/* 🎨 Template Mode Toggle */}
+                  <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg">
+                    <label className="block text-sm font-semibold text-gray-800 mb-3">
+                      Email Mode
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setTemplateMode('ai')}
+                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                          templateMode === 'ai'
+                            ? 'bg-green-500 border-green-600 text-white shadow-md'
+                            : 'bg-white border-gray-300 text-gray-700 hover:border-green-400'
+                        }`}
+                      >
+                        <Wand2 size={18} />
+                        <span className="text-sm font-medium">AI Template</span>
+                      </button>
+                      <button
+                        onClick={() => setTemplateMode('manual')}
+                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                          templateMode === 'manual'
+                            ? 'bg-blue-500 border-blue-600 text-white shadow-md'
+                            : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
+                        }`}
+                      >
+                        <Edit size={18} />
+                        <span className="text-sm font-medium">Manual Editor</span>
+                      </button>
+                    </div>
+                    <p className="mt-2 text-xs text-gray-600">
+                      {templateMode === 'ai' ? (
+                        <span>🤖 AI will personalize content for each prospect</span>
+                      ) : (
+                        <span>✍️ Write exactly what gets sent to all prospects</span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Conditional Content based on mode */}
+                  {templateMode === 'manual' ? (
+                    /* Manual WYSIWYG Editor Mode */
+                    <div className="space-y-4">
+                      {/* Email Subject for Manual Mode */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Subject Line
+                        </label>
+                        <input
+                          type="text"
+                          value={customTemplateData.subject || EMAIL_TEMPLATES[selectedTemplate]?.subject || 'Partnership Opportunity with {company}'}
+                          onChange={(e) => setCustomTemplateData(prev => ({ ...prev, subject: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter email subject..."
+                        />
+                      </div>
+
+                      {/* WYSIWYG Editor */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Content
+                        </label>
+                        <WYSIWYGEmailEditor
+                          initialContent={manualEmailContent}
+                          onContentChange={(content) => {
+                            setManualEmailContent(content);
+                            setCustomTemplateData(prev => ({
+                              ...prev,
+                              manualContent: content,
+                              templateMode: 'manual',
+                              userEdited: true
+                            }));
+                          }}
+                          businessInfo={templateRequest}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    /* AI Template Mode - Original Form Fields */
+                    <>
                   {/* Email Subject */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -3066,6 +3152,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                       </div>
                     </div>
                   </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Right Panel - Live Preview with Drop Zones */}
@@ -3088,7 +3176,16 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                       </div>
                     </div>
 
-
+                    {/* Manual Mode Preview */}
+                    {templateMode === 'manual' ? (
+                      <div className="prose max-w-none">
+                        <div
+                          dangerouslySetInnerHTML={{ __html: manualEmailContent || '<p className="text-gray-400 italic">Start writing your email content...</p>' }}
+                        />
+                      </div>
+                    ) : (
+                      /* AI Template Mode Preview */
+                      <>
                     {/* Component-by-Component rendering with drop zones */}
                     {(() => {
                       const renderDropZone = (insertPoint, label) => (
@@ -3250,6 +3347,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                     <div className="text-xs text-gray-500 mt-4 p-3 bg-white rounded border border-gray-200">
                       Click on any text to edit it directly. Your changes will be applied to all generated emails.
                     </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -2858,6 +2858,45 @@ Return ONLY a JSON array of REAL search queries, for example:
     console.log(`🔧 DEBUG: Entered generateOptimizedEmailContent for ${prospect.email}`);
     console.log(`🎨 DEBUG: Template type: ${emailTemplateType || 'auto-select'}, has templateData: ${!!templateData}`);
 
+    // 🎨 MANUAL MODE: If template mode is 'manual', skip AI generation and use user's content directly
+    if (templateData?.templateMode === 'manual' && templateData?.manualContent) {
+      console.log('✍️ MANUAL EMAIL MODE: Using user-written content without AI modification');
+
+      const recipientName = prospect.name || this.extractNameFromEmail(prospect.email);
+      const recipientCompany = prospect.company || this.extractCompanyFromEmail(prospect.email);
+      const recipientEmail = prospect.email;
+      const recipientPosition = prospect.title || prospect.aiProfile?.estimatedRole || '';
+      const senderCompany = strategy.company_name || businessAnalysis?.companyName || '';
+      const senderName = businessAnalysis?.senderInfo?.senderName || `${senderCompany} Team`;
+
+      // Replace placeholders in manual content
+      let manualHtml = templateData.manualContent
+        .replace(/\{name\}/g, recipientName)
+        .replace(/\{company\}/g, recipientCompany)
+        .replace(/\{position\}/g, recipientPosition)
+        .replace(/\{senderName\}/g, senderName)
+        .replace(/\{senderCompany\}/g, senderCompany);
+
+      // Replace placeholders in subject
+      let manualSubject = (templateData.subject || 'Message from ' + senderCompany)
+        .replace(/\{name\}/g, recipientName)
+        .replace(/\{company\}/g, recipientCompany)
+        .replace(/\{position\}/g, recipientPosition)
+        .replace(/\{senderName\}/g, senderName)
+        .replace(/\{senderCompany\}/g, senderCompany);
+
+      console.log(`✅ Manual email prepared for ${recipientEmail}: "${manualSubject}"`);
+
+      return {
+        subject: manualSubject,
+        body: manualHtml, // Manual content is already HTML
+        html: manualHtml,
+        templateId: emailTemplateType,
+        templateMode: 'manual',
+        isCustomized: true
+      };
+    }
+
     // Initialize variables at the function level to avoid undefined errors
     let subject = '';
     let cleanedBody = '';
