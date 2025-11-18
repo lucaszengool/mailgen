@@ -5631,9 +5631,9 @@ VERIFICATION CHECKLIST before you write:
 ✓ I know their company: ${prospect.company || 'their company'}
 ✓ I know the sender: ${templateData.senderName || 'our team'}
 ✓ I will write using these ACTUAL values, not placeholders
-;
+`;
           } else {
-            console.log(`⚠️ No template-specific prompt found, using generic prompt`);
+            console.log(`No template-specific prompt found, using generic prompt`);
             emailContentPrompt = `Write a professional, personalized email to ${prospect.name || 'the recipient'} at ${prospect.company || 'their company'}.
 
 Context:
