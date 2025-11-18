@@ -1740,13 +1740,18 @@ const SettingsView = () => {
         </div>
       </div>
     </div>
+    </div>
   );
 };
 
 // Confirmation Modal Component for Destructive Actions
-const ConfirmationModal = ({ isOpen, title, message, confirmText, cancelText, onConfirm, onCancel, danger }) => (
-  isOpen ? (
-  <motion.div
+function ConfirmationModal({ isOpen, title, message, confirmText, cancelText, onConfirm, onCancel, danger }) {
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
@@ -1784,9 +1789,9 @@ const ConfirmationModal = ({ isOpen, title, message, confirmText, cancelText, on
         </button>
       </div>
     </motion.div>
-  </motion.div>
-) : null
-);
+    </motion.div>
+  );
+}
 
 // Loading Skeleton Components for Professional UX
 const ProspectCardSkeleton = () => (
