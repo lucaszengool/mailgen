@@ -1424,6 +1424,9 @@ class LangGraphMarketingAgent {
           hasSubject: !!(userTemplateData.subject),
           hasGreeting: !!(userTemplateData.greeting),
           hasSignature: !!(userTemplateData.signature),
+          templateMode: userTemplateData.templateMode || 'ai',
+          hasManualContent: !!userTemplateData.manualContent,
+          manualContentLength: userTemplateData.manualContent ? userTemplateData.manualContent.length : 0,
           customizationsKeys: userTemplateData.customizations ? Object.keys(userTemplateData.customizations) : []
         });
 
@@ -1897,6 +1900,9 @@ class LangGraphMarketingAgent {
         console.log('   Has customizations?', !!finalTemplateData?.customizations);
         console.log('   Customization keys:', finalTemplateData?.customizations ? Object.keys(finalTemplateData.customizations) : 'NONE');
         console.log('   Is customized?', finalTemplateData?.isCustomized);
+        console.log('   🔥 Template Mode:', finalTemplateData?.templateMode || 'ai');
+        console.log('   🔥 Has Manual Content?', !!finalTemplateData?.manualContent);
+        console.log('   🔥 Manual Content Length:', finalTemplateData?.manualContent ? finalTemplateData.manualContent.length : 0);
 
         emailContent = await this.generateOptimizedEmailContentWithPersona(
           prospect,
@@ -5440,6 +5446,47 @@ Return ONLY the JSON object, no other text.`;
         console.log(`      - html length: ${templateData.html?.length || 0}`);
       }
       console.log(`   3. emailTemplate param: ${emailTemplate}\n`);
+
+      // 🔥 CRITICAL: Check for MANUAL MODE first (skip AI generation for user-written emails)
+      if (templateData?.templateMode === 'manual' && templateData?.manualContent) {
+        console.log('✍️ MANUAL EMAIL MODE DETECTED in generateOptimizedEmailContentWithPersona!');
+        console.log(`   📝 Manual content length: ${templateData.manualContent.length} characters`);
+        console.log(`   📋 Subject: ${templateData.subject || 'Not provided'}`);
+
+        const recipientName = prospect.name || this.extractNameFromEmail(prospect.email);
+        const recipientCompany = prospect.company || this.extractCompanyFromEmail(prospect.email);
+        const recipientEmail = prospect.email;
+        const recipientPosition = prospect.title || prospect.aiProfile?.estimatedRole || '';
+        const senderCompany = marketingStrategy?.company_name || businessAnalysis?.companyName || '';
+        const senderName = businessAnalysis?.senderInfo?.senderName || `${senderCompany} Team`;
+
+        // Replace placeholders in manual content
+        let manualHtml = templateData.manualContent
+          .replace(/\{name\}/g, recipientName)
+          .replace(/\{company\}/g, recipientCompany)
+          .replace(/\{position\}/g, recipientPosition)
+          .replace(/\{senderName\}/g, senderName)
+          .replace(/\{senderCompany\}/g, senderCompany);
+
+        // Replace placeholders in subject
+        let manualSubject = (templateData.subject || 'Message from ' + senderCompany)
+          .replace(/\{name\}/g, recipientName)
+          .replace(/\{company\}/g, recipientCompany)
+          .replace(/\{position\}/g, recipientPosition)
+          .replace(/\{senderName\}/g, senderName)
+          .replace(/\{senderCompany\}/g, senderCompany);
+
+        console.log(`✅ Manual email prepared for ${recipientEmail}: "${manualSubject}"`);
+
+        return {
+          subject: manualSubject,
+          body: manualHtml, // Manual content is already HTML
+          html: manualHtml,
+          templateId: emailTemplate,
+          templateMode: 'manual',
+          isCustomized: true
+        };
+      }
 
       // 🎯 CRITICAL FIX: Always prefer the actual template ID from selection
       let selectedEmailTemplate = emailTemplate;
