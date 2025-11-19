@@ -101,6 +101,22 @@ export default function HunterStyleEmailCampaign() {
         // Handle email preview generated event
         if (data.type === 'email_preview_generated') {
           console.log('📧 Email preview generated:', data.data)
+
+          // 🔥 CRITICAL FIX: Only add email if it belongs to current campaign
+          const currentCampaignId = localStorage.getItem('currentCampaignId');
+          const emailCampaignId = data.data?.campaignId;
+
+          console.log('🔍 [EMAIL CAMPAIGN] Campaign validation:');
+          console.log('   Current campaign:', currentCampaignId);
+          console.log('   Email campaign:', emailCampaignId);
+          console.log('   Match:', currentCampaignId === emailCampaignId);
+
+          // Only process if campaign IDs match
+          if (currentCampaignId && emailCampaignId && currentCampaignId !== emailCampaignId) {
+            console.log('🗑️  [EMAIL CAMPAIGN] Ignoring email from different campaign');
+            return;
+          }
+
           // Add a notification or update state to show the preview is ready
           if (data.data?.preview) {
             // Store the preview for later use
@@ -118,7 +134,7 @@ export default function HunterStyleEmailCampaign() {
               isPreview: true,
               editorPreview: data.data.preview
             }
-            
+
             setEmails(prev => [newEmail, ...prev])
             toast.success(`Email preview ready for ${data.data.prospectId}`)
           }

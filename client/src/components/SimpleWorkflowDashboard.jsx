@@ -4532,7 +4532,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         console.log('🔔 FIRST EMAIL READY signal received via WebSocket!', data.data);
 
         const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
-        const emailCampaignId = data.data?.firstEmailGenerated?.campaignId;
+        // 🔥 CRITICAL FIX: campaignId is at data.data.campaignId, not nested in firstEmailGenerated
+        const emailCampaignId = data.data?.campaignId;
 
         console.log('🔍 [WEBSOCKET] Campaign validation:');
         console.log('   Current campaign:', currentCampaignId);
