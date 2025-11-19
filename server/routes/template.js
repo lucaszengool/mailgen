@@ -152,9 +152,26 @@ router.post('/select', optionalAuth, async (req, res) => {
       restKeys: Object.keys(restCustomizations)
     });
 
-    // Validate template exists
-    const template = TemplatePromptService.getTemplate(templateId);
-    if (!template) {
+    // Validate template exists OR allow 'custom_template' for fully custom templates
+    let template = TemplatePromptService.getTemplate(templateId);
+
+    // 🔥 SPECIAL CASE: Allow 'custom_template' for user-built templates
+    if (!template && templateId === 'custom_template') {
+      console.log('🎨 [CUSTOM TEMPLATE] User is creating a fully custom template from scratch');
+      // Create a minimal template structure for custom templates
+      template = {
+        id: 'custom_template',
+        name: 'Custom Template',
+        description: 'Fully customizable template built by user',
+        structure: {
+          paragraphs: 0, // User defines their own structure
+          components: components || []
+        },
+        html: userEditedHtml || '',
+        // Custom templates rely entirely on user customizations
+        isCustomBuilt: true
+      };
+    } else if (!template) {
       return res.status(400).json({
         success: false,
         error: 'Invalid template ID'

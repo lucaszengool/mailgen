@@ -199,7 +199,7 @@ Keep it professional, concise, and personalized for ${prospect.name || 'the reci
    * Get all available templates
    */
   static getAllTemplates() {
-    return Object.entries(EMAIL_TEMPLATES).map(([id, template]) => ({
+    const templates = Object.entries(EMAIL_TEMPLATES).map(([id, template]) => ({
       id,
       name: template.name,
       description: template.description,
@@ -207,12 +207,43 @@ Keep it professional, concise, and personalized for ${prospect.name || 'the reci
       structure: template.structure,
       components: template.components || []
     }));
+
+    // 🔥 Add custom template option for users who want to build from scratch
+    templates.push({
+      id: 'custom_template',
+      name: 'Custom Template',
+      description: 'Build your own template from scratch with drag & drop components',
+      preview: 'Fully customizable - add your own components, styling, and content',
+      structure: {
+        paragraphs: 0,
+        components: []
+      },
+      components: [],
+      isCustomBuilt: true
+    });
+
+    return templates;
   }
 
   /**
    * Get template by ID
    */
   static getTemplate(templateId) {
+    // 🔥 SPECIAL CASE: Allow 'custom_template' for user-built templates
+    if (templateId === 'custom_template') {
+      return {
+        id: 'custom_template',
+        name: 'Custom Template',
+        description: 'Fully customizable template built by user',
+        structure: {
+          paragraphs: 0,
+          components: []
+        },
+        html: '',
+        isCustomBuilt: true
+      };
+    }
+
     return EMAIL_TEMPLATES[templateId] || null;
   }
 
