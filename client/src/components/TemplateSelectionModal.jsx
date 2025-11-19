@@ -13,8 +13,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
   const [draggedMedia, setDraggedMedia] = useState(null);
   const [dropZoneActive, setDropZoneActive] = useState(null);
 
-  // 🎨 Template mode - defaults to 'manual' for WYSIWYG editor
-  const [templateMode, setTemplateMode] = useState('manual');
+  // 🎨 Template mode - 'ai' for template customization, 'manual' for WYSIWYG editor
+  const [templateMode, setTemplateMode] = useState('ai');
   const [manualEmailContent, setManualEmailContent] = useState('');
 
   if (!isOpen) return null;
@@ -35,6 +35,14 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
     event.stopPropagation();
     setSelectedTemplate(templateId);
     setIsCustomizeMode(true);
+
+    // 🎨 Set template mode: 'manual' for custom_template, 'ai' for built-in templates
+    if (templateId === 'custom_template') {
+      setTemplateMode('manual');
+    } else {
+      setTemplateMode('ai');
+    }
+
     // Initialize with default template data
     const template = EMAIL_TEMPLATES[templateId];
 
@@ -2436,6 +2444,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsCustomizeMode(false);
+                    setTemplateMode('ai'); // Reset to default when going back
                   }}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -2449,6 +2458,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsCustomizeMode(false);
+                  setTemplateMode('ai'); // Reset to default when closing
                   if (onSelectTemplate) {
                     const template = EMAIL_TEMPLATES[selectedTemplate];
                     const finalTemplate = Object.keys(customTemplateData).length > 0
@@ -2467,8 +2477,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                 }}
                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-2"
               >
-                <Edit size={16} />
-                Use Custom Template
+                {templateMode === 'manual' ? <Edit size={16} /> : <Zap size={16} />}
+                {templateMode === 'manual' ? 'Use Custom Email' : 'Use Customized Template'}
               </button>
             </div>
 
