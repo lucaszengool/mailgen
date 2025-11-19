@@ -138,9 +138,10 @@ router.post('/select', optionalAuth, async (req, res) => {
     console.log('🔥🔥🔥 ===============================================');
 
     const userId = req.userId || 'anonymous';
-    const { templateId, campaignId, workflowId, components, isCustomized, customizations: userCustomizations, subject, greeting, signature, html: userEditedHtml, ...restCustomizations } = req.body;
+    const { templateId, campaignId, workflowId, components, isCustomized, customizations: userCustomizations, subject, greeting, signature, html: userEditedHtml, templateMode, manualContent, ...restCustomizations } = req.body;
 
     console.log(`🎨 [User: ${userId}] Template selected: ${templateId} for campaign ${campaignId || workflowId}`);
+    console.log(`🎨 Template mode: ${templateMode || 'ai'} ${templateMode === 'manual' ? '(MANUAL EMAIL - No AI)' : '(AI-assisted)'}`);
     console.log(`🎨 User customizations received:`, {
       hasCustomizations: !!userCustomizations,
       hasSubject: !!subject,
@@ -148,6 +149,9 @@ router.post('/select', optionalAuth, async (req, res) => {
       hasSignature: !!signature,
       hasEditedHtml: !!userEditedHtml,
       htmlLength: userEditedHtml ? userEditedHtml.length : 0,
+      hasManualContent: !!manualContent,
+      manualContentLength: manualContent ? manualContent.length : 0,
+      templateMode: templateMode || 'ai',
       customizationsKeys: userCustomizations ? Object.keys(userCustomizations) : [],
       restKeys: Object.keys(restCustomizations)
     });
@@ -355,7 +359,7 @@ router.post('/select', optionalAuth, async (req, res) => {
                 : '0,245,160'; // Default fallback
             }
 
-            // 🎯 RECONSTRUCT templateData with proper structure INCLUDING EDITED HTML
+            // 🎯 RECONSTRUCT templateData with proper structure INCLUDING EDITED HTML AND MANUAL CONTENT
             const templateData = {
               templateId,
               subject: subject || null,
@@ -364,7 +368,10 @@ router.post('/select', optionalAuth, async (req, res) => {
               html: finalHtml || null,  // 🎯 USER'S EDITED TEMPLATE HTML (or generated from customizations)
               customizations: userCustomizations || {},
               // FIXED: Respect explicit isCustomized flag from frontend
-              isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0)
+              isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0),
+              // 🔥 CRITICAL: Include templateMode and manualContent for custom templates
+              templateMode: templateMode || 'ai',
+              manualContent: manualContent || null  // User's WYSIWYG editor content for manual mode
             };
 
             console.log(`✨ Passing templateData to agent:`, {
@@ -373,7 +380,9 @@ router.post('/select', optionalAuth, async (req, res) => {
               hasGreeting: !!templateData.greeting,
               hasSignature: !!templateData.signature,
               customizationsKeys: Object.keys(templateData.customizations),
-              isCustomized: templateData.isCustomized
+              isCustomized: templateData.isCustomized,
+              templateMode: templateData.templateMode,
+              hasManualContent: !!templateData.manualContent
             });
 
             const enhancedTemplate = {
@@ -483,7 +492,7 @@ router.post('/select', optionalAuth, async (req, res) => {
               console.log(`📝 [Stored Results] Applied: logo=${!!customizations.logo}, primaryColor=${!!customizations.primaryColor}, buttonText=${!!customizations.buttonText}`);
             }
 
-            // 🎯 CRITICAL: Create templateData for stored results path too INCLUDING EDITED HTML
+            // 🎯 CRITICAL: Create templateData for stored results path too INCLUDING EDITED HTML AND MANUAL CONTENT
             const templateData = {
               templateId,
               subject: subject || null,
@@ -492,7 +501,10 @@ router.post('/select', optionalAuth, async (req, res) => {
               html: finalHtml || null,  // 🎯 USER'S EDITED TEMPLATE HTML (or generated from customizations)
               customizations: userCustomizations || {},
               // FIXED: Respect explicit isCustomized flag from frontend
-              isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0)
+              isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0),
+              // 🔥 CRITICAL: Include templateMode and manualContent for custom templates
+              templateMode: templateMode || 'ai',
+              manualContent: manualContent || null  // User's WYSIWYG editor content for manual mode
             };
 
             console.log(`✨ Passing templateData to agent (stored results path):`, {
@@ -501,7 +513,9 @@ router.post('/select', optionalAuth, async (req, res) => {
               hasGreeting: !!templateData.greeting,
               hasSignature: !!templateData.signature,
               customizationsKeys: Object.keys(templateData.customizations),
-              isCustomized: templateData.isCustomized
+              isCustomized: templateData.isCustomized,
+              templateMode: templateData.templateMode,
+              hasManualContent: !!templateData.manualContent
             });
 
             const enhancedTemplate = {

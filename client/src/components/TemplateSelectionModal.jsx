@@ -1351,9 +1351,21 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
     if (selectedTemplate) {
       const template = EMAIL_TEMPLATES[selectedTemplate];
       // If template was customized, merge custom data
+      // 🔥 CRITICAL FIX: Include templateMode and manualContent for custom templates
       const finalTemplate = isCustomizeMode && Object.keys(customTemplateData).length > 0
-        ? { ...template, ...customTemplateData, id: selectedTemplate }
-        : { ...template, id: selectedTemplate };
+        ? {
+            ...template,
+            ...customTemplateData,
+            id: selectedTemplate,
+            templateMode,  // 'manual' or 'ai'
+            manualContent: manualEmailContent  // User's WYSIWYG editor content
+          }
+        : {
+            ...template,
+            id: selectedTemplate,
+            templateMode,  // 'manual' or 'ai'
+            manualContent: manualEmailContent  // User's WYSIWYG editor content
+          };
       onSelectTemplate(finalTemplate);
       // 🔥 FIX: Pass template directly to avoid React state race condition
       onConfirm(finalTemplate);
