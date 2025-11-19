@@ -168,12 +168,41 @@ class ImapMonitor extends EventEmitter {
                 if (this.isReply(emailData)) {
                   console.log('[IMAP] 📩 Reply detected from:', emailData.from);
                   this.emit('reply', emailData);
+
+                  // 💾 Log reply to database
+                  try {
+                    const db = require('../models/database');
+                    await db.logEmailReply({
+                      campaignId: 'unknown', // Extract from headers if available
+                      recipientEmail: emailData.from,
+                      repliedAt: emailData.date ? emailData.date.toISOString() : new Date().toISOString(),
+                      subject: emailData.subject || '',
+                      messageId: emailData.messageId || ''
+                    });
+                  } catch (dbError) {
+                    console.error('[IMAP] Error logging reply to database:', dbError.message);
+                  }
                 }
 
                 // Detect if this is a bounce notification
                 if (this.isBounce(emailData)) {
                   console.log('[IMAP] ⚠️ Bounce detected for:', emailData.subject);
                   this.emit('bounce', emailData);
+
+                  // 💾 Log bounce to database
+                  try {
+                    const db = require('../models/database');
+                    const bounceDetails = this.extractBounceDetails(emailData);
+                    await db.logEmailBounce({
+                      campaignId: 'unknown', // Extract from headers if available
+                      recipientEmail: emailData.to || 'unknown',
+                      bouncedAt: emailData.date ? emailData.date.toISOString() : new Date().toISOString(),
+                      bounceType: bounceDetails.bounceType,
+                      reason: bounceDetails.reason
+                    });
+                  } catch (dbError) {
+                    console.error('[IMAP] Error logging bounce to database:', dbError.message);
+                  }
                 }
               } catch (parseError) {
                 console.error('[IMAP] Error parsing email:', parseError.message);

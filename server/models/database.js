@@ -83,6 +83,30 @@ class Database {
       )
     `);
 
+    // 邮件回复跟踪表
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS email_replies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        campaign_id TEXT NOT NULL,
+        recipient_email TEXT NOT NULL,
+        replied_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        subject TEXT,
+        message_id TEXT
+      )
+    `);
+
+    // 邮件退信跟踪表
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS email_bounces (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        campaign_id TEXT NOT NULL,
+        recipient_email TEXT NOT NULL,
+        bounced_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        bounce_type TEXT,
+        reason TEXT
+      )
+    `);
+
     // 营销活动表
     this.db.run(`
       CREATE TABLE IF NOT EXISTS campaigns (
@@ -382,7 +406,7 @@ class Database {
         INSERT INTO email_clicks (campaign_id, link_id, target_url, clicked_at, user_agent, ip_address)
         VALUES (?, ?, ?, ?, ?, ?)
       `);
-      
+
       stmt.run([
         clickData.campaignId,
         clickData.linkId,
@@ -397,7 +421,63 @@ class Database {
           resolve(this.lastID);
         }
       });
-      
+
+      stmt.finalize();
+    });
+  }
+
+  // 记录邮件回复
+  logEmailReply(replyData) {
+    return new Promise((resolve, reject) => {
+      const stmt = this.db.prepare(`
+        INSERT INTO email_replies (campaign_id, recipient_email, replied_at, subject, message_id)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+
+      stmt.run([
+        replyData.campaignId || 'unknown',
+        replyData.recipientEmail,
+        replyData.repliedAt || new Date().toISOString(),
+        replyData.subject || '',
+        replyData.messageId || ''
+      ], function(err) {
+        if (err) {
+          console.error('[DB] Error logging reply:', err);
+          reject(err);
+        } else {
+          console.log(`[DB] ✅ Reply logged: ${replyData.recipientEmail}`);
+          resolve(this.lastID);
+        }
+      });
+
+      stmt.finalize();
+    });
+  }
+
+  // 记录邮件退信
+  logEmailBounce(bounceData) {
+    return new Promise((resolve, reject) => {
+      const stmt = this.db.prepare(`
+        INSERT INTO email_bounces (campaign_id, recipient_email, bounced_at, bounce_type, reason)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+
+      stmt.run([
+        bounceData.campaignId || 'unknown',
+        bounceData.recipientEmail,
+        bounceData.bouncedAt || new Date().toISOString(),
+        bounceData.bounceType || 'hard',
+        bounceData.reason || 'Unknown'
+      ], function(err) {
+        if (err) {
+          console.error('[DB] Error logging bounce:', err);
+          reject(err);
+        } else {
+          console.log(`[DB] ✅ Bounce logged: ${bounceData.recipientEmail}`);
+          resolve(this.lastID);
+        }
+      });
+
       stmt.finalize();
     });
   }

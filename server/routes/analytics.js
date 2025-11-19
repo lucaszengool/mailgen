@@ -362,16 +362,36 @@ router.get('/email-metrics', async (req, res) => {
          INNER JOIN email_logs e ON c.campaign_id = e.campaign_id
          WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
 
+    const repliesQuery = campaign === 'all'
+      ? `SELECT COUNT(DISTINCT r.recipient_email) as count FROM email_replies r
+         INNER JOIN email_logs e ON r.campaign_id = e.campaign_id
+         WHERE e.user_id = ? AND r.replied_at >= ?`
+      : `SELECT COUNT(DISTINCT r.recipient_email) as count FROM email_replies r
+         INNER JOIN email_logs e ON r.campaign_id = e.campaign_id
+         WHERE e.user_id = ? AND r.replied_at >= ? AND r.campaign_id = ?`;
+
+    const bouncesQuery = campaign === 'all'
+      ? `SELECT COUNT(DISTINCT b.recipient_email) as count FROM email_bounces b
+         INNER JOIN email_logs e ON b.campaign_id = e.campaign_id
+         WHERE e.user_id = ? AND b.bounced_at >= ?`
+      : `SELECT COUNT(DISTINCT b.recipient_email) as count FROM email_bounces b
+         INNER JOIN email_logs e ON b.campaign_id = e.campaign_id
+         WHERE e.user_id = ? AND b.bounced_at >= ? AND b.campaign_id = ?`;
+
     const opensParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
     const clicksParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
+    const repliesParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
+    const bouncesParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
 
     const opensResult = await queryDB(opensQuery, opensParams);
     const clicksResult = await queryDB(clicksQuery, clicksParams);
+    const repliesResult = await queryDB(repliesQuery, repliesParams);
+    const bouncesResult = await queryDB(bouncesQuery, bouncesParams);
 
     const totalOpened = opensResult[0]?.count || 0;
     const totalClicked = clicksResult[0]?.count || 0;
-    const totalReplied = 0; // Will be updated by IMAP monitoring
-    const totalBounced = 0; // Will be updated by IMAP monitoring
+    const totalReplied = repliesResult[0]?.count || 0;
+    const totalBounced = bouncesResult[0]?.count || 0;
     const totalUnsubscribed = 0;
 
     const deliveryRate = totalSent > 0 ? ((totalDelivered / totalSent) * 100) : 0;

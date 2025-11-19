@@ -77,6 +77,23 @@ class EmailTrackingService {
   }
 
   /**
+   * Insert tracking pixel into HTML email
+   */
+  insertTrackingPixel(html, trackingId) {
+    if (!html || !trackingId) return html;
+
+    const pixel = this.getTrackingPixel(trackingId);
+
+    // Try to insert before closing body tag
+    if (html.includes('</body>')) {
+      return html.replace('</body>', `${pixel}</body>`);
+    }
+
+    // If no body tag, append to end
+    return html + pixel;
+  }
+
+  /**
    * Wrap links with tracking redirects
    */
   wrapLinksWithTracking(html, trackingId) {

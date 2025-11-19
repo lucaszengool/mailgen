@@ -259,10 +259,24 @@ class IMAPEmailTracker {
       if (recipientEmail) {
         console.log(`📮 Bounce detected for: ${recipientEmail}`);
 
-        // Track bounce in analytics
-        // Note: We need to add a trackEmailBounced function to analytics
+        // Track bounce in analytics (in-memory)
         if (analyticsRoutes.trackEmailBounced) {
           analyticsRoutes.trackEmailBounced(campaignId || 'unknown', recipientEmail);
+        }
+
+        // 💾 Log to database for persistent tracking
+        try {
+          const db = require('../models/database');
+          await db.logEmailBounce({
+            campaignId: campaignId || 'unknown',
+            recipientEmail: recipientEmail,
+            bouncedAt: new Date().toISOString(),
+            bounceType: 'hard', // Could be improved with bounce type detection
+            reason: parsed.subject || 'Email bounced'
+          });
+          console.log(`[IMAP] ✅ Bounce logged to database: ${recipientEmail}`);
+        } catch (dbError) {
+          console.error('[IMAP] Failed to log bounce to database:', dbError.message);
         }
       }
     } catch (error) {
@@ -280,9 +294,24 @@ class IMAPEmailTracker {
 
       console.log(`💬 Reply detected from: ${from}`);
 
-      // Track reply in analytics
+      // Track reply in analytics (in-memory)
       if (analyticsRoutes.trackEmailReplied) {
         analyticsRoutes.trackEmailReplied(campaignId || 'unknown', from);
+      }
+
+      // 💾 Log to database for persistent tracking
+      try {
+        const db = require('../models/database');
+        await db.logEmailReply({
+          campaignId: campaignId || 'unknown',
+          recipientEmail: from,
+          repliedAt: new Date().toISOString(),
+          subject: parsed.subject || '',
+          messageId: parsed.messageId || ''
+        });
+        console.log(`[IMAP] ✅ Reply logged to database: ${from}`);
+      } catch (dbError) {
+        console.error('[IMAP] Failed to log reply to database:', dbError.message);
       }
     } catch (error) {
       console.error('❌ Error handling reply:', error.message);
