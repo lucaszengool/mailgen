@@ -533,7 +533,7 @@ const JobRightProspectCard = ({ prospect, index, onClick, showFilters = false, s
             </div>
             <div className="text-sm text-gray-700">
               <Target className="w-4 h-4 inline mr-2 text-gray-500" />
-              <span>{prospect.title || prospect.department || prospect.role || prospect.persona?.decisionLevel || prospect.decisionLevel || prospect.seniority || 'Business Professional'}</span>
+              <span>{prospect.title || prospect.department || prospect.role || prospect.persona?.decisionLevel || prospect.decisionLevel || 'Contact'}</span>
             </div>
           </div>
           <div className="flex flex-col space-y-2">
@@ -543,7 +543,7 @@ const JobRightProspectCard = ({ prospect, index, onClick, showFilters = false, s
             </div>
             <div className="text-sm text-gray-700">
               <Clock className="w-4 h-4 inline mr-2 text-gray-500" />
-              <span>{prospect.seniority || prospect.employmentType || prospect.workType || prospect.persona?.workType || 'Professional'}</span>
+              <span>{prospect.seniority || (prospect.employmentType && prospect.employmentType !== 'Full-time' ? prospect.employmentType : (prospect.workType || prospect.persona?.workType || 'Professional'))}</span>
             </div>
           </div>
         </div>

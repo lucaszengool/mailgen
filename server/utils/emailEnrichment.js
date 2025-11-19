@@ -13,7 +13,10 @@ const GENERIC_PREFIXES = [
   'sales', 'marketing', 'office', 'mail', 'noreply', 'no-reply', 'test',
   'example', 'sample', 'demo', 'user', 'customer', 'client', 'team',
   'general', 'inbox', 'reception', 'enquiry', 'inquiry', 'service',
-  'youremail', 'yourbusinessname', 'yourname', 'yourcompany'
+  'youremail', 'yourbusinessname', 'yourname', 'yourcompany',
+  'careers', 'jobs', 'recruiting', 'hr', 'humanresources',
+  'editors', 'editorial', 'editor', 'press', 'media',
+  'feedback', 'suggestions', 'complaints', 'requests'
 ];
 
 // Department/role keywords in email addresses
@@ -181,6 +184,28 @@ function extractName(username, fullEmail) {
   // Remove numbers from username for name extraction
   const cleanUsername = username.replace(/[0-9]/g, '');
 
+  // 🔥 CRITICAL: Check if this is a generic/department email first
+  // These should return null so the company name is shown instead
+  const isGenericEmail = GENERIC_PREFIXES.some(prefix =>
+    cleanUsername === prefix ||
+    cleanUsername.startsWith(prefix + '.') ||
+    cleanUsername.startsWith(prefix + '_')
+  );
+
+  const isDepartmentEmail = Object.keys(DEPARTMENT_KEYWORDS).some(k =>
+    cleanUsername === k ||
+    cleanUsername.includes(k)
+  );
+
+  if (isGenericEmail || isDepartmentEmail) {
+    // For generic/department emails, return null so company name is shown
+    return {
+      firstName: null,
+      lastName: null,
+      fullName: null
+    };
+  }
+
   // Pattern 1: first.last or first_last
   if (cleanUsername.includes('.') || cleanUsername.includes('_')) {
     const separator = cleanUsername.includes('.') ? '.' : '_';
@@ -209,26 +234,29 @@ function extractName(username, fullEmail) {
     };
   }
 
-  // Pattern 3: f.last or flast
-  if (cleanUsername.length > 2 && !GENERIC_PREFIXES.includes(cleanUsername)) {
-    // Check if it looks like initials + last name
-    if (cleanUsername.match(/^[a-z]{1,2}[a-z]{3,}$/)) {
-      const lastName = capitalize(cleanUsername.slice(1));
-      return {
-        firstName: null,
-        lastName,
-        fullName: lastName
-      };
+  // Pattern 3: IMPROVED - Only match true initials pattern (1-3 chars + longer name)
+  // Examples: jsmith, bmcdowell, hxh83 → Smith, Mcdowell, Hxh
+  if (cleanUsername.length >= 4 && cleanUsername.length <= 12) {
+    // Match 1-3 initial letters followed by 3+ letters (likely a last name)
+    const initialsMatch = cleanUsername.match(/^[a-z]{1,3}([a-z]{3,})$/);
+    if (initialsMatch && initialsMatch[1]) {
+      const lastName = capitalize(initialsMatch[1]);
+      // Only use this if the last name part looks reasonable
+      if (lastName.length >= 3 && lastName.length <= 15) {
+        return {
+          firstName: null,
+          lastName,
+          fullName: lastName
+        };
+      }
     }
   }
 
-  // Pattern 4: Single word that's not generic
-  if (!GENERIC_PREFIXES.includes(cleanUsername) && cleanUsername.length > 2) {
-    // Check if it looks like a real name (not too short, not a keyword)
-    const isDepartment = Object.keys(DEPARTMENT_KEYWORDS).some(k => cleanUsername.includes(k));
+  // Pattern 4: Single word that's not generic or department
+  if (cleanUsername.length >= 3 && cleanUsername.length <= 20) {
     const isRole = Object.keys(TITLE_KEYWORDS).some(k => cleanUsername.includes(k));
 
-    if (!isDepartment && !isRole && cleanUsername.length >= 3) {
+    if (!isRole) {
       const name = capitalize(cleanUsername);
       return {
         firstName: name,
@@ -337,7 +365,8 @@ function determineSeniority(username, title) {
     return 'Junior';
   }
 
-  return 'Mid-level'; // Default
+  // 🔥 Return null if we can't determine seniority (don't default to Mid-level)
+  return null;
 }
 
 /**
@@ -348,17 +377,23 @@ function enhanceProspect(prospect) {
 
   const enrichedData = enrichEmailData(prospect.email);
 
+  // 🔥 For generic/department emails, use company name as the display name
+  let displayName = enrichedData.name || prospect.name;
+  if (!enrichedData.name && (enrichedData.isGeneric || enrichedData.department)) {
+    displayName = prospect.company || prospect.name || 'Contact';
+  }
+
   return {
     ...prospect,
     // Only override if we have better data
-    name: enrichedData.name || prospect.name,
+    name: displayName,
     firstName: enrichedData.firstName || prospect.firstName,
     lastName: enrichedData.lastName || prospect.lastName,
-    title: enrichedData.title || prospect.title || prospect.role,
+    title: enrichedData.title || enrichedData.department || prospect.title || prospect.role,
     department: enrichedData.department || prospect.department,
-    role: enrichedData.title || prospect.role,
+    role: enrichedData.title || enrichedData.department || prospect.role,
     employmentType: enrichedData.employmentType !== 'Full-time' ? enrichedData.employmentType : (prospect.employmentType || 'Full-time'),
-    seniority: enrichedData.seniority || prospect.seniority || 'Mid-level',
+    seniority: enrichedData.seniority || prospect.seniority,
     isGeneric: enrichedData.isGeneric,
     qualityScore: enrichedData.qualityScore,
     // Keep original data
