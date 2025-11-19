@@ -2058,15 +2058,21 @@ class LangGraphMarketingAgent {
           // Update workflow state with real email data
           const realEmailData = {
             id: `${campaignId}_${prospect.email}`,
-            campaignId: campaignId, // ✅ CRITICAL: Always include campaignId
+            campaignId: campaignId, // ✅ CRITICAL: Always include campaignId (camelCase)
+            campaign_id: campaignId, // ✅ CRITICAL: Also include campaign_id (snake_case) for consistency
             to: prospect.email,
             recipientName: prospect.name || prospect.email,
+            recipient_name: prospect.name || prospect.email, // Also snake_case version
             company: prospect.company || 'Unknown Company',
+            recipient_company: prospect.company || 'Unknown Company',
             subject: emailContent.subject,
             body: emailContent.body || emailContent.html, // ✅ Full HTML with customizations
             html: emailContent.body || emailContent.html, // ✅ Also include as html field
+            status: 'awaiting_approval', // Add status field like emailRecord
             quality_score: emailContent.qualityScore || 85,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            generatedAt: new Date().toISOString(),
+            generated_at: new Date().toISOString()
           };
 
           // 🔍 DEBUG: Log email data before storage
@@ -2383,7 +2389,8 @@ class LangGraphMarketingAgent {
           recipient_company: prospect.company,
 
           // Campaign metadata
-          campaign_id: campaignId,
+          campaignId: campaignId, // ✅ CRITICAL: camelCase version for consistency
+          campaign_id: campaignId, // ✅ CRITICAL: snake_case version for consistency
           generated_at: new Date().toISOString(),
           generatedAt: new Date().toISOString(),
           sequence_position: i + 1,
@@ -2403,15 +2410,20 @@ class LangGraphMarketingAgent {
         emailCampaign.emails.push(emailRecord);
 
         // 🎯 CRITICAL FIX: Add email to workflow results so frontend can access it
-        try {
-          const workflowModule = require('../routes/workflow');
-          if (workflowModule.addEmailToWorkflowResults) {
-            // 🔥 FIX: Pass campaignId for proper data isolation
-            workflowModule.addEmailToWorkflowResults(emailRecord, this.userId, campaignId);
-            console.log(`   ✅ [User: ${this.userId}, Campaign: ${campaignId}] Email added to workflow results for frontend access`);
+        // 🔥 SKIP for first email (i=0) since it's already added via realEmailData above
+        if (i > 0) {
+          try {
+            const workflowModule = require('../routes/workflow');
+            if (workflowModule.addEmailToWorkflowResults) {
+              // 🔥 FIX: Pass campaignId for proper data isolation
+              workflowModule.addEmailToWorkflowResults(emailRecord, this.userId, campaignId);
+              console.log(`   ✅ [User: ${this.userId}, Campaign: ${campaignId}] Email ${i + 1} added to workflow results for frontend access`);
+            }
+          } catch (error) {
+            console.log('⚠️ Could not update workflow results:', error.message);
           }
-        } catch (error) {
-          console.log('⚠️ Could not update workflow results:', error.message);
+        } else {
+          console.log(`   ⏭️ Skipping workflow results addition for first email (already added via realEmailData)`);
         }
 
         // 🚀 CRITICAL: Send single email immediately to frontend after generation
@@ -2486,7 +2498,8 @@ class LangGraphMarketingAgent {
           recipient_company: prospect.company,
           
           // Campaign metadata
-          campaign_id: campaignId,
+          campaignId: campaignId, // ✅ CRITICAL: camelCase version for consistency
+          campaign_id: campaignId, // ✅ CRITICAL: snake_case version for consistency
           generated_at: new Date().toISOString(),
           generatedAt: new Date().toISOString(),
           sequence_position: i + 1,

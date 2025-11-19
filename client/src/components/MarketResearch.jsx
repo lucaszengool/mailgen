@@ -212,7 +212,7 @@ const MarketResearch = () => {
   const marketShareData = researchConfig.competitors.slice(0, 5).map((comp, i) => ({
     name: comp,
     value: [35, 25, 18, 12, 10][i] || 5,
-    color: ['#00f5a0', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'][i]
+    color: ['#00f5a0', '#000000', '#374151', '#6b7280', '#9ca3af'][i]
   }));
 
   const competitorPositioning = researchConfig.competitors.slice(0, 6).map((comp, i) => ({
@@ -233,9 +233,9 @@ const MarketResearch = () => {
 
   const segmentData = [
     { segment: 'Enterprise', value: 45, color: '#00f5a0' },
-    { segment: 'Mid-Market', value: 30, color: '#3b82f6' },
-    { segment: 'Small Business', value: 20, color: '#8b5cf6' },
-    { segment: 'Startups', value: 5, color: '#f59e0b' }
+    { segment: 'Mid-Market', value: 30, color: '#000000' },
+    { segment: 'Small Business', value: 20, color: '#374151' },
+    { segment: 'Startups', value: 5, color: '#6b7280' }
   ];
 
   const swotData = {
@@ -266,10 +266,10 @@ const MarketResearch = () => {
         className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-100">
+        <div className="bg-white p-6 border-b border-gray-100">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: '#00f5a0' }}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm bg-[#00f5a0]">
                 {insight.type === 'market' && <Globe className="w-6 h-6 text-black" />}
                 {insight.type === 'competitor' && <Target className="w-6 h-6 text-black" />}
                 {insight.type === 'opportunity' && <Sparkles className="w-6 h-6 text-black" />}
@@ -286,10 +286,11 @@ const MarketResearch = () => {
                 </p>
               </div>
             </div>
-            <span className="px-4 py-2 rounded-full text-sm font-semibold shadow-sm" style={{
-              backgroundColor: insight.impact === 'high' ? '#00f5a0' : '#e5e7eb',
-              color: insight.impact === 'high' ? '#000' : '#6b7280'
-            }}>
+            <span className={`px-4 py-2 rounded-full text-sm font-semibold shadow-sm ${
+              insight.impact === 'high'
+                ? 'bg-[#00f5a0] text-black'
+                : 'bg-gray-100 text-gray-700'
+            }`}>
               {insight.impact?.toUpperCase()} IMPACT
             </span>
           </div>
@@ -306,8 +307,8 @@ const MarketResearch = () => {
         {/* Executive Summary */}
         <div className="p-6">
           <div className="mb-6">
-            <h4 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-3 flex items-center">
-              <FileText className="w-4 h-4 mr-2" />
+            <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-3 flex items-center">
+              <FileText className="w-4 h-4 mr-2 text-[#00f5a0]" />
               Executive Summary
             </h4>
             <p className="text-gray-800 leading-relaxed">{insight.summary}</p>
@@ -316,29 +317,29 @@ const MarketResearch = () => {
           {/* Key Metrics */}
           {insight.metrics && (
             <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-gradient-to-br from-green-50 to-white p-4 rounded-xl border border-green-200">
+              <div className="bg-white p-4 rounded-xl border border-gray-200">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-medium text-gray-600">Market Size</span>
-                  <DollarSign className="w-4 h-4 text-green-600" />
+                  <DollarSign className="w-4 h-4 text-[#00f5a0]" />
                 </div>
                 <p className="text-2xl font-bold text-gray-900">${insight.metrics?.marketSize || '2.4B'}</p>
-                <p className="text-xs text-green-600 mt-1">+{insight.metrics?.growth || '24'}% YoY</p>
+                <p className="text-xs text-[#00f5a0] mt-1">+{insight.metrics?.growth || '24'}% YoY</p>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border border-blue-200">
+              <div className="bg-white p-4 rounded-xl border border-gray-200">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-medium text-gray-600">Growth Rate</span>
-                  <TrendingUp className="w-4 h-4 text-blue-600" />
+                  <TrendingUp className="w-4 h-4 text-[#00f5a0]" />
                 </div>
                 <p className="text-2xl font-bold text-gray-900">{insight.metrics?.growthRate || '28'}%</p>
-                <p className="text-xs text-blue-600 mt-1">Annual CAGR</p>
+                <p className="text-xs text-gray-600 mt-1">Annual CAGR</p>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-white p-4 rounded-xl border border-purple-200">
+              <div className="bg-white p-4 rounded-xl border border-gray-200">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-medium text-gray-600">Opportunity</span>
-                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <Sparkles className="w-4 h-4 text-[#00f5a0]" />
                 </div>
                 <p className="text-2xl font-bold text-gray-900">{insight.metrics?.opportunityScore || '8.5'}/10</p>
-                <p className="text-xs text-purple-600 mt-1">High potential</p>
+                <p className="text-xs text-[#00f5a0] mt-1">High potential</p>
               </div>
             </div>
           )}
@@ -347,7 +348,7 @@ const MarketResearch = () => {
           {(insight.type === 'market' || insight.type === 'trend') && (
             <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
-                <BarChart3 className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
+                <BarChart3 className="w-4 h-4 mr-2 text-[#00f5a0]" />
                 Market Growth Trajectory
               </h4>
               <ResponsiveContainer width="100%" height={200}>
@@ -374,7 +375,7 @@ const MarketResearch = () => {
           {insight.type === 'competitor' && competitorPositioning.length > 0 && (
             <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
-                <Target className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
+                <Target className="w-4 h-4 mr-2 text-[#00f5a0]" />
                 Competitive Positioning Matrix
               </h4>
               <ResponsiveContainer width="100%" height={250}>
@@ -388,7 +389,7 @@ const MarketResearch = () => {
                   />
                   <Scatter name="Competitors" data={competitorPositioning} fill="#00f5a0">
                     {competitorPositioning.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={['#00f5a0', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#10b981'][index % 6]} />
+                      <Cell key={`cell-${index}`} fill={['#00f5a0', '#000000', '#374151', '#6b7280', '#9ca3af', '#d1d5db'][index % 6]} />
                     ))}
                   </Scatter>
                 </ScatterChart>
@@ -400,7 +401,7 @@ const MarketResearch = () => {
           {insight.type === 'trend' && (
             <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
-                <Activity className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
+                <Activity className="w-4 h-4 mr-2 text-[#00f5a0]" />
                 Key Industry Trends
               </h4>
               <ResponsiveContainer width="100%" height={200}>
@@ -411,8 +412,8 @@ const MarketResearch = () => {
                   <Tooltip contentStyle={{ backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: '8px' }} />
                   <Legend />
                   <Line type="monotone" dataKey="aiAdoption" stroke="#00f5a0" strokeWidth={2} name="AI Adoption" />
-                  <Line type="monotone" dataKey="automation" stroke="#3b82f6" strokeWidth={2} name="Automation" />
-                  <Line type="monotone" dataKey="cloudMigration" stroke="#8b5cf6" strokeWidth={2} name="Cloud Migration" />
+                  <Line type="monotone" dataKey="automation" stroke="#000000" strokeWidth={2} name="Automation" />
+                  <Line type="monotone" dataKey="cloudMigration" stroke="#6b7280" strokeWidth={2} name="Cloud Migration" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -422,7 +423,7 @@ const MarketResearch = () => {
           {insight.type === 'opportunity' && (
             <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
-                <PieChartIcon className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
+                <PieChartIcon className="w-4 h-4 mr-2 text-[#00f5a0]" />
                 Market Segmentation
               </h4>
               <ResponsiveContainer width="100%" height={200}>
@@ -451,61 +452,61 @@ const MarketResearch = () => {
           {insight.swot && (
             <div className="mb-6">
               <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center">
-                <Layers className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
+                <Layers className="w-4 h-4 mr-2 text-[#00f5a0]" />
                 SWOT Analysis
               </h4>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gradient-to-br from-green-50 to-white p-4 rounded-xl border-2 border-green-200">
-                  <h5 className="font-bold text-green-800 mb-3 flex items-center">
-                    <CheckCircle className="w-4 h-4 mr-2" />
+                <div className="bg-white p-4 rounded-xl border-2 border-[#00f5a0]">
+                  <h5 className="font-bold text-gray-900 mb-3 flex items-center">
+                    <CheckCircle className="w-4 h-4 mr-2 text-[#00f5a0]" />
                     Strengths
                   </h5>
                   <ul className="space-y-2 text-sm text-gray-700">
                     {(insight.swot?.strengths || ['Strong brand recognition', 'Advanced technology stack', 'Large customer base']).map((s, i) => (
                       <li key={i} className="flex items-start">
-                        <Plus className="w-3 h-3 mr-2 mt-1 flex-shrink-0 text-green-600" />
+                        <Plus className="w-3 h-3 mr-2 mt-1 flex-shrink-0 text-[#00f5a0]" />
                         {s}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="bg-gradient-to-br from-red-50 to-white p-4 rounded-xl border-2 border-red-200">
-                  <h5 className="font-bold text-red-800 mb-3 flex items-center">
-                    <AlertTriangle className="w-4 h-4 mr-2" />
+                <div className="bg-white p-4 rounded-xl border-2 border-gray-300">
+                  <h5 className="font-bold text-gray-900 mb-3 flex items-center">
+                    <AlertTriangle className="w-4 h-4 mr-2 text-gray-700" />
                     Weaknesses
                   </h5>
                   <ul className="space-y-2 text-sm text-gray-700">
                     {(insight.swot?.weaknesses || ['High pricing', 'Limited market presence', 'Complex onboarding']).map((w, i) => (
                       <li key={i} className="flex items-start">
-                        <Minus className="w-3 h-3 mr-2 mt-1 flex-shrink-0 text-red-600" />
+                        <Minus className="w-3 h-3 mr-2 mt-1 flex-shrink-0 text-gray-600" />
                         {w}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border-2 border-blue-200">
-                  <h5 className="font-bold text-blue-800 mb-3 flex items-center">
-                    <Sparkles className="w-4 h-4 mr-2" />
+                <div className="bg-white p-4 rounded-xl border-2 border-gray-300">
+                  <h5 className="font-bold text-gray-900 mb-3 flex items-center">
+                    <Sparkles className="w-4 h-4 mr-2 text-[#00f5a0]" />
                     Opportunities
                   </h5>
                   <ul className="space-y-2 text-sm text-gray-700">
                     {(insight.swot?.opportunities || ['Emerging markets', 'AI integration', 'Strategic partnerships']).map((o, i) => (
                       <li key={i} className="flex items-start">
-                        <Plus className="w-3 h-3 mr-2 mt-1 flex-shrink-0 text-blue-600" />
+                        <Plus className="w-3 h-3 mr-2 mt-1 flex-shrink-0 text-[#00f5a0]" />
                         {o}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="bg-gradient-to-br from-yellow-50 to-white p-4 rounded-xl border-2 border-yellow-200">
-                  <h5 className="font-bold text-yellow-800 mb-3 flex items-center">
-                    <Shield className="w-4 h-4 mr-2" />
+                <div className="bg-white p-4 rounded-xl border-2 border-gray-300">
+                  <h5 className="font-bold text-gray-900 mb-3 flex items-center">
+                    <Shield className="w-4 h-4 mr-2 text-gray-700" />
                     Threats
                   </h5>
                   <ul className="space-y-2 text-sm text-gray-700">
                     {(insight.swot?.threats || ['Increasing competition', 'Market saturation', 'Economic downturn']).map((t, i) => (
                       <li key={i} className="flex items-start">
-                        <AlertCircle className="w-3 h-3 mr-2 mt-1 flex-shrink-0 text-yellow-600" />
+                        <AlertCircle className="w-3 h-3 mr-2 mt-1 flex-shrink-0 text-gray-600" />
                         {t}
                       </li>
                     ))}
@@ -519,13 +520,13 @@ const MarketResearch = () => {
           {insight.findings && insight.findings.length > 0 && (
             <div className="mb-6">
               <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center">
-                <CheckCircle className="w-4 h-4 mr-2" style={{ color: '#00f5a0' }} />
+                <CheckCircle className="w-4 h-4 mr-2 text-[#00f5a0]" />
                 Key Findings
               </h4>
               <div className="space-y-2">
                 {insight.findings.map((finding, i) => (
                   <div key={i} className="flex items-start p-3 bg-white rounded-lg border border-gray-200">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mr-3" style={{ backgroundColor: '#00f5a0' }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mr-3 bg-[#00f5a0]">
                       <span className="text-xs font-bold text-black">{i + 1}</span>
                     </div>
                     <p className="text-sm text-gray-700 leading-relaxed">{finding}</p>
@@ -537,15 +538,15 @@ const MarketResearch = () => {
 
           {/* Campaign Integration */}
           {insight.actionableInsights && insight.actionableInsights.length > 0 && (
-            <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-5 border-2 border-green-200">
+            <div className="bg-white rounded-xl p-5 border-2 border-[#00f5a0]">
               <h4 className="font-bold text-gray-900 mb-4 flex items-center text-lg">
-                <Zap className="w-5 h-5 mr-2" style={{ color: '#00f5a0' }} />
+                <Zap className="w-5 h-5 mr-2 text-[#00f5a0]" />
                 How This Feeds Into Your Campaign
               </h4>
               <div className="space-y-3">
                 {insight.actionableInsights.map((action, i) => (
-                  <div key={i} className="flex items-start bg-white rounded-lg p-3 border border-green-200">
-                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" style={{ color: '#00f5a0' }} />
+                  <div key={i} className="flex items-start bg-white rounded-lg p-3 border border-gray-200">
+                    <CheckCircle className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0 text-[#00f5a0]" />
                     <p className="text-sm text-gray-800 leading-relaxed">{action}</p>
                   </div>
                 ))}
@@ -565,8 +566,8 @@ const MarketResearch = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-3">
-                  <Brain className="w-6 h-6 text-green-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#00f5a0]/10 flex items-center justify-center mr-3">
+                  <Brain className="w-6 h-6 text-[#00f5a0]" />
                 </div>
                 Market Research & Intelligence
               </h1>
@@ -580,8 +581,7 @@ const MarketResearch = () => {
                 <button
                   onClick={startResearch}
                   disabled={loading}
-                  className="px-6 py-3 rounded-xl font-semibold text-black flex items-center space-x-2 transition-all hover:shadow-lg disabled:opacity-50"
-                  style={{ backgroundColor: '#00f5a0' }}
+                  className="px-6 py-3 bg-[#00f5a0] rounded-xl font-semibold text-black flex items-center space-x-2 transition-all hover:shadow-lg disabled:opacity-50"
                 >
                   {loading ? (
                     <>
@@ -600,7 +600,7 @@ const MarketResearch = () => {
               {researchStatus === 'running' && (
                 <button
                   onClick={() => setResearchStatus('paused')}
-                  className="px-6 py-3 rounded-xl font-semibold bg-gray-200 text-gray-700 flex items-center space-x-2 hover:bg-gray-300"
+                  className="px-6 py-3 rounded-xl font-semibold bg-white border border-gray-300 text-gray-700 flex items-center space-x-2 hover:bg-gray-50"
                 >
                   <Pause className="w-5 h-5" />
                   <span>Pause</span>
@@ -610,8 +610,7 @@ const MarketResearch = () => {
               {researchStatus === 'paused' && (
                 <button
                   onClick={() => setResearchStatus('running')}
-                  className="px-6 py-3 rounded-xl font-semibold text-black flex items-center space-x-2"
-                  style={{ backgroundColor: '#00f5a0' }}
+                  className="px-6 py-3 bg-[#00f5a0] rounded-xl font-semibold text-black flex items-center space-x-2"
                 >
                   <Play className="w-5 h-5" />
                   <span>Resume</span>
@@ -637,15 +636,16 @@ const MarketResearch = () => {
 
           {/* Status Bar */}
           {researchStatus !== 'idle' && (
-            <div className="mt-6 p-4 rounded-xl border-2" style={{
-              backgroundColor: researchStatus === 'running' ? '#e8fdf5' : '#f3f4f6',
-              borderColor: researchStatus === 'running' ? '#00f5a0' : '#d1d5db'
-            }}>
+            <div className={`mt-6 p-4 rounded-xl border-2 ${
+              researchStatus === 'running'
+                ? 'bg-[#00f5a0]/10 border-[#00f5a0]'
+                : 'bg-white border-gray-200'
+            }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 rounded-full animate-pulse" style={{
-                    backgroundColor: researchStatus === 'running' ? '#00f5a0' : '#6b7280'
-                  }} />
+                  <div className={`w-3 h-3 rounded-full animate-pulse ${
+                    researchStatus === 'running' ? 'bg-[#00f5a0]' : 'bg-gray-400'
+                  }`} />
                   <span className="font-medium text-gray-900">
                     {researchStatus === 'running' && 'Research in progress...'}
                     {researchStatus === 'paused' && 'Research paused'}
@@ -669,8 +669,8 @@ const MarketResearch = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-32">
               <div className="flex items-center mb-6">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-2">
-                  <Settings className="w-4 h-4 text-green-600" />
+                <div className="w-8 h-8 rounded-lg bg-[#00f5a0]/10 flex items-center justify-center mr-2">
+                  <Settings className="w-4 h-4 text-[#00f5a0]" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">
                   Research Configuration
@@ -687,7 +687,7 @@ const MarketResearch = () => {
                   value={researchConfig.industry}
                   onChange={(e) => setResearchConfig(prev => ({ ...prev, industry: e.target.value }))}
                   placeholder="e.g., SaaS, FinTech, Marketing"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                 />
               </div>
 
@@ -703,12 +703,11 @@ const MarketResearch = () => {
                     onChange={(e) => setNewCompetitor(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addCompetitor()}
                     placeholder="Competitor name"
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                   />
                   <button
                     onClick={addCompetitor}
-                    className="px-4 py-2.5 rounded-lg font-medium text-black transition-all shadow-sm hover:shadow-md"
-                    style={{ backgroundColor: '#00f5a0' }}
+                    className="px-4 py-2.5 bg-[#00f5a0] rounded-lg font-medium text-black transition-all shadow-sm hover:shadow-md"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
@@ -717,12 +716,12 @@ const MarketResearch = () => {
                   {researchConfig.competitors.map((competitor, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 text-gray-700 text-sm font-medium"
+                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 text-sm font-medium"
                     >
                       {competitor}
                       <button
                         onClick={() => removeCompetitor(competitor)}
-                        className="ml-2 text-gray-600 hover:text-red-600 transition-colors"
+                        className="ml-2 text-gray-600 hover:text-gray-900 transition-colors"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -743,12 +742,11 @@ const MarketResearch = () => {
                     onChange={(e) => setNewTopic(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addTopic()}
                     placeholder="e.g., Pricing strategies"
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                   />
                   <button
                     onClick={addTopic}
-                    className="px-4 py-2.5 rounded-lg font-medium text-black transition-all shadow-sm hover:shadow-md"
-                    style={{ backgroundColor: '#00f5a0' }}
+                    className="px-4 py-2.5 bg-[#00f5a0] rounded-lg font-medium text-black transition-all shadow-sm hover:shadow-md"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
@@ -757,12 +755,12 @@ const MarketResearch = () => {
                   {researchConfig.topics.map((topic, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 text-gray-700 text-sm font-medium"
+                      className="inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 text-sm font-medium"
                     >
                       {topic}
                       <button
                         onClick={() => removeTopic(topic)}
-                        className="ml-2 text-gray-600 hover:text-red-600 transition-colors"
+                        className="ml-2 text-gray-600 hover:text-gray-900 transition-colors"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -779,7 +777,7 @@ const MarketResearch = () => {
                 <select
                   value={researchConfig.geography}
                   onChange={(e) => setResearchConfig(prev => ({ ...prev, geography: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                 >
                   <option value="Global">Global</option>
                   <option value="North America">North America</option>
@@ -797,7 +795,7 @@ const MarketResearch = () => {
                 <select
                   value={researchConfig.frequency}
                   onChange={(e) => setResearchConfig(prev => ({ ...prev, frequency: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -807,10 +805,10 @@ const MarketResearch = () => {
               </div>
 
               {/* Info Box */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4">
+              <div className="bg-white border border-gray-200 rounded-xl p-4">
                 <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center flex-shrink-0">
-                    <AlertCircle className="w-4 h-4 text-blue-600" />
+                  <div className="w-6 h-6 rounded-md bg-[#00f5a0]/10 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle className="w-4 h-4 text-[#00f5a0]" />
                   </div>
                   <div className="text-sm text-gray-700">
                     <p className="font-semibold text-gray-900 mb-1">Powered by AI</p>
@@ -834,8 +832,8 @@ const MarketResearch = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
-                    <Globe className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 rounded-lg bg-[#00f5a0]/10 flex items-center justify-center">
+                    <Globe className="w-5 h-5 text-[#00f5a0]" />
                   </div>
                   <span className="text-2xl font-bold text-gray-900">
                     {insights.filter(i => i && i.type === 'market').length}
@@ -846,8 +844,8 @@ const MarketResearch = () => {
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 rounded-lg bg-black/10 flex items-center justify-center">
+                    <Target className="w-5 h-5 text-black" />
                   </div>
                   <span className="text-2xl font-bold text-gray-900">
                     {insights.filter(i => i && i.type === 'competitor').length}
@@ -858,8 +856,8 @@ const MarketResearch = () => {
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-50 to-violet-50 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 rounded-lg bg-[#00f5a0]/10 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-[#00f5a0]" />
                   </div>
                   <span className="text-2xl font-bold text-gray-900">
                     {insights.filter(i => i && i.type === 'trend').length}
@@ -870,8 +868,8 @@ const MarketResearch = () => {
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-orange-600" />
+                  <div className="w-10 h-10 rounded-lg bg-[#00f5a0]/10 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-[#00f5a0]" />
                   </div>
                   <span className="text-2xl font-bold text-gray-900">
                     {insights.filter(i => i && i.type === 'opportunity').length}
@@ -885,7 +883,7 @@ const MarketResearch = () => {
             <div className="space-y-6">
               {insights.length === 0 ? (
                 <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 rounded-xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
                     <Brain className="w-8 h-8 text-gray-400" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No research reports yet</h3>
@@ -893,8 +891,7 @@ const MarketResearch = () => {
                   <button
                     onClick={startResearch}
                     disabled={!researchConfig.industry || researchConfig.competitors.length === 0}
-                    className="px-8 py-3 rounded-lg font-semibold text-black inline-flex items-center space-x-2 disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
-                    style={{ backgroundColor: '#00f5a0' }}
+                    className="px-8 py-3 bg-[#00f5a0] rounded-lg font-semibold text-black inline-flex items-center space-x-2 disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
                   >
                     <Play className="w-5 h-5" />
                     <span>Generate First Report</span>

@@ -1796,15 +1796,22 @@ async function addEmailToWorkflowResults(email, userId = 'anonymous', campaignId
     lastWorkflowResults.emailCampaign.emails = [];
   }
 
-  // 🔒 CRITICAL: Ensure email has campaignId BEFORE adding to array
-  if (!email.campaignId && campaignId) {
-    email.campaignId = campaignId;
-    console.log(`   ✅ Added missing campaignId to email: ${campaignId}`);
+  // 🔒 CRITICAL: Ensure email has BOTH campaignId and campaign_id BEFORE adding to array
+  if (campaignId) {
+    if (!email.campaignId) {
+      email.campaignId = campaignId;
+      console.log(`   ✅ Added missing campaignId (camelCase) to email: ${campaignId}`);
+    }
+    if (!email.campaign_id) {
+      email.campaign_id = campaignId;
+      console.log(`   ✅ Added missing campaign_id (snake_case) to email: ${campaignId}`);
+    }
   }
 
   // Verify email has campaignId
-  console.log(`   🔍 Email campaignId check: ${email.campaignId || 'MISSING!'}`);
-  if (!email.campaignId) {
+  const hasCampaignId = email.campaignId || email.campaign_id;
+  console.log(`   🔍 Email campaignId check: ${hasCampaignId || 'MISSING!'}`);
+  if (!hasCampaignId) {
     console.warn(`   ⚠️  WARNING: Email being stored WITHOUT campaignId! This will cause isolation issues.`);
   }
 

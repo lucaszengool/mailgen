@@ -461,7 +461,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             <h4 className="text-xl font-bold text-gray-900">Email Discovery Progress</h4>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-[#00f5a0]">
               {animationState === 'completed' ? '100%' : `${Math.min((currentStep + 1) * 25, 100)}%`}
             </div>
             <Gauge className="w-5 h-5 text-green-500" />
@@ -523,7 +523,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             {/* Website Crawling Results */}
             <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-100 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <Globe className="w-5 h-5 text-green-600" />
+                <Globe className="w-5 h-5 text-[#00f5a0]" />
                 <h6 className="font-semibold text-gray-900">Websites Crawled:</h6>
               </div>
               <div className="space-y-2 text-sm">
@@ -567,7 +567,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             {/* Found Emails */}
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <Mail className="w-5 h-5 text-green-600" />
+                <Mail className="w-5 h-5 text-[#00f5a0]" />
                 <h6 className="font-semibold text-gray-900">Discovered Email Addresses:</h6>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
@@ -613,7 +613,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             <h4 className="text-xl font-bold text-gray-900">Email Verification Progress</h4>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-[#00f5a0]">
               {animationState === 'completed' ? '100%' : `${Math.min((currentStep + 1) * 25, 100)}%`}
             </div>
             <Gauge className="w-5 h-5 text-green-500" />
@@ -735,7 +735,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             <h4 className="text-xl font-bold text-gray-900">🎯 AI Persona Generator</h4>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-[#00f5a0]">
               {animationState === 'completed' ? '100%' : `${Math.min((currentStep + 1) * 20, 100)}%`}
             </div>
             <Target className="w-5 h-5 text-green-500" />
@@ -826,7 +826,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             {/* Generated Personas Preview */}
             <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-100 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <Target className="w-5 h-5 text-green-600" />
+                <Target className="w-5 h-5 text-[#00f5a0]" />
                 <h6 className="font-semibold text-gray-900">Generated Personas:</h6>
               </div>
               <div className="space-y-3">
@@ -903,7 +903,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             <h4 className="text-xl font-bold text-gray-900">📝 AI Email Generation System</h4>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-[#00f5a0]">
               {animationState === 'completed' ? '100%' : `${Math.min((currentStep + 1) * 20, 100)}%`}
             </div>
             <Sparkles className="w-5 h-5 text-green-500" />
@@ -994,7 +994,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             {/* Generated Emails Preview */}
             <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-100 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-5 h-5 text-green-600" />
+                <Sparkles className="w-5 h-5 text-[#00f5a0]" />
                 <h6 className="font-semibold text-gray-900">Personalized Email Campaign:</h6>
               </div>
               <div className="space-y-3">
@@ -1163,7 +1163,7 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
           <h4 className="text-lg font-bold text-gray-900">Progress</h4>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="text-xl font-bold text-green-600">
+          <div className="text-xl font-bold text-[#00f5a0]">
             {animationState === 'completed' ? '100%' : `${Math.min(Math.round(((currentStep + 1) / getSteps().length) * 100), 100)}%`}
           </div>
           <Gauge className="w-4 h-4 text-green-500" />
@@ -1276,15 +1276,17 @@ const SettingsView = () => {
     followUpDays: 3
   });
 
-  // 🔧 Load current config from backend on mount
+  // 🔧 Load current config from backend and agentConfig on mount
   useEffect(() => {
     const loadCurrentConfig = async () => {
       try {
         console.log('🔧 Loading current configuration from backend...');
+
+        // Try backend API first
         const response = await apiGet('/config/current');
 
         if (response.success) {
-          console.log('✅ Config loaded:', response);
+          console.log('✅ Config loaded from backend:', response);
 
           // Update SMTP config if available
           if (response.smtp && Object.keys(response.smtp).length > 0) {
@@ -1303,7 +1305,50 @@ const SettingsView = () => {
         }
       } catch (error) {
         console.warn('⚠️ Could not load config from backend:', error);
-        // Fallback to localStorage is already handled by useState initializers
+      }
+
+      // 🔥 ALSO load from agentConfig (current campaign settings)
+      try {
+        const agentConfig = localStorage.getItem('agentConfig');
+        if (agentConfig) {
+          const config = JSON.parse(agentConfig);
+          console.log('📦 Loading agentConfig values:', config);
+
+          // Update Website Analysis from agentConfig
+          if (config.targetWebsite || config.websiteAnalysis) {
+            setWebsiteConfig(prev => ({
+              ...prev,
+              targetWebsite: config.targetWebsite || prev.targetWebsite,
+              businessName: config.websiteAnalysis?.businessName || prev.businessName,
+              productType: config.websiteAnalysis?.productServiceType || prev.productType,
+              businessIntro: config.websiteAnalysis?.businessIntro || prev.businessIntro
+            }));
+          }
+
+          // Update SMTP from agentConfig
+          if (config.smtpConfig) {
+            setSmtpConfig(prev => ({
+              ...prev,
+              ...config.smtpConfig
+            }));
+          }
+
+          // Update Campaign settings from agentConfig
+          if (config.campaignGoal || config.industries || config.roles) {
+            setCampaignConfig(prev => ({
+              ...prev,
+              campaignGoal: config.campaignGoal || prev.campaignGoal,
+              industries: config.industries || prev.industries,
+              roles: config.roles || prev.roles,
+              companySize: config.companySize || prev.companySize,
+              location: config.location || prev.location
+            }));
+          }
+
+          console.log('✅ agentConfig values loaded into Settings');
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not load agentConfig:', error);
       }
     };
 
@@ -1343,6 +1388,27 @@ const SettingsView = () => {
       localStorage.setItem('websiteConfig', JSON.stringify(websiteConfig));
       localStorage.setItem('campaignConfig', JSON.stringify(campaignConfig));
 
+      // 🔥 CRITICAL: Update agentConfig so current campaign uses new values
+      const currentAgentConfig = JSON.parse(localStorage.getItem('agentConfig') || '{}');
+      const updatedAgentConfig = {
+        ...currentAgentConfig,
+        targetWebsite: websiteConfig.targetWebsite,
+        smtpConfig: smtpConfig,
+        websiteAnalysis: {
+          ...currentAgentConfig.websiteAnalysis,
+          businessName: websiteConfig.businessName,
+          productServiceType: websiteConfig.productType,
+          businessIntro: websiteConfig.businessIntro
+        },
+        campaignGoal: campaignConfig.campaignGoal,
+        industries: campaignConfig.industries,
+        roles: campaignConfig.roles,
+        companySize: campaignConfig.companySize,
+        location: campaignConfig.location
+      };
+      localStorage.setItem('agentConfig', JSON.stringify(updatedAgentConfig));
+      console.log('✅ Updated agentConfig for current campaign');
+
       // Save to backend (new unified API)
       console.log('💾 Saving configuration to backend...');
       const response = await apiPost('/config/update', {
@@ -1352,7 +1418,7 @@ const SettingsView = () => {
       });
 
       if (response.success) {
-        toast.success('Configuration saved! Future campaigns will use these settings ✅');
+        toast.success('Configuration saved! Current and future campaigns will use these settings ✅');
         console.log('✅ Configuration saved successfully');
       } else {
         throw new Error(response.error || 'Unknown error');
@@ -1392,11 +1458,11 @@ const SettingsView = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full flex items-center px-4 py-3 rounded-lg transition-all ${
                       activeTab === tab.id
-                        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-gray-900 font-semibold shadow-sm'
+                        ? 'bg-[#00f5a0]/10 border border-[#00f5a0]/30 text-gray-900 font-semibold shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 border border-transparent'
                     }`}
                   >
-                    <Icon className={`h-5 w-5 mr-3 ${activeTab === tab.id ? 'text-green-600' : 'text-gray-500'}`} />
+                    <Icon className={`h-5 w-5 mr-3 ${activeTab === tab.id ? 'text-[#00f5a0]' : 'text-gray-500'}`} />
                     {tab.label}
                   </button>
                 );
@@ -1411,8 +1477,8 @@ const SettingsView = () => {
           {activeTab === 'smtp' && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center mb-6">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-3">
-                  <Mail className="h-5 w-5 text-green-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#00f5a0]/10 flex items-center justify-center mr-3">
+                  <Mail className="h-5 w-5 text-[#00f5a0]" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900">SMTP Email Server Settings</h2>
               </div>
@@ -1424,7 +1490,7 @@ const SettingsView = () => {
                     type="text"
                     value={smtpConfig.name}
                     onChange={(e) => setSmtpConfig(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                     placeholder="e.g., Company Email Server"
                   />
                 </div>
@@ -1436,7 +1502,7 @@ const SettingsView = () => {
                       type="text"
                       value={smtpConfig.host}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, host: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                       placeholder="smtp.gmail.com"
                     />
                   </div>
@@ -1446,7 +1512,7 @@ const SettingsView = () => {
                       type="number"
                       value={smtpConfig.port}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, port: parseInt(e.target.value) }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                       placeholder="587"
                     />
                   </div>
@@ -1458,7 +1524,7 @@ const SettingsView = () => {
                       type="checkbox"
                       checked={smtpConfig.secure}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, secure: e.target.checked }))}
-                      className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      className="rounded border-gray-300 text-[#00f5a0] focus:ring-[#00f5a0]"
                     />
                     <span className="ml-2 text-sm text-gray-700">Use SSL/TLS Encryption (Port 465)</span>
                   </label>
@@ -1471,7 +1537,7 @@ const SettingsView = () => {
                       type="email"
                       value={smtpConfig.username}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, username: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                       placeholder="your-email@gmail.com"
                     />
                   </div>
@@ -1481,7 +1547,7 @@ const SettingsView = () => {
                       type="password"
                       value={smtpConfig.password}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, password: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                       placeholder="App-specific password"
                     />
                   </div>
@@ -1502,7 +1568,7 @@ const SettingsView = () => {
                         type="text"
                         value={smtpConfig.senderName}
                         onChange={(e) => setSmtpConfig(prev => ({ ...prev, senderName: e.target.value }))}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                         placeholder="James Wilson"
                       />
                     </div>
@@ -1512,7 +1578,7 @@ const SettingsView = () => {
                         type="text"
                         value={smtpConfig.companyName}
                         onChange={(e) => setSmtpConfig(prev => ({ ...prev, companyName: e.target.value }))}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                         placeholder="FruitAI"
                       />
                     </div>
@@ -1525,7 +1591,7 @@ const SettingsView = () => {
                         type="url"
                         value={smtpConfig.companyWebsite}
                         onChange={(e) => setSmtpConfig(prev => ({ ...prev, companyWebsite: e.target.value }))}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                         placeholder="https://fruitai.org"
                       />
                     </div>
@@ -1535,7 +1601,7 @@ const SettingsView = () => {
                         type="text"
                         value={smtpConfig.ctaText}
                         onChange={(e) => setSmtpConfig(prev => ({ ...prev, ctaText: e.target.value }))}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                         placeholder="Schedule a Meeting"
                       />
                     </div>
@@ -1547,7 +1613,7 @@ const SettingsView = () => {
                       type="url"
                       value={smtpConfig.ctaUrl}
                       onChange={(e) => setSmtpConfig(prev => ({ ...prev, ctaUrl: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                       placeholder="https://calendly.com/your-calendar"
                     />
                     <p className="text-xs text-gray-500 mt-1">
@@ -1597,8 +1663,8 @@ const SettingsView = () => {
           {activeTab === 'website' && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center mb-6">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-3">
-                  <Globe className="h-5 w-5 text-green-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#00f5a0]/10 flex items-center justify-center mr-3">
+                  <Globe className="h-5 w-5 text-[#00f5a0]" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900">Website Analysis</h2>
               </div>
@@ -1607,8 +1673,10 @@ const SettingsView = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Target Website *</label>
                   <input
                     type="url"
+                    value={websiteConfig.targetWebsite}
+                    onChange={(e) => setWebsiteConfig(prev => ({ ...prev, targetWebsite: e.target.value }))}
                     placeholder="https://example.com"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                   />
                 </div>
 
@@ -1616,8 +1684,10 @@ const SettingsView = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
                   <input
                     type="text"
+                    value={websiteConfig.businessName}
+                    onChange={(e) => setWebsiteConfig(prev => ({ ...prev, businessName: e.target.value }))}
                     placeholder="FruitAI"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                   />
                 </div>
 
@@ -1625,8 +1695,10 @@ const SettingsView = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Product / Service Type *</label>
                   <input
                     type="text"
+                    value={websiteConfig.productType}
+                    onChange={(e) => setWebsiteConfig(prev => ({ ...prev, productType: e.target.value }))}
                     placeholder="Food Technology"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                   />
                 </div>
 
@@ -1634,14 +1706,20 @@ const SettingsView = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Business Introduction *</label>
                   <textarea
                     rows={4}
+                    value={websiteConfig.businessIntro}
+                    onChange={(e) => setWebsiteConfig(prev => ({ ...prev, businessIntro: e.target.value }))}
                     placeholder="AI-powered fruit and vegetable freshness analyzer..."
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                   />
                 </div>
 
                 <div className="flex justify-end pt-4 border-t border-gray-200">
-                  <button className="px-6 py-2.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-all shadow-sm hover:shadow-md">
-                    Update Website Analysis
+                  <button
+                    onClick={updateSmtpConfig}
+                    disabled={isSaving}
+                    className="px-6 py-2.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-all shadow-sm hover:shadow-md disabled:opacity-50"
+                  >
+                    {isSaving ? 'Updating...' : 'Update Website Analysis'}
                   </button>
                 </div>
               </div>
@@ -1652,15 +1730,19 @@ const SettingsView = () => {
           {activeTab === 'campaign' && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center mb-6">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center mr-3">
-                  <Target className="h-5 w-5 text-green-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#00f5a0]/10 flex items-center justify-center mr-3">
+                  <Target className="h-5 w-5 text-[#00f5a0]" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900">Campaign Configuration</h2>
               </div>
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Campaign Goal</label>
-                  <select className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-gray-50 hover:bg-white text-gray-900">
+                  <select
+                    value={campaignConfig.campaignGoal || 'partnership'}
+                    onChange={(e) => setCampaignConfig(prev => ({ ...prev, campaignGoal: e.target.value }))}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-gray-50 hover:bg-white text-gray-900"
+                  >
                     <option value="partnership">Partnership Outreach</option>
                     <option value="sales">Sales Prospecting</option>
                     <option value="recruitment">Talent Recruitment</option>
@@ -1672,8 +1754,10 @@ const SettingsView = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Target Industries</label>
                   <input
                     type="text"
+                    value={campaignConfig.industries || ''}
+                    onChange={(e) => setCampaignConfig(prev => ({ ...prev, industries: e.target.value }))}
                     placeholder="Technology, Healthcare, Finance..."
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                   />
                   <p className="text-xs text-gray-500 mt-1">Separate multiple industries with commas</p>
                 </div>
@@ -1682,20 +1766,34 @@ const SettingsView = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Target Roles</label>
                   <input
                     type="text"
+                    value={campaignConfig.roles || ''}
+                    onChange={(e) => setCampaignConfig(prev => ({ ...prev, roles: e.target.value }))}
                     placeholder="CEO, CTO, Marketing Director..."
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                   />
                   <p className="text-xs text-gray-500 mt-1">Separate multiple roles with commas</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Search Keywords</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Size</label>
                   <input
                     type="text"
-                    placeholder="AI, machine learning, automation..."
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                    value={campaignConfig.companySize || ''}
+                    onChange={(e) => setCampaignConfig(prev => ({ ...prev, companySize: e.target.value }))}
+                    placeholder="1-50, 51-200, 201-1000..."
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Keywords to help find relevant prospects</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <input
+                    type="text"
+                    value={campaignConfig.location || ''}
+                    onChange={(e) => setCampaignConfig(prev => ({ ...prev, location: e.target.value }))}
+                    placeholder="United States, Europe, Global..."
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
+                  />
                 </div>
 
                 <div className="border-t border-gray-200 pt-4">
@@ -1710,28 +1808,34 @@ const SettingsView = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Max Emails per Hour</label>
                       <input
                         type="number"
-                        defaultValue={10}
+                        value={campaignConfig.maxEmailsPerHour || 10}
+                        onChange={(e) => setCampaignConfig(prev => ({ ...prev, maxEmailsPerHour: parseInt(e.target.value) }))}
                         min={1}
                         max={100}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Daily Email Limit</label>
                       <input
                         type="number"
-                        defaultValue={50}
+                        value={campaignConfig.dailyEmailLimit || 50}
+                        onChange={(e) => setCampaignConfig(prev => ({ ...prev, dailyEmailLimit: parseInt(e.target.value) }))}
                         min={1}
                         max={500}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all bg-white text-gray-900"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end pt-4 border-t border-gray-200">
-                  <button className="px-6 py-2.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-all shadow-sm hover:shadow-md">
-                    Update Campaign Config
+                  <button
+                    onClick={updateSmtpConfig}
+                    disabled={isSaving}
+                    className="px-6 py-2.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-all shadow-sm hover:shadow-md disabled:opacity-50"
+                  >
+                    {isSaving ? 'Updating...' : 'Update Campaign Config'}
                   </button>
                 </div>
               </div>
@@ -1781,7 +1885,7 @@ function ConfirmationModal({ isOpen, title, message, confirmText, cancelText, on
           className={`px-4 py-2 rounded-lg font-medium active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
             danger
               ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
-              : 'text-white hover:opacity-90 focus:ring-green-500'
+              : 'text-white hover:opacity-90 focus:ring-[#00f5a0]'
           }`}
           style={danger ? {} : { backgroundColor: '#00f0a0', color: '#000' }}
         >
@@ -5406,7 +5510,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-green-600 font-medium uppercase">Emails Generated</p>
+                    <p className="text-xs text-[#00f5a0] font-medium uppercase">Emails Generated</p>
                     <p className="text-2xl font-bold text-green-900 mt-1">{workflowStats.emails.generated}</p>
                   </div>
                   <Mail className="w-8 h-8 text-green-500 opacity-50" />
@@ -6704,7 +6808,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   value={batchSearchData.industry}
                   onChange={(e) => setBatchSearchData(prev => ({ ...prev, industry: e.target.value }))}
                   placeholder="e.g., Technology, Healthcare, Finance"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00f5a0] bg-white text-gray-900"
                 />
               </div>
 
@@ -6718,7 +6822,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   value={batchSearchData.region}
                   onChange={(e) => setBatchSearchData(prev => ({ ...prev, region: e.target.value }))}
                   placeholder="e.g., United States, Europe, Asia"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00f5a0] bg-white text-gray-900"
                 />
               </div>
 
@@ -6732,7 +6836,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   value={batchSearchData.keywords}
                   onChange={(e) => setBatchSearchData(prev => ({ ...prev, keywords: e.target.value }))}
                   placeholder="e.g., CEO, founder, director, manager"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00f5a0] bg-white text-gray-900"
                 />
               </div>
             </div>

@@ -35,8 +35,8 @@ import {
   ComposedChart
 } from 'recharts'
 
-// JobRight.ai color scheme
-const COLORS = ['#00f0a0', '#28fcaf', '#52ffba', '#a3ffd4', '#e6fff2', '#00c98d']
+// Black/Green/White color scheme
+const COLORS = ['#00f5a0', '#000000', '#374151', '#6b7280', '#9ca3af', '#d1d5db']
 
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState('30d')
@@ -217,8 +217,8 @@ export default function Analytics() {
     <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <div className={`p-3 rounded-lg bg-green-50`}>
-            <Icon className={`h-6 w-6 text-green-600`} />
+          <div className="p-3 rounded-lg bg-[#00f5a0]/10">
+            <Icon className="h-6 w-6 text-[#00f5a0]" />
           </div>
           <div className="ml-4">
             <p className="text-sm font-medium text-gray-500">{title}</p>
@@ -257,7 +257,7 @@ export default function Analytics() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00f5a0]"></div>
         <span className="ml-3 text-gray-600">Loading analytics...</span>
       </div>
     )
@@ -315,7 +315,7 @@ export default function Analytics() {
           <select
             value={selectedCampaign}
             onChange={(e) => setSelectedCampaign(e.target.value)}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-green-500 focus:ring-green-500"
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-[#00f5a0] focus:ring-[#00f5a0] bg-white"
           >
             <option value="all">All Campaigns</option>
             {displayCampaignPerformance.map(campaign => (
@@ -325,7 +325,7 @@ export default function Analytics() {
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-green-500 focus:ring-green-500"
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-[#00f5a0] focus:ring-[#00f5a0] bg-white"
           >
             {timeRangeOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -338,10 +338,10 @@ export default function Analytics() {
 
       {/* Real-time Status Bar */}
       {realtimeStats && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-[#00f5a0]/10 border border-[#00f5a0]/30 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-[#00f5a0] rounded-full animate-pulse"></div>
               <span className="ml-2 text-sm font-medium text-gray-700">Live Updates</span>
             </div>
             <div className="flex space-x-6 text-sm">
@@ -427,8 +427,8 @@ export default function Analytics() {
             <ComposedChart data={displayEngagementTrends}>
               <defs>
                 <linearGradient id="colorSent" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#00f0a0" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#00f0a0" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#00f5a0" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#00f5a0" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -451,7 +451,7 @@ export default function Analytics() {
               <Area
                 type="monotone"
                 dataKey="opens"
-                stroke="#00f0a0"
+                stroke="#00f5a0"
                 strokeWidth={2}
                 fill="url(#colorSent)"
                 name="Opens"
@@ -459,7 +459,7 @@ export default function Analytics() {
               <Line
                 type="monotone"
                 dataKey="clicks"
-                stroke="#00c98d"
+                stroke="#000000"
                 strokeWidth={2}
                 name="Clicks"
               />
@@ -531,9 +531,9 @@ export default function Analytics() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      campaign.status === 'active' ? 'bg-green-100 text-gray-800' :
-                      campaign.status === 'completed' ? 'bg-gray-100 text-gray-700' :
-                      'bg-yellow-100 text-gray-700'
+                      campaign.status === 'active' ? 'bg-[#00f5a0]/20 text-gray-900 border border-[#00f5a0]/30' :
+                      campaign.status === 'completed' ? 'bg-gray-100 text-gray-700 border border-gray-200' :
+                      'bg-white text-gray-700 border border-gray-300'
                     }`}>
                       {campaign.status}
                     </span>
