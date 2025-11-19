@@ -259,9 +259,20 @@ const WorkflowDashboard = ({ agentConfig, onReset }) => {
   // Start workflow - connect to real workflow system
   const startWorkflow = async () => {
     try {
+      // 🔥 FIX: Generate campaign ID to ensure proper email isolation
+      const campaignId = `campaign_${Date.now()}`;
+      const campaignName = 'Workflow Campaign';
+
+      // Store campaign ID for later reference
+      localStorage.setItem('currentCampaignId', campaignId);
+
       const response = await fetch('/api/workflow/start', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignId: campaignId,
+          campaignName: campaignName
+        })
       });
       
       if (response.ok) {

@@ -145,14 +145,25 @@ const CampaignSetupWizard = ({ onComplete }) => {
         console.log('✅ Website analysis saved to history:', historyEntry);
       }
 
+      // 🔥 FIX: Generate campaign ID to ensure proper email isolation
+      const campaignId = `campaign_${Date.now()}`;
+      const campaignName = `Campaign - ${setupData.targetWebsite || finalData.targetWebsite}`;
+
+      // Store campaign ID for later reference
+      localStorage.setItem('currentCampaignId', campaignId);
+
       // Now start the agent with the complete configuration
       console.log('🚀 Starting AI agent workflow...');
+      console.log('📁 Campaign ID:', campaignId);
       const startResponse = await fetch('/api/workflow/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          // 🔥 FIX: Include campaign ID for proper email isolation
+          campaignId: campaignId,
+          campaignName: campaignName,
           // Include the SMTP configuration and all setup data
           targetWebsite: setupData.targetWebsite || finalData.targetWebsite,
           businessType: setupData.businessType || 'auto',

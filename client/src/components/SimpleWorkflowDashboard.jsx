@@ -1957,6 +1957,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const [showCompanyDetail, setShowCompanyDetail] = useState(false);
   const [selectedProspectForDetail, setSelectedProspectForDetail] = useState(null);
 
+  // 🔍 Batch Search modal state
+  const [showBatchSearchModal, setShowBatchSearchModal] = useState(false);
+  const [batchSearchData, setBatchSearchData] = useState({
+    industry: '',
+    region: '',
+    keywords: ''
+  });
+  const [isBatchSearching, setIsBatchSearching] = useState(false);
+  const [batchSearchProgress, setBatchSearchProgress] = useState(null);
+
   // Filter handlers
   const handleProspectFilterChange = (filterType, value) => {
     setProspectFilters(prev => ({
@@ -2052,6 +2062,52 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         ]
       };
       setChatbotExternalMessage(errorMessage);
+    }
+  };
+
+  // 🔍 Handle Batch Search for Prospects
+  const handleBatchSearch = async () => {
+    try {
+      setIsBatchSearching(true);
+      setShowBatchSearchModal(false);
+
+      // Show start notification
+      toast.success('Batch search started! 🔍 Searching in background...');
+      setBatchSearchProgress({ status: 'running', message: 'Searching for prospects...' });
+
+      // Get current campaign ID
+      const campaignId = localStorage.getItem('currentCampaignId') || `campaign_${Date.now()}`;
+
+      // Call backend batch search endpoint (runs in background)
+      const response = await fetch('/api/prospects/batch-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignId,
+          industry: batchSearchData.industry,
+          region: batchSearchData.region,
+          keywords: batchSearchData.keywords
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        console.log(`🔍 Batch search started with ID: ${result.searchId}`);
+        // Reset form
+        setBatchSearchData({ industry: '', region: '', keywords: '' });
+
+        // Completion will be handled by WebSocket 'batch_search_complete' event
+      } else {
+        toast.error(`❌ Batch search failed: ${result.message}`);
+        setBatchSearchProgress(null);
+        setIsBatchSearching(false);
+      }
+    } catch (error) {
+      console.error('Batch search error:', error);
+      toast.error(`❌ Batch search failed: ${error.message}`);
+      setBatchSearchProgress(null);
+      setIsBatchSearching(false);
     }
   };
 
@@ -4682,6 +4738,44 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       } else if (data.type === 'campaign_stats') {
         // Handle campaign statistics updates
         setEmailCampaignStats(data.stats);
+      } else if (data.type === 'batch_search_complete') {
+        // Handle batch search completion
+        console.log('🎉 Batch search complete:', data.data);
+        const { totalFound, industry, region, keywords } = data.data;
+
+        // Show completion notification
+        if (totalFound > 0) {
+          toast.success(`✅ Batch search complete! Found ${totalFound} new prospects for ${industry || keywords}`);
+        } else {
+          toast.info(`ℹ️ Batch search complete. No new prospects found for ${industry || keywords}`);
+        }
+
+        // Refresh prospects from database
+        const campaignId = localStorage.getItem('currentCampaignId');
+        if (campaignId) {
+          fetch(`/api/contacts?status=active&limit=1000&campaignId=${campaignId}`)
+            .then(res => res.json())
+            .then(result => {
+              if (result.success && result.data?.contacts) {
+                const dbProspects = result.data.contacts.map(c => ({
+                  id: c.id,
+                  email: c.email,
+                  name: c.name || 'Unknown',
+                  company: c.company || 'Unknown',
+                  role: c.position || 'Unknown',
+                  industry: c.industry || 'Unknown',
+                  source: c.source || 'Database',
+                  location: c.address || 'Unknown'
+                }));
+                setProspects(dbProspects);
+              }
+            })
+            .catch(err => console.error('Failed to refresh prospects:', err));
+        }
+
+        // Clear batch search state
+        setBatchSearchProgress(null);
+        setIsBatchSearching(false);
       } else if (data.type === 'clients_update') {
         // Handle client/prospect updates
         if (data.clients && data.clients.length > 0) {
@@ -5716,7 +5810,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   />
                 ) : (
                   <>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Prospects</h2>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl font-bold text-gray-900">Prospects</h2>
+                      <button
+                        onClick={() => setShowBatchSearchModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                      >
+                        <Search className="w-4 h-4" />
+                        Batch Search
+                      </button>
+                    </div>
 
                     {/* Search Bar for Prospects */}
                 {prospects.length > 0 && (
@@ -6571,6 +6674,87 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         emails={emailCampaignStats.emails || generatedEmails || []}
         externalMessage={chatbotExternalMessage}
       />
+
+      {/* Batch Search Modal */}
+      {showBatchSearchModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Batch Prospect Search</h3>
+              <button
+                onClick={() => setShowBatchSearchModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Search for new prospects based on specific criteria. Results will be added to your current campaign.
+            </p>
+
+            <div className="space-y-4">
+              {/* Industry Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Industry
+                </label>
+                <input
+                  type="text"
+                  value={batchSearchData.industry}
+                  onChange={(e) => setBatchSearchData(prev => ({ ...prev, industry: e.target.value }))}
+                  placeholder="e.g., Technology, Healthcare, Finance"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-900"
+                />
+              </div>
+
+              {/* Region Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Region
+                </label>
+                <input
+                  type="text"
+                  value={batchSearchData.region}
+                  onChange={(e) => setBatchSearchData(prev => ({ ...prev, region: e.target.value }))}
+                  placeholder="e.g., United States, Europe, Asia"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-900"
+                />
+              </div>
+
+              {/* Keywords Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Keywords
+                </label>
+                <input
+                  type="text"
+                  value={batchSearchData.keywords}
+                  onChange={(e) => setBatchSearchData(prev => ({ ...prev, keywords: e.target.value }))}
+                  placeholder="e.g., CEO, founder, director, manager"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-gray-900"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowBatchSearchModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBatchSearch}
+                disabled={!batchSearchData.industry && !batchSearchData.region && !batchSearchData.keywords}
+                className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Start Search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating chat button */}
       {!showChatbot && (
