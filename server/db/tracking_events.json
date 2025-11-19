@@ -1,4 +1,35 @@
 {
   "events": [],
-  "emails": {}
+  "emails": {
+    "ad4da9274a36f2e80fb7a568f74a21dc": {
+      "trackingId": "ad4da9274a36f2e80fb7a568f74a21dc",
+      "emailId": "ad4da9274a36f2e80fb7a568f74a21dc",
+      "recipientEmail": "fruitaiofficial@gmail.com",
+      "subject": "Test Email - Analytics Tracking Verification",
+      "campaignId": "test_campaign_1763560752261",
+      "sentAt": "2025-11-19T13:59:12.271Z",
+      "status": "sent",
+      "events": {
+        "opens": [],
+        "clicks": [],
+        "replies": [],
+        "bounces": []
+      }
+    },
+    "437e0aec86fdca7f0679e38a0bb7b2dc": {
+      "trackingId": "437e0aec86fdca7f0679e38a0bb7b2dc",
+      "emailId": "437e0aec86fdca7f0679e38a0bb7b2dc",
+      "recipientEmail": "fruitaiofficial@gmail.com",
+      "subject": "Test Email - Analytics Tracking Verification",
+      "campaignId": "test_campaign_1763560822361",
+      "sentAt": "2025-11-19T14:00:22.370Z",
+      "status": "sent",
+      "events": {
+        "opens": [],
+        "clicks": [],
+        "replies": [],
+        "bounces": []
+      }
+    }
+  }
 }

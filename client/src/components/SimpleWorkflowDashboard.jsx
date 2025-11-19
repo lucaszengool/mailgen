@@ -4451,15 +4451,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           console.log('📧 Real-time email update received:', data.data.emailCampaign.emails[0]);
           const newEmail = data.data.emailCampaign.emails[0];
 
-          // Add to generated emails immediately
-          setGeneratedEmails(prev => {
-            const existing = prev.find(e => e.to === newEmail.to);
-            if (existing) {
-              return prev.map(e => e.to === newEmail.to ? { ...e, ...newEmail } : e);
-            } else {
-              return [...prev, newEmail];
-            }
-          });
+          // 🔒 CRITICAL: Only add if campaignId matches current campaign
+          const emailCampaignId = newEmail.campaignId || newEmail.campaign_id || data.data.campaignId;
+          if (emailCampaignId === currentCampaignId) {
+            console.log(`✅ [CAMPAIGN MATCH] Adding email from campaign ${emailCampaignId}`);
+            // Add to generated emails immediately
+            setGeneratedEmails(prev => {
+              const existing = prev.find(e => e.to === newEmail.to);
+              if (existing) {
+                return prev.map(e => e.to === newEmail.to ? { ...e, ...newEmail } : e);
+              } else {
+                return [...prev, newEmail];
+              }
+            });
+          } else {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email from different campaign (Email: ${emailCampaignId}, Current: ${currentCampaignId})`);
+          }
 
           // Update stats
           setEmailCampaignStats(prev => ({
@@ -4602,17 +4609,24 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         // Handle email sent/generated updates
         const email = data.data || data.email;
         const emailCampaign = data.emailCampaign;
-        
+
         if (email) {
           console.log('📧 Email update received:', email);
-          setGeneratedEmails(prev => {
-            const existing = prev.find(e => e.to === email.to);
-            const newEmails = existing 
-              ? prev.map(e => e.to === email.to ? { ...e, ...email } : e)
-              : [...prev, email];
-            console.log('📧 Updated email list:', newEmails);
-            return newEmails;
-          });
+          // 🔒 CRITICAL: Only add if campaignId matches current campaign
+          const emailCampaignId = email.campaignId || email.campaign_id || data.data?.campaignId;
+          if (emailCampaignId === currentCampaignId || !emailCampaignId) {
+            console.log(`✅ [CAMPAIGN MATCH] Processing email update for campaign ${emailCampaignId}`);
+            setGeneratedEmails(prev => {
+              const existing = prev.find(e => e.to === email.to);
+              const newEmails = existing
+                ? prev.map(e => e.to === email.to ? { ...e, ...email } : e)
+                : [...prev, email];
+              console.log('📧 Updated email list:', newEmails);
+              return newEmails;
+            });
+          } else {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email update from different campaign (Email: ${emailCampaignId}, Current: ${currentCampaignId})`);
+          }
           setEmailCampaignStats(prev => ({
             ...prev,
             emails: [...prev.emails, email],
@@ -4664,15 +4678,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             }));
           }
           
-          setGeneratedEmails(prev => {
-            const existing = prev.find(e => e.to === email.to);
-            if (existing) {
-              return prev.map(e => e.to === email.to ? { ...e, ...email } : e);
-            } else {
-              console.log('📧 Adding email to generatedEmails for email editor access');
-              return [...prev, { ...email, id: `generated_${Date.now()}` }];
-            }
-          });
+          // 🔒 CRITICAL: Only add if campaignId matches current campaign
+          const emailCampaignId = data.data.campaignId || email.campaignId;
+          if (emailCampaignId === currentCampaignId) {
+            setGeneratedEmails(prev => {
+              const existing = prev.find(e => e.to === email.to);
+              if (existing) {
+                return prev.map(e => e.to === email.to ? { ...e, ...email } : e);
+              } else {
+                console.log('📧 Adding email to generatedEmails for email editor access (Campaign:', emailCampaignId, ')');
+                return [...prev, { ...email, id: `generated_${Date.now()}` }];
+              }
+            });
+          } else {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email_awaiting_approval from different campaign (Email: ${emailCampaignId}, Current: ${currentCampaignId})`);
+          }
         }
       } else if (data.type === 'email_preview_generated') {
         console.log('🐛 DEBUG: email_preview_generated WebSocket message received!');
@@ -4770,14 +4790,20 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           }
           
           // Also add to generatedEmails so it's available in email editor
-          setGeneratedEmails(prev => {
-            const existing = prev.find(e => e.to === emailForReview.to);
-            if (!existing) {
-              console.log('📧 Adding email to generatedEmails for email editor access');
-              return [...prev, { ...emailForReview, id: `generated_${Date.now()}`, status: 'generated' }];
-            }
-            return prev;
-          });
+          // 🔒 CRITICAL: Only add if campaignId matches current campaign to prevent mixing
+          const emailCampaignId = data.data.campaignId || emailForReview.campaignId;
+          if (emailCampaignId === currentCampaignId) {
+            setGeneratedEmails(prev => {
+              const existing = prev.find(e => e.to === emailForReview.to);
+              if (!existing) {
+                console.log('📧 Adding email to generatedEmails for email editor access (Campaign:', emailCampaignId, ')');
+                return [...prev, { ...emailForReview, id: `generated_${Date.now()}`, status: 'generated' }];
+              }
+              return prev;
+            });
+          } else {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email from different campaign (Email: ${emailCampaignId}, Current: ${currentCampaignId})`);
+          }
           
           // Also update generated emails list
           setGeneratedEmails(prev => prev.map(e => 

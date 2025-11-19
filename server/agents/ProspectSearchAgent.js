@@ -9,6 +9,7 @@ const ProfessionalEmailDiscovery = require('./ProfessionalEmailDiscovery');
 // const LinkedInEmailDiscoveryEngine = require('./LinkedInEmailDiscoveryEngine'); // REPLACED with Ollama + SearxNG
 const OllamaSearxNGEmailDiscovery = require('./OllamaSearxNGEmailDiscovery'); // NEW: Ollama + SearxNG integration
 // const SimplifiedWebEmailSearchEngine = require('./SimplifiedWebEmailSearchEngine'); // DISABLED: Focus on real email discovery only
+const { enhanceProspect } = require('../utils/emailEnrichment'); // Enhanced email parsing
 
 class ProspectSearchAgent {
   constructor() {
@@ -311,22 +312,26 @@ class ProspectSearchAgent {
             strategy
           );
           
-          const formattedEmails = enrichedProspects.map(prospect => ({
-            company: prospect.domain || 'Unknown',
-            email: prospect.email,
-            name: prospect.name || this.extractNameFromEmail(prospect.email),
-            industry: targetIndustry,
-            status: 'super_search_discovered',
-            source: prospect.source || 'super_search',
-            role: prospect.persona?.estimatedRole || 'Business Professional',
-            confidence: prospect.confidence || prospect.score || 85,
-            verified: prospect.confidence > 0.9,
-            discoveryMethod: prospect.discoveryMethod,
-            metadata: prospect.metadata,
-            persona: prospect.persona,
-            priority: prospect.priority,
-            tags: prospect.tags
-          }));
+          const formattedEmails = enrichedProspects.map(prospect => {
+            const baseProspect = {
+              company: prospect.domain || 'Unknown',
+              email: prospect.email,
+              name: prospect.name || this.extractNameFromEmail(prospect.email),
+              industry: targetIndustry,
+              status: 'super_search_discovered',
+              source: prospect.source || 'super_search',
+              role: prospect.persona?.estimatedRole || 'Business Professional',
+              confidence: prospect.confidence || prospect.score || 85,
+              verified: prospect.confidence > 0.9,
+              discoveryMethod: prospect.discoveryMethod,
+              metadata: prospect.metadata,
+              persona: prospect.persona,
+              priority: prospect.priority,
+              tags: prospect.tags
+            };
+            // Apply email enrichment to extract better names, titles, departments
+            return enhanceProspect(baseProspect);
+          });
           
           allProspects.push(...formattedEmails);
           console.log(`✅ 添加了 ${formattedEmails.length} 个高质量潜在客户`);
@@ -348,17 +353,21 @@ class ProspectSearchAgent {
         
         if (professionalResult && professionalResult.length > 0) {
           console.log(`✅ 专业邮箱发现找到 ${professionalResult.length} 个邮箱！`);
-          const formattedProspects = professionalResult.map(prospect => ({
-            company: prospect.company || 'Unknown Company',
-            email: prospect.email,
-            name: prospect.name || this.extractNameFromEmail(prospect.email),
-            industry: targetIndustry,
-            status: 'professional_discovery',
-            source: 'professional_email_discovery',
-            role: prospect.role || 'Professional',
-            confidence: prospect.confidence || 80,
-            verified: prospect.verified || false
-          }));
+          const formattedProspects = professionalResult.map(prospect => {
+            const baseProspect = {
+              company: prospect.company || 'Unknown Company',
+              email: prospect.email,
+              name: prospect.name || this.extractNameFromEmail(prospect.email),
+              industry: targetIndustry,
+              status: 'professional_discovery',
+              source: 'professional_email_discovery',
+              role: prospect.role || 'Professional',
+              confidence: prospect.confidence || 80,
+              verified: prospect.verified || false
+            };
+            // Apply email enrichment to extract better names, titles, departments
+            return enhanceProspect(baseProspect);
+          });
           allProspects.push(...formattedProspects);
         }
       } catch (error) {
@@ -375,17 +384,21 @@ class ProspectSearchAgent {
         
         if (ollamaResult && ollamaResult.prospects && ollamaResult.prospects.length > 0) {
           console.log(`✅ Ollama + SearxNG找到 ${ollamaResult.prospects.length} 个邮箱！`);
-          const formattedProspects = ollamaResult.prospects.map(prospect => ({
-            company: prospect.company || 'Unknown Company',
-            email: prospect.email,
-            name: prospect.name || this.extractNameFromEmail(prospect.email),
-            industry: targetIndustry,
-            status: 'ollama_searxng_discovery',
-            source: 'ollama_searxng',
-            role: prospect.role || 'Professional',
-            confidence: prospect.confidence || 75,
-            verified: prospect.verified || false
-          }));
+          const formattedProspects = ollamaResult.prospects.map(prospect => {
+            const baseProspect = {
+              company: prospect.company || 'Unknown Company',
+              email: prospect.email,
+              name: prospect.name || this.extractNameFromEmail(prospect.email),
+              industry: targetIndustry,
+              status: 'ollama_searxng_discovery',
+              source: 'ollama_searxng',
+              role: prospect.role || 'Professional',
+              confidence: prospect.confidence || 75,
+              verified: prospect.verified || false
+            };
+            // Apply email enrichment to extract better names, titles, departments
+            return enhanceProspect(baseProspect);
+          });
           allProspects.push(...formattedProspects);
         }
       } catch (error) {
@@ -447,9 +460,20 @@ class ProspectSearchAgent {
     // 去重和过滤
     const uniqueProspects = this.deduplicateProspects(filteredProspects);
     const enrichedProspects = await this.enrichProspectData(uniqueProspects);
-    
-    console.log(`✅ 发现 ${enrichedProspects.length} 个潜在客户`);
-    return enrichedProspects;
+
+    // Filter out generic/low-quality prospects
+    const highQualityProspects = enrichedProspects.filter(prospect => {
+      // Keep prospects with good quality scores (> 40) OR those that aren't marked as generic
+      return !prospect.isGeneric || prospect.qualityScore >= 60;
+    });
+
+    const removedCount = enrichedProspects.length - highQualityProspects.length;
+    if (removedCount > 0) {
+      console.log(`🚫 Filtered out ${removedCount} generic/low-quality prospects (e.g., info@, hello@, example@)`);
+    }
+
+    console.log(`✅ 发现 ${highQualityProspects.length} 个高质量潜在客户`);
+    return highQualityProspects;
   }
 
   // 构建搜索关键词

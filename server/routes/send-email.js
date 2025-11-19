@@ -150,6 +150,11 @@ router.post('/', async (req, res) => {
 
 // Send single email (/send route)
 router.post('/send', async (req, res) => {
+  const startTime = Date.now();
+  console.log('\n' + '='.repeat(80));
+  console.log('📧 [EMAIL SEND] New email send request');
+  console.log('='.repeat(80));
+
   try {
     const {
       to,
@@ -158,23 +163,39 @@ router.post('/send', async (req, res) => {
       text,
       from,
       trackingEnabled = true,
-      campaignId = 'manual'
+      campaignId = 'manual',
+      userId
     } = req.body;
+
+    console.log('📋 [EMAIL SEND] Request Details:');
+    console.log(`   To: ${to}`);
+    console.log(`   Subject: ${subject}`);
+    console.log(`   Campaign ID: ${campaignId}`);
+    console.log(`   User ID: ${userId || req.userId || 'anonymous'}`);
+    console.log(`   Tracking Enabled: ${trackingEnabled}`);
+    console.log(`   HTML Length: ${html?.length || 0} chars`);
+    console.log(`   Text Length: ${text?.length || 0} chars`);
 
     // Validate required parameters
     if (!to || !subject || (!html && !text)) {
+      console.log('❌ [EMAIL SEND] Validation failed: Missing required parameters');
       return res.status(400).json({
         success: false,
         error: 'Missing required parameters: to, subject, and content (html or text)'
       });
     }
 
+    console.log('✅ [EMAIL SEND] Validation passed');
+
     // 🔥 FIX: Register email for tracking and insert tracking pixels/links
     let finalHtml = html;
     let trackingId = null;
 
     if (trackingEnabled && html) {
+      console.log('\n📊 [TRACKING] Setting up email tracking...');
       try {
+        const trackingStart = Date.now();
+
         // Register email for tracking
         trackingId = await trackingService.registerEmail({
           to,
@@ -183,19 +204,29 @@ router.post('/send', async (req, res) => {
           sentAt: new Date().toISOString()
         });
 
+        console.log(`   ✅ Tracking registered: ${trackingId}`);
+
         // Insert tracking pixel and wrap links
         finalHtml = trackingService.insertTrackingPixel(html, trackingId);
-        finalHtml = trackingService.wrapLinksWithTracking(finalHtml, trackingId);
+        console.log(`   ✅ Tracking pixel inserted`);
 
-        console.log(`📊 Email registered for tracking with ID: ${trackingId}`);
+        finalHtml = trackingService.wrapLinksWithTracking(finalHtml, trackingId);
+        console.log(`   ✅ Links wrapped with tracking`);
+
+        console.log(`   ⏱️  Tracking setup took: ${Date.now() - trackingStart}ms`);
       } catch (trackingError) {
-        console.error('⚠️ Tracking setup failed:', trackingError.message);
+        console.error('\n❌ [TRACKING] Setup failed:', trackingError.message);
+        console.error('   Stack:', trackingError.stack);
         // Continue sending even if tracking fails
         trackingId = null;
       }
+    } else {
+      console.log('\n⏭️  [TRACKING] Skipped (trackingEnabled=' + trackingEnabled + ', hasHtml=' + !!html + ')');
     }
 
     // Send email (pass userId if available from auth middleware)
+    console.log('\n📤 [SMTP] Sending email via email service...');
+    const smtpStart = Date.now();
     const result = await emailService.sendEmail({
       to,
       subject,
@@ -203,19 +234,30 @@ router.post('/send', async (req, res) => {
       text,
       from,
       trackingId,
-      userId: req.userId || 'anonymous' // Include userId for OAuth support
+      userId: req.userId || userId || 'anonymous' // Include userId for OAuth support
     });
 
+    console.log(`   ✅ Email sent successfully!`);
+    console.log(`   Message ID: ${result.messageId}`);
+    console.log(`   ⏱️  SMTP send took: ${Date.now() - smtpStart}ms`);
+
     // Track analytics in memory
+    console.log('\n📊 [ANALYTICS] Tracking in-memory analytics...');
     try {
       trackEmailSent(campaignId, { email: to, name: to }, subject, html || text);
+      console.log(`   ✅ trackEmailSent() called`);
       trackEmailDelivered(campaignId, to, result.messageId);
+      console.log(`   ✅ trackEmailDelivered() called`);
     } catch (analyticsError) {
-      console.error('Analytics tracking error:', analyticsError);
+      console.error('   ❌ Analytics tracking error:', analyticsError.message);
     }
 
     // Log to database
+    console.log('\n💾 [DATABASE] Logging email to database...');
     try {
+      const dbStart = Date.now();
+      const actualUserId = req.userId || userId || 'anonymous';
+
       await db.logEmailSent({
         to,
         subject,
@@ -224,12 +266,23 @@ router.post('/send', async (req, res) => {
         status: 'sent',
         error: null,
         recipientIndex: 0,
-        sentAt: result.sentAt
+        sentAt: result.sentAt,
+        userId: actualUserId
       });
-      console.log('📊 Email logged to database');
+
+      console.log(`   ✅ Email logged to database`);
+      console.log(`   User ID: ${actualUserId}`);
+      console.log(`   Campaign ID: ${campaignId}`);
+      console.log(`   ⏱️  Database insert took: ${Date.now() - dbStart}ms`);
     } catch (dbError) {
-      console.error('Database logging error:', dbError);
+      console.error('   ❌ Database logging error:', dbError.message);
+      console.error('   Stack:', dbError.stack);
     }
+
+    const totalTime = Date.now() - startTime;
+    console.log('\n' + '='.repeat(80));
+    console.log(`✅ [EMAIL SEND] Complete! Total time: ${totalTime}ms`);
+    console.log('='.repeat(80) + '\n');
 
     res.json({
       success: true,
@@ -238,7 +291,13 @@ router.post('/send', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Email sending failed:', error.message);
+    console.error('\n' + '='.repeat(80));
+    console.error('❌ [EMAIL SEND] FAILED!');
+    console.error('='.repeat(80));
+    console.error('Error:', error.message);
+    console.error('Stack:', error.stack);
+    console.error('='.repeat(80) + '\n');
+
     res.status(500).json({
       success: false,
       error: `Email sending failed: ${error.message}`

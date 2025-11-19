@@ -321,12 +321,21 @@ function trackEmailBounced(campaignId, recipientEmail, timestamp = new Date()) {
 
 // Get email metrics overview
 router.get('/email-metrics', async (req, res) => {
+  const startTime = Date.now();
+  console.log('\n' + '━'.repeat(80));
+  console.log('📊 [ANALYTICS] Email Metrics Request');
+  console.log('━'.repeat(80));
+
   try {
     const { timeRange = '30d', campaign = 'all', userId = 'anonymous' } = req.query;
     const sinceDate = getTimeRangeFilter(timeRange);
     const sinceTimestamp = sinceDate.toISOString();
 
-    console.log(`📊 [EMAIL-METRICS] User: ${userId}, Campaign: ${campaign}, TimeRange: ${timeRange}`);
+    console.log('📋 [ANALYTICS] Request Parameters:');
+    console.log(`   User ID: ${userId}`);
+    console.log(`   Campaign: ${campaign}`);
+    console.log(`   Time Range: ${timeRange}`);
+    console.log(`   Since Date: ${sinceTimestamp}`);
 
     // 🔥 CRITICAL FIX: Query database with user_id filter (like prospect pipeline)
     const emailLogsQuery = campaign === 'all'
@@ -334,16 +343,34 @@ router.get('/email-metrics', async (req, res) => {
       : `SELECT * FROM email_logs WHERE user_id = ? AND sent_at >= ? AND campaign_id = ?`;
 
     const emailLogsParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
-    console.log(`📊 [EMAIL-METRICS] Query: ${emailLogsQuery}`);
-    console.log(`📊 [EMAIL-METRICS] Params:`, emailLogsParams);
 
+    console.log('\n💾 [DATABASE] Querying email_logs...');
+    console.log(`   SQL: ${emailLogsQuery.replace(/\n/g, ' ').replace(/\s+/g, ' ')}`);
+    console.log(`   Params:`, emailLogsParams);
+
+    const dbQueryStart = Date.now();
     const emailLogs = await queryDB(emailLogsQuery, emailLogsParams);
-    console.log(`📊 [EMAIL-METRICS] Found ${emailLogs.length} email logs for user=${userId}, campaign=${campaign}`);
+    console.log(`   ⏱️  Query took: ${Date.now() - dbQueryStart}ms`);
+    console.log(`   ✅ Found ${emailLogs.length} email logs`);
+
+    if (emailLogs.length > 0) {
+      console.log(`   📧 Sample log:`, {
+        to: emailLogs[0].recipient_email,
+        status: emailLogs[0].status,
+        campaignId: emailLogs[0].campaign_id,
+        sentAt: emailLogs[0].sent_at
+      });
+    }
 
     // Count emails by status
     const totalSent = emailLogs.filter(log => log.status === 'sent').length;
     const totalFailed = emailLogs.filter(log => log.status === 'failed').length;
     const totalDelivered = totalSent; // Assume all sent emails are delivered for now
+
+    console.log('\n📊 [COUNTS] Email status counts:');
+    console.log(`   Total Sent: ${totalSent}`);
+    console.log(`   Total Failed: ${totalFailed}`);
+    console.log(`   Total Delivered: ${totalDelivered}`);
 
     // 🔥 CRITICAL FIX: Query for opens and clicks WITH user_id filter
     const opensQuery = campaign === 'all'
@@ -383,16 +410,27 @@ router.get('/email-metrics', async (req, res) => {
     const repliesParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
     const bouncesParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
 
+    console.log('\n💾 [DATABASE] Querying tracking tables...');
+    const trackingStart = Date.now();
+
     const opensResult = await queryDB(opensQuery, opensParams);
     const clicksResult = await queryDB(clicksQuery, clicksParams);
     const repliesResult = await queryDB(repliesQuery, repliesParams);
     const bouncesResult = await queryDB(bouncesQuery, bouncesParams);
+
+    console.log(`   ⏱️  Tracking queries took: ${Date.now() - trackingStart}ms`);
 
     const totalOpened = opensResult[0]?.count || 0;
     const totalClicked = clicksResult[0]?.count || 0;
     const totalReplied = repliesResult[0]?.count || 0;
     const totalBounced = bouncesResult[0]?.count || 0;
     const totalUnsubscribed = 0;
+
+    console.log('\n📊 [TRACKING COUNTS]');
+    console.log(`   Opens: ${totalOpened}`);
+    console.log(`   Clicks: ${totalClicked}`);
+    console.log(`   Replies: ${totalReplied}`);
+    console.log(`   Bounces: ${totalBounced}`);
 
     const deliveryRate = totalSent > 0 ? ((totalDelivered / totalSent) * 100) : 0;
     const openRate = totalDelivered > 0 ? ((totalOpened / totalDelivered) * 100) : 0;
@@ -401,7 +439,14 @@ router.get('/email-metrics', async (req, res) => {
     const bounceRate = totalSent > 0 ? ((totalBounced / totalSent) * 100) : 0;
     const unsubscribeRate = totalDelivered > 0 ? ((totalUnsubscribed / totalDelivered) * 100) : 0;
 
-    res.json({
+    console.log('\n📈 [RATES] Calculated metrics:');
+    console.log(`   Delivery Rate: ${deliveryRate.toFixed(1)}%`);
+    console.log(`   Open Rate: ${openRate.toFixed(1)}%`);
+    console.log(`   Click Rate: ${clickRate.toFixed(1)}%`);
+    console.log(`   Reply Rate: ${replyRate.toFixed(2)}%`);
+    console.log(`   Bounce Rate: ${bounceRate.toFixed(1)}%`);
+
+    const responseData = {
       success: true,
       data: {
         totalSent,
@@ -418,9 +463,22 @@ router.get('/email-metrics', async (req, res) => {
         bounceRate: parseFloat(bounceRate.toFixed(1)),
         unsubscribeRate: parseFloat(unsubscribeRate.toFixed(2))
       }
-    });
+    };
+
+    const totalTime = Date.now() - startTime;
+    console.log('\n' + '━'.repeat(80));
+    console.log(`✅ [ANALYTICS] Complete! Total time: ${totalTime}ms`);
+    console.log('━'.repeat(80) + '\n');
+
+    res.json(responseData);
   } catch (error) {
-    console.error('Error getting email metrics:', error);
+    console.error('\n' + '━'.repeat(80));
+    console.error('❌ [ANALYTICS] ERROR!');
+    console.error('━'.repeat(80));
+    console.error('Error:', error.message);
+    console.error('Stack:', error.stack);
+    console.error('━'.repeat(80) + '\n');
+
     res.status(500).json({ success: false, error: error.message });
   }
 });
