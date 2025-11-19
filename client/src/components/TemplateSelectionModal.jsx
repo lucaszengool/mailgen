@@ -13,8 +13,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
   const [draggedMedia, setDraggedMedia] = useState(null);
   const [dropZoneActive, setDropZoneActive] = useState(null);
 
-  // 🎨 NEW: Template mode - 'ai' for AI-generated content, 'manual' for WYSIWYG editor
-  const [templateMode, setTemplateMode] = useState('ai');
+  // 🎨 Template mode - defaults to 'manual' for WYSIWYG editor
+  const [templateMode, setTemplateMode] = useState('manual');
   const [manualEmailContent, setManualEmailContent] = useState('');
 
   if (!isOpen) return null;
@@ -2465,12 +2465,10 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                     onConfirm(finalTemplate);
                   }
                 }}
-                className={`px-4 py-2 text-white rounded-lg transition-colors flex items-center gap-2 ${
-                  templateMode === 'manual' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'
-                }`}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-2"
               >
-                {templateMode === 'manual' ? <Edit size={16} /> : <Zap size={16} />}
-                {templateMode === 'manual' ? 'Use Manual Email' : 'Use Customized Template'}
+                <Edit size={16} />
+                Use Custom Template
               </button>
             </div>
 
@@ -2478,68 +2476,30 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
             <div className="flex-1 overflow-hidden">
               <div className="grid grid-cols-2 h-full">
                 {/* Left Panel - Controls */}
-                <div className="overflow-y-auto p-6 border-r border-gray-200">
-                  <h4 className="text-lg font-semibold mb-4">Template Properties</h4>
+                <div className="overflow-y-auto p-6 border-r border-gray-200 bg-white">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Customize Template</h4>
 
-                  {/* 🎨 Template Mode Toggle */}
-                  <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg">
-                    <label className="block text-sm font-semibold text-gray-800 mb-3">
-                      Email Mode
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => setTemplateMode('ai')}
-                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
-                          templateMode === 'ai'
-                            ? 'bg-green-500 border-green-600 text-white shadow-md'
-                            : 'bg-white border-gray-300 text-gray-700 hover:border-green-400'
-                        }`}
-                      >
-                        <Wand2 size={18} />
-                        <span className="text-sm font-medium">AI Template</span>
-                      </button>
-                      <button
-                        onClick={() => setTemplateMode('manual')}
-                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
-                          templateMode === 'manual'
-                            ? 'bg-blue-500 border-blue-600 text-white shadow-md'
-                            : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400'
-                        }`}
-                      >
-                        <Edit size={18} />
-                        <span className="text-sm font-medium">Manual Editor</span>
-                      </button>
-                    </div>
-                    <p className="mt-2 text-xs text-gray-600">
-                      {templateMode === 'ai' ? (
-                        <span>🤖 AI will personalize content for each prospect</span>
-                      ) : (
-                        <span>✍️ Write exactly what gets sent to all prospects</span>
-                      )}
-                    </p>
-                  </div>
-
-                  {/* Conditional Content based on mode */}
+                  {/* Manual WYSIWYG Editor Mode */}
                   {templateMode === 'manual' ? (
                     /* Manual WYSIWYG Editor Mode */
                     <div className="space-y-4">
                       {/* Email Subject for Manual Mode */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-900 mb-2">
                           Email Subject Line
                         </label>
                         <input
                           type="text"
                           value={customTemplateData.subject || EMAIL_TEMPLATES[selectedTemplate]?.subject || 'Partnership Opportunity with {company}'}
                           onChange={(e) => setCustomTemplateData(prev => ({ ...prev, subject: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                           placeholder="Enter email subject..."
                         />
                       </div>
 
                       {/* WYSIWYG Editor */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-900 mb-2">
                           Email Content
                         </label>
                         <WYSIWYGEmailEditor
