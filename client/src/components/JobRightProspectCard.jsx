@@ -529,28 +529,28 @@ const JobRightProspectCard = ({ prospect, index, onClick, showFilters = false, s
           <div className="flex flex-col space-y-2">
             <div className="text-sm text-gray-700">
               <MessageSquare className="w-4 h-4 inline mr-2 text-gray-500" />
-              <span>{prospect.persona?.communicationStyle || prospect.communicationStyle || 'casual'}</span>
+              <span>{prospect.persona?.communicationStyle || prospect.communicationStyle || 'professional'}</span>
             </div>
             <div className="text-sm text-gray-700">
               <Target className="w-4 h-4 inline mr-2 text-gray-500" />
-              <span>{prospect.title || prospect.role || prospect.department || prospect.persona?.decisionLevel || prospect.decisionLevel || 'Professional'}</span>
+              <span>{prospect.title || prospect.department || prospect.role || prospect.persona?.decisionLevel || prospect.decisionLevel || prospect.seniority || 'Business Professional'}</span>
             </div>
           </div>
           <div className="flex flex-col space-y-2">
             <div className="text-sm text-gray-700">
               <Building2 className="w-4 h-4 inline mr-2 text-gray-500" />
-              <span>{prospect.location || prospect.persona?.location || 'Remote'}</span>
+              <span>{prospect.location || prospect.persona?.location || 'United States'}</span>
             </div>
             <div className="text-sm text-gray-700">
               <Clock className="w-4 h-4 inline mr-2 text-gray-500" />
-              <span>{prospect.employmentType || prospect.seniority || prospect.workType || prospect.persona?.workType || 'Full-time'}</span>
+              <span>{prospect.seniority || prospect.employmentType || prospect.workType || prospect.persona?.workType || 'Professional'}</span>
             </div>
           </div>
         </div>
 
         {/* Summary Line */}
         <div className="text-sm text-gray-400 mt-4">
-          Type: {prospect.persona?.type || prospect.type || 'economic_buyer'} • Style: {prospect.persona?.communicationStyle || prospect.communicationStyle || 'casual'}
+          Type: {prospect.persona?.type || prospect.type || 'economic_buyer'} • Style: {prospect.persona?.communicationStyle || prospect.communicationStyle || 'professional'}
         </div>
       </div>
 

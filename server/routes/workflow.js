@@ -7,6 +7,7 @@ const KnowledgeBaseSingleton = require('../models/KnowledgeBaseSingleton');
 const db = require('../models/database');
 const UserStorageService = require('../services/UserStorageService');
 const { optionalAuth } = require('../middleware/userContext');
+const { enhanceProspect, GENERIC_PREFIXES } = require('../utils/emailEnrichment');
 
 // 🔥 PRODUCTION FIX: Store last workflow results per user AND per campaign
 // Structure: userId -> Map(campaignId -> workflowResults)
@@ -797,10 +798,57 @@ router.get('/results', optionalAuth, async (req, res) => {
       
       console.log('🔧 Template variables replaced in stored results');
 
+      // 🔥 NEW: Enrich and filter prospects before returning
+      console.log('\n📊 [PROSPECT ENRICHMENT] Processing prospects...');
+      let enrichedProspects = processedResults.prospects || [];
+
+      if (enrichedProspects.length > 0) {
+        // Filter out fake/example emails
+        const fakeEmails = ['example@gmail.com', 'youremail@yourbusinessname.com', 'test@test.com', 'demo@demo.com'];
+        enrichedProspects = enrichedProspects.filter(p => {
+          const email = (p.email || '').toLowerCase();
+          const localPart = email.split('@')[0];
+
+          // Filter out exact fake emails
+          if (fakeEmails.includes(email)) {
+            console.log(`   🗑️  Filtered fake email: ${email}`);
+            return false;
+          }
+
+          // Filter out generic example patterns
+          if (localPart === 'example' || localPart === 'youremail' || localPart === 'yourname') {
+            console.log(`   🗑️  Filtered generic email: ${email}`);
+            return false;
+          }
+
+          return true;
+        });
+
+        // Enrich all prospects with extracted data
+        enrichedProspects = enrichedProspects.map((prospect, index) => {
+          const enhanced = enhanceProspect(prospect);
+
+          if (index === 0) {
+            console.log(`   ✅ Enhanced prospect example:`, {
+              email: enhanced.email,
+              name: enhanced.name,
+              title: enhanced.title,
+              department: enhanced.department,
+              seniority: enhanced.seniority,
+              qualityScore: enhanced.qualityScore
+            });
+          }
+
+          return enhanced;
+        });
+
+        console.log(`   📊 Enriched ${enrichedProspects.length} prospects (filtered from ${processedResults.prospects.length})`);
+      }
+
       // 🎯 FIX: Add workflowState fields directly to processedResults at the correct level
       // The frontend expects these fields alongside prospects and campaignData
       const responseData = {
-        prospects: processedResults.prospects || [],
+        prospects: enrichedProspects,
         campaignData: processedResults.emailCampaign ? {
           ...processedResults.campaignData,
           emailCampaign: processedResults.emailCampaign
