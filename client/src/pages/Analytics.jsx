@@ -92,6 +92,24 @@ export default function Analytics() {
     }
   }
 
+  const toggleImapMonitoring = async () => {
+    try {
+      const endpoint = imapMonitoring ? '/api/analytics/stop-imap-monitoring' : '/api/analytics/start-imap-monitoring'
+      const response = await fetch(endpoint, { method: 'POST' })
+      const data = await response.json()
+
+      if (data.success) {
+        setImapMonitoring(!imapMonitoring)
+        toast.success(data.message || `IMAP monitoring ${imapMonitoring ? 'stopped' : 'started'}`)
+      } else {
+        toast.error(data.error || 'Failed to toggle IMAP monitoring')
+      }
+    } catch (error) {
+      console.error('Failed to toggle IMAP monitoring:', error)
+      toast.error('Failed to toggle IMAP monitoring')
+    }
+  }
+
   const setupRealtimeConnection = () => {
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -338,6 +356,47 @@ export default function Analytics() {
             ))}
           </select>
         </div>
+      </div>
+
+      {/* IMAP Reply & Bounce Tracking Controls */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <ChatBubbleLeftRightIcon className="h-5 w-5 text-gray-600 mr-2" />
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Reply & Bounce Tracking</h3>
+                <p className="text-xs text-gray-500">
+                  {imapMonitoring ? 'Monitoring your inbox for replies and bounces' : 'Start monitoring to track replies and bounces'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${imapMonitoring ? 'bg-[#00f5a0] animate-pulse' : 'bg-gray-300'}`}></div>
+              <span className="text-xs font-medium text-gray-600">
+                {checkingImapStatus ? 'Checking...' : imapMonitoring ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={toggleImapMonitoring}
+            disabled={checkingImapStatus}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              imapMonitoring
+                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-[#00f5a0] text-black hover:bg-[#00d68f]'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {imapMonitoring ? 'Stop Monitoring' : 'Start Monitoring'}
+          </button>
+        </div>
+        {!imapMonitoring && (
+          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-xs text-yellow-800">
+              <strong>Note:</strong> Reply and bounce tracking requires IMAP monitoring to be active. Start monitoring to automatically track email replies and bounces.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Real-time Status Bar */}

@@ -287,20 +287,132 @@ class SuperEmailDiscoveryEngine:
         else:
             return 'general_search'
     
-    def extract_emails_advanced(self, text, source=""):
-        """高级邮箱提取 - 使用2024年最佳模式"""
+    def is_personal_email(self, email):
+        """判断是否为个人邮箱（非通用邮箱）"""
+        generic_prefixes = [
+            'info', 'contact', 'hello', 'hi', 'support', 'help', 'admin',
+            'sales', 'marketing', 'office', 'general', 'inquiry', 'service',
+            'careers', 'jobs', 'hr', 'feedback', 'team', 'press', 'media',
+            'noreply', 'no-reply', 'webmaster', 'postmaster'
+        ]
+
+        username = email.split('@')[0].lower()
+
+        # 通用邮箱判断
+        if any(username.startswith(prefix) for prefix in generic_prefixes):
+            return False
+        if any(username == prefix for prefix in generic_prefixes):
+            return False
+
+        # 个人邮箱通常包含名字（有点、下划线或驼峰命名）
+        if '.' in username or '_' in username:
+            return True
+        if any(c.isupper() for c in email.split('@')[0]):  # 驼峰命名
+            return True
+
+        # 名字长度判断（个人邮箱通常5-20字符）
+        if 5 <= len(username) <= 20 and username.isalpha():
+            return True
+
+        return False
+
+    def extract_context_around_email(self, html_content, email):
+        """提取邮箱周围的上下文信息（姓名、职位、部门）"""
+        if not html_content or not email:
+            return {}
+
+        try:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html_content, 'html.parser')
+
+            # 查找包含此邮箱的元素
+            email_elements = soup.find_all(string=re.compile(re.escape(email)))
+
+            context = {
+                'name': None,
+                'title': None,
+                'department': None
+            }
+
+            # 职位关键词
+            title_keywords = [
+                'CEO', 'CTO', 'CFO', 'COO', 'President', 'Vice President', 'VP',
+                'Director', 'Manager', 'Head', 'Lead', 'Chief', 'Founder',
+                'Engineer', 'Developer', 'Scientist', 'Researcher', 'Analyst',
+                'Coordinator', 'Specialist', 'Consultant', 'Advisor'
+            ]
+
+            # 部门关键词
+            dept_keywords = [
+                'Engineering', 'Marketing', 'Sales', 'Finance', 'HR',
+                'Human Resources', 'Operations', 'IT', 'Technology', 'Product',
+                'Research', 'Development', 'Customer Success', 'Support',
+                'Food Science', 'Nutrition', 'Culinary', 'Agriculture'
+            ]
+
+            for elem in email_elements:
+                parent = elem.parent
+                if not parent:
+                    continue
+
+                # 获取父元素及其周围的文本
+                context_text = parent.get_text(separator=' ', strip=True)
+
+                # 扩展到更大的上下文（祖父元素）
+                if parent.parent:
+                    context_text += ' ' + parent.parent.get_text(separator=' ', strip=True)
+
+                # 提取职位
+                for title_kw in title_keywords:
+                    if title_kw.lower() in context_text.lower():
+                        context['title'] = title_kw
+                        break
+
+                # 提取部门
+                for dept_kw in dept_keywords:
+                    if dept_kw.lower() in context_text.lower():
+                        context['department'] = dept_kw
+                        break
+
+                # 尝试提取姓名（邮箱附近的大写单词模式）
+                # 匹配 "John Smith" 或 "Dr. John Smith" 等模式
+                name_pattern = r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b'
+                names = re.findall(name_pattern, context_text)
+                if names and not context['name']:
+                    # 过滤掉公司名、职位名等
+                    for name in names:
+                        name_lower = name.lower()
+                        # 排除职位关键词
+                        if not any(kw.lower() in name_lower for kw in title_keywords):
+                            # 排除部门关键词
+                            if not any(kw.lower() in name_lower for kw in dept_keywords):
+                                context['name'] = name
+                                break
+
+                # 如果找到了有用信息，提前结束
+                if context['name'] or context['title'] or context['department']:
+                    break
+
+            return context
+
+        except Exception as e:
+            self.logger.debug(f"   ⚠️ 上下文提取失败: {e}")
+            return {}
+
+    def extract_emails_advanced(self, text, source="", html_content=None):
+        """高级邮箱提取 - 使用2024年最佳模式 + 优先个人邮箱"""
         if not text:
             return []
-            
+
         # 找到所有潜在邮箱
         potential_emails = self.email_pattern.findall(text)
-        
+
         valid_emails = []
         excluded_count = 0
-        
+
         for email in potential_emails:
             email_lower = email.lower()
-            
+
             # 2024年更新的排除规则
             exclusions = [
                 'example.com', 'test.com', 'domain.com', 'yoursite.com', 'company.com',
@@ -309,22 +421,52 @@ class SuperEmailDiscoveryEngine:
                 'support@example', 'admin@example', 'info@example', 'sales@example',
                 'sample@', 'demo@', 'fake@', 'null@', 'void@'
             ]
-            
+
             if any(pattern in email_lower for pattern in exclusions):
                 excluded_count += 1
                 continue
-            
+
             # 验证邮箱格式
             if self.validate_email_format(email):
-                valid_emails.append(email)
+                # 提取邮箱周围的上下文（姓名、职位、部门）
+                context = self.extract_context_around_email(html_content, email) if html_content else {}
+
+                valid_emails.append({
+                    'email': email,
+                    'is_personal': self.is_personal_email(email),
+                    'name': context.get('name'),
+                    'title': context.get('title'),
+                    'department': context.get('department')
+                })
+
                 domain = email.split('@')[1]
                 self.search_stats['unique_domains'].add(domain)
-                self.logger.info(f"   ✅ 发现有效邮箱: {email} (来源: {source[:30]})")
-        
+
+                email_type = "个人" if self.is_personal_email(email) else "通用"
+                self.logger.info(f"   ✅ 发现{email_type}邮箱: {email} (来源: {source[:30]})")
+                if context.get('name'):
+                    self.logger.info(f"      👤 姓名: {context['name']}")
+                if context.get('title'):
+                    self.logger.info(f"      💼 职位: {context['title']}")
+                if context.get('department'):
+                    self.logger.info(f"      🏢 部门: {context['department']}")
+
         if excluded_count > 0:
             self.logger.debug(f"   🗑️ 排除了{excluded_count}个示例/无效邮箱")
-        
-        return list(set(valid_emails))
+
+        # 优先返回个人邮箱
+        personal_emails = [e for e in valid_emails if e['is_personal']]
+        generic_emails = [e for e in valid_emails if not e['is_personal']]
+
+        # 个人邮箱 + 通用邮箱（有上下文的优先）
+        generic_with_context = [e for e in generic_emails if e.get('name') or e.get('title') or e.get('department')]
+        generic_without_context = [e for e in generic_emails if not (e.get('name') or e.get('title') or e.get('department'))]
+
+        prioritized_emails = personal_emails + generic_with_context + generic_without_context
+
+        self.logger.info(f"   📊 邮箱分类: {len(personal_emails)}个人 + {len(generic_with_context)}通用(有上下文) + {len(generic_without_context)}通用(无上下文)")
+
+        return prioritized_emails
     
     def validate_email_format(self, email):
         """验证邮箱格式"""
@@ -349,55 +491,59 @@ class SuperEmailDiscoveryEngine:
         return True
     
     def scrape_website_advanced(self, url):
-        """高级网站爬取 - 专注联系信息，无时间限制"""
+        """高级网站爬取 - 专注联系信息，无时间限制 + 上下文提取"""
         try:
             self.logger.info(f"   🌐 深度无限爬取: {url[:60]}...")
             self.search_stats['websites_scraped'] += 1
-            
+
             start_time = time.time()
             # 移除超时限制 - 让爬取有充足时间
             response = self.session.get(url)
             duration = time.time() - start_time
-            
+
             if response.status_code != 200:
                 self.logger.warning(f"   ⚠️ HTTP {response.status_code}: {url}")
                 return []
-            
+
             soup = BeautifulSoup(response.content, 'html.parser')
-            
+
+            # 保存原始HTML用于上下文提取
+            html_content = response.content
+
             # 移除干扰元素
             for element in soup(['script', 'style', 'nav', 'footer', 'header', 'aside']):
                 element.decompose()
-            
+
             # 优先搜索联系相关区域
             priority_areas = []
-            
+
             # 查找联系页面关键区域
             contact_selectors = [
                 '[class*="contact"]', '[id*="contact"]',
-                '[class*="about"]', '[id*="about"]', 
+                '[class*="about"]', '[id*="about"]',
                 '[class*="team"]', '[id*="team"]',
                 '[class*="staff"]', '[id*="staff"]',
                 '[class*="press"]', '[id*="press"]',
                 '[class*="media"]', '[id*="media"]'
             ]
-            
+
             for selector in contact_selectors:
                 elements = soup.select(selector)
                 for elem in elements:
                     priority_areas.append(elem.get_text())
-            
+
             # 获取主要内容
             main_content = soup.get_text()
-            
+
             # 合并所有文本，优先处理联系区域
             all_text = ' '.join(priority_areas) + ' ' + main_content
-            
-            emails = self.extract_emails_advanced(all_text, f"网站 {url}")
-            
+
+            # 传递HTML内容以提取上下文
+            emails = self.extract_emails_advanced(all_text, f"网站 {url}", html_content)
+
             self.logger.info(f"   ✅ 爬取完成 ({duration:.1f}s): {len(emails)}个邮箱")
             return emails
-            
+
         except Exception as e:
             self.logger.error(f"   ❌ 爬取失败 {url}: {str(e)}")
             return []
@@ -454,19 +600,24 @@ class SuperEmailDiscoveryEngine:
                     text = f"{result.get('title', '')} {result.get('content', '')}"
                     emails = self.extract_emails_advanced(text, f"搜索预览 {i}")
 
-                    for email in emails:
+                    for email_data in emails:
                         total_emails_found += 1  # 🔥 FIX: Count all emails found
+                        email_addr = email_data['email']
                         # 🔥 NEW: Skip already-returned emails
-                        if email in self.already_returned_emails:
+                        if email_addr in self.already_returned_emails:
                             total_cached_skipped += 1  # 🔥 FIX: Track skipped
                             continue
-                        if not any(e['email'] == email for e in preview_emails):
+                        if not any(e['email'] == email_addr for e in preview_emails):
                             preview_emails.append({
-                                'email': email,
+                                'email': email_addr,
+                                'name': email_data.get('name'),
+                                'title': email_data.get('title'),
+                                'department': email_data.get('department'),
+                                'is_personal': email_data.get('is_personal', False),
                                 'source': 'search_preview',
                                 'source_url': result.get('url', ''),
                                 'source_title': result.get('title', ''),
-                                'confidence': 0.8,
+                                'confidence': 0.9 if email_data.get('is_personal') else 0.7,
                                 'round': round_num,
                                 'strategy': strategy,
                                 'discovery_method': 'professional_search'
@@ -497,24 +648,29 @@ class SuperEmailDiscoveryEngine:
                             site = future_to_result[future]
                             website_emails = future.result()
 
-                            for email in website_emails:
+                            for email_data in website_emails:
                                 total_emails_found += 1  # 🔥 FIX: Count all emails found
+                                email_addr = email_data['email']
                                 # 🔥 NEW: Skip already-returned emails
-                                if email in self.already_returned_emails:
+                                if email_addr in self.already_returned_emails:
                                     total_cached_skipped += 1  # 🔥 FIX: Track skipped
                                     continue
-                                if not any(e['email'] == email for e in round_emails):
+                                if not any(e['email'] == email_addr for e in round_emails):
                                     round_emails.append({
-                                        'email': email,
+                                        'email': email_addr,
+                                        'name': email_data.get('name'),
+                                        'title': email_data.get('title'),
+                                        'department': email_data.get('department'),
+                                        'is_personal': email_data.get('is_personal', False),
                                         'source': 'website_scraping',
                                         'source_url': site['url'],
                                         'source_title': site.get('title', ''),
-                                        'confidence': 0.95,
+                                        'confidence': 0.95 if email_data.get('is_personal') else 0.8,
                                         'round': round_num,
                                         'strategy': strategy,
                                         'discovery_method': 'deep_scraping'
                                     })
-                        except Exception as e:
+                        except Exception as ex:
                             continue
                 
                 # 检查进度，但不立即停止 - 让它继续搜索更多

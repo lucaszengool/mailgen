@@ -79,16 +79,25 @@ class EnhancedEmailSearchAgent {
 
       if (jsonResult && jsonResult.success) {
         console.log(`✅ 超级搜索成功: 找到 ${jsonResult.total_emails} 个邮箱`);
-        
+
         // 转换为前端期望的格式 - 增强公司和用户画像信息
         const prospects = await Promise.all(jsonResult.email_details.map(async detail => {
           const domain = detail.email.split('@')[1];
-          const prospectName = this.extractNameFromEmail(detail.email);
-          
+
+          // 🔥 NEW: Use enriched data from Python scraper (name, title, department)
+          // Fallback to extracting from email if not provided
+          const prospectName = detail.name || this.extractNameFromEmail(detail.email);
+          const prospectTitle = detail.title || this.estimateRole(prospectName, domain);
+          const prospectDepartment = detail.department || this.estimateDepartment(prospectName, domain);
+          const isPersonalEmail = detail.is_personal || false;
+
           // 基础prospect数据
           const baseProspect = {
             email: detail.email,
             name: prospectName,
+            title: prospectTitle,
+            department: prospectDepartment,
+            isPersonalEmail: isPersonalEmail,
             source: detail.source,
             sourceUrl: detail.source_url,
             confidence: detail.confidence,
@@ -97,16 +106,20 @@ class EnhancedEmailSearchAgent {
             metadata: {
               round: detail.round,
               strategy: detail.strategy,
-              sourceTitle: detail.source_title
+              sourceTitle: detail.source_title,
+              extractedFromPage: !!(detail.name || detail.title || detail.department) // Flag if data was extracted from page
             }
           };
-          
+
           // 增强公司信息
           const companyInfo = await this.enrichCompanyInfo(domain, detail.source_url);
-          
-          // 生成用户画像
-          const userPersona = this.generateUserPersona(prospectName, domain, companyInfo, detail);
-          
+
+          // 生成用户画像 - 优先使用从页面提取的数据
+          const userPersona = this.generateUserPersona(prospectName, domain, companyInfo, detail, {
+            extractedTitle: prospectTitle,
+            extractedDepartment: prospectDepartment
+          });
+
           return {
             ...baseProspect,
             company: companyInfo.name || this.extractCompanyFromDomain(domain),
@@ -116,7 +129,7 @@ class EnhancedEmailSearchAgent {
             // 用户画像数据
             persona: userPersona,
             // 额外的营销相关数据
-            estimatedRole: this.estimateRole(prospectName, domain),
+            estimatedRole: prospectTitle,
             communicationStyle: this.estimateCommunicationStyle(userPersona),
             primaryPainPoints: this.identifyPainPoints(companyInfo.industry || domain),
             bestContactTime: this.suggestBestContactTime(companyInfo.location),
@@ -667,21 +680,26 @@ class EnhancedEmailSearchAgent {
   }
 
   /**
-   * 生成用户画像
+   * 生成用户画像 - 优先使用从页面提取的数据
    */
-  generateUserPersona(name, domain, companyInfo, details) {
+  generateUserPersona(name, domain, companyInfo, details, extractedData = {}) {
+    // 🔥 NEW: Use extracted data from web page if available
+    const role = extractedData.extractedTitle || this.estimateRole(name, domain);
+    const department = extractedData.extractedDepartment || this.estimateDepartment(name, domain);
+
     return {
       name: name,
-      role: this.estimateRole(name, domain),
-      seniority: this.estimateSeniority(name, domain),
-      department: this.estimateDepartment(name, domain),
+      role: role,
+      seniority: this.estimateSeniority(name, domain, role),
+      department: department,
       communicationStyle: 'professional',
-      interests: this.estimateInterests(null, companyInfo.industry),
+      interests: this.estimateInterests(role, companyInfo.industry),
       painPoints: this.identifyPainPoints(companyInfo.industry),
-      decisionMaking: this.estimateDecisionMaking(name, domain),
+      decisionMaking: this.estimateDecisionMaking(name, domain, role),
       budget: this.estimateBudget(companyInfo.size),
       timeline: 'Medium-term (3-6 months)',
-      confidence: details.confidence || 70
+      confidence: details.confidence || 70,
+      dataSource: extractedData.extractedTitle || extractedData.extractedDepartment ? 'page_extraction' : 'email_inference'
     };
   }
 
@@ -705,15 +723,22 @@ class EnhancedEmailSearchAgent {
   }
 
   /**
-   * 估计资历级别
+   * 估计资历级别 - 优先使用提取的角色信息
    */
-  estimateSeniority(name, domain) {
+  estimateSeniority(name, domain, role = null) {
     const nameLower = (name || '').toLowerCase();
-    
+    const roleLower = (role || '').toLowerCase();
+
+    // 检查提取的角色
+    if (roleLower.includes('ceo') || roleLower.includes('founder') || roleLower.includes('president') || roleLower.includes('chief')) return 'Executive';
+    if (roleLower.includes('director') || roleLower.includes('vp') || roleLower.includes('head') || roleLower.includes('vice president')) return 'Senior';
+    if (roleLower.includes('manager') || roleLower.includes('lead')) return 'Mid-level';
+
+    // 回退到名字检查
     if (nameLower.includes('ceo') || nameLower.includes('founder') || nameLower.includes('president')) return 'Executive';
     if (nameLower.includes('director') || nameLower.includes('vp') || nameLower.includes('head')) return 'Senior';
     if (nameLower.includes('manager') || nameLower.includes('lead')) return 'Mid-level';
-    
+
     return 'Professional';
   }
 
@@ -759,14 +784,20 @@ class EnhancedEmailSearchAgent {
   }
 
   /**
-   * 估计决策过程
+   * 估计决策过程 - 优先使用提取的角色信息
    */
-  estimateDecisionMaking(name, domain) {
+  estimateDecisionMaking(name, domain, role = null) {
     const nameLower = (name || '').toLowerCase();
-    
+    const roleLower = (role || '').toLowerCase();
+
+    // 检查提取的角色
+    if (roleLower.includes('ceo') || roleLower.includes('founder') || roleLower.includes('president') || roleLower.includes('chief')) return 'decision-maker';
+    if (roleLower.includes('director') || roleLower.includes('vp') || roleLower.includes('head') || roleLower.includes('vice president')) return 'influencer';
+
+    // 回退到名字检查
     if (nameLower.includes('ceo') || nameLower.includes('founder')) return 'decision-maker';
     if (nameLower.includes('director') || nameLower.includes('vp')) return 'influencer';
-    
+
     return 'user';
   }
 
