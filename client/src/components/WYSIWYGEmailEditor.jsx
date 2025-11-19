@@ -24,6 +24,13 @@ const WYSIWYGEmailEditor = ({
   const editorRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  // 🔥 FIX: Set initial content on mount only, then let contentEditable handle updates
+  useEffect(() => {
+    if (editorRef.current && initialContent && !editorRef.current.innerHTML) {
+      editorRef.current.innerHTML = initialContent;
+    }
+  }, [initialContent]);
+
   // Format commands for rich text editing
   const execCommand = (command, value = null) => {
     document.execCommand(command, false, value);
@@ -261,8 +268,10 @@ const WYSIWYGEmailEditor = ({
           lineHeight: '1.6',
           color: '#000000'
         }}
-        dangerouslySetInnerHTML={{ __html: editorContent }}
-      />
+        suppressContentEditableWarning={true}
+      >
+        {/* Content is managed by contentEditable and ref, not React state */}
+      </div>
 
       {/* Link Dialog */}
       {showLinkDialog && (
