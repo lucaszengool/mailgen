@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useUser } from '@clerk/clerk-react'
 import toast from 'react-hot-toast'
 import '../styles/jobright-colors.css'
 import {
@@ -39,6 +40,7 @@ import {
 const COLORS = ['#00f5a0', '#000000', '#374151', '#6b7280', '#9ca3af', '#d1d5db']
 
 export default function Analytics() {
+  const { user } = useUser()
   const [timeRange, setTimeRange] = useState('30d')
   // 🔥 CRITICAL FIX: Default to current campaign instead of 'all' to prevent data leakage
   const [selectedCampaign, setSelectedCampaign] = useState(() => {
@@ -138,13 +140,15 @@ export default function Analytics() {
     try {
       console.log('📊 Fetching analytics data...')
       setLoading(true)
-      // 🔥 CRITICAL FIX: Pass campaign ID to ALL analytics endpoints for proper data isolation
+      // 🔥 CRITICAL FIX: Pass userId AND campaign ID to ALL analytics endpoints for proper data isolation
+      const userId = user?.id || 'anonymous'
+      console.log('📊 Using userId for analytics:', userId)
       const [metricsRes, campaignsRes, deliveryRes, trendsRes, recipientsRes] = await Promise.all([
-        fetch(`/api/analytics/email-metrics?timeRange=${timeRange}&campaign=${selectedCampaign}`),
-        fetch(`/api/analytics/campaign-performance?timeRange=${timeRange}&campaign=${selectedCampaign}`),
-        fetch(`/api/analytics/deliverability?timeRange=${timeRange}&campaign=${selectedCampaign}`),
-        fetch(`/api/analytics/engagement-trends?timeRange=${timeRange}&campaign=${selectedCampaign}`),
-        fetch(`/api/analytics/recipient-analytics?timeRange=${timeRange}&campaign=${selectedCampaign}`)
+        fetch(`/api/analytics/email-metrics?timeRange=${timeRange}&campaign=${selectedCampaign}&userId=${userId}`),
+        fetch(`/api/analytics/campaign-performance?timeRange=${timeRange}&userId=${userId}&campaign=${selectedCampaign}`),
+        fetch(`/api/analytics/deliverability?timeRange=${timeRange}&campaign=${selectedCampaign}&userId=${userId}`),
+        fetch(`/api/analytics/engagement-trends?timeRange=${timeRange}&userId=${userId}&campaign=${selectedCampaign}`),
+        fetch(`/api/analytics/recipient-analytics?timeRange=${timeRange}&campaign=${selectedCampaign}&userId=${userId}`)
       ])
 
       console.log(`🔍 [ANALYTICS DEBUG] Fetching data for campaign: ${selectedCampaign}, timeRange: ${timeRange}`)

@@ -7,7 +7,15 @@ export default function ProfessionalEmailEditorPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [campaignId] = useState(searchParams.get('campaignId') || 'default_campaign');
+  // 🔥 CRITICAL FIX: Initialize campaignId from URL first, then localStorage, then default
+  // This ensures we always have the correct campaign ID from the start
+  const [campaignId] = useState(() => {
+    const urlCampaignId = searchParams.get('campaignId');
+    const storedCampaignId = localStorage.getItem('currentCampaignId');
+    const finalCampaignId = urlCampaignId || storedCampaignId || 'default_campaign';
+    console.log('📋 [CAMPAIGN INIT] URL:', urlCampaignId, 'Stored:', storedCampaignId, 'Final:', finalCampaignId);
+    return finalCampaignId;
+  });
   const [prospectId] = useState(searchParams.get('prospectId') || '');
   const [emailData, setEmailData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -260,12 +268,12 @@ export default function ProfessionalEmailEditorPage() {
       console.log('⚠️ No pending emails found, checking workflow results as fallback...');
 
       // PRIORITY 2: Try to load from workflow results as fallback ONLY if no pending emails
-      // 🔥 CRITICAL FIX: Pass campaignId to filter results
-      const currentCampaignId = localStorage.getItem('currentCampaignId');
-      const resultsUrl = currentCampaignId
-        ? `/api/workflow/results?campaignId=${currentCampaignId}`
+      // 🔥 CRITICAL FIX: Use the component's campaignId state (already correctly initialized)
+      const resultsUrl = campaignId
+        ? `/api/workflow/results?campaignId=${campaignId}`
         : '/api/workflow/results';
-      console.log(`📊 Fetching workflow results${currentCampaignId ? ` for campaign: ${currentCampaignId}` : ' (latest)'}`);
+      console.log(`📊 Fetching workflow results${campaignId ? ` for campaign: ${campaignId}` : ' (latest)'}`);
+      console.log(`📋 [CAMPAIGN CHECK] Using campaignId: ${campaignId}`);
 
       const response = await fetch(resultsUrl);
       console.log('Workflow response status:', response.ok);
