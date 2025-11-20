@@ -1701,7 +1701,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                       ? 'ring-2 ring-black shadow-2xl'
                       : 'hover:shadow-xl border border-gray-200'
                   }`}
-                  onClick={() => handleTemplateSelect(key)}
+                  onClick={(e) => handleCustomize(key, e)}
                 >
                   {/* Selection Badge */}
                   {selectedTemplate === key && (
@@ -2031,21 +2031,12 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
                       <button
-                        onClick={(e) => handlePreview(key, e)}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+                        onClick={(e) => handleCustomize(key, e)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-black rounded-lg hover:bg-gray-800 transition-all"
                       >
-                        <Eye size={16} />
-                        Preview
+                        <Edit3 size={16} />
+                        Customize
                       </button>
-                      {selectedTemplate === key && (
-                        <button
-                          onClick={(e) => handleCustomize(key, e)}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-black rounded-lg hover:bg-gray-800 transition-all"
-                        >
-                          <Edit3 size={16} />
-                          Customize
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
