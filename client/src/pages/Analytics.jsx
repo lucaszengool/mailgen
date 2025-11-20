@@ -57,6 +57,8 @@ export default function Analytics() {
   const [wsConnection, setWsConnection] = useState(null)
   const [imapMonitoring, setImapMonitoring] = useState(false)
   const [checkingImapStatus, setCheckingImapStatus] = useState(true)
+  const [individualEmails, setIndividualEmails] = useState([])
+  const [emailSearchQuery, setEmailSearchQuery] = useState('')
 
   useEffect(() => {
     fetchAnalyticsData()
@@ -169,12 +171,13 @@ export default function Analytics() {
       // 🔥 CRITICAL FIX: Pass userId AND campaign ID to ALL analytics endpoints for proper data isolation
       const userId = user?.id || 'anonymous'
       console.log('📊 Using userId for analytics:', userId)
-      const [metricsRes, campaignsRes, deliveryRes, trendsRes, recipientsRes] = await Promise.all([
+      const [metricsRes, campaignsRes, deliveryRes, trendsRes, recipientsRes, individualEmailsRes] = await Promise.all([
         fetch(`/api/analytics/email-metrics?timeRange=${timeRange}&campaign=${selectedCampaign}&userId=${userId}`),
         fetch(`/api/analytics/campaign-performance?timeRange=${timeRange}&userId=${userId}&campaign=${selectedCampaign}`),
         fetch(`/api/analytics/deliverability?timeRange=${timeRange}&campaign=${selectedCampaign}&userId=${userId}`),
         fetch(`/api/analytics/engagement-trends?timeRange=${timeRange}&userId=${userId}&campaign=${selectedCampaign}`),
-        fetch(`/api/analytics/recipient-analytics?timeRange=${timeRange}&campaign=${selectedCampaign}&userId=${userId}`)
+        fetch(`/api/analytics/recipient-analytics?timeRange=${timeRange}&campaign=${selectedCampaign}&userId=${userId}`),
+        fetch(`/api/analytics/individual-emails?timeRange=${timeRange}&campaign=${selectedCampaign}&userId=${userId}`)
       ])
 
       console.log(`🔍 [ANALYTICS DEBUG] Fetching data for campaign: ${selectedCampaign}, timeRange: ${timeRange}`)
@@ -184,7 +187,8 @@ export default function Analytics() {
         campaigns: campaignsRes.status,
         delivery: deliveryRes.status,
         trends: trendsRes.status,
-        recipients: recipientsRes.status
+        recipients: recipientsRes.status,
+        individualEmails: individualEmailsRes.status
       })
 
       if (metricsRes.ok) {
@@ -225,6 +229,14 @@ export default function Analytics() {
         setRecipientAnalytics(data.data)
       } else {
         console.error('Failed to fetch recipient analytics:', recipientsRes.status)
+      }
+
+      if (individualEmailsRes.ok) {
+        const data = await individualEmailsRes.json()
+        console.log('📊 Individual Emails:', data.data)
+        setIndividualEmails(data.data || [])
+      } else {
+        console.error('Failed to fetch individual emails:', individualEmailsRes.status)
       }
 
       console.log('📊 All data loaded successfully')
@@ -488,6 +500,140 @@ export default function Analytics() {
         />
       </div>
 
+      {/* Individual Email Performance Table */}
+      <div className="bg-white rounded-lg border border-black p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-2xl font-semibold text-black">Individual Email Performance</h3>
+            <p className="text-sm text-black/60 mt-1">Track opens, clicks, and replies for each sent email</p>
+          </div>
+          <div className="text-sm text-black/70">
+            <span className="font-semibold">{individualEmails.length}</span> emails sent
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        {individualEmails.length > 0 && (
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Search by recipient or subject..."
+              value={emailSearchQuery}
+              onChange={(e) => setEmailSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00f5a0]"
+            />
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          {individualEmails.length === 0 ? (
+            <div className="text-center py-12 text-black/60">
+              <EnvelopeIcon className="h-12 w-12 mx-auto mb-3 text-black/30" />
+              <p>No emails sent yet for this time period</p>
+            </div>
+          ) : (
+            <table className="min-w-full">
+              <thead className="bg-black text-white">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Recipient</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Subject</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Sent</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Opened</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Clicked</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Replied</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Bounced</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-black/10">
+                {individualEmails
+                  .filter(email =>
+                    !emailSearchQuery ||
+                    email.to.toLowerCase().includes(emailSearchQuery.toLowerCase()) ||
+                    email.subject.toLowerCase().includes(emailSearchQuery.toLowerCase())
+                  )
+                  .map((email, index) => (
+                    <tr key={email.id || index} className="hover:bg-[#00f5a0]/5 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm font-medium text-black">{email.to}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-black max-w-md truncate">{email.subject}</div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-sm text-black/70">
+                          {new Date(email.sentAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                        {email.opened ? (
+                          <div className="inline-flex items-center px-2 py-1 rounded-full bg-[#00f5a0] text-black text-xs font-semibold">
+                            <EyeIcon className="h-3 w-3 mr-1" />
+                            {email.openCount}
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center px-2 py-1 rounded-full bg-black/5 text-black/40 text-xs">
+                            -
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                        {email.clicked ? (
+                          <div className="inline-flex items-center px-2 py-1 rounded-full bg-[#00f5a0] text-black text-xs font-semibold">
+                            <CursorArrowRaysIcon className="h-3 w-3 mr-1" />
+                            {email.clickCount}
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center px-2 py-1 rounded-full bg-black/5 text-black/40 text-xs">
+                            -
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                        {email.replied ? (
+                          <div className="inline-flex items-center px-2 py-1 rounded-full bg-[#00f5a0] text-black text-xs font-semibold">
+                            <ChatBubbleLeftRightIcon className="h-3 w-3 mr-1" />
+                            {email.replyCount}
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center px-2 py-1 rounded-full bg-black/5 text-black/40 text-xs">
+                            -
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                        {email.bounced ? (
+                          <div className="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">
+                            <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
+                            Yes
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center px-2 py-1 rounded-full bg-black/5 text-black/40 text-xs">
+                            -
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Show count of filtered results */}
+        {emailSearchQuery && (
+          <div className="mt-4 text-sm text-black/60 text-center">
+            Showing {individualEmails.filter(email =>
+              email.to.toLowerCase().includes(emailSearchQuery.toLowerCase()) ||
+              email.subject.toLowerCase().includes(emailSearchQuery.toLowerCase())
+            ).length} of {individualEmails.length} emails
+          </div>
+        )}
+      </div>
 
       {/* Engagement Trends */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
