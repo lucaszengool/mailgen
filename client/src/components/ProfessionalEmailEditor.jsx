@@ -4282,8 +4282,8 @@ export default function ProfessionalEmailEditor(props) {
     };
 
     return (
-      <div className="fixed top-0 right-0 bottom-0 w-80 bg-white border-l border-gray-200 flex flex-col z-50 shadow-xl">
-        <div className="p-4 bg-gradient-to-r from-green-50 to-indigo-50">
+      <div className="fixed top-0 right-0 bottom-0 w-80 bg-white flex flex-col z-50">
+        <div className="p-4 bg-white">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Properties</h3>
             <div className="flex items-center space-x-2">
@@ -5379,7 +5379,7 @@ export default function ProfessionalEmailEditor(props) {
   return (
     <div className="h-full w-full flex flex-col bg-white">
       {/* Top Toolbar - Horizontal */}
-      <div className="w-full bg-white shadow-sm border-b border-black">
+      <div className="w-full bg-white">
         <div className="flex items-center justify-between p-4">
           {/* Left Section - Title */}
           <div className="flex items-center space-x-4">
@@ -5479,8 +5479,8 @@ export default function ProfessionalEmailEditor(props) {
       <div className="flex-1 flex">
         {/* Email List Panel - Left Side - Only show if emails exist */}
         {((availableEmails && availableEmails.length > 0) || (pendingEmails && pendingEmails.length > 0)) && (
-          <div className="w-56 bg-white flex flex-col mr-4 border-r border-black">
-          <div className="p-4 border-b border-black">
+          <div className="w-56 bg-white flex flex-col mr-4">
+          <div className="p-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-black">Email Campaign</h3>
               <div className="flex items-center space-x-2">
@@ -5549,7 +5549,7 @@ export default function ProfessionalEmailEditor(props) {
 
           {/* Email List */}
           <div className="flex-1 overflow-y-auto">
-            <div className="divide-y divide-black/10">
+            <div>
               {(availableEmails?.length > 0 ? availableEmails : pendingEmails).map((email, index) => {
                 const isCurrentlyEditing = currentEmailIndex === index;
                 const status = email.status || (email.sent ? 'sent' : 'pending');
@@ -5648,7 +5648,7 @@ export default function ProfessionalEmailEditor(props) {
           </div>
 
           {/* Bottom Actions */}
-          <div className="p-4 border-t border-black bg-white">
+          <div className="p-4 bg-white">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-black">Campaign Status</span>
               <div className="flex items-center space-x-2">
@@ -5676,7 +5676,7 @@ export default function ProfessionalEmailEditor(props) {
         <div className="flex-1 bg-white overflow-y-auto ml-2">
         <div className="w-full h-full min-h-screen">
           {/* Email Header - Subject Only */}
-          <div className="p-6 bg-white border-b border-black/10">
+          <div className="p-6 bg-white">
             <div className="space-y-3">
               {(availableEmails?.length > 0 || pendingEmails?.length > 0) && (
                 <div className="flex items-center justify-between text-sm text-black">

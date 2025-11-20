@@ -382,11 +382,12 @@ router.get('/email-metrics', async (req, res) => {
          INNER JOIN email_logs e ON o.tracking_id = e.tracking_id
          WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
 
+    // 🔥 FIX: Count unique emails clicked (DISTINCT tracking_id), not total click events
     const clicksQuery = campaign === 'all'
-      ? `SELECT COUNT(*) as count FROM email_clicks c
+      ? `SELECT COUNT(DISTINCT c.tracking_id) as count FROM email_clicks c
          INNER JOIN email_logs e ON c.campaign_id = e.campaign_id
          WHERE e.user_id = ? AND e.sent_at >= ?`
-      : `SELECT COUNT(*) as count FROM email_clicks c
+      : `SELECT COUNT(DISTINCT c.tracking_id) as count FROM email_clicks c
          INNER JOIN email_logs e ON c.campaign_id = e.campaign_id
          WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
 
@@ -1098,6 +1099,82 @@ router.get('/imap-monitoring-status', (req, res) => {
     monitoring: imapTracker !== null && imapTracker.isMonitoring,
     lastCheck: imapTracker?.lastCheckTime || null
   });
+});
+
+// Get individual email performance
+router.get('/individual-emails', async (req, res) => {
+  try {
+    const { timeRange = '30d', campaign = 'all', userId = 'anonymous' } = req.query;
+    const sinceDate = getTimeRangeFilter(timeRange);
+    const sinceTimestamp = sinceDate.toISOString();
+
+    console.log(`📊 [INDIVIDUAL-EMAILS] User: ${userId}, Campaign: ${campaign}, TimeRange: ${timeRange}`);
+
+    // Get all sent emails with their metrics
+    const emailsQuery = campaign === 'all'
+      ? `SELECT
+           e.id,
+           e.to_email,
+           e.subject,
+           e.campaign_id,
+           e.sent_at,
+           e.status,
+           e.tracking_id,
+           (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as opens,
+           (SELECT COUNT(*) FROM email_clicks c WHERE c.tracking_id = e.tracking_id) as clicks,
+           (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replies,
+           (SELECT COUNT(*) FROM email_bounces b WHERE b.recipient_email = e.to_email AND b.campaign_id = e.campaign_id) as bounces
+         FROM email_logs e
+         WHERE e.user_id = ? AND e.sent_at >= ? AND e.status = 'sent'
+         ORDER BY e.sent_at DESC`
+      : `SELECT
+           e.id,
+           e.to_email,
+           e.subject,
+           e.campaign_id,
+           e.sent_at,
+           e.status,
+           e.tracking_id,
+           (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as opens,
+           (SELECT COUNT(*) FROM email_clicks c WHERE c.tracking_id = e.tracking_id) as clicks,
+           (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replies,
+           (SELECT COUNT(*) FROM email_bounces b WHERE b.recipient_email = e.to_email AND b.campaign_id = e.campaign_id) as bounces
+         FROM email_logs e
+         WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ? AND e.status = 'sent'
+         ORDER BY e.sent_at DESC`;
+
+    const params = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
+    const emails = await queryDB(emailsQuery, params);
+
+    console.log(`📧 Found ${emails.length} individual emails`);
+
+    // Calculate metrics for each email
+    const emailsWithMetrics = emails.map(email => ({
+      id: email.id,
+      to: email.to_email,
+      subject: email.subject,
+      campaignId: email.campaign_id,
+      sentAt: email.sent_at,
+      status: email.status,
+      trackingId: email.tracking_id,
+      opened: email.opens > 0,
+      clicked: email.clicks > 0,
+      replied: email.replies > 0,
+      bounced: email.bounces > 0,
+      openCount: email.opens,
+      clickCount: email.clicks,
+      replyCount: email.replies,
+      bounceCount: email.bounces
+    }));
+
+    res.json({
+      success: true,
+      data: emailsWithMetrics
+    });
+  } catch (error) {
+    console.error('❌ [INDIVIDUAL-EMAILS] ERROR:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // Export the router as default and tracking functions as named exports

@@ -2589,6 +2589,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   });
   const [selectedLogStep, setSelectedLogStep] = useState(null);
 
+  // ⏰ Countdown timer for email generation
+  const [generationTimeRemaining, setGenerationTimeRemaining] = useState(null);
+  const [generationStartTime, setGenerationStartTime] = useState(null);
+
   // 🔥 FRESH START: Clear all data when switching campaigns AND load new data
   useEffect(() => {
     const currentCampaignId = agentConfig?.campaign?.id;
@@ -4239,6 +4243,38 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     const interval = setInterval(fetchWorkflowStats, 10000); // Update every 10 seconds
     return () => clearInterval(interval);
   }, []);
+
+  // ⏰ Email generation countdown timer
+  useEffect(() => {
+    // Start timer when workflow starts and no emails generated yet
+    if ((workflowStatus === 'running' || workflowStatus === 'generating_emails') && generatedEmails.length === 0 && !generationStartTime) {
+      setGenerationStartTime(Date.now());
+      setGenerationTimeRemaining(180); // Estimate 3 minutes
+    }
+
+    // Clear timer when emails are generated
+    if (generatedEmails.length > 0) {
+      setGenerationStartTime(null);
+      setGenerationTimeRemaining(null);
+    }
+  }, [workflowStatus, generatedEmails.length]);
+
+  // Update countdown every second
+  useEffect(() => {
+    if (!generationStartTime || generationTimeRemaining === null) return;
+
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - generationStartTime) / 1000);
+      const remaining = Math.max(0, 180 - elapsed); // 3 minutes max
+      setGenerationTimeRemaining(remaining);
+
+      if (remaining === 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [generationStartTime]);
 
   // Poll for workflow updates periodically
   useEffect(() => {
@@ -6122,18 +6158,69 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
                 {/* Show generating state if workflow is generating emails */}
                 {workflowStatus === 'generating_emails' && generatedEmails.length === 0 && (
-                  <div className="text-center py-16 bg-gradient-to-br from-green-50 to-white rounded-2xl border-2 border-green-200">
-                    <div className="loading-spinner h-16 w-16 mx-auto mb-4 border-green-500"></div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">✉️ AI Agent is Generating Personalized Emails</h3>
-                    <p className="text-gray-600 mb-4">Please wait while we create customized emails for each prospect...</p>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-16 bg-gradient-to-br from-[#00f5a0]/10 via-white to-white rounded-2xl"
+                  >
+                    <motion.div
+                      animate={{
+                        rotate: 360,
+                        scale: [1, 1.1, 1]
+                      }}
+                      transition={{
+                        rotate: { duration: 2, repeat: Infinity, ease: "linear" },
+                        scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
+                      }}
+                      className="mx-auto mb-6 w-20 h-20 rounded-full bg-gradient-to-r from-[#00f5a0] to-[#00c98d] flex items-center justify-center"
+                    >
+                      <Mail className="w-10 h-10 text-white" />
+                    </motion.div>
+                    <h3 className="text-2xl font-bold text-black mb-3">✉️ AI Agent is Finding & Generating Emails</h3>
+                    <p className="text-black/70 mb-6 text-lg">Crafting personalized emails for each prospect...</p>
+
+                    {/* Countdown Timer */}
+                    {generationTimeRemaining !== null && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-6"
+                      >
+                        <div className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full">
+                          <Clock className="w-5 h-5" />
+                          <span className="text-lg font-semibold">
+                            Wait {Math.floor(generationTimeRemaining / 60)}:{String(generationTimeRemaining % 60).padStart(2, '0')} minutes
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    <div className="flex items-center justify-center gap-2 mb-6">
+                      <motion.div
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                        className="w-3 h-3 rounded-full bg-[#00f5a0]"
+                      />
+                      <motion.div
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+                        className="w-3 h-3 rounded-full bg-[#00f5a0]"
+                      />
+                      <motion.div
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
+                        className="w-3 h-3 rounded-full bg-[#00f5a0]"
+                      />
+                    </div>
+
                     <div className="max-w-md mx-auto">
-                      <div className="bg-white rounded-lg p-4 shadow-sm">
-                        <p className="text-sm text-gray-500">
+                      <div className="bg-white/50 rounded-lg p-4">
+                        <p className="text-sm text-black/60">
                           Our AI is analyzing each prospect's profile and crafting personalized email content tailored to their needs.
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* Search Bar for Emails */}
@@ -6181,40 +6268,55 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                       >
                         <motion.div
                           animate={{
-                            scale: [1, 1.1, 1],
-                            rotate: [0, 360]
+                            rotate: 360,
+                            scale: [1, 1.1, 1]
                           }}
                           transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
+                            rotate: { duration: 2, repeat: Infinity, ease: "linear" },
+                            scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
                           }}
-                          className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-                          style={{ backgroundColor: 'rgba(0, 245, 160, 0.1)' }}
+                          className="mx-auto mb-6 w-20 h-20 rounded-full bg-gradient-to-r from-[#00f5a0] to-[#00c98d] flex items-center justify-center"
                         >
-                          <Sparkles className="w-8 h-8 text-[#00f5a0]" />
+                          <Mail className="w-10 h-10 text-white" />
                         </motion.div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Generating Emails...
+                        <h3 className="text-2xl font-bold text-black mb-2">
+                          ✉️ AI Agent is Finding & Generating Emails
                         </h3>
-                        <p className="text-gray-600 mb-4">
-                          AI is crafting personalized emails for each prospect
+                        <p className="text-black/70 mb-6 text-lg">
+                          Crafting personalized emails for each prospect...
                         </p>
+
+                        {/* Countdown Timer */}
+                        {generationTimeRemaining !== null && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mb-6"
+                          >
+                            <div className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full">
+                              <Clock className="w-5 h-5" />
+                              <span className="text-lg font-semibold">
+                                Wait {Math.floor(generationTimeRemaining / 60)}:{String(generationTimeRemaining % 60).padStart(2, '0')} minutes
+                              </span>
+                            </div>
+                          </motion.div>
+                        )}
+
                         <div className="flex items-center justify-center gap-2">
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
-                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
+                            className="w-3 h-3 rounded-full bg-[#00f5a0]"
                           />
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
+                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+                            className="w-3 h-3 rounded-full bg-[#00f5a0]"
                           />
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
+                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
+                            className="w-3 h-3 rounded-full bg-[#00f5a0]"
                           />
                         </div>
                         <p className="text-sm text-gray-500 mt-4">This usually takes 1-2 minutes</p>
@@ -6338,12 +6440,86 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           )}
 
           {activeView === 'email_editor' && (
-            <ProfessionalEmailEditor
-              emailData={emailForReview}
-              availableEmails={generatedEmails}
-              emailCampaignStats={emailCampaignStats}
-              prospects={prospects}
-            />
+            generatedEmails.length === 0 ? (
+              // Show loading state when no emails generated yet
+              <div className="h-full flex items-center justify-center bg-white p-8">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-16 max-w-2xl"
+                >
+                  <motion.div
+                    animate={{
+                      rotate: 360,
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{
+                      rotate: { duration: 2, repeat: Infinity, ease: "linear" },
+                      scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
+                    }}
+                    className="mx-auto mb-6 w-24 h-24 rounded-full bg-gradient-to-r from-[#00f5a0] to-[#00c98d] flex items-center justify-center shadow-lg"
+                  >
+                    <Edit className="w-12 h-12 text-white" />
+                  </motion.div>
+
+                  <h2 className="text-3xl font-bold text-black mb-4">
+                    ✉️ AI Agent is Finding & Generating Emails
+                  </h2>
+                  <p className="text-black/70 mb-8 text-lg">
+                    Please wait while we create personalized emails for your prospects...
+                  </p>
+
+                  {/* Countdown Timer */}
+                  {generationTimeRemaining !== null && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-8"
+                    >
+                      <div className="inline-flex items-center gap-3 px-8 py-4 bg-black text-white rounded-full shadow-lg">
+                        <Clock className="w-6 h-6" />
+                        <span className="text-xl font-semibold">
+                          Wait {Math.floor(generationTimeRemaining / 60)}:{String(generationTimeRemaining % 60).padStart(2, '0')} minutes
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Animated dots */}
+                  <div className="flex items-center justify-center gap-3 mb-8">
+                    <motion.div
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                      className="w-4 h-4 rounded-full bg-[#00f5a0]"
+                    />
+                    <motion.div
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+                      className="w-4 h-4 rounded-full bg-[#00f5a0]"
+                    />
+                    <motion.div
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
+                      className="w-4 h-4 rounded-full bg-[#00f5a0]"
+                    />
+                  </div>
+
+                  <div className="bg-white/50 rounded-xl p-6 border border-black/10">
+                    <p className="text-black/60">
+                      Our AI is analyzing prospect profiles and crafting personalized, high-converting email content.
+                      Once the first email is ready, you'll be able to review and edit it here.
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+            ) : (
+              <ProfessionalEmailEditor
+                emailData={emailForReview}
+                availableEmails={generatedEmails}
+                emailCampaignStats={emailCampaignStats}
+                prospects={prospects}
+              />
+            )
           )}
 
           {/* Analytics View */}
