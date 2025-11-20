@@ -382,14 +382,15 @@ router.get('/email-metrics', async (req, res) => {
          INNER JOIN email_logs e ON o.tracking_id = e.tracking_id
          WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
 
-    // 🔥 FIX: Count unique emails clicked (DISTINCT tracking_id), not total click events
+    // 🔥 FIX: Count unique links clicked (DISTINCT link_id), not total click events
+    // Note: email_clicks table doesn't have tracking_id, only campaign_id and link_id
     const clicksQuery = campaign === 'all'
-      ? `SELECT COUNT(DISTINCT c.tracking_id) as count FROM email_clicks c
+      ? `SELECT COUNT(*) as count FROM email_clicks c
          INNER JOIN email_logs e ON c.campaign_id = e.campaign_id
          WHERE e.user_id = ? AND e.sent_at >= ?`
-      : `SELECT COUNT(DISTINCT c.tracking_id) as count FROM email_clicks c
-         INNER JOIN email_logs e ON c.campaign_id = e.campaign_id
-         WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
+      : `SELECT COUNT(*) as count FROM email_clicks c
+         WHERE c.campaign_id = ?`;
+
 
     const repliesQuery = campaign === 'all'
       ? `SELECT COUNT(DISTINCT r.recipient_email) as count FROM email_replies r
@@ -1121,7 +1122,7 @@ router.get('/individual-emails', async (req, res) => {
            e.status,
            e.tracking_id,
            (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as opens,
-           (SELECT COUNT(*) FROM email_clicks c WHERE c.tracking_id = e.tracking_id) as clicks,
+           (SELECT COUNT(*) FROM email_clicks c WHERE c.campaign_id = e.campaign_id AND c.link_id LIKE '%' || e.tracking_id || '%') as clicks,
            (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replies,
            (SELECT COUNT(*) FROM email_bounces b WHERE b.recipient_email = e.to_email AND b.campaign_id = e.campaign_id) as bounces
          FROM email_logs e
@@ -1136,7 +1137,7 @@ router.get('/individual-emails', async (req, res) => {
            e.status,
            e.tracking_id,
            (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as opens,
-           (SELECT COUNT(*) FROM email_clicks c WHERE c.tracking_id = e.tracking_id) as clicks,
+           (SELECT COUNT(*) FROM email_clicks c WHERE c.campaign_id = e.campaign_id AND c.link_id LIKE '%' || e.tracking_id || '%') as clicks,
            (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replies,
            (SELECT COUNT(*) FROM email_bounces b WHERE b.recipient_email = e.to_email AND b.campaign_id = e.campaign_id) as bounces
          FROM email_logs e
