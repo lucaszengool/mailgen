@@ -67,7 +67,9 @@ class LangGraphMarketingAgent {
       userDecisionPromise: null,
       // SMTP verification cache - avoid re-verifying same config
       smtpVerifiedConfigs: new Map(), // Key: config hash, Value: timestamp
-      smtpTransporters: new Map() // Key: config hash, Value: transporter instance
+      smtpTransporters: new Map(), // Key: config hash, Value: transporter instance
+      // IMAP monitoring state
+      imapMonitoringStarted: false // Track if IMAP monitoring has been auto-started
     };
 
     // WebSocket管理器
@@ -1741,16 +1743,41 @@ class LangGraphMarketingAgent {
       return emailCampaign;
     }
 
+    // 🔍 Check which prospects already have emails generated
+    console.log(`\n🔍 Checking for prospects without generated emails...`);
+    const prospectsNeedingEmails = [];
+
+    for (const prospect of validatedProspects) {
+      const emailKey = `${campaignId}_${prospect.email}`;
+      const hasEmail = this.pendingEmails?.has(emailKey);
+
+      if (!hasEmail) {
+        prospectsNeedingEmails.push(prospect);
+        console.log(`   ✅ Needs email: ${prospect.email}`);
+      } else {
+        console.log(`   ⏭️  Already has email: ${prospect.email}`);
+      }
+    }
+
+    console.log(`\n📊 Email Generation Summary:`);
+    console.log(`   Total prospects: ${validatedProspects.length}`);
+    console.log(`   Need emails: ${prospectsNeedingEmails.length}`);
+    console.log(`   Already have emails: ${validatedProspects.length - prospectsNeedingEmails.length}`);
+
+    if (prospectsNeedingEmails.length === 0) {
+      console.log(`\n✅ All prospects already have emails generated!`);
+      return emailCampaign;
+    }
+
     // Sequential email generation: persona → email → send for each prospect
     console.log(`\n📧 STARTING SEQUENTIAL EMAIL GENERATION WORKFLOW`);
     console.log('='.repeat(60));
-    console.log(`📊 Total prospects to process: ${validatedProspects.length}`);
-    console.log(`🎯 Processing up to: ${Math.min(validatedProspects.length, 10)} prospects`);
-    console.log(`⚡ Workflow: Generate Persona → Create Email → Send → Next Prospect`);
+    console.log(`📊 Total prospects to process: ${prospectsNeedingEmails.length}`);
+    console.log(`⚡ Workflow: Generate Persona → Create Email → Store → Next Prospect`);
     console.log('='.repeat(60));
-    
-    for (let i = 0; i < Math.min(validatedProspects.length, 10); i++) {
-      const prospect = validatedProspects[i];
+
+    for (let i = 0; i < prospectsNeedingEmails.length; i++) {
+      const prospect = prospectsNeedingEmails[i];
       let emailContent = null; // Declare in scope accessible to catch blocks
       let emailStatus = 'awaiting_approval'; // Declare in scope accessible to catch blocks
       let sentAt = null; // Declare in scope accessible to catch blocks
@@ -1763,14 +1790,14 @@ class LangGraphMarketingAgent {
       }
       
       console.log(`\n${'─'.repeat(50)}`);
-      console.log(`📧 PROSPECT ${i + 1}/${Math.min(validatedProspects.length, 10)}`);
+      console.log(`📧 PROSPECT ${i + 1}/${prospectsNeedingEmails.length}`);
       console.log(`${'─'.repeat(50)}`);
       console.log(`   Email: ${prospect.email}`);
       console.log(`   Name: ${prospect.name || 'Unknown'}`);
       console.log(`   Company: ${prospect.company || 'Unknown'}`);
-      
+
       if (this.wsManager) {
-        this.wsManager.sendLogUpdate('email_generation', `\n👤 [${i + 1}/${Math.min(validatedProspects.length, 10)}] Starting: ${prospect.email}`, 'info');
+        this.wsManager.sendLogUpdate('email_generation', `\n👤 [${i + 1}/${prospectsNeedingEmails.length}] Starting: ${prospect.email}`, 'info');
       }
       
       try {
@@ -1866,7 +1893,7 @@ class LangGraphMarketingAgent {
           const useUserTemplate = (templateData && (templateData.isCustomized || templateData.components || templateData.html)) ||
                                   this.state.userTemplate;
           if (useUserTemplate) {
-            console.log(`🎨 Using legacy user template for email ${i + 1}/${Math.min(validatedProspects.length, 10)}`);
+            console.log(`🎨 Using legacy user template for email ${i + 1}/${prospectsNeedingEmails.length}`);
             selectedTemplateData = templateData || this.state.userTemplate;
             selectedTemplateId = 'user_template';
             useSelectedTemplate = true;
@@ -1874,7 +1901,7 @@ class LangGraphMarketingAgent {
         }
 
         if (useSelectedTemplate) {
-          console.log(`🎨 Using selected template for email ${i + 1}/${Math.min(validatedProspects.length, 10)}`);
+          console.log(`🎨 Using selected template for email ${i + 1}/${prospectsNeedingEmails.length}`);
           console.log(`   📋 Template ID: ${selectedTemplateId}`);
           console.log(`   📋 Template Name: ${selectedTemplateData?.name || 'Unknown'}`);
           console.log(`   🎯 Template components: ${selectedTemplateData?.components?.length || 0}`);
@@ -2224,7 +2251,7 @@ class LangGraphMarketingAgent {
                     message: 'Workflow paused for email editing. You can now go to the Email Editor to review and modify your emails.',
                     campaignId: campaignId,
                     emailsGenerated: 1,
-                    totalProspects: Math.min(validatedProspects.length, 10)
+                    totalProspects: prospectsNeedingEmails.length
                   }
                 });
 
@@ -2466,9 +2493,9 @@ class LangGraphMarketingAgent {
         // Mark this prospect as complete
         console.log(`\n   ✅ PROSPECT ${i + 1} COMPLETE!`);
         console.log(`   ${'─'.repeat(40)}`);
-        
+
         // Longer delay after sending to avoid being flagged as spam
-        if (i < Math.min(validatedProspects.length, 10) - 1) {
+        if (i < prospectsNeedingEmails.length - 1) {
           console.log(`\n   ⏳ Anti-spam delay before next prospect...`);
           if (this.wsManager) {
             this.wsManager.sendLogUpdate('email_generation', `   ⏳ Waiting 3s before next prospect (anti-spam)...`, 'info');
@@ -4753,12 +4780,35 @@ ${senderName || senderCompany}`;
       generatedAt: new Date().toISOString()
     };
 
-    // Continue from the next prospect after the one that was just sent
-    for (let i = startIndex; i < Math.min(prospects.length, 10); i++) {
-      const prospect = prospects[i];
+    // 🔍 Check which prospects need emails (skip those that already have them)
+    console.log(`\n🔍 Checking remaining prospects for email generation...`);
+    const remainingProspects = [];
+    for (let j = startIndex; j < prospects.length; j++) {
+      const prospect = prospects[j];
+      const emailKey = `${campaignId}_${prospect.email}`;
+      const hasEmail = this.pendingEmails?.has(emailKey);
+
+      if (!hasEmail) {
+        remainingProspects.push(prospect);
+        console.log(`   ✅ Will generate: ${prospect.email}`);
+      } else {
+        console.log(`   ⏭️  Already has email: ${prospect.email}`);
+      }
+    }
+
+    console.log(`\n📊 Remaining prospects to process: ${remainingProspects.length}`);
+
+    if (remainingProspects.length === 0) {
+      console.log(`✅ All prospects already have emails generated!`);
+      return emailCampaign;
+    }
+
+    // Continue generating emails for remaining prospects
+    for (let i = 0; i < remainingProspects.length; i++) {
+      const prospect = remainingProspects[i];
 
       console.log(`\n${'─'.repeat(50)}`);
-      console.log(`📧 PROSPECT ${i + 1}/${Math.min(prospects.length, 10)}`);
+      console.log(`📧 PROSPECT ${i + 1}/${remainingProspects.length}`);
       console.log(`${'─'.repeat(50)}`);
       console.log(`   Email: ${prospect.email}`);
       console.log(`   Name: ${prospect.name || 'Unknown'}`);
@@ -4868,14 +4918,14 @@ ${senderName || senderCompany}`;
               campaignId: campaignId,
               prospect: prospect,
               emailIndex: i + 1,
-              totalEmails: Math.min(prospects.length, 10),
+              totalEmails: remainingProspects.length,
               status: emailContent.status
             }
           });
         }
 
         // Anti-spam delay
-        if (i < Math.min(prospects.length, 10) - 1) {
+        if (i < remainingProspects.length - 1) {
           console.log(`\n   ⏳ Anti-spam delay before next prospect...`);
           await new Promise(resolve => setTimeout(resolve, 3000));
         }
@@ -5027,6 +5077,44 @@ ${senderName || senderCompany}`;
       return new URL(url).hostname.replace('www.', '');
     } catch {
       return url;
+    }
+  }
+
+  /**
+   * 📬 Auto-start IMAP monitoring after first successful email
+   * Only starts once per user session to avoid multiple monitoring instances
+   */
+  async autoStartIMAPMonitoring(userId, emailConfig) {
+    // Skip if already monitoring for this user
+    if (this.state.imapMonitoringStarted) {
+      return;
+    }
+
+    try {
+      console.log(`📬 Auto-starting IMAP monitoring for user: ${userId}`);
+
+      const IMAPEmailTracker = require('../services/IMAPEmailTracker');
+
+      // Convert SMTP config to IMAP config
+      const imapConnection = {
+        user: emailConfig.auth?.user || emailConfig.user,
+        password: emailConfig.auth?.pass || emailConfig.password || emailConfig.pass,
+        host: (emailConfig.host || 'smtp.gmail.com').replace('smtp', 'imap'),
+        port: 993
+      };
+
+      // Create tracker instance
+      const imapTracker = new IMAPEmailTracker();
+      await imapTracker.connect(imapConnection);
+      await imapTracker.startMonitoring(5); // Check every 5 minutes
+
+      // Mark as started
+      this.state.imapMonitoringStarted = true;
+
+      console.log(`✅ IMAP monitoring auto-started for ${imapConnection.user}`);
+    } catch (error) {
+      console.log(`⚠️ Failed to auto-start IMAP monitoring: ${error.message}`);
+      // Don't throw - this is a non-critical feature
     }
   }
 
@@ -5353,6 +5441,129 @@ Return ONLY the JSON object, no other text.`;
    */
   
   /**
+   * 🔍 Validate and fix recipient name to avoid placeholders
+   * Detects: Geographic regions, placeholder text, weird values
+   */
+  validateRecipientName(name, company) {
+    if (!name) return null;
+
+    // List of invalid name patterns (case insensitive)
+    const invalidPatterns = [
+      /^(North America|South America|Europe|Asia|Africa|Australia)!?$/i,
+      /^(News|Update|Alert|Notice|Announcement)!?$/i,
+      /^(Ag|Tech|Bio|Corp|Inc|LLC|Ltd)$/i, // Short company suffixes used as names
+      /^(Hello|Hi|Dear|Greetings?)$/i, // Greeting words
+      /^\[.*\]$/, // Anything in brackets
+      /^(Mr|Mrs|Ms|Dr|Prof)\.?$/i, // Titles without names
+      /^(Sir|Madam|Team|Department)$/i, // Generic titles
+      /^[A-Z]{2,}$/, // All caps 2-letter codes (US, UK, etc)
+      /^\d+$/, // Just numbers
+      /^(CEO|CTO|CFO|COO|VP)$/i // Job titles without names
+    ];
+
+    // Check if name matches any invalid pattern
+    for (const pattern of invalidPatterns) {
+      if (pattern.test(name.trim())) {
+        console.log(`   ⚠️  Invalid recipient name detected: "${name}" - using company fallback`);
+        // Try to use company name or return generic greeting
+        return company ? `${company} Team` : null;
+      }
+    }
+
+    // Check for overly short names (likely acronyms or placeholders)
+    if (name.trim().length <= 2) {
+      console.log(`   ⚠️  Recipient name too short: "${name}" - using company fallback`);
+      return company ? `${company} Team` : null;
+    }
+
+    // Name seems valid
+    return name;
+  }
+
+  /**
+   * 🧹 Remove duplicate signatures and clean up formatting issues
+   * Fixes: Multiple "Best regards", duplicate testimonials, LLM-generated signatures
+   */
+  removeDuplicateSignatures(html) {
+    if (!html) return html;
+
+    console.log(`🧹 Removing duplicate signatures and formatting issues...`);
+
+    let cleaned = html;
+
+    // 1. Remove LLM-generated signatures that appear BEFORE the template signature
+    // Pattern: "Best regards," or "Sincerely," followed by name/title (not in a styled div)
+    // These are usually plain text signatures added by the LLM
+    const llmSignaturePatterns = [
+      // Match "Best regards,\nName" or "Best regards,<br>Name" patterns
+      /(?:Best regards|Sincerely|Warm regards|Kind regards|Thank you|Thanks),?\s*(?:<br\s*\/?>|\n)\s*(?:<strong>)?[A-Z][a-zA-Z\s]+(?:<\/strong>)?(?:<br\s*\/?>|\n)?[A-Z][a-zA-Z\s]*(?=\s*<\/div>|\s*<div)/gi,
+
+      // Match standalone signature lines like "Best regards, John Doe"
+      /(?:Best regards|Sincerely|Warm regards),\s+[A-Z][a-zA-Z\s]+/g,
+
+      // Match signature with title: "Best regards,\nJohn Doe\nCEO, Company"
+      /(?:Best regards|Sincerely),?\s*(?:<br\s*\/?>|\n)\s*[A-Z][a-zA-Z\s]+\s*(?:<br\s*\/?>|\n)\s*[A-Z][a-zA-Z\s,]+/gi
+    ];
+
+    llmSignaturePatterns.forEach((pattern, index) => {
+      const matches = cleaned.match(pattern);
+      if (matches && matches.length > 1) {
+        console.log(`   🔍 Found ${matches.length} duplicate signatures (pattern ${index + 1})`);
+        // Remove all but the last occurrence (keep template signature)
+        for (let i = 0; i < matches.length - 1; i++) {
+          cleaned = cleaned.replace(pattern, '');
+        }
+      }
+    });
+
+    // 2. Remove duplicate "Partnership Development Team" signatures
+    const partnershipSigPattern = /<p[^>]*>.*?Best regards,<br\s*\/?>.*?<strong>Partnership Development Team<\/strong>.*?<\/p>/gis;
+    const partnershipMatches = cleaned.match(partnershipSigPattern);
+    if (partnershipMatches && partnershipMatches.length > 1) {
+      console.log(`   🔍 Found ${partnershipMatches.length} "Partnership Development Team" signatures`);
+      // Keep only the first one (it's in the template)
+      for (let i = 1; i < partnershipMatches.length; i++) {
+        cleaned = cleaned.replace(partnershipMatches[i], '');
+      }
+    }
+
+    // 3. Remove duplicate testimonial quotes
+    const testimonialPattern = /"This solution transformed our operations[^"]*"/gi;
+    const testimonialMatches = cleaned.match(testimonialPattern);
+    if (testimonialMatches && testimonialMatches.length > 1) {
+      console.log(`   🔍 Found ${testimonialMatches.length} duplicate testimonials`);
+      // Keep only the first one
+      const firstTestimonial = testimonialMatches[0];
+      cleaned = cleaned.replace(testimonialPattern, '');
+      cleaned = cleaned.replace(/(<blockquote[^>]*>)\s*(<\/blockquote>)/i, `$1${firstTestimonial}$2`);
+    }
+
+    // 4. Remove standalone company names at the end (like "Solutioninc" or "Ag")
+    // These are artifacts from LLM generation
+    cleaned = cleaned.replace(/\s*<\/div>\s*<\/div>\s*(?:<p>)?([A-Z][a-zA-Z]+)(?:<\/p>)?\s*$/i, '</div></div>');
+
+    // 5. Clean up multiple consecutive "Best regards" in plain text
+    cleaned = cleaned.replace(/(Best regards[,\s]*){2,}/gi, 'Best regards,');
+
+    // 6. Remove "CEO, Industry Leader" placeholder text if it appears multiple times
+    const ceoPattern = /CEO,?\s+Industry\s+Leader/gi;
+    const ceoMatches = cleaned.match(ceoPattern);
+    if (ceoMatches && ceoMatches.length > 1) {
+      console.log(`   🔍 Found ${ceoMatches.length} "CEO, Industry Leader" placeholders`);
+      // Keep only the first occurrence
+      for (let i = 1; i < ceoMatches.length; i++) {
+        cleaned = cleaned.replace(ceoPattern, '');
+      }
+    }
+
+    // 7. Remove empty signature blocks (just "Best regards," with nothing after)
+    cleaned = cleaned.replace(/<p[^>]*>\s*(?:Best regards|Sincerely),?\s*<\/p>/gi, '');
+
+    console.log(`   ✅ Signature deduplication complete`);
+    return cleaned;
+  }
+
+  /**
    * 🎨 NEW FUNCTION: Apply user's color customizations to HTML
    * This ensures user-selected colors actually appear in the final email
    */
@@ -5429,8 +5640,15 @@ Return ONLY the JSON object, no other text.`;
     if (emailTemplate) {
       console.log(`   📋 Using template: ${emailTemplate}`);
     }
-    
+
     try {
+      // 🔍 STEP 0: Validate and fix recipient name to avoid placeholders
+      const validatedName = this.validateRecipientName(prospect.name, prospect.company);
+      if (validatedName !== prospect.name) {
+        console.log(`🔧 Fixed recipient name: "${prospect.name}" → "${validatedName || 'there'}"`);
+        prospect.name = validatedName || prospect.name;
+      }
+
       // Enhanced prospect with persona and template preference
       console.log(`🔍 DEBUG: emailTemplate parameter is: ${emailTemplate}`);
 
@@ -5729,11 +5947,19 @@ CRITICAL INSTRUCTIONS - READ CAREFULLY:
 - Use natural language - "Hello ${prospect.name || 'there'}" NOT "Hello [Recipient's Name]"
 - NO BRACKETS [] in your output - write real content only
 
+🚫 DO NOT INCLUDE:
+- NO greetings like "Hello", "Dear", "Hi" - the template already has them
+- NO signatures like "Best regards", "Sincerely", "Thank you" - the template already has them
+- NO closing lines like "Looking forward to hearing from you"
+- NO sender name or company name at the end
+- ONLY write the main body paragraphs explaining the value proposition
+
 VERIFICATION CHECKLIST before you write:
 ✓ I know the recipient's name: ${prospect.name || 'there'}
 ✓ I know their company: ${prospect.company || 'their company'}
 ✓ I know the sender: ${templateData.senderName || 'our team'}
 ✓ I will write using these ACTUAL values, not placeholders
+✓ I will NOT include greeting or signature (template has them)
 `;
           } else {
             console.log(`No template-specific prompt found, using generic prompt`);
@@ -5758,6 +5984,13 @@ Requirements:
 3. Present our value proposition clearly
 4. Make it feel personal, not templated
 5. Each paragraph should be 2-3 sentences max
+
+🚫 DO NOT INCLUDE:
+- NO greetings like "Hello", "Dear", "Hi" - the template already has them
+- NO signatures like "Best regards", "Sincerely", "Thank you" - the template already has them
+- NO closing lines like "Looking forward to hearing from you"
+- NO sender name or company name at the end
+- ONLY write the main body paragraphs explaining the value proposition
 
 Generate ONLY the email body paragraphs (no subject, no greeting, no signature). Make it feel like a real person wrote it for ${prospect.name || 'them'}.`;
           }
@@ -5978,8 +6211,13 @@ Generate ONLY the email body paragraphs (no subject, no greeting, no signature).
           // 🎨 STEP 6.5: Apply user's color customizations
           const colorCustomizedHtml = this.applyColorCustomizations(cleanedHtml, templateData.customizations);
           console.log(`   ✅ Color customizations applied`);
+
+          // 🧹 STEP 6.6: Remove duplicate signatures and clean up formatting issues
+          const deduplicatedHtml = this.removeDuplicateSignatures(colorCustomizedHtml);
+          console.log(`   ✅ Duplicate signatures removed`);
+
           console.log(`   ✅ Subject cleaned: "${cleanedSubject}"`);
-          console.log(`   ✅ HTML cleaned (${personalizedHtml.length} → ${cleanedHtml.length} chars)`);
+          console.log(`   ✅ HTML cleaned (${personalizedHtml.length} → ${deduplicatedHtml.length} chars)`);
 
           console.log(`\n✅ TEMPLATE PERSONALIZATION COMPLETE`);
           console.log(`📊 Final Statistics:`);
@@ -6003,8 +6241,8 @@ Generate ONLY the email body paragraphs (no subject, no greeting, no signature).
 
           return {
             subject: cleanedSubject,
-            body: colorCustomizedHtml, // ✅ Full HTML with all customizations
-            html: colorCustomizedHtml, // ✅ FIXED: Use colorCustomizedHtml for both fields
+            body: deduplicatedHtml, // ✅ Full HTML with all customizations + deduplication
+            html: deduplicatedHtml, // ✅ FIXED: Use deduplicatedHtml for both fields
             template: templateData.id || templateData.templateId || 'user_template',
             templateData: templateData,
             personalizationLevel: isCustomized ? 'User Customized (With AI Content)' : 'Default (With AI Content)',
@@ -6600,17 +6838,47 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
         console.log(`🚨 WARNING: Email body is suspiciously short (${body.length} chars):`);
         console.log(body);
       }
-      
+
+      // 📊 TRACKING: Register email with tracking service
+      let trackedBody = body;
+      let trackingId = null;
+      try {
+        const EmailTrackingService = require('../services/EmailTrackingService');
+
+        // Register email to get tracking ID
+        trackingId = await EmailTrackingService.registerEmail({
+          to: to,
+          recipientName: prospect.name || prospect.email,
+          subject: subject,
+          campaignId: campaignId || 'unknown'
+        });
+
+        console.log(`📊 Email registered for tracking: ${trackingId}`);
+
+        // Add tracking pixel for open tracking
+        trackedBody = EmailTrackingService.insertTrackingPixel(body, trackingId);
+        console.log(`📊 Tracking pixel added to email`);
+
+        // Wrap links with click tracking
+        trackedBody = EmailTrackingService.wrapLinksWithTracking(trackedBody, trackingId);
+        console.log(`📊 Links wrapped with tracking`);
+      } catch (trackingError) {
+        console.error('⚠️ Failed to add tracking to email:', trackingError.message);
+        // Continue without tracking if it fails
+        trackedBody = body;
+      }
+
       const mailOptions = {
         from: `"${senderName}" <${senderEmail}>`,
         to: to,
         subject: subject,
-        html: body, // Primary content as HTML
+        html: trackedBody, // Use tracked body with pixel and wrapped links
         // Remove text version to ensure HTML is displayed
         headers: {
           'X-Campaign-ID': campaignId,
           'X-Prospect-ID': prospect.id || prospect.email,
           'X-Generated-By': 'LangGraph-Marketing-Agent',
+          'X-Tracking-ID': trackingId || 'none', // Add tracking ID to headers
           'Content-Type': 'text/html; charset=UTF-8'
         }
       };
@@ -6680,9 +6948,15 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
             status: 'sent',
             error: null,
             recipientIndex: 0,
-            sentAt: new Date().toISOString()
+            sentAt: new Date().toISOString(),
+            trackingId: trackingId // 📊 Include tracking ID
           }, userId); // 🔥 FIX: Pass userId to properly associate email with user
-          console.log(`📊 Email logged to database for user: ${userId}`);
+          console.log(`📊 Email logged to database for user: ${userId}, trackingId: ${trackingId}`);
+
+          // 📬 AUTO-START IMAP MONITORING: Start monitoring after first successful email
+          this.autoStartIMAPMonitoring(userId, emailConfig).catch(err => {
+            console.log(`⚠️ Auto-start IMAP monitoring skipped: ${err.message}`);
+          });
         } catch (dbError) {
           console.error('Database logging error:', dbError.message);
         }
@@ -6702,9 +6976,10 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
             status: 'failed',
             error: info.rejected ? info.rejected.join(', ') : 'Email rejected',
             recipientIndex: 0,
-            sentAt: new Date().toISOString()
+            sentAt: new Date().toISOString(),
+            trackingId: trackingId // 📊 Include tracking ID even for failed sends
           }, userId); // 🔥 FIX: Pass userId to properly associate email with user
-          console.log(`📊 Failed email logged to database for user: ${userId}`);
+          console.log(`📊 Failed email logged to database for user: ${userId}, trackingId: ${trackingId}`);
         } catch (dbError) {
           console.error('Database logging error:', dbError.message);
         }

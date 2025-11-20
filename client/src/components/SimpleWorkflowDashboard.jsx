@@ -8,7 +8,7 @@ import {
   FileText, Sparkles, ArrowRight, Clock, Activity,
   Target, Users, BarChart3, Link, Shield, Zap, Edit, Settings,
   Radar, Network, BarChart, PlayCircle, CheckSquare, AlertTriangle,
-  Server, Eye, Cpu, Layers, Workflow, Gauge, Home, RefreshCw
+  Server, Eye, Cpu, Layers, Workflow, Gauge, Home, RefreshCw, Swatches as SwatchIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SignedIn, UserButton } from '@clerk/clerk-react';
@@ -5342,6 +5342,28 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           </div>
         )}
 
+        {/* Switch Template Button */}
+        <div className="px-4 pb-4">
+          <button
+            onClick={() => {
+              console.log('🎨 Opening template selection modal');
+              setShowTemplateSelection(true);
+            }}
+            className="w-full flex items-center px-4 py-3 rounded-lg transition-all duration-200 text-sm bg-[#00f5a0] text-black border border-black hover:bg-[#00e090] shadow-sm"
+            title="Switch email template for remaining emails"
+          >
+            <SwatchIcon className="w-5 h-5 mr-3 flex-shrink-0 text-black" />
+            <span className="truncate font-medium text-black">
+              Switch Template
+            </span>
+          </button>
+          {selectedTemplate && (
+            <div className="mt-2 px-2 py-1 text-xs text-black/70 bg-black/5 rounded">
+              <strong>Current:</strong> {EMAIL_TEMPLATES[selectedTemplate]?.name || 'Default'}
+            </div>
+          )}
+        </div>
+
         {/* Quota Bar */}
         <div className="px-4 pb-4">
           <QuotaBar />
@@ -6684,7 +6706,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             <button
               onClick={() => {
                 setShowGenerationPopup(false);
-                setActiveView('email-campaign');
+                // 🔥 FIX: Use 'emails' to match the actual view name
+                setActiveView('emails');
               }}
               className="w-full bg-[#00f5a0] hover:bg-[#00d68a] text-black font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-[#00f5a0]/30"
             >

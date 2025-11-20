@@ -69,8 +69,11 @@ class EmailService {
       // Add tracking pixel if trackingId provided
       let finalHtml = html;
       if (trackingId && html) {
-        const trackingPixel = `<img src="http://localhost:3333/api/email/track/open/${trackingId}" width="1" height="1" style="display:none;">`;
+        // 🔥 FIX: Use TRACKING_BASE_URL environment variable instead of hardcoded localhost
+        const baseUrl = process.env.TRACKING_BASE_URL || 'http://localhost:3000';
+        const trackingPixel = `<img src="${baseUrl}/api/track/open/${trackingId}" width="1" height="1" style="display:none;">`;
         finalHtml = `${html}${trackingPixel}`;
+        console.log(`📊 Added tracking pixel: ${baseUrl}/api/track/open/${trackingId}`);
       }
 
       // Get sender info from knowledge base if targetWebsite is provided

@@ -506,8 +506,39 @@ const JobRightProspectCard = ({ prospect, index, onClick, showFilters = false, s
               <span className="text-sm text-gray-500">{timeSincePosted}</span>
             </div>
 
-            {/* Prospect Name */}
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">{prospectName}</h3>
+            {/* Prospect Name with Position and Department */}
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              {prospectName}
+              {(() => {
+                // Get position/role - prioritize title/role, fall back to formatted persona type
+                const position = prospect.title || prospect.role ||
+                  (prospect.persona?.type ?
+                    prospect.persona.type.split('_').map(word =>
+                      word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ') : null) ||
+                  (prospect.type ?
+                    prospect.type.split('_').map(word =>
+                      word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ') : null);
+
+                // Get department - prioritize department, fall back to decisionLevel/industry
+                const department = prospect.department ||
+                  prospect.persona?.decisionLevel ||
+                  prospect.decisionLevel ||
+                  prospect.persona?.industry;
+
+                // Build display string
+                if (position || department) {
+                  return (
+                    <span className="text-lg font-normal text-gray-600 ml-2">
+                      • {position || department}
+                      {position && department && position !== department && `, ${department}`}
+                    </span>
+                  );
+                }
+                return null;
+              })()}
+            </h3>
 
             {/* Company Info */}
             <p className="text-base text-gray-500">{companyName} / {industryCategory}</p>

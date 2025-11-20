@@ -5377,16 +5377,16 @@ export default function ProfessionalEmailEditor(props) {
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-gray-50/30">
+    <div className="h-full w-full flex flex-col bg-white">
       {/* Top Toolbar - Horizontal */}
-      <div className="w-full bg-white shadow-sm">
+      <div className="w-full bg-white shadow-sm border-b border-black">
         <div className="flex items-center justify-between p-4">
           {/* Left Section - Title */}
           <div className="flex items-center space-x-4">
-            <h2 className="text-lg font-semibold text-gray-900">Email Editor</h2>
+            <h2 className="text-lg font-semibold text-black">Email Editor</h2>
             {/* Removed debug UI elements for clean interface */}
             {(availableEmails?.length > 0 || pendingEmails?.length > 0) && (
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-black">
                 Email {currentEmailIndex + 1} of {availableEmails?.length || pendingEmails?.length}
               </div>
             )}
@@ -5406,11 +5406,11 @@ export default function ProfessionalEmailEditor(props) {
                     if (newIndex !== currentEmailIndex) switchToEmail(newIndex);
                   }}
                   disabled={currentEmailIndex <= 0}
-                  className="px-3 py-2 text-sm bg-white border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50"
+                  className="px-3 py-2 text-sm bg-white border border-black rounded hover:bg-[#00f5a0] hover:text-black disabled:opacity-50 transition-colors"
                 >
                   ← Prev
                 </button>
-                
+
                 <button
                   onClick={() => {
                     const totalEmails = availableEmails?.length || pendingEmails?.length || 0;
@@ -5418,7 +5418,7 @@ export default function ProfessionalEmailEditor(props) {
                     if (newIndex !== currentEmailIndex) switchToEmail(newIndex);
                   }}
                   disabled={currentEmailIndex >= (availableEmails?.length || pendingEmails?.length || 1) - 1}
-                  className="px-3 py-2 text-sm bg-white border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50"
+                  className="px-3 py-2 text-sm bg-white border border-black rounded hover:bg-[#00f5a0] hover:text-black disabled:opacity-50 transition-colors"
                 >
                   Next →
                 </button>
@@ -5427,17 +5427,17 @@ export default function ProfessionalEmailEditor(props) {
 
             {/* Template Switcher */}
             <div className="flex items-center space-x-2">
-              <div className="text-sm text-gray-600">
-                Template: <span className="font-medium text-gray-800">
+              <div className="text-sm text-black">
+                Template: <span className="font-medium text-black">
                   {EMAIL_TEMPLATES[currentTemplate]?.name || 'Professional Partnership'}
                 </span>
               </div>
               <button
                 onClick={openTemplateSelector}
-                className="flex items-center px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-green-300 transition-all duration-200 group"
+                className="flex items-center px-3 py-2 bg-white border border-black rounded-lg text-sm font-medium text-black hover:bg-[#00f5a0] transition-all duration-200"
                 title="Switch Email Template"
               >
-                <SwatchIcon className="h-4 w-4 mr-1 text-gray-500 group-hover:text-green-600" />
+                <SwatchIcon className="h-4 w-4 mr-1 text-black" />
                 Switch Template
               </button>
             </div>
@@ -5446,8 +5446,8 @@ export default function ProfessionalEmailEditor(props) {
               onClick={() => setPreviewMode(!previewMode)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 previewMode
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-[#00f5a0] text-black hover:bg-[#00e090]'
+                  : 'bg-white border border-black text-black hover:bg-[#00f5a0]'
               }`}
             >
               {previewMode ? 'Exit Preview' : 'Preview'}
@@ -5456,7 +5456,7 @@ export default function ProfessionalEmailEditor(props) {
             <button
               onClick={handleSave}
               disabled={loading}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 bg-[#00f5a0] text-black rounded-lg text-sm font-medium hover:bg-[#00e090] disabled:opacity-50 transition-colors"
             >
               {loading ? 'Saving...' : 'Save'}
             </button>
@@ -5479,10 +5479,10 @@ export default function ProfessionalEmailEditor(props) {
       <div className="flex-1 flex">
         {/* Email List Panel - Left Side - Only show if emails exist */}
         {((availableEmails && availableEmails.length > 0) || (pendingEmails && pendingEmails.length > 0)) && (
-          <div className="w-56 bg-white flex flex-col mr-4">
-          <div className="p-4">
+          <div className="w-56 bg-white flex flex-col mr-4 border-r border-black">
+          <div className="p-4 border-b border-black">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Email Campaign</h3>
+              <h3 className="text-lg font-semibold text-black">Email Campaign</h3>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={async () => {
@@ -5534,26 +5534,26 @@ export default function ProfessionalEmailEditor(props) {
                       setRefreshing(false);
                     }
                   }}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  className="p-1 hover:bg-[#00f5a0] rounded transition-colors"
                   title="Force refresh emails"
                 >
-                  <ArrowPathIcon className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  <ArrowPathIcon className={`h-4 w-4 text-black ${refreshing ? 'animate-spin' : ''}`} />
                 </button>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                  {availableEmails?.length || pendingEmails?.length || 0} Generated
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
+                  {availableEmails?.length || pendingEmails?.length || 0}
                 </span>
               </div>
             </div>
-            <p className="text-sm text-emerald-600 mt-1">Ready for editing & sending</p>
+            <p className="text-sm text-[#00f5a0] mt-1 font-medium">Ready for editing & sending</p>
           </div>
 
           {/* Email List */}
           <div className="flex-1 overflow-y-auto">
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-black/10">
               {(availableEmails?.length > 0 ? availableEmails : pendingEmails).map((email, index) => {
                 const isCurrentlyEditing = currentEmailIndex === index;
                 const status = email.status || (email.sent ? 'sent' : 'pending');
-                
+
                 return (
                   <div
                     key={email.id || index}
@@ -5563,22 +5563,22 @@ export default function ProfessionalEmailEditor(props) {
                       setCurrentEmailIndex(index);
                       switchToEmail(index);
                     }}
-                    className={isCurrentlyEditing 
-                      ? 'p-4 cursor-pointer hover:bg-gray-50 transition-colors bg-green-50 border-r-4 border-green-500' 
-                      : 'p-4 cursor-pointer hover:bg-gray-50 transition-colors'
+                    className={isCurrentlyEditing
+                      ? 'p-4 cursor-pointer hover:bg-[#00f5a0]/10 transition-colors bg-[#00f5a0]/20 border-l-4 border-[#00f5a0]'
+                      : 'p-4 cursor-pointer hover:bg-[#00f5a0]/10 transition-colors'
                     }
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="text-sm font-medium text-gray-900 truncate">
+                          <h4 className="text-sm font-medium text-black truncate">
                             {email.recipient_name || email.name || `Recipient ${index + 1}`}
                           </h4>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                            status === 'sent' ? 'bg-green-100 text-green-800' :
-                            status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            status === 'sent' ? 'bg-[#00f5a0] text-black' :
+                            status === 'pending' ? 'bg-black/10 text-black' :
                             status === 'failed' ? 'bg-red-100 text-red-800' :
-                            'bg-green-100 text-blue-800'
+                            'bg-[#00f5a0]/30 text-black'
                           }`}>
                             {status === 'sent' ? '✓ Sent' :
                              status === 'pending' ? '⏳ Pending' :
@@ -5586,28 +5586,28 @@ export default function ProfessionalEmailEditor(props) {
                              '📧 Ready'}
                           </span>
                         </div>
-                        <p className="text-xs text-blue-600 font-mono mb-1">
+                        <p className="text-xs text-black/70 font-mono mb-1">
                           {email.to || email.email || 'No email address'}
                         </p>
-                        <p className="text-xs text-gray-600 truncate">
+                        <p className="text-xs text-black/60 truncate">
                           {email.recipient_company || email.company || 'No company'}
                         </p>
                         {email.sent_at && (
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-black/50 mt-1">
                             Sent: {new Date(email.sent_at).toLocaleString()}
                           </p>
                         )}
                       </div>
-                      
+
                       <div className="flex flex-col items-end space-y-1">
                         {isCurrentlyEditing && (
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <div className="w-2 h-2 bg-[#00f5a0] rounded-full animate-pulse"></div>
                         )}
                         {status === 'sent' && email.opened && (
-                          <div className="text-xs text-green-600 font-medium">📖 Opened</div>
+                          <div className="text-xs text-[#00f5a0] font-medium">📖 Opened</div>
                         )}
                         {status === 'sent' && email.clicked && (
-                          <div className="text-xs text-purple-600 font-medium">🔗 Clicked</div>
+                          <div className="text-xs text-[#00f5a0] font-medium">🔗 Clicked</div>
                         )}
                       </div>
                     </div>
@@ -5632,9 +5632,9 @@ export default function ProfessionalEmailEditor(props) {
                           switchToEmail(index);
                         }}
                         className={`inline-flex items-center px-2.5 py-1 text-xs rounded-md transition-colors ${
-                          isCurrentlyEditing 
-                            ? 'bg-green-100 text-blue-800 font-medium'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          isCurrentlyEditing
+                            ? 'bg-[#00f5a0] text-black font-medium'
+                            : 'bg-white border border-black text-black hover:bg-[#00f5a0]'
                         }`}
                       >
                         <PencilIcon className="h-3 w-3 mr-1" />
@@ -5648,14 +5648,14 @@ export default function ProfessionalEmailEditor(props) {
           </div>
 
           {/* Bottom Actions */}
-          <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <div className="p-4 border-t border-black bg-white">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-700">Campaign Status</span>
+              <span className="text-sm font-medium text-black">Campaign Status</span>
               <div className="flex items-center space-x-2">
-                <span className="text-xs text-green-600">
+                <span className="text-xs text-[#00f5a0] font-medium">
                   {availableEmails.filter(e => e.sent || e.status === 'sent').length} Sent
                 </span>
-                <span className="text-xs text-yellow-600">
+                <span className="text-xs text-black/60">
                   {availableEmails.filter(e => !e.sent && e.status !== 'sent').length} Pending
                 </span>
               </div>
@@ -5663,7 +5663,7 @@ export default function ProfessionalEmailEditor(props) {
             <button
               onClick={() => fetchPendingEmails()}
               disabled={refreshing}
-              className="w-full flex items-center justify-center px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 transition-colors text-sm"
+              className="w-full flex items-center justify-center px-3 py-2 bg-white border border-black text-black rounded-md hover:bg-[#00f5a0] disabled:opacity-50 transition-colors text-sm"
             >
               <ArrowPathIcon className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh Status
@@ -5676,17 +5676,17 @@ export default function ProfessionalEmailEditor(props) {
         <div className="flex-1 bg-white overflow-y-auto ml-2">
         <div className="w-full h-full min-h-screen">
           {/* Email Header - Subject Only */}
-          <div className="p-6 bg-gray-50/50">
+          <div className="p-6 bg-white border-b border-black/10">
             <div className="space-y-3">
               {(availableEmails?.length > 0 || pendingEmails?.length > 0) && (
-                <div className="flex items-center justify-between text-sm text-gray-600">
+                <div className="flex items-center justify-between text-sm text-black">
                   <span><strong>To:</strong> {(availableEmails?.length > 0 ? availableEmails : pendingEmails)[currentEmailIndex]?.to || (availableEmails?.length > 0 ? availableEmails : pendingEmails)[currentEmailIndex]?.recipient_name || 'Recipient'}</span>
                   <span><strong>From:</strong> AI Marketing System</span>
                 </div>
               )}
-              
+
               <div className="flex items-center space-x-3">
-                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Subject:</label>
+                <label className="text-sm font-medium text-black whitespace-nowrap">Subject:</label>
                 <input
                   type="text"
                   value={subject}

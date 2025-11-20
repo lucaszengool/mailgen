@@ -95,7 +95,15 @@ export default function Analytics() {
   const toggleImapMonitoring = async () => {
     try {
       const endpoint = imapMonitoring ? '/api/analytics/stop-imap-monitoring' : '/api/analytics/start-imap-monitoring'
-      const response = await fetch(endpoint, { method: 'POST' })
+      // 🔥 FIX: Pass userId to backend so it can find the correct SMTP credentials
+      const userId = user?.id || 'anonymous'
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId })
+      })
       const data = await response.json()
 
       if (data.success) {

@@ -37,11 +37,13 @@ class Database {
       )
     `);
 
-    // 🔥 MIGRATION: Add user_id column to existing email_logs tables
-    // Check if user_id column exists
+    // 🔥 MIGRATION: Add user_id and tracking_id columns to existing email_logs tables
+    // Check if user_id and tracking_id columns exist
     this.db.all(`PRAGMA table_info(email_logs)`, (err, columns) => {
       if (!err && columns) {
         const hasUserId = columns.some(col => col.name === 'user_id');
+        const hasTrackingId = columns.some(col => col.name === 'tracking_id');
+
         if (!hasUserId) {
           console.log('🔄 MIGRATION: Adding user_id column to email_logs table...');
           this.db.run(`ALTER TABLE email_logs ADD COLUMN user_id TEXT NOT NULL DEFAULT 'anonymous'`, (err) => {
@@ -53,6 +55,19 @@ class Database {
           });
         } else {
           console.log('✅ user_id column already exists in email_logs table');
+        }
+
+        if (!hasTrackingId) {
+          console.log('🔄 MIGRATION: Adding tracking_id column to email_logs table...');
+          this.db.run(`ALTER TABLE email_logs ADD COLUMN tracking_id TEXT`, (err) => {
+            if (err) {
+              console.error('❌ Failed to add tracking_id column:', err);
+            } else {
+              console.log('✅ Successfully added tracking_id column to email_logs table');
+            }
+          });
+        } else {
+          console.log('✅ tracking_id column already exists in email_logs table');
         }
       } else if (err) {
         console.error('❌ Failed to check email_logs table structure:', err);
@@ -309,8 +324,8 @@ class Database {
   logEmailSent(emailData, userId = 'anonymous') {
     return new Promise((resolve, reject) => {
       const stmt = this.db.prepare(`
-        INSERT INTO email_logs (to_email, subject, campaign_id, user_id, message_id, status, error_message, recipient_index, sent_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO email_logs (to_email, subject, campaign_id, user_id, message_id, status, error_message, recipient_index, sent_at, tracking_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       stmt.run([
@@ -322,7 +337,8 @@ class Database {
         emailData.status,
         emailData.error,
         emailData.recipientIndex,
-        emailData.sentAt
+        emailData.sentAt,
+        emailData.trackingId || null // 📊 NEW: Store tracking ID for analytics
       ], function(err) {
         if (err) {
           reject(err);
@@ -521,30 +537,41 @@ class Database {
   // 获取互动统计数据
   getEngagementStats(campaignId = null) {
     return new Promise((resolve, reject) => {
-      let openQuery = 'SELECT COUNT(DISTINCT tracking_id) as opens FROM email_opens';
+      // 🔥 FIX: Join with email_logs to properly filter by campaign_id
+      let openQuery = `
+        SELECT COUNT(DISTINCT eo.tracking_id) as opens
+        FROM email_opens eo
+        INNER JOIN email_logs el ON eo.tracking_id = el.tracking_id
+      `;
       let clickQuery = 'SELECT COUNT(*) as clicks FROM email_clicks';
-      
-      const params = [];
+
+      const openParams = [];
+      const clickParams = [];
+
       if (campaignId) {
-        openQuery += ' WHERE tracking_id LIKE ?';
+        openQuery += ' WHERE el.campaign_id = ?';
+        openParams.push(campaignId);
         clickQuery += ' WHERE campaign_id = ?';
-        params.push(campaignId + '%');
+        clickParams.push(campaignId);
       }
 
       // 获取打开数据
-      this.db.get(openQuery, campaignId ? [campaignId + '%'] : [], (err, openResult) => {
+      this.db.get(openQuery, openParams, (err, openResult) => {
         if (err) {
+          console.error('[getEngagementStats] Open query error:', err);
           reject(err);
           return;
         }
 
         // 获取点击数据
-        this.db.get(clickQuery, campaignId ? [campaignId] : [], (err, clickResult) => {
+        this.db.get(clickQuery, clickParams, (err, clickResult) => {
           if (err) {
+            console.error('[getEngagementStats] Click query error:', err);
             reject(err);
             return;
           }
 
+          console.log(`[getEngagementStats] Campaign ${campaignId || 'all'}: Opens=${openResult.opens}, Clicks=${clickResult.clicks}`);
           resolve({
             totalOpens: openResult.opens || 0,
             totalClicks: clickResult.clicks || 0
@@ -716,10 +743,15 @@ class Database {
       let query = 'SELECT * FROM email_drafts WHERE user_id = ?';
       const params = [userId];
 
-      // 🔥 CRITICAL: Filter by campaign_id if provided
+      // 🔥 CRITICAL FIX: ALWAYS filter by campaign_id to prevent mixing
+      // If campaignId is provided, only return drafts for that campaign
+      // If campaignId is null, return drafts with NULL campaign_id (legacy drafts)
       if (campaignId) {
         query += ' AND campaign_id = ?';
         params.push(campaignId);
+      } else {
+        // When no campaign ID specified, exclude drafts that belong to specific campaigns
+        query += ' AND campaign_id IS NULL';
       }
 
       query += ' ORDER BY updated_at DESC';

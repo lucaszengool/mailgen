@@ -423,18 +423,39 @@ router.get('/analytics', async (req, res) => {
     // 获取基础分析数据
     const analytics = await agent.getCampaignAnalytics(campaignId);
 
-    // 模拟实时数据（实际项目中从数据库获取）
+    // 📊 Get real tracking data from database
+    const db = require('../models/database');
+    let emailStats;
+    try {
+      emailStats = await db.getEmailStats(campaignId);
+      console.log(`📊 Retrieved email stats from database:`, emailStats);
+    } catch (dbError) {
+      console.error('❌ Database error:', dbError.message);
+      emailStats = { sendingStats: [], engagement: { totalOpens: 0, totalClicks: 0 } };
+    }
+
+    // Calculate totals from email logs
+    const totalEmailsSent = emailStats.sendingStats.reduce((sum, stat) => sum + (stat.total_sent || 0), 0);
+    const emailsOpened = emailStats.engagement?.totalOpens || 0;
+    const emailsClicked = emailStats.engagement?.totalClicks || 0;
+
+    // 📊 Use real tracking data instead of hardcoded values
     const realTimeData = {
       campaignId: campaignId,
       totalProspects: analytics?.totalSearches || 0,
-      emailsSent: analytics?.totalEmails || 0,
-      emailsOpened: Math.round((analytics?.totalEmails || 0) * 0.25),
-      emailsReplied: Math.round((analytics?.totalEmails || 0) * 0.08),
+      emailsSent: totalEmailsSent,
+      emailsOpened: emailsOpened,
+      emailsClicked: emailsClicked,
+      emailsReplied: 0, // TODO: Implement reply tracking via IMAP
       campaignActive: wsManager.workflowStatus === 'running',
+      openRate: totalEmailsSent > 0 ? ((emailsOpened / totalEmailsSent) * 100).toFixed(2) : 0,
+      clickRate: totalEmailsSent > 0 ? ((emailsClicked / totalEmailsSent) * 100).toFixed(2) : 0,
       responseRate: analytics?.averageEmailRating || 0,
-      conversionRate: 0.125, // 12.5%
+      conversionRate: 0, // TODO: Define conversion criteria
       lastUpdate: new Date().toISOString()
     };
+
+    console.log(`📊 Sending analytics response:`, realTimeData);
 
     res.json({
       success: true,

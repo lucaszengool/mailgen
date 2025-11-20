@@ -373,12 +373,13 @@ router.get('/email-metrics', async (req, res) => {
     console.log(`   Total Delivered: ${totalDelivered}`);
 
     // 🔥 CRITICAL FIX: Query for opens and clicks WITH user_id filter
+    // 📊 FIX: Use e.tracking_id = o.tracking_id instead of LIKE (tracking_id is a hash, not derived from campaign_id)
     const opensQuery = campaign === 'all'
-      ? `SELECT COUNT(DISTINCT tracking_id) as count FROM email_opens o
-         INNER JOIN email_logs e ON o.tracking_id LIKE e.campaign_id || '%'
+      ? `SELECT COUNT(DISTINCT o.tracking_id) as count FROM email_opens o
+         INNER JOIN email_logs e ON o.tracking_id = e.tracking_id
          WHERE e.user_id = ? AND e.sent_at >= ?`
-      : `SELECT COUNT(DISTINCT tracking_id) as count FROM email_opens o
-         INNER JOIN email_logs e ON o.tracking_id LIKE e.campaign_id || '%'
+      : `SELECT COUNT(DISTINCT o.tracking_id) as count FROM email_opens o
+         INNER JOIN email_logs e ON o.tracking_id = e.tracking_id
          WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
 
     const clicksQuery = campaign === 'all'
@@ -983,24 +984,58 @@ router.post('/start-imap-monitoring', async (req, res) => {
     const db = require('../models/database');
     const IMAPEmailTracker = require('../services/IMAPEmailTracker');
 
-    // 🔥 FIX: Try database first, then fall back to environment variables
-    let imapConfig = await db.getSMTPConfig('anonymous');
+    // 🔥 FIX: Get userId from request body or use 'anonymous'
+    const userId = req.body.userId || 'anonymous';
+    console.log(`📬 Starting IMAP monitoring for user: ${userId}`);
 
-    // If no config in database, use environment variables
+    let imapConfig = null;
+
+    // 1️⃣ Try Gmail OAuth first (best option)
+    try {
+      const GmailOAuthService = require('../services/GmailOAuthService');
+      const oauthConfig = await GmailOAuthService.getSMTPConfigWithOAuth(userId);
+      if (oauthConfig && oauthConfig.auth) {
+        console.log('✅ Using Gmail OAuth for IMAP monitoring');
+        imapConfig = {
+          username: oauthConfig.auth.user,
+          password: oauthConfig.auth.accessToken, // OAuth uses accessToken as password
+          host: oauthConfig.host,
+          isOAuth: true
+        };
+      }
+    } catch (oauthError) {
+      console.log(`⚠️ OAuth not available: ${oauthError.message}`);
+    }
+
+    // 2️⃣ Try database SMTP config
     if (!imapConfig) {
-      console.log('⚠️ No SMTP config in database, trying environment variables...');
+      console.log('⚠️ No OAuth config, trying database SMTP config...');
+      const dbConfig = await db.getSMTPConfig(userId);
+      if (dbConfig) {
+        imapConfig = {
+          username: dbConfig.username,
+          password: dbConfig.password,
+          host: dbConfig.host
+        };
+        console.log(`✅ Using SMTP config from database: ${imapConfig.username}@${imapConfig.host}`);
+      }
+    }
 
-      if (!process.env.SMTP_USERNAME || !process.env.SMTP_PASSWORD) {
+    // 3️⃣ Try environment variables as last resort
+    if (!imapConfig) {
+      console.log('⚠️ No database config, trying environment variables...');
+
+      if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
         return res.status(400).json({
           success: false,
-          error: 'No email configuration found. Please configure SMTP credentials in environment variables (SMTP_USERNAME, SMTP_PASSWORD, SMTP_HOST).'
+          error: 'No email configuration found. Please configure your SMTP credentials in Settings → Email Configuration.'
         });
       }
 
       // Build config from environment variables
       imapConfig = {
-        username: process.env.SMTP_USERNAME,
-        password: process.env.SMTP_PASSWORD,
+        username: process.env.SMTP_USER,
+        password: process.env.SMTP_PASS,
         host: process.env.SMTP_HOST || 'smtp.gmail.com'
       };
 
