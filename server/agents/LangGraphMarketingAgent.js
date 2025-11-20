@@ -8300,16 +8300,28 @@ Write ONLY the content paragraph - no greetings, signatures, or extra formatting
         console.log(`🔍 Template has HTML: ${!!componentTemplate.html}, HTML length: ${componentTemplate.html?.length || 0}`);
 
         // 🔥 CRITICAL FIX: Check if this is the placeholder HTML from custom_blank template
-        const isPlaceholderHTML = componentTemplate.html?.includes('Start Building Your Custom Email') ||
-                                  componentTemplate.html?.includes('Click \'Customize\' to add your own components');
+        // BUT: If user explicitly customized it (isCustomized=true), ALWAYS use their content!
+        const hasPlaceholderText = componentTemplate.html?.includes('Start Building Your Custom Email') ||
+                                   componentTemplate.html?.includes('Click \'Customize\' to add your own components');
 
-        if (isPlaceholderHTML) {
-          console.log('⚠️ WARNING: Custom template has placeholder HTML - user didn\'t actually customize it');
+        const isActuallyCustomized = componentTemplate.isCustomized === true || componentTemplate.userEdited === true;
+
+        // Only fall back if it has placeholder text AND user didn't customize it
+        const shouldFallback = hasPlaceholderText && !isActuallyCustomized;
+
+        if (shouldFallback) {
+          console.log('⚠️ WARNING: Custom template has placeholder HTML AND user didn\'t customize it');
           console.log('   📝 Falling back to AI-generated content instead of using placeholder');
 
           // Fall through to the default template generation path below
           // This will generate proper email content using AI instead of showing the placeholder
         } else {
+          // Use user's HTML directly - either it's customized OR doesn't have placeholder text
+          if (isActuallyCustomized) {
+            console.log('✅ Using user-customized template content (isCustomized=true)');
+          } else {
+            console.log('✅ Using template content (no placeholder text detected)');
+          }
           // Use user's HTML directly - this is their customized template
           // NO FALLBACK: Require template to have html and subject
           if (!componentTemplate.html || !componentTemplate.subject) {
