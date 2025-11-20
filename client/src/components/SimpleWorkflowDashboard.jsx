@@ -8,7 +8,7 @@ import {
   FileText, Sparkles, ArrowRight, Clock, Activity,
   Target, Users, BarChart3, Link, Shield, Zap, Edit, Settings,
   Radar, Network, BarChart, PlayCircle, CheckSquare, AlertTriangle,
-  Server, Eye, Cpu, Layers, Workflow, Gauge, Home, RefreshCw, Swatches as SwatchIcon
+  Server, Eye, Cpu, Layers, Workflow, Gauge, Home, RefreshCw, Palette as SwatchIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SignedIn, UserButton } from '@clerk/clerk-react';
