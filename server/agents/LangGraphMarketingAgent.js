@@ -3806,9 +3806,19 @@ ${senderName || senderCompany}`;
             // Look for common patterns like paragraphs, divs with certain IDs/classes
             const bodyContentHtml = contentParagraphs.join('\n');
 
+            // 🔥 SPECIAL CASE: Custom template with custom-email-content div
+            if (templateHtml.includes('custom-email-content')) {
+              console.log(`🎨 [CUSTOM TEMPLATE] Detected custom-email-content div - inserting AI content`);
+              // Replace the entire custom-email-content div content with AI-generated content
+              finalHtmlBody = templateHtml.replace(
+                /(<div[^>]*id="custom-email-content"[^>]*>)[\s\S]*?(<\/div>)/,
+                `$1\n<div style="padding: 40px; background: transparent;">\n${bodyContentHtml}\n</div>\n$2`
+              );
+              console.log(`✅ [CUSTOM TEMPLATE] Inserted AI content into custom-email-content div`);
+            }
             // Try to find the main content section and replace it
             // Pattern 1: Look for existing paragraph content
-            if (templateHtml.match(/<p[^>]*>[\s\S]*?<\/p>/)) {
+            else if (templateHtml.match(/<p[^>]*>[\s\S]*?<\/p>/)) {
               console.log(`🔧 Found <p> tags - replacing paragraph content`);
               let replacedCount = 0;
               finalHtmlBody = templateHtml.replace(/(<p[^>]*>)[\s\S]*?(<\/p>)/g, (match, opening, closing) => {
