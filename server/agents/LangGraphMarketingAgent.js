@@ -5587,7 +5587,7 @@ Return ONLY the JSON object, no other text.`;
         .replace(/#047857/gi, primaryColor)  // Dark green
         .replace(/#10b981/gi, primaryColor)  // Light green
         .replace(/#059669/gi, primaryColor)  // Medium green
-        .replace(/rgb\(40,\s*167,\s*69\)/gi, `rgb(${hexToRgb(primaryColor)})`);
+        .replace(/rgb\(40,\s*167,\s*69\)/gi, `rgb(${this.hexToRgb(primaryColor)})`);
       console.log(`   ✅ Applied primary color: ${primaryColor}`);
     }
 
@@ -5596,7 +5596,7 @@ Return ONLY the JSON object, no other text.`;
       coloredHtml = coloredHtml
         .replace(/#6366f1/gi, accentColor)  // Default accent
         .replace(/#4f46e5/gi, accentColor)  // Dark accent
-        .replace(/rgb\(99,\s*102,\s*241\)/gi, `rgb(${hexToRgb(accentColor)})`);
+        .replace(/rgb\(99,\s*102,\s*241\)/gi, `rgb(${this.hexToRgb(accentColor)})`);
       console.log(`   ✅ Applied accent color: ${accentColor}`);
     }
 
@@ -5606,7 +5606,7 @@ Return ONLY the JSON object, no other text.`;
         .replace(/#343a40/gi, textColor)  // Dark gray text
         .replace(/#495057/gi, textColor)  // Medium gray text
         .replace(/#1f2937/gi, textColor)  // Very dark gray
-        .replace(/rgb\(52,\s*58,\s*64\)/gi, `rgb(${hexToRgb(textColor)})`);
+        .replace(/rgb\(52,\s*58,\s*64\)/gi, `rgb(${this.hexToRgb(textColor)})`);
       console.log(`   ✅ Applied text color: ${textColor}`);
     }
 

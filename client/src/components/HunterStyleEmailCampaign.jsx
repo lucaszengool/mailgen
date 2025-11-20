@@ -23,7 +23,7 @@ import {
 import { EnvelopeIcon as EnvelopeIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import toast from 'react-hot-toast'
 
-export default function HunterStyleEmailCampaign() {
+export default function HunterStyleEmailCampaign({ campaignId }) {
   const [emails, setEmails] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -35,7 +35,7 @@ export default function HunterStyleEmailCampaign() {
   const [sortOrder, setSortOrder] = useState('desc')
   const [showEditorPopup, setShowEditorPopup] = useState(false)
   const [popupData, setPopupData] = useState(null)
-  
+
   // WebSocket connection for real-time updates
   const ws = useRef(null)
 
@@ -231,7 +231,10 @@ export default function HunterStyleEmailCampaign() {
   const fetchEmailCampaigns = async () => {
     try {
       // Try to get emails from workflow results
-      const workflowResponse = await fetch('/api/workflow/results')
+      const workflowUrl = campaignId
+        ? `/api/workflow/results?campaignId=${campaignId}`
+        : '/api/workflow/results';
+      const workflowResponse = await fetch(workflowUrl)
       if (workflowResponse.ok) {
         const workflowData = await workflowResponse.json()
         if (workflowData.success && workflowData.data.emailCampaign) {

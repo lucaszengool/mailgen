@@ -1203,7 +1203,10 @@ export default function ProfessionalEmailEditor(props) {
       }
       
       // Fallback to workflow results
-      const workflowResponse = await fetch('/api/workflow/results');
+      const workflowUrl = campaignId
+        ? `/api/workflow/results?campaignId=${campaignId}`
+        : '/api/workflow/results';
+      const workflowResponse = await fetch(workflowUrl);
       if (workflowResponse.ok) {
         const workflowData = await workflowResponse.json();
         console.log('📧 Workflow results:', workflowData);
@@ -5491,7 +5494,10 @@ export default function ProfessionalEmailEditor(props) {
                     
                     // Force a complete re-fetch
                     try {
-                      const response = await fetch('/api/workflow/results?force=true&t=' + Date.now());
+                      const refreshUrl = campaignId
+                        ? `/api/workflow/results?campaignId=${campaignId}&force=true&t=${Date.now()}`
+                        : `/api/workflow/results?force=true&t=${Date.now()}`;
+                      const response = await fetch(refreshUrl);
                       const result = await response.json();
                       console.log('🔄 Force refresh results:', result);
                       
