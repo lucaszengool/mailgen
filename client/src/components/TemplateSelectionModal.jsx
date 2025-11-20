@@ -89,8 +89,8 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
         logo: scrapedLogo,  // 🖼️ PRE-POPULATE WITH SCRAPED LOGO
         headerTitle: template.name === 'Modern Tech' ? 'Transform Your Business with AI' : 'Partnership Opportunity',
         mainHeading: `Revolutionizing {company} with AI-Powered Solutions`,
-        primaryColor: '#10b981', // green-500
-        accentColor: '#047857', // green-700
+        primaryColor: '#2563eb', // green-500
+        accentColor: '#1e40af', // green-700
         buttonText: 'Schedule Your Free Demo',
         testimonialText: '"This solution transformed our operations. We saw remarkable results in just weeks."',
         testimonialAuthor: 'CEO, Industry Leader',
@@ -140,7 +140,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       case 'paragraph':
         return { text: 'Enter your text here...', alignment: 'left' };
       case 'cta':
-        return { text: 'Get Started', url: 'https://your-website.com', color: '#10b981' };
+        return { text: 'Get Started', url: 'https://your-website.com', color: '#2563eb' };
       case 'testimonial':
         return { quote: '"This product changed our business forever."', author: 'Jane Doe, CEO at Company' };
       case 'features':
@@ -159,7 +159,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       case 'countdown':
         return { eventDate: '2025-12-31', eventName: 'Special Event' };
       case 'banner':
-        return { title: 'Welcome!', subtitle: 'Discover our amazing products', color: '#10b981' };
+        return { title: 'Welcome!', subtitle: 'Discover our amazing products', color: '#2563eb' };
       default:
         return {};
     }
@@ -260,13 +260,13 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
             <div className="flex gap-2">
               <input
                 type="color"
-                value={component.properties.color || '#10b981'}
+                value={component.properties.color || '#2563eb'}
                 onChange={(e) => updateProperty('color', e.target.value)}
                 className="w-12 h-8 border border-gray-300 rounded"
               />
               <input
                 type="text"
-                value={component.properties.color || '#10b981'}
+                value={component.properties.color || '#2563eb'}
                 onChange={(e) => updateProperty('color', e.target.value)}
                 className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
               />
@@ -392,13 +392,13 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
             <div className="flex gap-2">
               <input
                 type="color"
-                value={component.properties.color || '#10b981'}
+                value={component.properties.color || '#2563eb'}
                 onChange={(e) => updateProperty('color', e.target.value)}
                 className="w-12 h-8 border border-gray-300 rounded"
               />
               <input
                 type="text"
-                value={component.properties.color || '#10b981'}
+                value={component.properties.color || '#2563eb'}
                 onChange={(e) => updateProperty('color', e.target.value)}
                 className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
               />
@@ -2602,7 +2602,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                       <div className="flex items-center gap-3">
                         <input
                           type="color"
-                          value={customTemplateData.customizations?.primaryColor ?? '#10b981'}
+                          value={customTemplateData.customizations?.primaryColor ?? '#2563eb'}
                           onChange={(e) => setCustomTemplateData(prev => ({
                             ...prev,
                             customizations: {
@@ -2614,7 +2614,7 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                         />
                         <input
                           type="text"
-                          value={customTemplateData.customizations?.primaryColor ?? '#10b981'}
+                          value={customTemplateData.customizations?.primaryColor ?? '#2563eb'}
                           onChange={(e) => setCustomTemplateData(prev => ({
                             ...prev,
                             customizations: {
@@ -2623,12 +2623,12 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                             }
                           }))}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                          placeholder="#10b981"
+                          placeholder="#2563eb"
                         />
                       </div>
                       {/* Preset Colors */}
                       <div className="flex gap-2">
-                        {['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#6b7280', '#000000', '#ffffff'].map((color) => (
+                        {['#2563eb', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#6b7280', '#000000', '#ffffff'].map((color) => (
                           <button
                             key={color}
                             onClick={() => setCustomTemplateData(prev => ({
