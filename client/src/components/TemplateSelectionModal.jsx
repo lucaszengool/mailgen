@@ -1350,22 +1350,44 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
   const handleConfirm = () => {
     if (selectedTemplate) {
       const template = EMAIL_TEMPLATES[selectedTemplate];
+
+      // 🔥 CRITICAL FIX: Determine if template was actually customized
+      const hasCustomizations = isCustomizeMode && Object.keys(customTemplateData).length > 0;
+      const hasCustomHTML = customTemplateData.html && customTemplateData.html !== template.html;
+      const hasManualContent = templateMode === 'manual' && manualEmailContent;
+      const isActuallyCustomized = hasCustomizations || hasCustomHTML || hasManualContent;
+
       // If template was customized, merge custom data
-      // 🔥 CRITICAL FIX: Include templateMode and manualContent for custom templates
-      const finalTemplate = isCustomizeMode && Object.keys(customTemplateData).length > 0
+      // 🔥 CRITICAL FIX: Include templateMode, manualContent, and isCustomized flag
+      const finalTemplate = hasCustomizations
         ? {
             ...template,
             ...customTemplateData,
             id: selectedTemplate,
             templateMode,  // 'manual' or 'ai'
-            manualContent: manualEmailContent  // User's WYSIWYG editor content
+            manualContent: manualEmailContent,  // User's WYSIWYG editor content
+            isCustomized: isActuallyCustomized,  // 🔥 NEW: Set flag so backend knows this is customized
+            userSelected: true  // 🔥 NEW: Mark as user-selected
           }
         : {
             ...template,
             id: selectedTemplate,
             templateMode,  // 'manual' or 'ai'
-            manualContent: manualEmailContent  // User's WYSIWYG editor content
+            manualContent: manualEmailContent,  // User's WYSIWYG editor content
+            isCustomized: isActuallyCustomized,  // 🔥 NEW: Set flag even for non-customize mode
+            userSelected: true  // 🔥 NEW: Mark as user-selected
           };
+
+      console.log('🔍 [TEMPLATE CONFIRM] Finalizing template:', {
+        templateId: selectedTemplate,
+        hasCustomizations,
+        hasCustomHTML,
+        hasManualContent,
+        isActuallyCustomized,
+        customHTMLLength: customTemplateData.html?.length || 0,
+        manualContentLength: manualEmailContent?.length || 0
+      });
+
       onSelectTemplate(finalTemplate);
       // 🔥 FIX: Pass template directly to avoid React state race condition
       onConfirm(finalTemplate);

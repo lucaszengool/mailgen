@@ -2942,17 +2942,21 @@ Output: One search query only`;
       
       const validEmails = foundEmails
         .filter(email => !email.includes('example') && !email.includes('test'))
-        .map(email => ({
-          email: email.toLowerCase(),
-          name: this.extractNameFromEmail(email),
-          company: this.extractCompanyFromResult(searchResult),
-          source: 'searxng_web_search',
-          sourceUrl: searchResult.url,
-          sourceTitle: searchResult.title,
-          confidence: 0.7,
-          method: 'regex_extraction'
-        }));
-      
+        .map(email => {
+          const baseProspect = {
+            email: email.toLowerCase(),
+            name: this.extractNameFromEmail(email),
+            company: this.extractCompanyFromResult(searchResult),
+            source: 'searxng_web_search',
+            sourceUrl: searchResult.url,
+            sourceTitle: searchResult.title,
+            confidence: 0.7,
+            method: 'regex_extraction'
+          };
+          // 🔥 Apply email enrichment to handle generic emails properly
+          return enhanceProspect(baseProspect);
+        });
+
       return { emails: validEmails };
       
     } catch (error) {
@@ -3017,69 +3021,16 @@ Output: One search query only`;
   }
   
   extractNameFromEmail(email) {
-    if (!email) return 'Contact';
-    const localPart = email.split('@')[0].toLowerCase();
-    
-    // List of generic email prefixes that should not be used as names
-    const genericPrefixes = [
-      'info', 'contact', 'sales', 'support', 'admin', 'help', 'service',
-      'marketing', 'team', 'office', 'general', 'inquiry', 'mail', 'email',
-      'hello', 'hi', 'welcome', 'noreply', 'no-reply', 'donotreply',
-      'customer', 'client', 'business', 'company', 'corp', 'inc',
-      'webmaster', 'postmaster', 'accounts', 'billing', 'finance',
-      'hr', 'careers', 'jobs', 'press', 'media', 'news', 'pr'
-    ];
-    
-    // Check if the email prefix is a generic term
-    if (genericPrefixes.includes(localPart)) {
-      // Try to extract company name from domain instead
-      const domain = email.split('@')[1];
-      const companyFromDomain = domain.split('.')[0];
-      return companyFromDomain.charAt(0).toUpperCase() + companyFromDomain.slice(1);
-    }
-    
-    // Handle firstname.lastname patterns
-    if (localPart.includes('.')) {
-      const parts = localPart.split('.');
-      // Filter out generic parts and numbers
-      const validParts = parts.filter(part => 
-        part.length > 1 && 
-        !genericPrefixes.includes(part) &&
-        !/^\d+$/.test(part) // Not all numbers
-      );
-      
-      if (validParts.length > 0) {
-        // Use first valid part as name
-        const firstName = validParts[0];
-        return firstName.charAt(0).toUpperCase() + firstName.slice(1);
-      }
-    }
-    
-    // Handle underscore patterns
-    if (localPart.includes('_')) {
-      const parts = localPart.split('_');
-      const validParts = parts.filter(part => 
-        part.length > 1 && 
-        !genericPrefixes.includes(part) &&
-        !/^\d+$/.test(part)
-      );
-      
-      if (validParts.length > 0) {
-        return validParts[0].charAt(0).toUpperCase() + validParts[0].slice(1);
-      }
-    }
-    
-    // Handle camelCase or mixed patterns
-    const cleanName = localPart.replace(/[^a-zA-Z]/g, '');
-    
-    // If it's too short or generic, fall back to domain-based name
-    if (cleanName.length < 2 || genericPrefixes.includes(cleanName)) {
-      const domain = email.split('@')[1];
-      const companyFromDomain = domain.split('.')[0];
-      return companyFromDomain.charAt(0).toUpperCase() + companyFromDomain.slice(1);
-    }
-    
-    return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+    if (!email) return null; // 🔥 Return null instead of 'Contact' so enhanceProspect can use company name
+
+    // 🔥 NEW: Use the emailEnrichment utility for consistent name extraction
+    const { extractName } = require('../utils/emailEnrichment');
+    const username = email.split('@')[0];
+    const { fullName } = extractName(username, email);
+
+    // If extractName returned null (generic/department email), return null
+    // so enhanceProspect will use the company name instead
+    return fullName;
   }
   
   extractCompanyFromResult(result) {
@@ -3219,16 +3170,20 @@ Output: One search query only`;
                  emailLower.length > 5;
         })
         .slice(0, 5) // 限制数量
-        .map(email => ({
-          email: email.toLowerCase(),
-          name: this.extractNameFromEmail(email),
-          company: this.extractCompanyFromUrl(url),
-          source: 'website_scraping',
-          sourceUrl: url,
-          sourceTitle: $('title').text() || 'Website',
-          confidence: 0.8,
-          method: 'website_extraction'
-        }));
+        .map(email => {
+          const baseProspect = {
+            email: email.toLowerCase(),
+            name: this.extractNameFromEmail(email),
+            company: this.extractCompanyFromUrl(url),
+            source: 'website_scraping',
+            sourceUrl: url,
+            sourceTitle: $('title').text() || 'Website',
+            confidence: 0.8,
+            method: 'website_extraction'
+          };
+          // 🔥 Apply email enrichment to handle generic emails properly
+          return enhanceProspect(baseProspect);
+        });
       
       if (validEmails.length > 0) {
         console.log(`✅ 从网站提取到 ${validEmails.length} 个邮箱`);
@@ -3362,69 +3317,16 @@ Output: One search query only`;
    * Extract name from email address
    */
   extractNameFromEmail(email) {
-    if (!email) return 'Contact';
-    const localPart = email.split('@')[0].toLowerCase();
-    
-    // List of generic email prefixes that should not be used as names
-    const genericPrefixes = [
-      'info', 'contact', 'sales', 'support', 'admin', 'help', 'service',
-      'marketing', 'team', 'office', 'general', 'inquiry', 'mail', 'email',
-      'hello', 'hi', 'welcome', 'noreply', 'no-reply', 'donotreply',
-      'customer', 'client', 'business', 'company', 'corp', 'inc',
-      'webmaster', 'postmaster', 'accounts', 'billing', 'finance',
-      'hr', 'careers', 'jobs', 'press', 'media', 'news', 'pr'
-    ];
-    
-    // Check if the email prefix is a generic term
-    if (genericPrefixes.includes(localPart)) {
-      // Try to extract company name from domain instead
-      const domain = email.split('@')[1];
-      const companyFromDomain = domain.split('.')[0];
-      return companyFromDomain.charAt(0).toUpperCase() + companyFromDomain.slice(1);
-    }
-    
-    // Handle firstname.lastname patterns
-    if (localPart.includes('.')) {
-      const parts = localPart.split('.');
-      // Filter out generic parts and numbers
-      const validParts = parts.filter(part => 
-        part.length > 1 && 
-        !genericPrefixes.includes(part) &&
-        !/^\d+$/.test(part) // Not all numbers
-      );
-      
-      if (validParts.length > 0) {
-        // Use first valid part as name
-        const firstName = validParts[0];
-        return firstName.charAt(0).toUpperCase() + firstName.slice(1);
-      }
-    }
-    
-    // Handle underscore patterns
-    if (localPart.includes('_')) {
-      const parts = localPart.split('_');
-      const validParts = parts.filter(part => 
-        part.length > 1 && 
-        !genericPrefixes.includes(part) &&
-        !/^\d+$/.test(part)
-      );
-      
-      if (validParts.length > 0) {
-        return validParts[0].charAt(0).toUpperCase() + validParts[0].slice(1);
-      }
-    }
-    
-    // Handle camelCase or mixed patterns
-    const cleanName = localPart.replace(/[^a-zA-Z]/g, '');
-    
-    // If it's too short or generic, fall back to domain-based name
-    if (cleanName.length < 2 || genericPrefixes.includes(cleanName)) {
-      const domain = email.split('@')[1];
-      const companyFromDomain = domain.split('.')[0];
-      return companyFromDomain.charAt(0).toUpperCase() + companyFromDomain.slice(1);
-    }
-    
-    return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+    if (!email) return null; // 🔥 Return null instead of 'Contact' so enhanceProspect can use company name
+
+    // 🔥 NEW: Use the emailEnrichment utility for consistent name extraction
+    const { extractName } = require('../utils/emailEnrichment');
+    const username = email.split('@')[0];
+    const { fullName } = extractName(username, email);
+
+    // If extractName returned null (generic/department email), return null
+    // so enhanceProspect will use the company name instead
+    return fullName;
   }
 
   /**
@@ -3461,69 +3363,16 @@ Output: One search query only`;
   }
   
   extractNameFromEmail(email) {
-    if (!email) return 'Contact';
-    const localPart = email.split('@')[0].toLowerCase();
-    
-    // List of generic email prefixes that should not be used as names
-    const genericPrefixes = [
-      'info', 'contact', 'sales', 'support', 'admin', 'help', 'service',
-      'marketing', 'team', 'office', 'general', 'inquiry', 'mail', 'email',
-      'hello', 'hi', 'welcome', 'noreply', 'no-reply', 'donotreply',
-      'customer', 'client', 'business', 'company', 'corp', 'inc',
-      'webmaster', 'postmaster', 'accounts', 'billing', 'finance',
-      'hr', 'careers', 'jobs', 'press', 'media', 'news', 'pr'
-    ];
-    
-    // Check if the email prefix is a generic term
-    if (genericPrefixes.includes(localPart)) {
-      // Try to extract company name from domain instead
-      const domain = email.split('@')[1];
-      const companyFromDomain = domain.split('.')[0];
-      return companyFromDomain.charAt(0).toUpperCase() + companyFromDomain.slice(1);
-    }
-    
-    // Handle firstname.lastname patterns
-    if (localPart.includes('.')) {
-      const parts = localPart.split('.');
-      // Filter out generic parts and numbers
-      const validParts = parts.filter(part => 
-        part.length > 1 && 
-        !genericPrefixes.includes(part) &&
-        !/^\d+$/.test(part) // Not all numbers
-      );
-      
-      if (validParts.length > 0) {
-        // Use first valid part as name
-        const firstName = validParts[0];
-        return firstName.charAt(0).toUpperCase() + firstName.slice(1);
-      }
-    }
-    
-    // Handle underscore patterns
-    if (localPart.includes('_')) {
-      const parts = localPart.split('_');
-      const validParts = parts.filter(part => 
-        part.length > 1 && 
-        !genericPrefixes.includes(part) &&
-        !/^\d+$/.test(part)
-      );
-      
-      if (validParts.length > 0) {
-        return validParts[0].charAt(0).toUpperCase() + validParts[0].slice(1);
-      }
-    }
-    
-    // Handle camelCase or mixed patterns
-    const cleanName = localPart.replace(/[^a-zA-Z]/g, '');
-    
-    // If it's too short or generic, fall back to domain-based name
-    if (cleanName.length < 2 || genericPrefixes.includes(cleanName)) {
-      const domain = email.split('@')[1];
-      const companyFromDomain = domain.split('.')[0];
-      return companyFromDomain.charAt(0).toUpperCase() + companyFromDomain.slice(1);
-    }
-    
-    return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+    if (!email) return null; // 🔥 Return null instead of 'Contact' so enhanceProspect can use company name
+
+    // 🔥 NEW: Use the emailEnrichment utility for consistent name extraction
+    const { extractName } = require('../utils/emailEnrichment');
+    const username = email.split('@')[0];
+    const { fullName } = extractName(username, email);
+
+    // If extractName returned null (generic/department email), return null
+    // so enhanceProspect will use the company name instead
+    return fullName;
   }
 
   /**

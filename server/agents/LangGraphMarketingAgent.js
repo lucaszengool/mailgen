@@ -4852,7 +4852,9 @@ ${senderName || senderCompany}`;
         try {
           const workflowModule = require('../routes/workflow');
           if (workflowModule.addEmailToWorkflowResults) {
-            workflowModule.addEmailToWorkflowResults(newEmail, this.userId);
+            // 🔥 CRITICAL FIX: Pass campaignId to prevent email mixing between campaigns
+            workflowModule.addEmailToWorkflowResults(newEmail, this.userId, campaignId);
+            console.log(`✅ Added email to campaign ${campaignId} in workflow results`);
           }
         } catch (error) {
           console.log('⚠️ Could not update workflow results:', error.message);
@@ -4899,7 +4901,9 @@ ${senderName || senderCompany}`;
         try {
           const workflowModule = require('../routes/workflow');
           if (workflowModule.addEmailToWorkflowResults) {
-            workflowModule.addEmailToWorkflowResults(failedEmail, this.userId);
+            // 🔥 CRITICAL FIX: Pass campaignId to prevent email mixing between campaigns
+            workflowModule.addEmailToWorkflowResults(failedEmail, this.userId, campaignId);
+            console.log(`✅ Added failed email to campaign ${campaignId} in workflow results`);
           }
         } catch (error) {
           console.log('⚠️ Could not update workflow results:', error.message);
@@ -8020,15 +8024,26 @@ Write ONLY the content paragraph - no greetings, signatures, or extra formatting
         console.log(`🔍 Template marked as customized: ${componentTemplate.isCustomized}, userSelected: ${componentTemplate.userSelected}`);
         console.log(`🔍 Template has HTML: ${!!componentTemplate.html}, HTML length: ${componentTemplate.html?.length || 0}`);
 
-        // Use user's HTML directly - this is their customized template
-        // NO FALLBACK: Require template to have html and subject
-        if (!componentTemplate.html || !componentTemplate.subject) {
-          const errorMsg = `❌ CRITICAL ERROR: User template missing required fields`;
-          console.error(errorMsg);
-          console.error(`   - has html: ${!!componentTemplate.html}`);
-          console.error(`   - has subject: ${!!componentTemplate.subject}`);
-          throw new Error(errorMsg);
-        }
+        // 🔥 CRITICAL FIX: Check if this is the placeholder HTML from custom_blank template
+        const isPlaceholderHTML = componentTemplate.html?.includes('Start Building Your Custom Email') ||
+                                  componentTemplate.html?.includes('Click \'Customize\' to add your own components');
+
+        if (isPlaceholderHTML) {
+          console.log('⚠️ WARNING: Custom template has placeholder HTML - user didn\'t actually customize it');
+          console.log('   📝 Falling back to AI-generated content instead of using placeholder');
+
+          // Fall through to the default template generation path below
+          // This will generate proper email content using AI instead of showing the placeholder
+        } else {
+          // Use user's HTML directly - this is their customized template
+          // NO FALLBACK: Require template to have html and subject
+          if (!componentTemplate.html || !componentTemplate.subject) {
+            const errorMsg = `❌ CRITICAL ERROR: User template missing required fields`;
+            console.error(errorMsg);
+            console.error(`   - has html: ${!!componentTemplate.html}`);
+            console.error(`   - has subject: ${!!componentTemplate.subject}`);
+            throw new Error(errorMsg);
+          }
 
         const userHTML = componentTemplate.html;
         const userSubject = componentTemplate.subject;
@@ -8241,6 +8256,7 @@ Write ONLY the content paragraph - no greetings, signatures, or extra formatting
         console.log('   Template:', finalEmail.template);
 
         return finalEmail;
+        } // 🔥 Close the else block for non-placeholder customized templates
       }
 
       // Only use template generation for non-customized templates

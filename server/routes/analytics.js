@@ -983,14 +983,28 @@ router.post('/start-imap-monitoring', async (req, res) => {
     const db = require('../models/database');
     const IMAPEmailTracker = require('../services/IMAPEmailTracker');
 
-    // Get IMAP config from database
-    const imapConfig = await db.getSMTPConfig('anonymous'); // Use same config for IMAP
+    // 🔥 FIX: Try database first, then fall back to environment variables
+    let imapConfig = await db.getSMTPConfig('anonymous');
 
+    // If no config in database, use environment variables
     if (!imapConfig) {
-      return res.status(400).json({
-        success: false,
-        error: 'No email configuration found. Please configure SMTP/IMAP first.'
-      });
+      console.log('⚠️ No SMTP config in database, trying environment variables...');
+
+      if (!process.env.SMTP_USERNAME || !process.env.SMTP_PASSWORD) {
+        return res.status(400).json({
+          success: false,
+          error: 'No email configuration found. Please configure SMTP credentials in environment variables (SMTP_USERNAME, SMTP_PASSWORD, SMTP_HOST).'
+        });
+      }
+
+      // Build config from environment variables
+      imapConfig = {
+        username: process.env.SMTP_USERNAME,
+        password: process.env.SMTP_PASSWORD,
+        host: process.env.SMTP_HOST || 'smtp.gmail.com'
+      };
+
+      console.log(`✅ Using SMTP config from environment: ${imapConfig.username}@${imapConfig.host}`);
     }
 
     // Stop existing monitoring if any
@@ -1009,13 +1023,16 @@ router.post('/start-imap-monitoring', async (req, res) => {
       port: 993
     };
 
+    console.log(`📬 Starting IMAP monitoring for: ${imapConnection.user}@${imapConnection.host}`);
+
     await imapTracker.connect(imapConnection);
     await imapTracker.startMonitoring(5); // Check every 5 minutes
 
     res.json({
       success: true,
       message: 'IMAP monitoring started successfully',
-      checkInterval: '5 minutes'
+      checkInterval: '5 minutes',
+      email: imapConnection.user
     });
   } catch (error) {
     console.error('Error starting IMAP monitoring:', error);
