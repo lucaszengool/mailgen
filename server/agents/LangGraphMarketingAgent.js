@@ -3806,15 +3806,26 @@ ${senderName || senderCompany}`;
             // Look for common patterns like paragraphs, divs with certain IDs/classes
             const bodyContentHtml = contentParagraphs.join('\n');
 
-            // 🔥 SPECIAL CASE: Custom template with custom-email-content div
-            if (templateHtml.includes('custom-email-content')) {
-              console.log(`🎨 [CUSTOM TEMPLATE] Detected custom-email-content div - inserting AI content`);
-              // Replace the entire custom-email-content div content with AI-generated content
-              finalHtmlBody = templateHtml.replace(
-                /(<div[^>]*id="custom-email-content"[^>]*>)[\s\S]*?(<\/div>)/,
-                `$1\n<div style="padding: 40px; background: transparent;">\n${bodyContentHtml}\n</div>\n$2`
-              );
-              console.log(`✅ [CUSTOM TEMPLATE] Inserted AI content into custom-email-content div`);
+            // 🔥 SPECIAL CASE: Custom template - check by template ID instead of HTML content
+            if (selectedTemplate === 'custom_template' || templateHtml.includes('custom-email-content')) {
+              console.log(`🎨 [CUSTOM TEMPLATE] Detected custom_template - inserting AI content`);
+              console.log(`   Template ID: ${selectedTemplate}`);
+              console.log(`   Has custom-email-content div: ${templateHtml.includes('custom-email-content')}`);
+
+              // Find the custom-email-content div and replace everything inside it
+              // Use a more robust regex that handles nested divs
+              const customContentRegex = /<div[^>]*id=["']custom-email-content["'][^>]*>([\s\S]*)<\/div>(\s*<!-- Footer)/;
+              if (templateHtml.match(customContentRegex)) {
+                finalHtmlBody = templateHtml.replace(
+                  customContentRegex,
+                  `<div id="custom-email-content" style="padding: 40px; background: transparent;">\n${bodyContentHtml}\n</div>$2`
+                );
+                console.log(`✅ [CUSTOM TEMPLATE] Replaced custom-email-content div with AI content`);
+              } else {
+                // Fallback: just append the content
+                console.log(`⚠️  [CUSTOM TEMPLATE] Regex didn't match, appending content`);
+                finalHtmlBody = templateHtml.replace('<!-- Empty Template - User can add components -->', bodyContentHtml);
+              }
             }
             // Try to find the main content section and replace it
             // Pattern 1: Look for existing paragraph content
