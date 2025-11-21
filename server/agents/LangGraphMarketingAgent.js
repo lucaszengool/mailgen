@@ -3753,8 +3753,30 @@ ${senderName || senderCompany}`;
         if (templateHtml) {
           console.log(`🎨 Using template's actual HTML structure`);
 
-          // 🎯 PROPERLY FORMAT EMAIL BODY INTO PARAGRAPHS
-          let emailBodyText = htmlBody || cleanedBody;
+          // 🔥 CRITICAL: Custom templates should use EXACT user HTML, NO AI content insertion!
+          if (selectedTemplate === 'custom_template') {
+            console.log(`🎨 [CUSTOM TEMPLATE] Using EXACT user HTML - NO AI content insertion`);
+            console.log(`   📄 User HTML length: ${templateHtml.length} chars`);
+
+            // Just use the template HTML exactly as provided by user
+            // Only do basic variable replacements
+            finalHtmlBody = templateHtml
+              .replace(/{name}/g, recipientName || 'there')
+              .replace(/{company}/g, recipientCompany || 'your company')
+              .replace(/{senderName}/g, senderName || 'Team')
+              .replace(/{companyName}/g, senderCompany || 'Our Company')
+              .replace(/{websiteUrl}/g, websiteUrl || 'https://example.com')
+              .replace(/{ctaUrl}/g, ctaUrl || websiteUrl || 'https://example.com')
+              .replace(/{ctaText}/g, ctaText || 'Learn More');
+
+            console.log(`✅ [CUSTOM TEMPLATE] Using exact user HTML with variable replacements`);
+            console.log(`   📄 Final HTML length: ${finalHtmlBody.length} chars`);
+
+            // Skip all AI content generation for custom templates
+            // Jump directly to the end of this section
+          } else {
+            // 🎯 PROPERLY FORMAT EMAIL BODY INTO PARAGRAPHS (for non-custom templates)
+            let emailBodyText = htmlBody || cleanedBody;
 
           console.log(`🔍 DEBUG: Email body text length: ${emailBodyText.length} chars`);
           console.log(`🔍 DEBUG: Email body preview: ${emailBodyText.substring(0, 150)}...`);
@@ -3863,9 +3885,11 @@ ${senderName || senderCompany}`;
               .replace(/\[GENERATED CONTENT 2:[^\]]+\]/g, contentParagraphs[1] || '')
               .replace(/\[GENERATED CONTENT 3:[^\]]+\]/g, contentParagraphs[2] || '');
           }
+          } // End of custom template check
 
-          // Apply common replacements to finalHtmlBody (works for both paths)
-          finalHtmlBody = finalHtmlBody
+          // Apply common replacements to finalHtmlBody (SKIP for custom templates - already done)
+          if (selectedTemplate !== 'custom_template') {
+            finalHtmlBody = finalHtmlBody
             // Replace variable placeholders with ACTUAL data
             .replace(/{name}/g, recipientName || 'there')
             .replace(/{company}/g, recipientCompany || 'your company')
@@ -4055,6 +4079,7 @@ ${senderName || senderCompany}`;
           console.log(`✅ Applied user's custom greeting and signature`);
 
           console.log(`✅ Template HTML populated with content and ALL customizations`);
+          } // End of if (selectedTemplate !== 'custom_template')
         } else {
           // Fallback: Generate our own HTML
           console.log(`📝 Template HTML not available, using fallback generation`);
