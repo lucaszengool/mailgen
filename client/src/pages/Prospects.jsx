@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import '../styles/animations.css'
 import '../styles/jobright-colors.css'
 import { apiGet } from '../utils/apiClient'
@@ -43,6 +43,7 @@ export default function Prospects() {
   const [workflowStatus, setWorkflowStatus] = useState(null) // Track workflow status: 'finding_prospects', 'generating_emails', etc.
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedIndustry, setSelectedIndustry] = useState('')
+  const [forceUpdateKey, setForceUpdateKey] = useState(0) // Force re-render trigger
   const [selectedPosition, setSelectedPosition] = useState('')
   const [selectedCompanySize, setSelectedCompanySize] = useState('')
   const [selectedDateRange, setSelectedDateRange] = useState('')
@@ -171,6 +172,9 @@ export default function Prospects() {
             return [...prevProspects, ...newProspects];
           });
 
+          // 🚀 CRITICAL: Force component re-render AFTER state update completes
+          setTimeout(() => setForceUpdateKey(prev => prev + 1), 0);
+
           // Show a toast notification
           toast.success(`Found ${data.data.prospects.length} more prospects! (Batch ${data.data.batchNumber})`, {
             duration: 2000,
@@ -200,15 +204,25 @@ export default function Prospects() {
 
           console.log('📊 Processed prospects:', updatedProspects.length)
 
-          setProspects(prev => {
-            // 🔥 FIX: Merge with existing instead of replacing to avoid losing data
-            console.log('📊 Previous prospects:', prev.length, 'New prospects:', updatedProspects.length)
-            const existingEmails = prev.map(p => p.email);
-            const newProspects = updatedProspects.filter(p => !existingEmails.includes(p.email));
-            const merged = [...newProspects, ...prev];
-            console.log('📊 Merged total:', merged.length, 'New added:', newProspects.length);
-            return merged;
-          })
+          const hadNewProspects = (() => {
+            let hasNew = false;
+            setProspects(prev => {
+              // 🔥 FIX: Merge with existing instead of replacing to avoid losing data
+              console.log('📊 Previous prospects:', prev.length, 'New prospects:', updatedProspects.length)
+              const existingEmails = prev.map(p => p.email);
+              const newProspects = updatedProspects.filter(p => !existingEmails.includes(p.email));
+              const merged = [...newProspects, ...prev];
+              console.log('📊 Merged total:', merged.length, 'New added:', newProspects.length);
+              hasNew = newProspects.length > 0;
+              return merged;
+            });
+            return hasNew;
+          })();
+
+          // 🚀 CRITICAL: Force component re-render AFTER state update if new prospects were added
+          if (hadNewProspects) {
+            setTimeout(() => setForceUpdateKey(prev => prev + 1), 0);
+          }
 
           // 🚀 Wait 2 seconds for database write to complete, then fetch
           console.log('🚀 Data update with prospects - scheduling fetch after database write...');
@@ -230,12 +244,22 @@ export default function Prospects() {
             companySize: p.companySize || ['1-10', '11-50', '51-200', '201-1000', '1000+'][Math.floor(Math.random() * 5)],
             techStack: p.techStack || ['React', 'Node.js', 'Python', 'AI/ML', 'Cloud'].slice(0, Math.floor(Math.random() * 3) + 1)
           }))
-          setProspects(prev => {
-            // Merge with existing, avoiding duplicates
-            const existingEmails = prev.map(p => p.email)
-            const newProspects = updatedProspects.filter(p => !existingEmails.includes(p.email))
-            return [...newProspects, ...prev]
-          })
+          const hadNewProspectsFromList = (() => {
+            let hasNew = false;
+            setProspects(prev => {
+              // Merge with existing, avoiding duplicates
+              const existingEmails = prev.map(p => p.email)
+              const newProspects = updatedProspects.filter(p => !existingEmails.includes(p.email))
+              hasNew = newProspects.length > 0;
+              return [...newProspects, ...prev]
+            });
+            return hasNew;
+          })();
+
+          // 🚀 CRITICAL: Force component re-render AFTER state update if new prospects were added
+          if (hadNewProspectsFromList) {
+            setTimeout(() => setForceUpdateKey(prev => prev + 1), 0);
+          }
           if (data.prospects.length > 0) {
             toast.success(`Updated with ${data.prospects.length} prospects!`)
           }
@@ -526,71 +550,76 @@ export default function Prospects() {
     }
   }
 
-  const filteredProspects = prospects.filter(prospect => {
-    const matchesSearch = !searchTerm || 
-      prospect.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prospect.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prospect.company?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesIndustry = !selectedIndustry || prospect.industry === selectedIndustry
-    const matchesPosition = !selectedPosition || prospect.position?.includes(selectedPosition)
-    const matchesCompanySize = !selectedCompanySize || prospect.companySize === selectedCompanySize
-    const matchesConfidence = !selectedConfidence || 
-      (selectedConfidence === 'high' && prospect.confidence >= 80) ||
-      (selectedConfidence === 'medium' && prospect.confidence >= 50 && prospect.confidence < 80) ||
-      (selectedConfidence === 'low' && prospect.confidence < 50)
-    
-    const matchesDateRange = !selectedDateRange || (() => {
-      const createdDate = new Date(prospect.created_at)
-      const now = new Date()
-      switch (selectedDateRange) {
-        case 'today':
-          return createdDate.toDateString() === now.toDateString()
-        case 'week':
-          return (now - createdDate) <= 7 * 24 * 60 * 60 * 1000
-        case 'month':
-          return (now - createdDate) <= 30 * 24 * 60 * 60 * 1000
-        case 'quarter':
-          return (now - createdDate) <= 90 * 24 * 60 * 60 * 1000
-        default:
-          return true
-      }
-    })()
-    
-    return matchesSearch && matchesIndustry && matchesPosition && matchesCompanySize && matchesConfidence && matchesDateRange
-  })
+  // 🚀 CRITICAL: Use useMemo with forceUpdateKey to ensure recalculation on WebSocket updates
+  const filteredProspects = useMemo(() => {
+    return prospects.filter(prospect => {
+      const matchesSearch = !searchTerm ||
+        prospect.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prospect.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prospect.company?.toLowerCase().includes(searchTerm.toLowerCase())
 
-  // Sort prospects
-  const sortedProspects = [...filteredProspects].sort((a, b) => {
-    let aVal, bVal
-    switch (sortBy) {
-      case 'name':
-        aVal = a.name || ''
-        bVal = b.name || ''
-        break
-      case 'company':
-        aVal = a.company || ''
-        bVal = b.company || ''
-        break
-      case 'confidence':
-        aVal = a.confidence || 0
-        bVal = b.confidence || 0
-        break
-      case 'responseRate':
-        aVal = a.responseRate || 0
-        bVal = b.responseRate || 0
-        break
-      default:
-        aVal = new Date(a.created_at || 0)
-        bVal = new Date(b.created_at || 0)
-    }
-    
-    if (sortOrder === 'asc') {
-      return aVal > bVal ? 1 : -1
-    } else {
-      return aVal < bVal ? 1 : -1
-    }
-  })
+      const matchesIndustry = !selectedIndustry || prospect.industry === selectedIndustry
+      const matchesPosition = !selectedPosition || prospect.position?.includes(selectedPosition)
+      const matchesCompanySize = !selectedCompanySize || prospect.companySize === selectedCompanySize
+      const matchesConfidence = !selectedConfidence ||
+        (selectedConfidence === 'high' && prospect.confidence >= 80) ||
+        (selectedConfidence === 'medium' && prospect.confidence >= 50 && prospect.confidence < 80) ||
+        (selectedConfidence === 'low' && prospect.confidence < 50)
+
+      const matchesDateRange = !selectedDateRange || (() => {
+        const createdDate = new Date(prospect.created_at)
+        const now = new Date()
+        switch (selectedDateRange) {
+          case 'today':
+            return createdDate.toDateString() === now.toDateString()
+          case 'week':
+            return (now - createdDate) <= 7 * 24 * 60 * 60 * 1000
+          case 'month':
+            return (now - createdDate) <= 30 * 24 * 60 * 60 * 1000
+          case 'quarter':
+            return (now - createdDate) <= 90 * 24 * 60 * 60 * 1000
+          default:
+            return true
+        }
+      })()
+
+      return matchesSearch && matchesIndustry && matchesPosition && matchesCompanySize && matchesConfidence && matchesDateRange
+    });
+  }, [prospects, searchTerm, selectedIndustry, selectedPosition, selectedCompanySize, selectedConfidence, selectedDateRange, forceUpdateKey]);
+
+  // Sort prospects - also use useMemo with forceUpdateKey
+  const sortedProspects = useMemo(() => {
+    return [...filteredProspects].sort((a, b) => {
+      let aVal, bVal
+      switch (sortBy) {
+        case 'name':
+          aVal = a.name || ''
+          bVal = b.name || ''
+          break
+        case 'company':
+          aVal = a.company || ''
+          bVal = b.company || ''
+          break
+        case 'confidence':
+          aVal = a.confidence || 0
+          bVal = b.confidence || 0
+          break
+        case 'responseRate':
+          aVal = a.responseRate || 0
+          bVal = b.responseRate || 0
+          break
+        default:
+          aVal = new Date(a.created_at || 0)
+          bVal = new Date(b.created_at || 0)
+      }
+
+      if (sortOrder === 'asc') {
+        return aVal > bVal ? 1 : -1
+      } else {
+        return aVal < bVal ? 1 : -1
+      }
+    });
+  }, [filteredProspects, sortBy, sortOrder, forceUpdateKey]);
 
   const industries = [...new Set(prospects.map(p => p.industry).filter(Boolean))]
   const positions = [...new Set(prospects.map(p => p.position).filter(Boolean))]
@@ -995,6 +1024,7 @@ export default function Prospects() {
         </div>
         
         <JobRightStyleProspectList
+          key={forceUpdateKey}
           prospects={sortedProspects}
           onSelectProspect={(prospect) => {
             setSelectedProspect(prospect);

@@ -3712,6 +3712,14 @@ ${senderName || senderCompany}`;
           console.log(`   📄 First 200 chars: ${templateHtml.substring(0, 200)}...`);
           console.log(`   🎨 User customizations will be preserved!`);
         }
+        // 🔥 CRITICAL FIX: For custom_template with no HTML, skip using default template HTML
+        // Custom templates should use manualContent (if provided) or let AI generate clean content
+        else if (selectedTemplate === 'custom_template') {
+          console.log(`   🎨 [CUSTOM TEMPLATE] No user HTML provided - will generate clean AI content`);
+          console.log(`   ℹ️ For custom templates, provide either 'html' or 'manualContent' for full control`);
+          // Leave templateHtml as null - AI will generate content without template structure
+          templateHtml = null;
+        }
         // Otherwise, load default template HTML from emailTemplates.js
         else if (fullTemplateDefinition && fullTemplateDefinition.html) {
           templateHtml = fullTemplateDefinition.html;

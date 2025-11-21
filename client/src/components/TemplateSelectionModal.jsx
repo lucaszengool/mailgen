@@ -196,12 +196,44 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
               placeholder="Your Company Name"
               className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
             />
+            <label className="block text-xs font-medium text-gray-600">Background Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.backgroundColor || '#ffffff'}
+                onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={component.properties.backgroundColor || '#ffffff'}
+                onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                placeholder="#ffffff"
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
+            <label className="block text-xs font-medium text-gray-600">Border Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.borderColor || '#e5e7eb'}
+                onChange={(e) => updateProperty('borderColor', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={component.properties.borderColor || '#e5e7eb'}
+                onChange={(e) => updateProperty('borderColor', e.target.value)}
+                placeholder="#e5e7eb"
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
           </div>
         );
 
       case 'greeting':
         return (
-          <div>
+          <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-600 mb-1">Greeting Text</label>
             <input
               type="text"
@@ -210,6 +242,22 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
               placeholder="Hi {name},"
               className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
             />
+            <label className="block text-xs font-medium text-gray-600">Text Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.textColor || '#333333'}
+                onChange={(e) => updateProperty('textColor', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={component.properties.textColor || '#333333'}
+                onChange={(e) => updateProperty('textColor', e.target.value)}
+                placeholder="#333333"
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
           </div>
         );
 
@@ -234,6 +282,22 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
               <option value="center">Center</option>
               <option value="right">Right</option>
             </select>
+            <label className="block text-xs font-medium text-gray-600">Text Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.textColor || '#333333'}
+                onChange={(e) => updateProperty('textColor', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={component.properties.textColor || '#333333'}
+                onChange={(e) => updateProperty('textColor', e.target.value)}
+                placeholder="#333333"
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
           </div>
         );
 
@@ -293,12 +357,79 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
               placeholder="Jane Doe, CEO at Company"
               className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
             />
+            <label className="block text-xs font-medium text-gray-600">Background Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.backgroundColor || '#f9fafb'}
+                onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={component.properties.backgroundColor || '#f9fafb'}
+                onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                placeholder="#f9fafb"
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
+            <label className="block text-xs font-medium text-gray-600">Border Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.borderColor || '#000000'}
+                onChange={(e) => updateProperty('borderColor', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={component.properties.borderColor || '#000000'}
+                onChange={(e) => updateProperty('borderColor', e.target.value)}
+                placeholder="#000000"
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
           </div>
         );
 
       case 'features':
         return (
           <div className="space-y-3">
+            <div className="mb-3 p-2 bg-gray-50 rounded">
+              <label className="block text-xs font-medium text-gray-600 mb-2">Feature Box Styling</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Background Color</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="color"
+                  value={component.properties.backgroundColor || '#000000'}
+                  onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={component.properties.backgroundColor || '#000000'}
+                  onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                  placeholder="#000000"
+                  className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+                />
+              </div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Icon/Title Color</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={component.properties.iconColor || '#ffffff'}
+                  onChange={(e) => updateProperty('iconColor', e.target.value)}
+                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={component.properties.iconColor || '#ffffff'}
+                  onChange={(e) => updateProperty('iconColor', e.target.value)}
+                  placeholder="#ffffff"
+                  className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+                />
+              </div>
+            </div>
             {[1, 2, 3, 4].map(num => (
               <div key={num} className="p-2 bg-white border border-gray-200 rounded">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Feature {num} Title</label>
@@ -325,6 +456,57 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
       case 'stats':
         return (
           <div className="space-y-3">
+            <div className="mb-3 p-2 bg-gray-50 rounded">
+              <label className="block text-xs font-medium text-gray-600 mb-2">Stats Box Styling</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Background Color</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="color"
+                  value={component.properties.backgroundColor || '#f9fafb'}
+                  onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={component.properties.backgroundColor || '#f9fafb'}
+                  onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                  placeholder="#f9fafb"
+                  className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+                />
+              </div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Value Color</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="color"
+                  value={component.properties.valueColor || '#000000'}
+                  onChange={(e) => updateProperty('valueColor', e.target.value)}
+                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={component.properties.valueColor || '#000000'}
+                  onChange={(e) => updateProperty('valueColor', e.target.value)}
+                  placeholder="#000000"
+                  className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+                />
+              </div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Label Color</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={component.properties.labelColor || '#6b7280'}
+                  onChange={(e) => updateProperty('labelColor', e.target.value)}
+                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={component.properties.labelColor || '#6b7280'}
+                  onChange={(e) => updateProperty('labelColor', e.target.value)}
+                  placeholder="#6b7280"
+                  className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+                />
+              </div>
+            </div>
             {[1, 2, 3].map(num => (
               <div key={num} className="p-2 bg-white border border-gray-200 rounded">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Stat {num} Value</label>
@@ -366,6 +548,38 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
               placeholder="Special Event"
               className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
             />
+            <label className="block text-xs font-medium text-gray-600">Background Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.backgroundColor || '#6b7280'}
+                onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={component.properties.backgroundColor || '#6b7280'}
+                onChange={(e) => updateProperty('backgroundColor', e.target.value)}
+                placeholder="#6b7280"
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
+            <label className="block text-xs font-medium text-gray-600">Text Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.textColor || '#ffffff'}
+                onChange={(e) => updateProperty('textColor', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={component.properties.textColor || '#ffffff'}
+                onChange={(e) => updateProperty('textColor', e.target.value)}
+                placeholder="#ffffff"
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
           </div>
         );
 

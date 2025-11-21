@@ -2581,6 +2581,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const [steps, setSteps] = useState([]);
   const [prospects, setProspects] = useState([]);
   const [generatedEmails, setGeneratedEmails] = useState([]);
+  const [emailForceUpdateKey, setEmailForceUpdateKey] = useState(0); // Force re-render for emails
   const [emailCampaignStats, setEmailCampaignStats] = useState({
     emails: [],
     totalSent: 0,
@@ -4568,14 +4569,24 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           if (emailCampaignId === latestCampaignId || emailCampaignId === String(latestCampaignId)) {
             console.log(`✅ [CAMPAIGN MATCH] Adding email from campaign ${emailCampaignId}`);
             // Add to generated emails immediately
-            setGeneratedEmails(prev => {
-              const existing = prev.find(e => e.to === newEmail.to);
-              if (existing) {
-                return prev.map(e => e.to === newEmail.to ? { ...e, ...newEmail } : e);
-              } else {
-                return [...prev, newEmail];
-              }
-            });
+            const wasNew = (() => {
+              let isNew = false;
+              setGeneratedEmails(prev => {
+                const existing = prev.find(e => e.to === newEmail.to);
+                if (existing) {
+                  return prev.map(e => e.to === newEmail.to ? { ...e, ...newEmail } : e);
+                } else {
+                  isNew = true;
+                  return [...prev, newEmail];
+                }
+              });
+              return isNew;
+            })();
+
+            // 🚀 CRITICAL: Force component re-render AFTER state update when new email added
+            if (wasNew) {
+              setTimeout(() => setEmailForceUpdateKey(k => k + 1), 0);
+            }
           } else {
             console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email from different campaign (Email: ${emailCampaignId}, Current: ${latestCampaignId})`);
           }
@@ -4751,14 +4762,29 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
           if (emailCampaignId === latestCampaignId || emailCampaignId === String(latestCampaignId) || !emailCampaignId) {
             console.log(`✅ [CAMPAIGN MATCH] Processing email update for campaign ${emailCampaignId}`);
-            setGeneratedEmails(prev => {
-              const existing = prev.find(e => e.to === email.to);
-              const newEmails = existing
-                ? prev.map(e => e.to === email.to ? { ...e, ...email } : e)
-                : [...prev, email];
-              console.log('📧 Updated email list:', newEmails);
-              return newEmails;
-            });
+            const wasUpdated = (() => {
+              let updated = false;
+              setGeneratedEmails(prev => {
+                const existing = prev.find(e => e.to === email.to);
+                const newEmails = existing
+                  ? prev.map(e => e.to === email.to ? { ...e, ...email } : e)
+                  : [...prev, email];
+                console.log('📧 Updated email list:', newEmails);
+
+                // Check if this was a new email or an update
+                if (!existing || JSON.stringify(existing) !== JSON.stringify(email)) {
+                  updated = true;
+                }
+
+                return newEmails;
+              });
+              return updated;
+            })();
+
+            // 🚀 CRITICAL: Force component re-render AFTER state update when email added or updated
+            if (wasUpdated) {
+              setTimeout(() => setEmailForceUpdateKey(k => k + 1), 0);
+            }
           } else {
             console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email update from different campaign (Email: ${emailCampaignId}, Current: ${latestCampaignId})`);
           }
@@ -4820,15 +4846,25 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           console.log(`🔍 [CAMPAIGN CHECK] Email campaign: ${emailCampaignId}, Current campaign: ${latestCampaignId}`);
 
           if (emailCampaignId === latestCampaignId || emailCampaignId === String(latestCampaignId)) {
-            setGeneratedEmails(prev => {
-              const existing = prev.find(e => e.to === email.to);
-              if (existing) {
-                return prev.map(e => e.to === email.to ? { ...e, ...email } : e);
-              } else {
-                console.log('📧 Adding email to generatedEmails for email editor access (Campaign:', emailCampaignId, ')');
-                return [...prev, { ...email, id: `generated_${Date.now()}` }];
-              }
-            });
+            const wasNewEmail = (() => {
+              let isNew = false;
+              setGeneratedEmails(prev => {
+                const existing = prev.find(e => e.to === email.to);
+                if (existing) {
+                  return prev.map(e => e.to === email.to ? { ...e, ...email } : e);
+                } else {
+                  console.log('📧 Adding email to generatedEmails for email editor access (Campaign:', emailCampaignId, ')');
+                  isNew = true;
+                  return [...prev, { ...email, id: `generated_${Date.now()}` }];
+                }
+              });
+              return isNew;
+            })();
+
+            // 🚀 CRITICAL: Force component re-render AFTER state update when new email added
+            if (wasNewEmail) {
+              setTimeout(() => setEmailForceUpdateKey(k => k + 1), 0);
+            }
           } else {
             console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email_awaiting_approval from different campaign (Email: ${emailCampaignId}, Current: ${latestCampaignId})`);
           }
@@ -4936,14 +4972,24 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           console.log(`🔍 [CAMPAIGN CHECK] Email campaign: ${emailCampaignId}, Current campaign: ${latestCampaignId}`);
 
           if (emailCampaignId === latestCampaignId || emailCampaignId === String(latestCampaignId)) {
-            setGeneratedEmails(prev => {
-              const existing = prev.find(e => e.to === emailForReview.to);
-              if (!existing) {
-                console.log('📧 Adding email to generatedEmails for email editor access (Campaign:', emailCampaignId, ')');
-                return [...prev, { ...emailForReview, id: `generated_${Date.now()}`, status: 'generated' }];
-              }
-              return prev;
-            });
+            const wasNewPreviewEmail = (() => {
+              let isNew = false;
+              setGeneratedEmails(prev => {
+                const existing = prev.find(e => e.to === emailForReview.to);
+                if (!existing) {
+                  console.log('📧 Adding email to generatedEmails for email editor access (Campaign:', emailCampaignId, ')');
+                  isNew = true;
+                  return [...prev, { ...emailForReview, id: `generated_${Date.now()}`, status: 'generated' }];
+                }
+                return prev;
+              });
+              return isNew;
+            })();
+
+            // 🚀 CRITICAL: Force component re-render AFTER state update when new email added
+            if (wasNewPreviewEmail) {
+              setTimeout(() => setEmailForceUpdateKey(k => k + 1), 0);
+            }
           } else {
             console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email from different campaign (Email: ${emailCampaignId}, Current: ${latestCampaignId})`);
           }
@@ -6531,7 +6577,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                     )
                   ) : filterEmails(generatedEmails).map((email, index) => (
                     <motion.div
-                      key={email.id || index}
+                      key={`${email.id || index}-${emailForceUpdateKey}`}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
