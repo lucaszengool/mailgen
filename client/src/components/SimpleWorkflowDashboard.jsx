@@ -3444,7 +3444,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   };
 
   // 🎨 Handle template selection required
-  const handleTemplateSelectionRequired = (data) => {
+  const handleTemplateSelectionRequired = async (data) => {
     console.log('🎨 === INSIDE handleTemplateSelectionRequired ===');
     console.log('🎨 Template selection required data:', data);
     console.log('🎨 Setting templateRequest...');
@@ -3452,6 +3452,48 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     console.log('🎨 Setting showTemplateSelection to TRUE...');
     setShowTemplateSelection(true);
     console.log('🎨 showTemplateSelection state updated to TRUE');
+
+    // 🔥 CRITICAL FIX: Immediately show sample prospects from WebSocket message
+    if (data.sampleProspects && data.sampleProspects.length > 0) {
+      console.log(`📦 [TEMPLATE POPUP] Adding ${data.sampleProspects.length} sample prospects from WebSocket immediately`);
+      setProspects(prev => {
+        const existingEmails = new Set(prev.map(p => p.email));
+        const newProspects = data.sampleProspects.filter(p => !existingEmails.has(p.email));
+        if (newProspects.length > 0) {
+          console.log(`📦 [TEMPLATE POPUP] Adding ${newProspects.length} sample prospects (${prev.length} → ${prev.length + newProspects.length})`);
+          return [...prev, ...newProspects];
+        }
+        return prev;
+      });
+    }
+
+    // 🔥 CRITICAL FIX: Then fetch and display ALL prospects for the campaign
+    const campaignId = data.campaignId || localStorage.getItem('currentCampaignId');
+    if (campaignId) {
+      console.log(`📥 [TEMPLATE POPUP] Fetching ALL prospects for campaign ${campaignId} to display immediately`);
+      try {
+        const url = `/api/workflow/results?campaignId=${campaignId}`;
+        const result = await apiGet(url);
+
+        if (result.success && result.data?.prospects) {
+          const allProspects = result.data.prospects;
+          console.log(`📥 [TEMPLATE POPUP] Fetched ${allProspects.length} prospects - adding to UI immediately`);
+
+          // Merge with existing prospects
+          setProspects(prev => {
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newProspects = allProspects.filter(p => !existingEmails.has(p.email));
+            if (newProspects.length > 0) {
+              console.log(`📦 [TEMPLATE POPUP] Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
+              return [...prev, ...newProspects];
+            }
+            return prev;
+          });
+        }
+      } catch (error) {
+        console.error('❌ [TEMPLATE POPUP] Error fetching prospects:', error);
+      }
+    }
 
     // Show notification
     console.log(`✨ Found ${data.prospectsFound || data.prospectsCount || 'N/A'} prospects! Please select an email template.`);

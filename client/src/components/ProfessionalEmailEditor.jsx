@@ -3571,7 +3571,10 @@ export default function ProfessionalEmailEditor(props) {
           html: selectedTemplate.html,
           templateId: selectedTemplate.id,
           templateName: selectedTemplate.name,
-          recipients: recipientsList
+          recipients: recipientsList,
+          // 🔥 CRITICAL FIX: Preserve templateMode and manualContent from original template selection
+          templateMode: selectedTemplate.templateMode || 'ai',
+          manualContent: selectedTemplate.manualContent || null
         };
 
         console.log('✅ EMAIL GENERATION DEBUG: templateData created with selectedTemplate');
@@ -3595,7 +3598,10 @@ export default function ProfessionalEmailEditor(props) {
           preheader: preheader,
           components: allTemplateComponents.length > 0 ? allTemplateComponents : emailComponents,
           html: generatePreviewHTML(allTemplateComponents.length > 0 ? allTemplateComponents : emailComponents),
-          recipients: recipientsList
+          recipients: recipientsList,
+          // 🔥 CRITICAL FIX: Preserve templateMode and manualContent from fallback state
+          templateMode: selectedTemplate?.templateMode || 'ai',
+          manualContent: selectedTemplate?.manualContent || null
         };
       }
       

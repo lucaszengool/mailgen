@@ -847,6 +847,17 @@ router.get('/results', optionalAuth, async (req, res) => {
 
       // 🎯 FIX: Add workflowState fields directly to processedResults at the correct level
       // The frontend expects these fields alongside prospects and campaignData
+
+      // 🔥 CRITICAL FIX: Only include firstEmailGenerated if it belongs to THIS campaign
+      const firstEmailBelongsToThisCampaign = workflowState.firstEmailGenerated &&
+                                                workflowState.firstEmailGenerated.campaignId === campaignId;
+
+      console.log(`\n🔍 [FIRST EMAIL FILTER - STORED] Checking if first email belongs to this campaign:`);
+      console.log(`   📧 firstEmailGenerated exists: ${!!workflowState.firstEmailGenerated}`);
+      console.log(`   🆔 firstEmailGenerated.campaignId: ${workflowState.firstEmailGenerated?.campaignId || 'NOT SET'}`);
+      console.log(`   🆔 Requested campaignId: ${campaignId || 'NOT SET'}`);
+      console.log(`   ✅ Match: ${firstEmailBelongsToThisCampaign ? 'YES' : 'NO'}`);
+
       const responseData = {
         prospects: enrichedProspects,
         campaignData: processedResults.emailCampaign ? {
@@ -859,8 +870,9 @@ router.get('/results', optionalAuth, async (req, res) => {
         totalProspects: processedResults.prospects?.length || 0,
         isRealData: true,
         demoMode: false,
-        waitingForUserApproval: workflowState.waitingForUserApproval,  // CRITICAL for popup
-        firstEmailGenerated: workflowState.firstEmailGenerated,
+        // 🔥 CRITICAL FIX: Only show first email popup if it belongs to THIS campaign
+        waitingForUserApproval: firstEmailBelongsToThisCampaign ? workflowState.waitingForUserApproval : false,
+        firstEmailGenerated: firstEmailBelongsToThisCampaign ? workflowState.firstEmailGenerated : null,
         currentEmailIndex: 0,
         templateSelectionRequired: false,  // We already have emails
         status: 'emails_generated',
@@ -1068,6 +1080,16 @@ router.get('/results', optionalAuth, async (req, res) => {
       }
     }
 
+    // 🔥 CRITICAL FIX: Only include firstEmailGenerated if it belongs to THIS campaign
+    const firstEmailBelongsToThisCampaign = workflowState.firstEmailGenerated &&
+                                              workflowState.firstEmailGenerated.campaignId === campaignId;
+
+    console.log(`\n🔍 [FIRST EMAIL FILTER] Checking if first email belongs to this campaign:`);
+    console.log(`   📧 firstEmailGenerated exists: ${!!workflowState.firstEmailGenerated}`);
+    console.log(`   🆔 firstEmailGenerated.campaignId: ${workflowState.firstEmailGenerated?.campaignId || 'NOT SET'}`);
+    console.log(`   🆔 Requested campaignId: ${campaignId || 'NOT SET'}`);
+    console.log(`   ✅ Match: ${firstEmailBelongsToThisCampaign ? 'YES' : 'NO'}`);
+
     res.json({
       success: true,
       data: {
@@ -1078,8 +1100,9 @@ router.get('/results', optionalAuth, async (req, res) => {
         totalProspects: prospects.length,
         isRealData: hasRealResults,
         demoMode: !hasRealResults,
-        waitingForUserApproval: workflowState.waitingForUserApproval,
-        firstEmailGenerated: workflowState.firstEmailGenerated,
+        // 🔥 CRITICAL FIX: Only show first email popup if it belongs to THIS campaign
+        waitingForUserApproval: firstEmailBelongsToThisCampaign ? workflowState.waitingForUserApproval : false,
+        firstEmailGenerated: firstEmailBelongsToThisCampaign ? workflowState.firstEmailGenerated : null,
         currentEmailIndex: currentEmailIndex, // Add current email index for display
         templateSelectionRequired: templateSelectionRequired,
         status: templateSelectionStatus,
