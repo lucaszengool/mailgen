@@ -80,15 +80,19 @@ export default function HunterStyleEmailCampaign({ campaignId }) {
   }
 
   useEffect(() => {
+    // Clear old emails when campaign changes
+    setEmails([])
+    setLoading(true)
+
     fetchEmailCampaigns()
     connectWebSocket()
-    
+
     return () => {
       if (ws.current) {
         ws.current.close()
       }
     }
-  }, [])
+  }, [campaignId]) // Re-fetch when campaignId changes
 
   const connectWebSocket = () => {
     try {
