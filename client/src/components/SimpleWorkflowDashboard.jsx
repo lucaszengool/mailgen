@@ -6156,8 +6156,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Campaign</h2>
 
-                {/* Show generating state if workflow is generating emails */}
-                {workflowStatus === 'generating_emails' && generatedEmails.length === 0 && (
+                {/* Show generating state if workflow is running and no emails yet */}
+                {(workflowStatus === 'generating_emails' || workflowStatus === 'running' || workflowStatus === 'analyzing_prospects' || workflowStatus === 'finding_prospects') && generatedEmails.length === 0 && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -6504,20 +6504,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-16 max-w-2xl"
                 >
-                  <motion.div
-                    animate={{
-                      rotate: 360,
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{
-                      rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-                      scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
-                    }}
-                    className="mx-auto mb-6 w-24 h-24 rounded-full bg-gradient-to-r from-[#00f5a0] to-[#00c98d] flex items-center justify-center shadow-lg"
-                  >
-                    <Edit className="w-12 h-12 text-white" />
-                  </motion.div>
-
                   <h2 className="text-xl font-semibold text-gray-900 mb-3">
                     Generating personalized emails
                   </h2>
