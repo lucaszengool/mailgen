@@ -150,7 +150,7 @@ const EmailReviewModal = ({ isOpen, email, onApprove, onClose, onEdit }) => {
                   <div className="text-sm mb-3 font-medium text-gray-300">
                     <strong className="text-white">Subject:</strong> <span className="ml-2">{email.subject || '(No subject)'}</span>
                     {email.subject && email.subject.length < 15 && (
-                      <span className="ml-2 text-yellow-400 text-xs">⚠️ May be truncated ({email.subject.length} chars)</span>
+                      <span className="ml-2 text-gray-500 text-xs">⚠️ May be truncated ({email.subject.length} chars)</span>
                     )}
                   </div>
                   <div className="text-sm border-t border-gray-700 pt-3 text-gray-300" style={{ maxHeight: '400px', overflowY: 'auto' }}>
@@ -161,7 +161,7 @@ const EmailReviewModal = ({ isOpen, email, onApprove, onClose, onEdit }) => {
                         style={{ color: 'inherit', fontFamily: 'inherit' }}
                       />
                     ) : (
-                      <div className="text-yellow-400 p-4 border border-yellow-700 rounded bg-yellow-900/20">
+                      <div className="text-gray-700 p-4 border border-gray-300 rounded bg-white">
                         <p className="font-bold mb-2">⚠️ Warning: Plain Text</p>
                         <p className="text-sm mb-3">Email is plain text, not HTML. Customizations may not be visible.</p>
                         <pre className="whitespace-pre-wrap text-gray-300">{email.body}</pre>
@@ -451,7 +451,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
   
   if (content.type === 'email_search') {
     return (
-      <div className="p-8 space-y-6 bg-gradient-to-br from-white via-gray-50 to-green-50">
+      <div className="p-8 space-y-6 bg-white">
         {/* Search Progress */}
         <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center space-x-3">
@@ -464,7 +464,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             <div className="text-2xl font-bold text-[#00f5a0]">
               {animationState === 'completed' ? '100%' : `${Math.min((currentStep + 1) * 25, 100)}%`}
             </div>
-            <Gauge className="w-5 h-5 text-green-500" />
+            <Gauge className="w-5 h-5 text-gray-500" />
           </div>
         </div>
         
@@ -484,14 +484,14 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                 scale: currentStep === index ? 1.02 : 1
               }}
               className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all duration-300 ${
-                currentStep >= index 
-                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-md' 
+                currentStep >= index
+                  ? 'bg-white border-gray-300 shadow-md'
                   : 'bg-white border-gray-200 hover:border-gray-300'
               }`}
             >
               <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
-                currentStep >= index 
-                  ? 'bg-green-500 text-white shadow-lg' 
+                currentStep >= index
+                  ? 'bg-gray-700 text-white shadow-lg'
                   : 'bg-gray-200 text-gray-700'
               } ${currentStep === index ? 'animate-pulse scale-110' : ''}`}>
                 <step.icon className="w-5 h-5" />
@@ -521,7 +521,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             </div>
             
             {/* Website Crawling Results */}
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-100 shadow-sm">
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Globe className="w-5 h-5 text-[#00f5a0]" />
                 <h6 className="font-semibold text-gray-900">Websites Crawled:</h6>
@@ -550,7 +550,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                   >
                     <div className="flex items-center space-x-3">
                       {site.status === 'success' ? (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className="w-4 h-4 text-gray-500" />
                       ) : (
                         <XCircle className="w-4 h-4 text-red-500" />
                       )}
@@ -565,7 +565,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             </div>
             
             {/* Found Emails */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100 shadow-sm">
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Mail className="w-5 h-5 text-[#00f5a0]" />
                 <h6 className="font-semibold text-gray-900">Discovered Email Addresses:</h6>
@@ -588,7 +588,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 1 + (idx * 0.1) }}
-                    className="bg-white p-2 rounded border border-green-200 text-gray-900 font-mono text-xs"
+                    className="bg-white p-2 rounded border border-gray-200 text-gray-900 font-mono text-xs"
                   >
                     {typeof prospect === 'string' ? prospect : prospect.email}
                   </motion.div>
@@ -603,7 +603,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
   
   if (content.type === 'email_verification') {
     return (
-      <div className="p-8 space-y-6 bg-gradient-to-br from-white via-gray-50 to-green-50">
+      <div className="p-8 space-y-6 bg-white">
         {/* Verification Progress */}
         <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center space-x-3">
@@ -616,7 +616,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             <div className="text-2xl font-bold text-[#00f5a0]">
               {animationState === 'completed' ? '100%' : `${Math.min((currentStep + 1) * 25, 100)}%`}
             </div>
-            <Gauge className="w-5 h-5 text-green-500" />
+            <Gauge className="w-5 h-5 text-gray-500" />
           </div>
         </div>
         
@@ -636,14 +636,14 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                 scale: currentStep === index ? 1.02 : 1
               }}
               className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all duration-300 ${
-                currentStep >= index 
-                  ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-md' 
+                currentStep >= index
+                  ? 'bg-white border-gray-300 shadow-md'
                   : 'bg-white border-gray-200 hover:border-gray-300'
               }`}
             >
               <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
-                currentStep >= index 
-                  ? 'bg-green-500 text-white shadow-lg' 
+                currentStep >= index
+                  ? 'bg-gray-700 text-white shadow-lg'
                   : 'bg-gray-200 text-gray-700'
               } ${currentStep === index ? 'animate-pulse scale-110' : ''}`}>
                 <step.icon className="w-5 h-5" />
@@ -694,23 +694,23 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7 + (idx * 0.15) }}
                   className={`flex items-center justify-between p-3 rounded-lg border ${
-                    result.status === 'valid' 
-                      ? 'bg-green-50 border-green-200' 
-                      : 'bg-red-50 border-red-200'
+                    result.status === 'valid'
+                      ? 'bg-white border-gray-200'
+                      : 'bg-white border-gray-200'
                   }`}
                 >
                   <div className="flex items-center space-x-3">
                     {result.status === 'valid' ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <CheckCircle className="w-5 h-5 text-gray-500" />
                     ) : (
                       <XCircle className="w-5 h-5 text-red-500" />
                     )}
                     <span className="font-mono text-sm font-medium">{result.email}</span>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    result.status === 'valid' 
-                      ? 'bg-green-100 text-gray-900' 
-                      : 'bg-red-100 text-red-800'
+                    result.status === 'valid'
+                      ? 'bg-gray-100 text-gray-900'
+                      : 'bg-gray-100 text-gray-900'
                   }`}>
                     {result.status.toUpperCase()}
                   </div>
@@ -725,7 +725,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
   
   if (content.type === 'persona_generation') {
     return (
-      <div className="p-8 space-y-6 bg-gradient-to-br from-white via-green-50 to-green-100">
+      <div className="p-8 space-y-6 bg-white">
         {/* Persona Generation Progress */}
         <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center space-x-3">
@@ -738,7 +738,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             <div className="text-2xl font-bold text-[#00f5a0]">
               {animationState === 'completed' ? '100%' : `${Math.min((currentStep + 1) * 20, 100)}%`}
             </div>
-            <Target className="w-5 h-5 text-green-500" />
+            <Target className="w-5 h-5 text-gray-500" />
           </div>
         </div>
 
@@ -763,7 +763,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
         </div>
 
         {/* Status */}
-        <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-100">
+        <div className="bg-white p-4 rounded-xl border border-gray-200">
           <div className="text-sm font-medium text-gray-700 mb-1">Status:</div>
           <div className="text-lg font-bold text-gray-900">
             {animationState === 'completed' ? 'Personas ready!' : (content.status || 'Generating personas...')}
@@ -787,14 +787,14 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                 scale: currentStep === index ? 1.02 : 1
               }}
               className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all duration-300 ${
-                currentStep >= index 
-                  ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-md' 
+                currentStep >= index
+                  ? 'bg-white border-gray-300 shadow-md'
                   : 'bg-white border-gray-200 hover:border-gray-300'
               }`}
             >
               <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
-                currentStep >= index 
-                  ? 'bg-green-500 text-white shadow-lg' 
+                currentStep >= index
+                  ? 'bg-gray-700 text-white shadow-lg'
                   : 'bg-gray-200 text-gray-700'
               } ${currentStep === index ? 'animate-pulse scale-110' : ''}`}>
                 <step.icon className="w-5 h-5" />
@@ -824,7 +824,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             </div>
             
             {/* Generated Personas Preview */}
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-100 shadow-sm">
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Target className="w-5 h-5 text-[#00f5a0]" />
                 <h6 className="font-semibold text-gray-900">Generated Personas:</h6>
@@ -851,12 +851,12 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.7 + (idx * 0.2) }}
-                    className="bg-white p-4 rounded-lg border border-green-200 space-y-2"
+                    className="bg-white p-4 rounded-lg border border-gray-200 space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-sm text-gray-900 font-medium">{persona.email}</span>
                       <div className="flex items-center gap-1">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className="w-4 h-4 text-gray-500" />
                         <span className="text-xs text-gray-700">Generated</span>
                       </div>
                     </div>
@@ -874,7 +874,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                         <span className="text-gray-700">Pain Points:</span> 
                         <div className="flex flex-wrap gap-1 mt-1">
                           {persona.painPoints.map((pain, i) => (
-                            <span key={i} className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs">
+                            <span key={i} className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs">
                               {pain}
                             </span>
                           ))}
@@ -893,7 +893,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
   
   if (content.type === 'email_generation') {
     return (
-      <div className="p-8 space-y-6 bg-gradient-to-br from-white via-green-50 to-green-100">
+      <div className="p-8 space-y-6 bg-white">
         {/* Email Generation Progress */}
         <div className="flex items-center justify-between mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center space-x-3">
@@ -906,7 +906,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             <div className="text-2xl font-bold text-[#00f5a0]">
               {animationState === 'completed' ? '100%' : `${Math.min((currentStep + 1) * 20, 100)}%`}
             </div>
-            <Sparkles className="w-5 h-5 text-green-500" />
+            <Sparkles className="w-5 h-5 text-gray-500" />
           </div>
         </div>
 
@@ -931,7 +931,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
         </div>
 
         {/* Status */}
-        <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-100">
+        <div className="bg-white p-4 rounded-xl border border-gray-200">
           <div className="text-sm font-medium text-gray-700 mb-1">Status:</div>
           <div className="text-lg font-bold text-gray-900">
             {animationState === 'completed' ? 'Emails ready to send!' : (content.status || 'Sequential email generation active')}
@@ -955,14 +955,14 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                 scale: currentStep === index ? 1.02 : 1
               }}
               className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all duration-300 ${
-                currentStep >= index 
-                  ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-md' 
+                currentStep >= index
+                  ? 'bg-white border-gray-300 shadow-md'
                   : 'bg-white border-gray-200 hover:border-gray-300'
               }`}
             >
               <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
-                currentStep >= index 
-                  ? 'bg-green-500 text-white shadow-lg' 
+                currentStep >= index
+                  ? 'bg-gray-700 text-white shadow-lg'
                   : 'bg-gray-200 text-gray-700'
               } ${currentStep === index ? 'animate-pulse scale-110' : ''}`}>
                 <step.icon className="w-5 h-5" />
@@ -992,7 +992,7 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
             </div>
             
             {/* Generated Emails Preview */}
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-100 shadow-sm">
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-[#00f5a0]" />
                 <h6 className="font-semibold text-gray-900">Personalized Email Campaign:</h6>
@@ -1017,12 +1017,12 @@ const DetailedWorkflowWindow = ({ content, onAnimationComplete, prospects = [], 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.7 + (idx * 0.2) }}
-                    className="bg-white p-4 rounded-lg border border-green-200 space-y-2"
+                    className="bg-white p-4 rounded-lg border border-gray-200 space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-sm text-gray-900 font-medium">{email.to}</span>
                       <div className="flex items-center gap-1">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className="w-4 h-4 text-gray-500" />
                         <span className="text-xs text-gray-700">Generated</span>
                       </div>
                     </div>
@@ -1151,7 +1151,7 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gradient-to-br from-white via-gray-50 to-green-50">
+    <div className="p-6 space-y-6 bg-white">
       {/* Progress Header */}
       <div className="flex items-center justify-between mb-4 p-3 bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="flex items-center space-x-3">
@@ -1166,7 +1166,7 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
           <div className="text-xl font-bold text-[#00f5a0]">
             {animationState === 'completed' ? '100%' : `${Math.min(Math.round(((currentStep + 1) / getSteps().length) * 100), 100)}%`}
           </div>
-          <Gauge className="w-4 h-4 text-green-500" />
+          <Gauge className="w-4 h-4 text-gray-500" />
         </div>
       </div>
       
@@ -1181,13 +1181,13 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
               scale: currentStep === index ? 1.02 : 1
             }}
             className={`flex items-center space-x-3 p-3 rounded-lg border transition-all duration-300 ${
-              currentStep >= index 
-                ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-sm' 
+              currentStep >= index
+                ? 'bg-white border-gray-300 shadow-sm'
                 : 'bg-white border-gray-200'
             }`}
           >
             <div className={`w-6 h-6 rounded-md flex items-center justify-center ${
-              currentStep >= index ? 'bg-green-500' : 'bg-gray-300'
+              currentStep >= index ? 'bg-gray-700' : 'bg-gray-300'
             }`}>
               <step.icon className={`w-3 h-3 ${currentStep >= index ? 'text-white' : 'text-gray-700'}`} />
             </div>
@@ -1198,12 +1198,12 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
             </span>
             {currentStep === index && animationState !== 'completed' && (
               <div className="ml-auto">
-                <Loader className="w-3 h-3 text-green-500 animate-spin" />
+                <Loader className="w-3 h-3 text-gray-500 animate-spin" />
               </div>
             )}
             {currentStep > index && (
               <div className="ml-auto">
-                <CheckCircle className="w-3 h-3 text-green-500" />
+                <CheckCircle className="w-3 h-3 text-gray-500" />
               </div>
             )}
           </motion.div>
@@ -1215,10 +1215,10 @@ const AnimatedWorkflowWindow = ({ content, title }) => {
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-lg p-4 shadow-sm border border-green-200"
+          className="bg-white rounded-lg p-4 shadow-sm border border-gray-200"
         >
           <div className="flex items-center space-x-2 mb-3">
-            <CheckCircle className="w-5 h-5 text-green-500" />
+            <CheckCircle className="w-5 h-5 text-gray-500" />
             <h5 className="font-bold text-gray-900">Results</h5>
           </div>
           <div className="space-y-2">
@@ -1556,8 +1556,8 @@ const SettingsView = () => {
                 {/* Marketing Campaign Configuration */}
                 <div className="border-t border-gray-200 pt-6">
                   <div className="flex items-center mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center mr-2">
-                      <Target className="h-4 w-4 text-blue-600" />
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center mr-2">
+                      <Target className="h-4 w-4 text-gray-600" />
                     </div>
                     <h4 className="text-lg font-medium text-gray-900">Marketing Campaign Configuration</h4>
                   </div>
@@ -1623,10 +1623,10 @@ const SettingsView = () => {
                 </div>
 
                 {/* Common SMTP Configurations */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100">
+                <div className="bg-white p-5 rounded-xl border border-gray-200">
                   <div className="flex items-center mb-3">
-                    <div className="w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center mr-2">
-                      <Mail className="h-4 w-4 text-blue-600" />
+                    <div className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center mr-2">
+                      <Mail className="h-4 w-4 text-gray-600" />
                     </div>
                     <h4 className="font-semibold text-gray-900">Common SMTP Configurations</h4>
                   </div>
@@ -1798,8 +1798,8 @@ const SettingsView = () => {
 
                 <div className="border-t border-gray-200 pt-4">
                   <div className="flex items-center mb-3">
-                    <div className="w-6 h-6 rounded-md bg-orange-50 flex items-center justify-center mr-2">
-                      <Clock className="h-4 w-4 text-orange-600" />
+                    <div className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center mr-2">
+                      <Clock className="h-4 w-4 text-gray-600" />
                     </div>
                     <h4 className="text-sm font-semibold text-gray-900">Email Limits</h4>
                   </div>
@@ -3498,6 +3498,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         (templateToUse.userEdited) || // Explicit flag that user edited something
         (templateToUse.isCustomized === true) || // Explicit customized flag
         (templateToUse.html && templateToUse.html !== baseTemplate?.html) || // HTML was edited
+        (templateToUse.manualContent) || // Manual mode content exists
         (templateToUse.customizations && Object.keys(templateToUse.customizations).some(
           key => templateToUse.customizations[key] !== undefined &&
                  templateToUse.customizations[key] !== null &&
@@ -3516,6 +3517,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         // 🎯 INCLUDE THE EDITED TEMPLATE HTML if user customized it
         html: templateToUse.html || baseTemplate?.html,
         components: baseTemplate?.structure?.components || [],
+        // 🎨 INCLUDE MANUAL MODE CONTENT for custom templates
+        templateMode: templateToUse.templateMode || 'ai',
+        manualContent: templateToUse.manualContent || null,
         // FIXED: Only mark as customized if user actually edited something
         isCustomized: hasActualCustomizations
       };
@@ -3552,9 +3556,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       console.log('🧩 Template components:', templateComponents);
 
       // Use TemplateSelectionService to send data with customizations AND components
-      // 🔥 CRITICAL FIX: Always pass customizations if HTML was edited OR has real customization values
+      // 🔥 CRITICAL FIX: Always pass customizations if HTML was edited OR has real customization values OR has manual content
       const shouldPassCustomizations =
         (customizations.html && customizations.html !== baseTemplate?.html) ||
+        (customizations.manualContent) ||  // Include manual mode content
         Object.keys(customizations.customizations || {}).some(
           key => customizations.customizations[key] !== undefined &&
                  customizations.customizations[key] !== null &&
@@ -3672,7 +3677,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       
       // Handle prospects data and trigger micro-steps
       if (data.prospects) {
-        setProspects(data.prospects);
+        console.log(`📦 Received ${data.prospects.length} prospects via WebSocket - merging`);
+        setProspects(prev => {
+          const existingEmails = new Set(prev.map(p => p.email));
+          const newProspects = data.prospects.filter(p => !existingEmails.has(p.email));
+          if (newProspects.length > 0) {
+            console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
+            return [...prev, ...newProspects];
+          }
+          return prev;
+        });
 
         // Show notification: Prospects found!
         setAgentStatus('prospects_found');
@@ -4047,8 +4061,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
           // 🎯 CRITICAL FIX: Set prospectsFromAPI BEFORE triggering template selection
           if (prospectsFromAPI && prospectsFromAPI.length > 0) {
-            console.log(`🎯 Setting ${prospectsFromAPI.length} prospectsFromAPI in state before showing template popup`);
-            setProspects(prospectsFromAPI);
+            console.log(`🎯 Merging ${prospectsFromAPI.length} prospectsFromAPI from API with existing prospects`);
+            setProspects(prev => {
+              const existingEmails = new Set(prev.map(p => p.email));
+              const newProspects = prospectsFromAPI.filter(p => !existingEmails.has(p.email));
+              if (newProspects.length > 0) {
+                console.log(`📦 Adding ${newProspects.length} new prospects from API (${prev.length} → ${prev.length + newProspects.length})`);
+                return [...prev, ...newProspects];
+              }
+              return prev;
+            });
           }
 
           // Trigger template selection popup ONLY if not already submitted
@@ -4136,8 +4158,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
         // 🎯 CRITICAL FIX: Always set prospects when available (separate from animation logic)
         if (prospectsFromAPI && prospectsFromAPI.length > 0) {
-          console.log(`🎯 Found ${prospectsFromAPI.length} prospects - setting in state`);
-          setProspects(prospectsFromAPI);
+          console.log(`🎯 Found ${prospectsFromAPI.length} prospects from API - merging with existing`);
+          setProspects(prev => {
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newProspects = prospectsFromAPI.filter(p => !existingEmails.has(p.email));
+            if (newProspects.length > 0) {
+              console.log(`📦 Adding ${newProspects.length} new prospects from API (${prev.length} → ${prev.length + newProspects.length})`);
+              return [...prev, ...newProspects];
+            }
+            return prev;
+          });
 
           // Trigger animation micro-steps only if not shown yet
           if (!hasShownProspectSteps) {
@@ -4487,9 +4517,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           console.log('📧 Real-time email update received:', data.data.emailCampaign.emails[0]);
           const newEmail = data.data.emailCampaign.emails[0];
 
-          // 🔒 CRITICAL: Only add if campaignId matches current campaign
+          // 🔒 CRITICAL: Always read LATEST campaignId from localStorage to avoid race conditions
+          const latestCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
           const emailCampaignId = newEmail.campaignId || newEmail.campaign_id || data.data.campaignId;
-          if (emailCampaignId === currentCampaignId) {
+
+          console.log(`🔍 [CAMPAIGN CHECK] Email campaign: ${emailCampaignId}, Current campaign: ${latestCampaignId}`);
+
+          if (emailCampaignId === latestCampaignId || emailCampaignId === String(latestCampaignId)) {
             console.log(`✅ [CAMPAIGN MATCH] Adding email from campaign ${emailCampaignId}`);
             // Add to generated emails immediately
             setGeneratedEmails(prev => {
@@ -4501,7 +4535,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               }
             });
           } else {
-            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email from different campaign (Email: ${emailCampaignId}, Current: ${currentCampaignId})`);
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email from different campaign (Email: ${emailCampaignId}, Current: ${latestCampaignId})`);
           }
 
           // Update stats
@@ -4554,7 +4588,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0 && !hasShownProspectSteps) {
         console.log('🎯 FOUND PROSPECTS - triggering micro-steps immediately!');
         triggerProspectMicroSteps(data.prospects);
-        setProspects(data.prospects);
+        console.log(`📦 Merging ${data.prospects.length} prospects from immediate check`);
+        setProspects(prev => {
+          const existingEmails = new Set(prev.map(p => p.email));
+          const newProspects = data.prospects.filter(p => !existingEmails.has(p.email));
+          if (newProspects.length > 0) {
+            console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
+            return [...prev, ...newProspects];
+          }
+          return prev;
+        });
       }
       
       // Check for data_update and fetch workflow data
@@ -4617,7 +4660,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         // Handle prospect list updates and trigger micro-steps
         console.log('👥 Prospect list received:', data.prospects);
         const receivedProspects = data.prospects || [];
-        setProspects(receivedProspects);
+        console.log(`📦 Merging ${receivedProspects.length} prospects from prospect_list`);
+        setProspects(prev => {
+          const existingEmails = new Set(prev.map(p => p.email));
+          const newProspects = receivedProspects.filter(p => !existingEmails.has(p.email));
+          if (newProspects.length > 0) {
+            console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
+            return [...prev, ...newProspects];
+          }
+          return prev;
+        });
 
         // Create micro-steps for prospect discovery
         if (receivedProspects.length > 0 && !hasShownProspectSteps) {
@@ -4649,9 +4701,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
         if (email) {
           console.log('📧 Email update received:', email);
-          // 🔒 CRITICAL: Only add if campaignId matches current campaign
+          // 🔒 CRITICAL: Always read LATEST campaignId from localStorage to avoid race conditions
+          const latestCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
           const emailCampaignId = email.campaignId || email.campaign_id || data.data?.campaignId;
-          if (emailCampaignId === currentCampaignId || !emailCampaignId) {
+
+          console.log(`🔍 [CAMPAIGN CHECK] Email campaign: ${emailCampaignId}, Current campaign: ${latestCampaignId}`);
+
+          if (emailCampaignId === latestCampaignId || emailCampaignId === String(latestCampaignId) || !emailCampaignId) {
             console.log(`✅ [CAMPAIGN MATCH] Processing email update for campaign ${emailCampaignId}`);
             setGeneratedEmails(prev => {
               const existing = prev.find(e => e.to === email.to);
@@ -4662,7 +4718,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               return newEmails;
             });
           } else {
-            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email update from different campaign (Email: ${emailCampaignId}, Current: ${currentCampaignId})`);
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email update from different campaign (Email: ${emailCampaignId}, Current: ${latestCampaignId})`);
           }
           setEmailCampaignStats(prev => ({
             ...prev,
@@ -4715,9 +4771,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             }));
           }
           
-          // 🔒 CRITICAL: Only add if campaignId matches current campaign
+          // 🔒 CRITICAL: Always read LATEST campaignId from localStorage to avoid race conditions
+          const latestCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
           const emailCampaignId = data.data.campaignId || email.campaignId;
-          if (emailCampaignId === currentCampaignId) {
+
+          console.log(`🔍 [CAMPAIGN CHECK] Email campaign: ${emailCampaignId}, Current campaign: ${latestCampaignId}`);
+
+          if (emailCampaignId === latestCampaignId || emailCampaignId === String(latestCampaignId)) {
             setGeneratedEmails(prev => {
               const existing = prev.find(e => e.to === email.to);
               if (existing) {
@@ -4728,7 +4788,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               }
             });
           } else {
-            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email_awaiting_approval from different campaign (Email: ${emailCampaignId}, Current: ${currentCampaignId})`);
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email_awaiting_approval from different campaign (Email: ${emailCampaignId}, Current: ${latestCampaignId})`);
           }
         }
       } else if (data.type === 'email_preview_generated') {
@@ -4827,9 +4887,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           }
           
           // Also add to generatedEmails so it's available in email editor
-          // 🔒 CRITICAL: Only add if campaignId matches current campaign to prevent mixing
+          // 🔒 CRITICAL: Always read LATEST campaignId from localStorage to avoid race conditions
+          const latestCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
           const emailCampaignId = data.data.campaignId || emailForReview.campaignId;
-          if (emailCampaignId === currentCampaignId) {
+
+          console.log(`🔍 [CAMPAIGN CHECK] Email campaign: ${emailCampaignId}, Current campaign: ${latestCampaignId}`);
+
+          if (emailCampaignId === latestCampaignId || emailCampaignId === String(latestCampaignId)) {
             setGeneratedEmails(prev => {
               const existing = prev.find(e => e.to === emailForReview.to);
               if (!existing) {
@@ -4839,7 +4903,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               return prev;
             });
           } else {
-            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email from different campaign (Email: ${emailCampaignId}, Current: ${currentCampaignId})`);
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email from different campaign (Email: ${emailCampaignId}, Current: ${latestCampaignId})`);
           }
           
           // Also update generated emails list
@@ -4889,7 +4953,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             }));
           }
           if (data.data.prospects) {
-            setProspects(data.data.prospects);
+            console.log(`📦 Received data_update with ${data.data.prospects.length} prospects - merging`);
+            setProspects(prev => {
+              const existingEmails = new Set(prev.map(p => p.email));
+              const newProspects = data.data.prospects.filter(p => !existingEmails.has(p.email));
+              if (newProspects.length > 0) {
+                console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
+                return [...prev, ...newProspects];
+              }
+              return prev;
+            });
           }
         }
       } else if (data.type === 'email_batch') {
@@ -4917,7 +4990,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           toast.info(`ℹ️ Batch search complete. No new prospects found for ${industry || keywords}`);
         }
 
-        // Refresh prospects from database
+        // Refresh prospects from database after batch search completion
         const campaignId = localStorage.getItem('currentCampaignId');
         if (campaignId) {
           fetch(`/api/contacts?status=active&limit=1000&campaignId=${campaignId}`)
@@ -4934,7 +5007,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   source: c.source || 'Database',
                   location: c.address || 'Unknown'
                 }));
-                setProspects(dbProspects);
+                console.log(`📦 Batch search complete - merging ${dbProspects.length} prospects from DB`);
+                setProspects(prev => {
+                  const existingEmails = new Set(prev.map(p => p.email));
+                  const newProspects = dbProspects.filter(p => !existingEmails.has(p.email));
+                  if (newProspects.length > 0) {
+                    console.log(`📦 Adding ${newProspects.length} new prospects from DB (${prev.length} → ${prev.length + newProspects.length})`);
+                    return [...prev, ...newProspects];
+                  }
+                  return prev;
+                });
               }
             })
             .catch(err => console.error('Failed to refresh prospects:', err));
@@ -4946,7 +5028,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       } else if (data.type === 'clients_update') {
         // Handle client/prospect updates
         if (data.clients && data.clients.length > 0) {
-          setProspects(data.clients);
+          console.log(`📦 Received clients_update with ${data.clients.length} clients - merging`);
+          setProspects(prev => {
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newProspects = data.clients.filter(p => !existingEmails.has(p.email));
+            if (newProspects.length > 0) {
+              console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
+              return [...prev, ...newProspects];
+            }
+            return prev;
+          });
         }
       } else if (data.type === 'log_update') {
         // Handle log updates for specific steps
@@ -5582,54 +5673,54 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           {/* Workflow Stats Banner - Only show when workflow is running */}
           {workflowStatus === 'running' && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-blue-600 font-medium uppercase">Prospects Found</p>
-                    <p className="text-2xl font-bold text-blue-900 mt-1">{workflowStats.prospects.total}</p>
+                    <p className="text-xs text-gray-600 font-medium uppercase">Prospects Found</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{workflowStats.prospects.total}</p>
                   </div>
-                  <Users className="w-8 h-8 text-blue-500 opacity-50" />
+                  <Users className="w-8 h-8 text-gray-500 opacity-50" />
                 </div>
               </div>
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-[#00f5a0] font-medium uppercase">Emails Generated</p>
-                    <p className="text-2xl font-bold text-green-900 mt-1">{workflowStats.emails.generated}</p>
+                    <p className="text-xs text-gray-600 font-medium uppercase">Emails Generated</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{workflowStats.emails.generated}</p>
                   </div>
-                  <Mail className="w-8 h-8 text-green-500 opacity-50" />
+                  <Mail className="w-8 h-8 text-gray-500 opacity-50" />
                 </div>
               </div>
 
-              <div className={`${workflowStats.rateLimit.isLimited ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'} border rounded-lg p-4`}>
+              <div className={`${workflowStats.rateLimit.isLimited ? 'bg-white border-gray-300' : 'bg-white border-gray-200'} border rounded-lg p-4`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-xs font-medium uppercase ${workflowStats.rateLimit.isLimited ? 'text-orange-600' : 'text-gray-600'}`}>
+                    <p className={`text-xs font-medium uppercase ${workflowStats.rateLimit.isLimited ? 'text-gray-600' : 'text-gray-600'}`}>
                       API Rate Limit
                     </p>
-                    <p className={`text-2xl font-bold mt-1 ${workflowStats.rateLimit.isLimited ? 'text-orange-900' : 'text-gray-900'}`}>
+                    <p className={`text-2xl font-bold mt-1 ${workflowStats.rateLimit.isLimited ? 'text-gray-900' : 'text-gray-900'}`}>
                       {workflowStats.rateLimit.current}/{workflowStats.rateLimit.max}
                     </p>
                   </div>
-                  <Clock className={`w-8 h-8 opacity-50 ${workflowStats.rateLimit.isLimited ? 'text-orange-500' : 'text-gray-500'}`} />
+                  <Clock className={`w-8 h-8 opacity-50 ${workflowStats.rateLimit.isLimited ? 'text-gray-500' : 'text-gray-500'}`} />
                 </div>
               </div>
 
-              <div className={`${workflowStats.rateLimit.isLimited ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'} border rounded-lg p-4`}>
+              <div className={`${workflowStats.rateLimit.isLimited ? 'bg-white border-gray-300' : 'bg-white border-gray-200'} border rounded-lg p-4`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-xs font-medium uppercase ${workflowStats.rateLimit.isLimited ? 'text-orange-600' : 'text-gray-600'}`}>
+                    <p className={`text-xs font-medium uppercase ${workflowStats.rateLimit.isLimited ? 'text-gray-600' : 'text-gray-600'}`}>
                       {workflowStats.rateLimit.isLimited ? 'Resumes In' : 'Time to Reset'}
                     </p>
-                    <p className={`text-2xl font-bold mt-1 ${workflowStats.rateLimit.isLimited ? 'text-orange-900' : 'text-gray-900'}`}>
+                    <p className={`text-2xl font-bold mt-1 ${workflowStats.rateLimit.isLimited ? 'text-gray-900' : 'text-gray-900'}`}>
                       {timeUntilReset || '--'}
                     </p>
                   </div>
-                  <RefreshCw className={`w-8 h-8 opacity-50 ${workflowStats.rateLimit.isLimited ? 'text-orange-500 animate-spin' : 'text-gray-500'}`} />
+                  <RefreshCw className={`w-8 h-8 opacity-50 ${workflowStats.rateLimit.isLimited ? 'text-gray-500 animate-spin' : 'text-gray-500'}`} />
                 </div>
                 {workflowStats.rateLimit.isLimited && (
-                  <p className="text-xs text-orange-600 mt-2">⏳ Workflow will auto-resume</p>
+                  <p className="text-xs text-gray-600 mt-2">⏳ Workflow will auto-resume</p>
                 )}
               </div>
             </div>
@@ -5856,7 +5947,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                             transition={{ delay: 0.3 }}
                             className="mt-2 text-xs text-gray-700 flex items-center space-x-2"
                           >
-                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                             <span>✅ Validated - Confidence: {Math.floor((microStep.prospect.confidence || 0.8) * 100)}%</span>
                           </motion.div>
                         </div>
@@ -6003,7 +6094,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                       <h2 className="text-2xl font-bold text-gray-900">Prospects</h2>
                       <button
                         onClick={() => setShowBatchSearchModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
                       >
                         <Search className="w-4 h-4" />
                         Batch Search
@@ -6161,7 +6252,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-16 bg-gradient-to-br from-[#00f5a0]/10 via-white to-white rounded-2xl"
+                    className="text-center py-16 bg-white rounded-2xl"
                   >
                     <motion.div
                       animate={{
@@ -6259,7 +6350,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                       ))}
                     </>
                   ) : generatedEmails.length === 0 ? (
-                    workflowStatus === 'running' || workflowStatus === 'starting' || workflowStatus === 'paused' || workflowStatus === 'waiting' ? (
+                    workflowStatus !== 'stopped' && workflowStatus !== 'idle' && workflowStatus !== '' ? (
                       // Show generating animation when workflow is active
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -6320,12 +6411,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                           />
                         </div>
                       </motion.div>
-                    ) : workflowStatus === 'running' || workflowStatus === 'analyzing_prospects' ? (
+                    ) : workflowStatus !== 'stopped' && workflowStatus !== 'idle' && workflowStatus !== '' ? (
                       // Show generating state if workflow is running but no emails yet
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="text-center py-16 bg-gradient-to-br from-[#00f5a0]/10 via-white to-white rounded-2xl"
+                        className="text-center py-16 bg-white rounded-2xl"
                       >
                         <motion.div
                           animate={{
@@ -7112,7 +7203,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               <button
                 onClick={handleBatchSearch}
                 disabled={!batchSearchData.industry && !batchSearchData.region && !batchSearchData.keywords}
-                className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Start Search
               </button>

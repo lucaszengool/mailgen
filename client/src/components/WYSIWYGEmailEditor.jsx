@@ -83,7 +83,7 @@ const WYSIWYGEmailEditor = ({
     const button = `
       <div style="text-align: center; margin: 20px 0;">
         <a href="https://example.com"
-           style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">
+           style="display: inline-block; padding: 12px 24px; background-color: #000000; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">
           Click Here
         </a>
       </div>
@@ -96,6 +96,118 @@ const WYSIWYGEmailEditor = ({
   const insertDivider = () => {
     const divider = '<hr style="border: none; border-top: 2px solid #e5e7eb; margin: 20px 0;" />';
     document.execCommand('insertHTML', false, divider);
+    updateContent();
+  };
+
+  // Insert logo header
+  const insertLogo = () => {
+    const logo = `
+      <div style="text-align: center; margin: 20px 0 30px;">
+        <img src="https://via.placeholder.com/150x50?text=Your+Logo"
+             alt="Company Logo"
+             style="max-width: 150px; height: auto;" />
+      </div>
+    `;
+    document.execCommand('insertHTML', false, logo);
+    updateContent();
+  };
+
+  // Insert heading
+  const insertHeading = () => {
+    const heading = `
+      <h2 style="color: #111827; font-size: 24px; font-weight: 700; margin: 20px 0 10px; line-height: 1.3;">
+        Your Heading Here
+      </h2>
+    `;
+    document.execCommand('insertHTML', false, heading);
+    updateContent();
+  };
+
+  // Insert paragraph
+  const insertParagraph = () => {
+    const paragraph = `
+      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 15px 0;">
+        Add your paragraph text here. You can use placeholders like {name}, {company}, or {position}.
+      </p>
+    `;
+    document.execCommand('insertHTML', false, paragraph);
+    updateContent();
+  };
+
+  // Insert testimonial
+  const insertTestimonial = () => {
+    const testimonial = `
+      <div style="background: #f9fafb; border-left: 4px solid #10b981; padding: 20px; margin: 25px 0; border-radius: 6px;">
+        <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 10px; font-style: italic;">
+          "This solution transformed our business. Highly recommended!"
+        </p>
+        <p style="color: #6b7280; font-size: 14px; margin: 0; font-weight: 600;">
+          — John Doe, CEO at Company Inc.
+        </p>
+      </div>
+    `;
+    document.execCommand('insertHTML', false, testimonial);
+    updateContent();
+  };
+
+  // Insert feature list
+  const insertFeatures = () => {
+    const features = `
+      <div style="margin: 25px 0;">
+        <h3 style="color: #111827; font-size: 18px; font-weight: 600; margin-bottom: 15px;">Key Features:</h3>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          <li style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #374151;">✓ Feature One</li>
+          <li style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #374151;">✓ Feature Two</li>
+          <li style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #374151;">✓ Feature Three</li>
+        </ul>
+      </div>
+    `;
+    document.execCommand('insertHTML', false, features);
+    updateContent();
+  };
+
+  // Insert stats/metrics
+  const insertStats = () => {
+    const stats = `
+      <div style="display: flex; gap: 20px; margin: 30px 0; text-align: center;">
+        <div style="flex: 1; padding: 20px; background: #f9fafb; border-radius: 8px;">
+          <div style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 5px;">40%</div>
+          <div style="font-size: 14px; color: #6b7280;">Cost Reduction</div>
+        </div>
+        <div style="flex: 1; padding: 20px; background: #f9fafb; border-radius: 8px;">
+          <div style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 5px;">10x</div>
+          <div style="font-size: 14px; color: #6b7280;">Faster Processing</div>
+        </div>
+        <div style="flex: 1; padding: 20px; background: #f9fafb; border-radius: 8px;">
+          <div style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 5px;">100%</div>
+          <div style="font-size: 14px; color: #6b7280;">Satisfaction</div>
+        </div>
+      </div>
+    `;
+    document.execCommand('insertHTML', false, stats);
+    updateContent();
+  };
+
+  // Insert spacer
+  const insertSpacer = () => {
+    const spacer = '<div style="height: 30px;"></div>';
+    document.execCommand('insertHTML', false, spacer);
+    updateContent();
+  };
+
+  // Insert contact info
+  const insertContactInfo = () => {
+    const contact = `
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;">
+        <h4 style="color: #111827; font-size: 16px; font-weight: 600; margin: 0 0 15px;">Contact Information</h4>
+        <p style="color: #374151; font-size: 14px; line-height: 1.6; margin: 5px 0;">
+          📧 Email: info@company.com<br>
+          📞 Phone: (555) 123-4567<br>
+          🌐 Website: www.company.com
+        </p>
+      </div>
+    `;
+    document.execCommand('insertHTML', false, contact);
     updateContent();
   };
 
@@ -236,22 +348,36 @@ const WYSIWYGEmailEditor = ({
 
         {/* Components */}
         <div className="flex gap-1">
-          <button
-            onClick={insertButton}
-            className="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 rounded font-medium"
-            title="Insert Button"
-            type="button"
+          <select
+            onChange={(e) => {
+              const action = e.target.value;
+              if (action === 'button') insertButton();
+              else if (action === 'divider') insertDivider();
+              else if (action === 'logo') insertLogo();
+              else if (action === 'heading') insertHeading();
+              else if (action === 'paragraph') insertParagraph();
+              else if (action === 'testimonial') insertTestimonial();
+              else if (action === 'features') insertFeatures();
+              else if (action === 'stats') insertStats();
+              else if (action === 'spacer') insertSpacer();
+              else if (action === 'contact') insertContactInfo();
+              e.target.value = ''; // Reset selection
+            }}
+            className="px-3 py-1 text-xs bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded font-medium cursor-pointer"
+            defaultValue=""
           >
-            + Button
-          </button>
-          <button
-            onClick={insertDivider}
-            className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded font-medium"
-            title="Insert Divider"
-            type="button"
-          >
-            + Divider
-          </button>
+            <option value="" disabled>+ Add Component</option>
+            <option value="logo">📷 Logo Header</option>
+            <option value="heading">📝 Heading</option>
+            <option value="paragraph">📄 Paragraph</option>
+            <option value="button">🔘 CTA Button</option>
+            <option value="divider">➖ Divider</option>
+            <option value="testimonial">💬 Testimonial</option>
+            <option value="features">⭐ Feature List</option>
+            <option value="stats">📊 Stats/Metrics</option>
+            <option value="spacer">↕️ Spacer</option>
+            <option value="contact">📧 Contact Info</option>
+          </select>
         </div>
       </div>
 
@@ -330,7 +456,8 @@ const WYSIWYGEmailEditor = ({
       <div className="bg-blue-50 border-t border-blue-200 p-3 text-xs text-blue-800">
         <p className="font-medium mb-1">💡 Manual Email Mode</p>
         <p>Write exactly what you want to send. This email will be sent as-is to all prospects - no AI modifications.</p>
-        <p className="mt-1">You can still use placeholders like {'{name}'}, {'{company}'}, {'{position}'} which will be replaced for each prospect.</p>
+        <p className="mt-1">✨ <strong>Use the "+ Add Component" dropdown</strong> to quickly insert professional elements like buttons, testimonials, stats, and more!</p>
+        <p className="mt-1">🔤 You can use placeholders like {'{name}'}, {'{company}'}, {'{position}'} which will be replaced for each prospect.</p>
       </div>
     </div>
   );

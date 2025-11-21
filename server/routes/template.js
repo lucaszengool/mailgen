@@ -205,7 +205,10 @@ router.post('/select', optionalAuth, async (req, res) => {
       customizations: userCustomizations || {},
       // FIXED: Respect explicit isCustomized flag from frontend, don't override based on customizations object
       isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0),
-      components: components || []
+      components: components || [],
+      // 🎨 CRITICAL: Save template mode and manual content for custom templates
+      templateMode: templateMode || 'ai',
+      manualContent: manualContent || null
     };
 
     console.log(`✅ Template ${template.name} selected for ${key}${isCustomized ? ' (CUSTOMIZED)' : ''}`);
@@ -221,7 +224,9 @@ router.post('/select', optionalAuth, async (req, res) => {
         html: userEditedHtml,
         customizations: userCustomizations,
         isCustomized,
-        components
+        components,
+        templateMode,
+        manualContent
       });
       console.log(`💾 [User: ${userId}] Template preference saved: ${template.name}${isCustomized ? ' (with customizations)' : ''}`);
     } catch (error) {

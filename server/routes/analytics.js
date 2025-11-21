@@ -409,7 +409,7 @@ router.get('/email-metrics', async (req, res) => {
          WHERE e.user_id = ? AND b.bounced_at >= ? AND b.campaign_id = ?`;
 
     const opensParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
-    const clicksParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
+    const clicksParams = campaign === 'all' ? [userId, sinceTimestamp] : [campaign];  // 🔥 FIX: Only pass campaign when filtering
     const repliesParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
     const bouncesParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
 
