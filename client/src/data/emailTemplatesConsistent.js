@@ -61,7 +61,7 @@ Write the complete email now (without subject line or email headers):`,
           <!-- CTA Button Component -->
           <div id="component-cta-button" style="text-align: center; margin: 35px 0;">
             <a href="https://calendly.com/partnership"
-               style="display: inline-block; background: #2563eb; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+               style="display: inline-block; background: #000000; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
               Schedule Partnership Discussion
             </a>
             <p style="margin: 12px 0 0; color: #6c757d; font-size: 14px;">15-minute introductory call</p>
@@ -75,7 +75,7 @@ Write the complete email now (without subject line or email headers):`,
           </div>
 
           <!-- Testimonial Component -->
-          <div id="component-testimonial" style="background: transparent; border-left: 4px solid #2563eb; padding: 20px; margin: 30px 0; border-radius: 0 6px 6px 0;">
+          <div id="component-testimonial" style="background: transparent; border-left: 4px solid #000000; padding: 20px; margin: 30px 0; border-radius: 0 6px 6px 0;">
             <blockquote style="margin: 0; font-style: italic; color: #495057; font-size: 15px; line-height: 1.5;">
               "This partnership exceeded our expectations. We saw immediate results in market expansion and lead quality."
             </blockquote>
@@ -155,7 +155,7 @@ Write the complete email now (without subject line or email headers):`,
           </div>
 
           <!-- Feature Grid Component -->
-          <div id="component-feature-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 35px 0; padding: 25px; background: #2563eb; border-radius: 12px; color: white;">
+          <div id="component-feature-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 35px 0; padding: 25px; background: #000000; border-radius: 12px; color: white;">
             <div style="text-align: center;">
               <div style="font-size: 32px; margin-bottom: 10px;"></div>
               <h3 style="margin: 0 0 8px; font-size: 16px;">Lightning Fast</h3>
@@ -178,7 +178,7 @@ Write the complete email now (without subject line or email headers):`,
           <!-- CTA Button Component -->
           <div id="component-cta-button" style="text-align: center; margin: 35px 0;">
             <a href="https://demo.ourplatform.com"
-               style="display: inline-block; background: #2563eb; color: white; padding: 16px 35px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 17px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+               style="display: inline-block; background: #000000; color: white; padding: 16px 35px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 17px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
               Explore the Platform
             </a>
             <p style="margin: 15px 0 0; color: #6c757d; font-size: 14px;">Live demo • No signup required</p>
@@ -237,7 +237,7 @@ Write the complete email now (without subject line or email headers):`,
       <div style="font-family: 'Georgia', serif; max-width: 650px; margin: 0 auto; background: transparent; border: 1px solid #e5e5e5;">
 
         <!-- Executive Header Component -->
-        <div id="component-executive-header" style="background: #343a40; color: white; padding: 35px 40px; border-bottom: 3px solid #2563eb;">
+        <div id="component-executive-header" style="background: #343a40; color: white; padding: 35px 40px; border-bottom: 3px solid #000000;">
           <h1 style="margin: 0 0 8px; font-size: 26px; font-weight: 400; letter-spacing: 0.5px;">Strategic Partnership Opportunity</h1>
           <p style="margin: 0; font-size: 16px; opacity: 0.9;">Exclusively for {company} Leadership</p>
         </div>
@@ -253,11 +253,11 @@ Write the complete email now (without subject line or email headers):`,
           </div>
 
           <!-- Stats Showcase Component -->
-          <div id="component-stats-showcase" style="background: transparent; padding: 30px; margin: 35px 0; border-left: 4px solid #2563eb;">
+          <div id="component-stats-showcase" style="background: transparent; padding: 30px; margin: 35px 0; border-left: 4px solid #000000;">
             <h3 style="margin: 0 0 20px; color: #343a40; font-size: 20px;">Strategic Impact Metrics</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; text-align: center;">
               <div>
-                <div style="font-size: 24px; font-weight: bold; color: #2563eb; margin-bottom: 5px;">340%</div>
+                <div style="font-size: 24px; font-weight: bold; color: #000000; margin-bottom: 5px;">340%</div>
                 <div style="font-size: 14px; color: #6c757d; text-transform: uppercase; letter-spacing: 1px;">ROI Increase</div>
               </div>
               <div>
@@ -265,7 +265,7 @@ Write the complete email now (without subject line or email headers):`,
                 <div style="font-size: 14px; color: #6c757d; text-transform: uppercase; letter-spacing: 1px;">Avg. Payback</div>
               </div>
               <div>
-                <div style="font-size: 24px; font-weight: bold; color: #2563eb; margin-bottom: 5px;">95%</div>
+                <div style="font-size: 24px; font-weight: bold; color: #000000; margin-bottom: 5px;">95%</div>
                 <div style="font-size: 14px; color: #6c757d; text-transform: uppercase; letter-spacing: 1px;">Success Rate</div>
               </div>
             </div>
@@ -375,7 +375,7 @@ Write the complete email now (without subject line or email headers):`,
           </div>
 
           <!-- Feature Highlights Component -->
-          <div id="component-feature-highlights" style="background: #2563eb; color: white; padding: 30px; border-radius: 15px; margin: 35px 0;">
+          <div id="component-feature-highlights" style="background: #000000; color: white; padding: 30px; border-radius: 15px; margin: 35px 0;">
             <h3 style="margin: 0 0 25px; text-align: center; font-size: 20px;">What's Inside</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
               <div style="text-align: center; padding: 15px;">
@@ -438,7 +438,7 @@ Write the complete email now (without subject line or email headers):`,
           <!-- CTA Button Component -->
           <div id="component-cta-button" style="text-align: center; margin: 35px 0;">
             <a href="https://earlyaccess.product.com"
-               style="display: inline-block; background: #2563eb; color: white; padding: 18px 40px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 18px; box-shadow: 0 6px 25px rgba(40,167,69,0.3); text-transform: uppercase; letter-spacing: 1px;">
+               style="display: inline-block; background: #000000; color: white; padding: 18px 40px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 18px; box-shadow: 0 6px 25px rgba(40,167,69,0.3); text-transform: uppercase; letter-spacing: 1px;">
               Get Early Access Now
             </a>
             <p style="margin: 15px 0 0; color: #6c757d; font-size: 14px;"> Includes exclusive launch bonuses worth $500</p>
@@ -523,7 +523,7 @@ Write the complete email now (without subject line or email headers):`,
             <h3 style="margin: 0 0 20px; color: #343a40; font-size: 18px; text-align: center;">Our Proven Framework</h3>
             <div style="display: flex; justify-content: space-between; gap: 15px;">
               <div style="flex: 1; text-align: center; padding: 15px;">
-                <div style="background: #2563eb; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold;">1</div>
+                <div style="background: #000000; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold;">1</div>
                 <h4 style="margin: 0 0 8px; font-size: 14px; color: #343a40;">ANALYZE</h4>
                 <p style="margin: 0; font-size: 12px; color: #6c757d;">Current state assessment</p>
               </div>
@@ -533,7 +533,7 @@ Write the complete email now (without subject line or email headers):`,
                 <p style="margin: 0; font-size: 12px; color: #6c757d;">Custom solution design</p>
               </div>
               <div style="flex: 1; text-align: center; padding: 15px;">
-                <div style="background: #2563eb; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold;">3</div>
+                <div style="background: #000000; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold;">3</div>
                 <h4 style="margin: 0 0 8px; font-size: 14px; color: #343a40;">EXECUTE</h4>
                 <p style="margin: 0; font-size: 12px; color: #6c757d;">Implementation & results</p>
               </div>
@@ -548,14 +548,14 @@ Write the complete email now (without subject line or email headers):`,
           </div>
 
           <!-- Case Study Component -->
-          <div id="component-case-study" style="border-left: 4px solid #2563eb; background: transparent; padding: 25px; margin: 35px 0;">
-            <h3 style="margin: 0 0 15px; color: #2563eb; font-size: 16px;"> Recent Success Story</h3>
+          <div id="component-case-study" style="border-left: 4px solid #000000; background: transparent; padding: 25px; margin: 35px 0;">
+            <h3 style="margin: 0 0 15px; color: #000000; font-size: 16px;"> Recent Success Story</h3>
             <p style="margin: 0 0 15px; font-style: italic; color: #6c757d; font-size: 15px; line-height: 1.6;">
               "Similar manufacturing company increased operational efficiency by 180% and reduced costs by $2.3M annually using our strategic framework."
             </p>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span style="font-weight: 600; color: #343a40; font-size: 14px;">Manufacturing Industry • 500+ employees</span>
-              <span style="background: #2563eb; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">VERIFIED RESULTS</span>
+              <span style="background: #000000; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">VERIFIED RESULTS</span>
             </div>
           </div>
 
@@ -578,7 +578,7 @@ Write the complete email now (without subject line or email headers):`,
             <h3 style="margin: 0 0 15px; font-size: 18px;">Complimentary Strategic Assessment</h3>
             <p style="margin: 0 0 20px; font-size: 14px; opacity: 0.9;">No obligation • 30-minute expert consultation</p>
             <a href="https://consultation.company.com"
-               style="display: inline-block; background: #2563eb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: 600;">
+               style="display: inline-block; background: #000000; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: 600;">
               Schedule Assessment
             </a>
           </div>
@@ -636,7 +636,7 @@ Write the complete email now (without subject line or email headers):`,
         <!-- Event Hero Component -->
         <div id="component-event-hero" style="background: #343a40; color: white; padding: 40px 30px; text-align: center; position: relative;">
           <div style="position: relative; z-index: 2;">
-            <div style="background: #2563eb; display: inline-block; padding: 8px 20px; border-radius: 20px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+            <div style="background: #000000; display: inline-block; padding: 8px 20px; border-radius: 20px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
               EXCLUSIVE EVENT
             </div>
             <h1 style="margin: 0 0 15px; font-size: 28px; font-weight: 700;">Future of Business Summit</h1>
@@ -661,7 +661,7 @@ Write the complete email now (without subject line or email headers):`,
             <h3 style="margin: 0 0 25px; text-align: center; color: #343a40; font-size: 20px;"> Event Agenda</h3>
             <div style="space-y: 15px;">
               <div style="display: flex; align-items: center; padding: 15px; background: transparent; border-radius: 8px; margin-bottom: 15px;">
-                <div style="background: #2563eb; color: white; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; margin-right: 15px; min-width: 70px; text-align: center;">2:00 PM</div>
+                <div style="background: #000000; color: white; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; margin-right: 15px; min-width: 70px; text-align: center;">2:00 PM</div>
                 <div>
                   <h4 style="margin: 0 0 5px; color: #343a40; font-size: 16px;">Opening Keynote: Digital Transformation Trends</h4>
                   <p style="margin: 0; color: #6c757d; font-size: 14px;">Industry insights and future predictions</p>
@@ -675,7 +675,7 @@ Write the complete email now (without subject line or email headers):`,
                 </div>
               </div>
               <div style="display: flex; align-items: center; padding: 15px; background: transparent; border-radius: 8px;">
-                <div style="background: #2563eb; color: white; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; margin-right: 15px; min-width: 70px; text-align: center;">3:30 PM</div>
+                <div style="background: #000000; color: white; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; margin-right: 15px; min-width: 70px; text-align: center;">3:30 PM</div>
                 <div>
                   <h4 style="margin: 0 0 5px; color: #343a40; font-size: 16px;">Networking & Q&A</h4>
                   <p style="margin: 0; color: #6c757d; font-size: 14px;">Connect with peers and experts</p>
@@ -699,7 +699,7 @@ Write the complete email now (without subject line or email headers):`,
                 <img src="https://via.placeholder.com/80x80/343a40/ffffff?text=S1" alt="Speaker" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;">
                 <h4 style="margin: 0 0 5px; color: #343a40; font-size: 16px;">Sarah Johnson</h4>
                 <p style="margin: 0 0 10px; color: #6c757d; font-size: 14px;">CEO, TechVanguard</p>
-                <span style="background: #2563eb; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px;">KEYNOTE</span>
+                <span style="background: #000000; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px;">KEYNOTE</span>
               </div>
               <div style="text-align: center; background: transparent; padding: 20px; border-radius: 10px;">
                 <img src="https://via.placeholder.com/80x80/343a40/ffffff?text=S2" alt="Speaker" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;">
@@ -718,14 +718,14 @@ Write the complete email now (without subject line or email headers):`,
           </div>
 
           <!-- Registration CTA Component -->
-          <div id="component-registration-cta" style="background: #2563eb; color: white; padding: 35px; text-align: center; border-radius: 15px; margin: 35px 0; position: relative;">
+          <div id="component-registration-cta" style="background: #000000; color: white; padding: 35px; text-align: center; border-radius: 15px; margin: 35px 0; position: relative;">
             <div style="position: absolute; top: -10px; right: 20px; background: #343a40; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 700;">
               LIMITED SEATS
             </div>
             <h3 style="margin: 0 0 15px; font-size: 22px;"> Reserve Your Spot</h3>
             <p style="margin: 0 0 25px; font-size: 16px; opacity: 0.9;">Join 200+ industry leaders • Complimentary attendance</p>
             <a href="https://register.event.com"
-               style="display: inline-block; background: transparent; color: #2563eb; padding: 16px 35px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 17px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+               style="display: inline-block; background: transparent; color: #000000; padding: 16px 35px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 17px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
               Register Free Now
             </a>
             <p style="margin: 20px 0 0; font-size: 14px; opacity: 0.8;"> Bonus: Exclusive strategy guide for attendees</p>

@@ -107,8 +107,8 @@ const EmailTemplateRenderer = ({
     mainHeading: replacePlaceholders(getCustomization('mainHeading', `Revolutionizing {company} with AI-Powered Solutions`)),
     buttonText: replacePlaceholders(getCustomization('buttonText', 'Schedule Your Free Demo')),
     buttonUrl: getCustomization('buttonUrl', 'https://calendly.com/meeting'),
-    primaryColor: getCustomization('primaryColor', '#2563eb'),
-    accentColor: getCustomization('accentColor', '#1e40af'),
+    primaryColor: getCustomization('primaryColor', '#000000'),
+    accentColor: getCustomization('accentColor', '#6b7280'),
     testimonialText: replacePlaceholders(getCustomization('testimonialText', '"This solution transformed our operations. We saw remarkable results in just weeks."')),
     testimonialAuthor: replacePlaceholders(getCustomization('testimonialAuthor', 'CEO, Industry Leader')),
 
@@ -143,13 +143,13 @@ const EmailTemplateRenderer = ({
 
     // Testimonial component colors
     testimonialBackground: getCustomization('testimonialBackground', '#f8f9fa'),
-    testimonialBorderColor: getCustomization('testimonialBorderColor', getCustomization('primaryColor', '#2563eb')),
+    testimonialBorderColor: getCustomization('testimonialBorderColor', getCustomization('primaryColor', '#000000')),
     testimonialAvatarBackground: getCustomization('testimonialAvatarBackground', '#e9ecef'),
 
     // Feature grid colors
     featureBackground: getCustomization('featureBackground', '#f8f9fa'),
     featureCardBackground: getCustomization('featureCardBackground', 'white'),
-    featureIconBackground: getCustomization('featureIconBackground', getCustomization('primaryColor', '#2563eb')),
+    featureIconBackground: getCustomization('featureIconBackground', getCustomization('primaryColor', '#000000')),
 
     // Methodology colors
     methodologyBackground: getCustomization('methodologyBackground', '#f8f9fa'),
@@ -157,7 +157,7 @@ const EmailTemplateRenderer = ({
 
     // Case study colors
     caseStudyBackground: getCustomization('caseStudyBackground', '#f8f9fa'),
-    caseStudyBorderColor: getCustomization('caseStudyBorderColor', getCustomization('primaryColor', '#2563eb')),
+    caseStudyBorderColor: getCustomization('caseStudyBorderColor', getCustomization('primaryColor', '#000000')),
 
     // Agenda colors
     agendaBackground: getCustomization('agendaBackground', '#f8f9fa'),
@@ -579,7 +579,7 @@ const EmailTemplateRenderer = ({
               background: '#343a40',
               color: 'white',
               padding: '35px 40px',
-              borderBottom: '3px solid #2563eb'
+              borderBottom: '3px solid #000000'
             }}>
               <h1 style={{
                 margin: '0 0 8px',
@@ -648,7 +648,7 @@ const EmailTemplateRenderer = ({
                   background: '#f8f9fa',
                   padding: '30px',
                   margin: '35px 0',
-                  borderLeft: '4px solid #2563eb'
+                  borderLeft: '4px solid #000000'
                 }}>
                   <h3 style={{
                     margin: '0 0 20px',
@@ -672,7 +672,7 @@ const EmailTemplateRenderer = ({
                       <div style={{
                         fontSize: '24px',
                         fontWeight: 'bold',
-                        color: '#2563eb',
+                        color: '#000000',
                         marginBottom: '5px'
                       }}>
                         {isEditable ? (
@@ -716,7 +716,7 @@ const EmailTemplateRenderer = ({
                       <div style={{
                         fontSize: '24px',
                         fontWeight: 'bold',
-                        color: '#2563eb',
+                        color: '#000000',
                         marginBottom: '5px'
                       }}>
                         {isEditable ? (
@@ -1369,7 +1369,7 @@ const EmailTemplateRenderer = ({
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '15px' }}>
                     <div style={{ flex: 1, textAlign: 'center', padding: '15px' }}>
                       <div style={{
-                        background: '#2563eb',
+                        background: '#000000',
                         color: 'white',
                         width: '40px',
                         height: '40px',
@@ -1425,7 +1425,7 @@ const EmailTemplateRenderer = ({
                     </div>
                     <div style={{ flex: 1, textAlign: 'center', padding: '15px' }}>
                       <div style={{
-                        background: '#2563eb',
+                        background: '#000000',
                         color: 'white',
                         width: '40px',
                         height: '40px',
@@ -1477,14 +1477,14 @@ const EmailTemplateRenderer = ({
               {/* Case Study Component */}
               {template.structure?.components?.includes('case_study') && (
                 <div style={{
-                  borderLeft: '4px solid #2563eb',
+                  borderLeft: '4px solid #000000',
                   background: '#f8f9fa',
                   padding: '25px',
                   margin: '35px 0'
                 }}>
                   <h3 style={{
                     margin: '0 0 15px',
-                    color: '#2563eb',
+                    color: '#000000',
                     fontSize: '16px'
                   }}>
                     {isEditable ? (
@@ -1515,7 +1515,7 @@ const EmailTemplateRenderer = ({
                       ) : getCustomization('caseStudyCompany', 'Manufacturing Industry • 500+ employees')}
                     </span>
                     <span style={{
-                      background: '#2563eb',
+                      background: '#000000',
                       color: 'white',
                       padding: '4px 10px',
                       borderRadius: '12px',
@@ -1590,7 +1590,7 @@ const EmailTemplateRenderer = ({
                 </p>
                 <a href={config.buttonUrl || 'https://consultation.company.com'} style={{
                   display: 'inline-block',
-                  background: '#2563eb',
+                  background: '#000000',
                   color: 'white',
                   padding: '12px 25px',
                   textDecoration: 'none',
@@ -1654,7 +1654,7 @@ const EmailTemplateRenderer = ({
             }}>
               <div style={{ position: 'relative', zIndex: '2' }}>
                 <div style={{
-                  background: '#2563eb',
+                  background: '#000000',
                   display: 'inline-block',
                   padding: '8px 20px',
                   borderRadius: '20px',
@@ -1748,7 +1748,7 @@ const EmailTemplateRenderer = ({
                     marginBottom: '15px'
                   }}>
                     <div style={{
-                      background: '#2563eb',
+                      background: '#000000',
                       color: 'white',
                       padding: '8px 12px',
                       borderRadius: '6px',
@@ -1847,7 +1847,7 @@ const EmailTemplateRenderer = ({
                     borderRadius: '8px'
                   }}>
                     <div style={{
-                      background: '#2563eb',
+                      background: '#000000',
                       color: 'white',
                       padding: '8px 12px',
                       borderRadius: '6px',
@@ -1963,7 +1963,7 @@ const EmailTemplateRenderer = ({
                       ) : getCustomization('speaker1Title', 'CEO, TechVanguard')}
                     </p>
                     <span style={{
-                      background: '#2563eb',
+                      background: '#000000',
                       color: 'white',
                       padding: '4px 12px',
                       borderRadius: '12px',
@@ -2045,7 +2045,7 @@ const EmailTemplateRenderer = ({
 
               {/* Registration CTA Component */}
               <div style={{
-                background: '#2563eb',
+                background: '#000000',
                 color: 'white',
                 padding: '35px',
                 textAlign: 'center',
@@ -2088,7 +2088,7 @@ const EmailTemplateRenderer = ({
                   style={{
                     display: 'inline-block',
                     background: 'white',
-                    color: '#2563eb',
+                    color: '#000000',
                     padding: '16px 35px',
                     textDecoration: 'none',
                     borderRadius: '50px',
@@ -2099,10 +2099,10 @@ const EmailTemplateRenderer = ({
                 >
                   {isEditable ? (
                     <>
-                      <EditableText field="buttonText" className="bg-transparent border-0" style={{ color: '#2563eb' }}>
+                      <EditableText field="buttonText" className="bg-transparent border-0" style={{ color: '#000000' }}>
                         {config.buttonText}
                       </EditableText>
-                      <div style={{ fontSize: '10px', marginTop: '5px', color: '#2563eb' }}>
+                      <div style={{ fontSize: '10px', marginTop: '5px', color: '#000000' }}>
                         <EditableText field="buttonUrl" className="bg-transparent">
                           URL: {config.buttonUrl || 'https://register.event.com'}
                         </EditableText>
@@ -2193,7 +2193,7 @@ const EmailTemplateRenderer = ({
                   <a href={props.url} style={{
                     display: 'inline-block',
                     padding: '14px 32px',
-                    background: props.color || '#2563eb',
+                    background: props.color || '#000000',
                     color: 'white',
                     textDecoration: 'none',
                     borderRadius: '6px',
@@ -2210,7 +2210,7 @@ const EmailTemplateRenderer = ({
                 <div key={component.id} style={{
                   padding: '30px 40px',
                   background: '#f8f9fa',
-                  borderLeft: '4px solid #2563eb',
+                  borderLeft: '4px solid #000000',
                   margin: '20px 0'
                 }}>
                   <p style={{
@@ -2244,7 +2244,7 @@ const EmailTemplateRenderer = ({
                         <div key={num} style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
                           <h4 style={{
                             margin: '0 0 8px',
-                            color: '#2563eb',
+                            color: '#000000',
                             fontSize: '16px',
                             fontWeight: '600'
                           }}>
@@ -2331,7 +2331,7 @@ const EmailTemplateRenderer = ({
               return (
                 <div key={component.id} style={{
                   padding: '60px 40px',
-                  background: props.color || '#2563eb',
+                  background: props.color || '#000000',
                   textAlign: 'center'
                 }}>
                   <h1 style={{
