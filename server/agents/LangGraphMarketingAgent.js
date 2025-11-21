@@ -3812,19 +3812,30 @@ ${senderName || senderCompany}`;
               console.log(`   Template ID: ${selectedTemplate}`);
               console.log(`   Has custom-email-content div: ${templateHtml.includes('custom-email-content')}`);
 
-              // Find the custom-email-content div and replace everything inside it
-              // Use a more robust regex that handles nested divs
-              const customContentRegex = /<div[^>]*id=["']custom-email-content["'][^>]*>([\s\S]*)<\/div>(\s*<!-- Footer)/;
+              // Strategy 1: Try to find and replace custom-email-content div (more specific)
+              const customContentRegex = /<div[^>]*id=["']custom-email-content["'][^>]*>[\s\S]*?<\/div>/;
               if (templateHtml.match(customContentRegex)) {
+                console.log(`   ✅ Found custom-email-content div, replacing...`);
                 finalHtmlBody = templateHtml.replace(
                   customContentRegex,
-                  `<div id="custom-email-content" style="padding: 40px; background: transparent;">\n${bodyContentHtml}\n</div>$2`
+                  `<div id="custom-email-content" style="padding: 40px; background: transparent;">\n${bodyContentHtml}\n</div>`
                 );
-                console.log(`✅ [CUSTOM TEMPLATE] Replaced custom-email-content div with AI content`);
-              } else {
-                // Fallback: just append the content
-                console.log(`⚠️  [CUSTOM TEMPLATE] Regex didn't match, appending content`);
-                finalHtmlBody = templateHtml.replace('<!-- Empty Template - User can add components -->', bodyContentHtml);
+                console.log(`✅ [CUSTOM TEMPLATE] Replaced custom-email-content div with AI content (${bodyContentHtml.length} chars)`);
+              }
+              // Strategy 2: Replace Empty Template comment
+              else if (templateHtml.includes('<!-- Empty Template - User can add components -->')) {
+                console.log(`   ✅ Found Empty Template comment, replacing...`);
+                finalHtmlBody = templateHtml.replace(
+                  '<!-- Empty Template - User can add components -->',
+                  `<div style="padding: 20px;">\n${bodyContentHtml}\n</div>`
+                );
+                console.log(`✅ [CUSTOM TEMPLATE] Replaced Empty Template comment with AI content (${bodyContentHtml.length} chars)`);
+              }
+              // Strategy 3: Append to the end
+              else {
+                console.log(`   ⚠️  No insertion point found, appending to template`);
+                finalHtmlBody = templateHtml + `<div style="padding: 40px; background: transparent;">\n${bodyContentHtml}\n</div>`;
+                console.log(`✅ [CUSTOM TEMPLATE] Appended AI content to template (${bodyContentHtml.length} chars)`);
               }
             }
             // Try to find the main content section and replace it
