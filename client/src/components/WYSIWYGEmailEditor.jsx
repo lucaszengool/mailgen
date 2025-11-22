@@ -256,18 +256,13 @@ const WYSIWYGEmailEditor = ({
             <option value="7">Huge</option>
           </select>
 
-          <select
+          <input
+            type="color"
             onChange={(e) => execCommand('foreColor', e.target.value)}
-            className="px-2 py-1 text-sm border border-gray-300 rounded w-20"
-            title="Text Color"
-          >
-            <option value="#000000">Black</option>
-            <option value="#10b981">Green</option>
-            <option value="#3b82f6">Blue</option>
-            <option value="#ef4444">Red</option>
-            <option value="#8b5cf6">Purple</option>
-            <option value="#f59e0b">Orange</option>
-          </select>
+            defaultValue="#000000"
+            className="w-10 h-8 border border-gray-300 rounded cursor-pointer"
+            title="Text Color - Click to choose any color"
+          />
         </div>
 
         {/* Alignment */}
