@@ -63,7 +63,7 @@ class ProspectSearchAgent {
       usedKeywords: new Set(),
       keywordQueue: [],
       rateLimit: {
-        maxPerHour: 100,
+        maxPerHour: 10000, // 🚀 UNLIMITED MODE: Increased from 100 to 10000 (essentially unlimited)
         currentHour: new Date().getHours(),
         countThisHour: 0,
         resetTime: Date.now() + 3600000 // 1 hour from now
@@ -3673,12 +3673,54 @@ Output: One search query only`;
 
     const strategy = this.autonomousSearch.currentStrategy;
     const targetIndustry = this.autonomousSearch.currentIndustry;
+    const options = this.autonomousSearch.options || {};
+
+    // 🚀 ENHANCED: Extract keywords from website analysis for better targeting
+    const websiteKeywords = [];
+    if (options.websiteAnalysis) {
+      const analysis = options.websiteAnalysis;
+
+      // Add company name variations
+      if (analysis.company_name) {
+        websiteKeywords.push(analysis.company_name);
+        websiteKeywords.push(`${analysis.company_name} email`);
+        websiteKeywords.push(`${analysis.company_name} contact`);
+      }
+
+      // Add product/service keywords
+      if (analysis.products && Array.isArray(analysis.products)) {
+        analysis.products.forEach(product => {
+          websiteKeywords.push(product);
+          websiteKeywords.push(`${product} company email`);
+        });
+      }
+
+      // Add technology stack keywords
+      if (analysis.technologies && Array.isArray(analysis.technologies)) {
+        analysis.technologies.forEach(tech => {
+          websiteKeywords.push(`${tech} users email`);
+          websiteKeywords.push(`companies using ${tech}`);
+        });
+      }
+
+      // Add industry-specific keywords
+      if (analysis.industry) {
+        websiteKeywords.push(`${analysis.industry} decision makers`);
+        websiteKeywords.push(`${analysis.industry} executive email`);
+        websiteKeywords.push(`${analysis.industry} CEO contact`);
+      }
+
+      console.log(`🎯 Extracted ${websiteKeywords.length} keywords from website analysis`);
+    }
 
     // Generate base keywords
     const baseKeywords = this.generateSearchKeywords(strategy, targetIndustry);
 
+    // 🚀 COMBINE: Merge website keywords with base keywords for more accurate targeting
+    const allKeywords = [...new Set([...websiteKeywords, ...baseKeywords])];
+
     // Filter out already used keywords
-    const newKeywords = baseKeywords.filter(kw => !this.autonomousSearch.usedKeywords.has(kw));
+    const newKeywords = allKeywords.filter(kw => !this.autonomousSearch.usedKeywords.has(kw));
 
     if (newKeywords.length === 0) {
       console.log('⚠️ All base keywords exhausted, generating creative variations...');
@@ -3695,10 +3737,10 @@ Output: One search query only`;
     } else {
       this.autonomousSearch.keywordQueue.push(...newKeywords);
       newKeywords.forEach(kw => this.autonomousSearch.usedKeywords.add(kw));
-      console.log(`✅ Added ${newKeywords.length} new keywords to queue`);
+      console.log(`✅ Added ${newKeywords.length} new keywords to queue (${websiteKeywords.length} from website)`);
     }
 
-    console.log(`📋 Keyword queue: ${this.autonomousSearch.keywordQueue.join(', ')}`);
+    console.log(`📋 Keyword queue: ${this.autonomousSearch.keywordQueue.slice(0, 5).join(', ')}... (${this.autonomousSearch.keywordQueue.length} total)`);
   }
 
   /**
@@ -3873,8 +3915,9 @@ Output: One search query only`;
 
         console.log(`🎉 [${batchKey}] Background search complete! Total batches: ${batchNumber - 1}`);
 
-        // Stop continuous search for this campaign
-        this.stopContinuousSearch();
+        // 🚀 ENDLESS MODE: Don't auto-stop - keep searching indefinitely
+        // User can manually stop via dashboard if needed
+        console.log(`♾️  Continuous search will keep running indefinitely...`);
 
       } catch (error) {
         console.error(`❌ [${batchKey}] Background batch error:`, error);

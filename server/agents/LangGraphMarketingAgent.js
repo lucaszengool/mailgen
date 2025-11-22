@@ -1373,8 +1373,9 @@ class LangGraphMarketingAgent {
         // 过滤重复的邮件地址（连续运行模式下）
         const filteredProspects = this.filterDuplicateEmails(prospects);
 
-        // Return prospects (limit to 20 for performance)
-        return filteredProspects.slice(0, 20);
+        // 🚀 UNLIMITED MODE: Return all found prospects (no artificial limit)
+        // Background search will continue finding more prospects indefinitely
+        return filteredProspects;
       }
       
     } catch (error) {
