@@ -13,6 +13,7 @@ import EmailMonitoring from './pages/EmailMonitoring';
 import Settings from './pages/Settings';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import AdminDashboard from './pages/AdminDashboard';
 import EmailComposer from './pages/EmailComposer';
 import ProfessionalEmailEditorPage from './pages/ProfessionalEmailEditor';
 import WebsiteAnalyzer from './pages/WebsiteAnalyzer';
@@ -459,6 +460,8 @@ function App() {
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="/notifications-demo" element={<ProcessNotificationsDemo />} />
+          {/* 🔐 Hidden Admin Dashboard */}
+          <Route path="/sys-admin-control-panel-x9z" element={<AdminDashboard />} />
         </Routes>
       </div>
     );
