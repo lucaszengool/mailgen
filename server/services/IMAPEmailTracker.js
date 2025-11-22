@@ -294,22 +294,46 @@ class IMAPEmailTracker {
 
       console.log(`💬 Reply detected from: ${from}`);
 
+      // 🔥 FIX: Look up the original sent email to get the correct campaign ID
+      let actualCampaignId = campaignId;
+      try {
+        const db = require('../models/database');
+        // Find the original email sent to this recipient
+        const originalEmail = await new Promise((resolve, reject) => {
+          db.db.get(
+            'SELECT campaign_id FROM email_logs WHERE to_email = ? ORDER BY sent_at DESC LIMIT 1',
+            [from],
+            (err, row) => {
+              if (err) reject(err);
+              else resolve(row);
+            }
+          );
+        });
+
+        if (originalEmail && originalEmail.campaign_id) {
+          actualCampaignId = originalEmail.campaign_id;
+          console.log(`[IMAP] 🔍 Found original campaign ID: ${actualCampaignId} for reply from ${from}`);
+        }
+      } catch (lookupError) {
+        console.error('[IMAP] Error looking up original email:', lookupError.message);
+      }
+
       // Track reply in analytics (in-memory)
       if (analyticsRoutes.trackEmailReplied) {
-        analyticsRoutes.trackEmailReplied(campaignId || 'unknown', from);
+        analyticsRoutes.trackEmailReplied(actualCampaignId || 'unknown', from);
       }
 
       // 💾 Log to database for persistent tracking
       try {
         const db = require('../models/database');
         await db.logEmailReply({
-          campaignId: campaignId || 'unknown',
+          campaignId: actualCampaignId || 'unknown',
           recipientEmail: from,
           repliedAt: new Date().toISOString(),
           subject: parsed.subject || '',
           messageId: parsed.messageId || ''
         });
-        console.log(`[IMAP] ✅ Reply logged to database: ${from}`);
+        console.log(`[IMAP] ✅ Reply logged to database: ${from} (campaign: ${actualCampaignId})`);
       } catch (dbError) {
         console.error('[IMAP] Failed to log reply to database:', dbError.message);
       }

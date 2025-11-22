@@ -382,14 +382,14 @@ router.get('/email-metrics', async (req, res) => {
          INNER JOIN email_logs e ON o.tracking_id = e.tracking_id
          WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
 
-    // 🔥 FIX: Count unique links clicked (DISTINCT link_id), not total click events
-    // Note: email_clicks table doesn't have tracking_id, only campaign_id and link_id
+    // 🔥 FIX: Count clicks by joining on tracking_id (which is now stored as link_id)
     const clicksQuery = campaign === 'all'
-      ? `SELECT COUNT(*) as count FROM email_clicks c
-         INNER JOIN email_logs e ON c.campaign_id = e.campaign_id
+      ? `SELECT COUNT(DISTINCT c.link_id) as count FROM email_clicks c
+         INNER JOIN email_logs e ON c.link_id = e.tracking_id
          WHERE e.user_id = ? AND e.sent_at >= ?`
-      : `SELECT COUNT(*) as count FROM email_clicks c
-         WHERE c.campaign_id = ?`;
+      : `SELECT COUNT(DISTINCT c.link_id) as count FROM email_clicks c
+         INNER JOIN email_logs e ON c.link_id = e.tracking_id
+         WHERE e.user_id = ? AND e.sent_at >= ? AND e.campaign_id = ?`;
 
 
     const repliesQuery = campaign === 'all'
@@ -409,7 +409,7 @@ router.get('/email-metrics', async (req, res) => {
          WHERE e.user_id = ? AND b.bounced_at >= ? AND b.campaign_id = ?`;
 
     const opensParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
-    const clicksParams = campaign === 'all' ? [userId, sinceTimestamp] : [campaign];  // 🔥 FIX: Only pass campaign when filtering
+    const clicksParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
     const repliesParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
     const bouncesParams = campaign === 'all' ? [userId, sinceTimestamp] : [userId, sinceTimestamp, campaign];
 
@@ -1122,7 +1122,7 @@ router.get('/individual-emails', async (req, res) => {
            e.status,
            e.tracking_id,
            (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as opens,
-           (SELECT COUNT(*) FROM email_clicks c WHERE c.campaign_id = e.campaign_id AND c.link_id LIKE '%' || e.tracking_id || '%') as clicks,
+           (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clicks,
            (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replies,
            (SELECT COUNT(*) FROM email_bounces b WHERE b.recipient_email = e.to_email AND b.campaign_id = e.campaign_id) as bounces
          FROM email_logs e
@@ -1137,7 +1137,7 @@ router.get('/individual-emails', async (req, res) => {
            e.status,
            e.tracking_id,
            (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as opens,
-           (SELECT COUNT(*) FROM email_clicks c WHERE c.campaign_id = e.campaign_id AND c.link_id LIKE '%' || e.tracking_id || '%') as clicks,
+           (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clicks,
            (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replies,
            (SELECT COUNT(*) FROM email_bounces b WHERE b.recipient_email = e.to_email AND b.campaign_id = e.campaign_id) as bounces
          FROM email_logs e
@@ -1174,6 +1174,108 @@ router.get('/individual-emails', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ [INDIVIDUAL-EMAILS] ERROR:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get email detail by ID
+router.get('/email-detail/:emailId', async (req, res) => {
+  try {
+    const { emailId } = req.params;
+    const { userId = 'anonymous' } = req.query;
+
+    console.log(`📧 [EMAIL-DETAIL] Fetching email ${emailId} for user ${userId}`);
+
+    const emailQuery = `
+      SELECT
+        e.id,
+        e.to_email as recipientEmail,
+        e.subject,
+        e.campaign_id as campaignId,
+        e.sent_at as sentAt,
+        e.status,
+        e.tracking_id as trackingId,
+        e.message_id as messageId,
+        e.body,
+        (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
+        (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
+        (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replyCount
+      FROM email_logs e
+      WHERE e.id = ? AND e.user_id = ?
+    `;
+
+    const email = await new Promise((resolve, reject) => {
+      db.db.get(emailQuery, [emailId, userId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    if (!email) {
+      return res.status(404).json({ success: false, error: 'Email not found' });
+    }
+
+    res.json({
+      success: true,
+      data: email
+    });
+  } catch (error) {
+    console.error('❌ [EMAIL-DETAIL] ERROR:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get email thread history for a recipient
+router.get('/email-thread/:recipientEmail', async (req, res) => {
+  try {
+    const { recipientEmail } = req.params;
+    const { userId = 'anonymous' } = req.query;
+
+    console.log(`📧 [EMAIL-THREAD] Fetching thread for ${recipientEmail}, user ${userId}`);
+
+    // Get all sent emails to this recipient
+    const sentEmailsQuery = `
+      SELECT
+        id,
+        to_email as recipientEmail,
+        subject,
+        campaign_id as campaignId,
+        sent_at as sentAt,
+        'sent' as type
+      FROM email_logs
+      WHERE to_email = ? AND user_id = ?
+      ORDER BY sent_at DESC
+    `;
+
+    const sentEmails = await queryDB(sentEmailsQuery, [recipientEmail, userId]);
+
+    // Get all replies from this recipient
+    const repliesQuery = `
+      SELECT
+        id,
+        recipient_email as recipientEmail,
+        subject,
+        campaign_id as campaignId,
+        replied_at as sentAt,
+        'reply' as type
+      FROM email_replies
+      WHERE recipient_email = ?
+      ORDER BY replied_at DESC
+    `;
+
+    const replies = await queryDB(repliesQuery, [recipientEmail]);
+
+    // Combine and sort by date
+    const allEmails = [...sentEmails, ...replies].sort((a, b) =>
+      new Date(b.sentAt) - new Date(a.sentAt)
+    );
+
+    res.json({
+      success: true,
+      data: allEmails
+    });
+  } catch (error) {
+    console.error('❌ [EMAIL-THREAD] ERROR:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });

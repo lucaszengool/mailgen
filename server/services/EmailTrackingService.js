@@ -241,7 +241,7 @@ class EmailTrackingService {
         const email = db.emails[trackingId];
         await dbModule.logEmailClick({
           campaignId: email.campaignId || 'unknown',
-          linkId: `link_${linkIndex}`,
+          linkId: trackingId, // Use trackingId as linkId so we can join properly
           targetUrl: metadata.targetUrl,
           clickedAt: new Date().toISOString(),
           userAgent: metadata.userAgent || 'unknown',

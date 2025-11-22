@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/clerk-react'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import '../styles/jobright-colors.css'
 import {
@@ -41,6 +42,7 @@ const COLORS = ['#00f5a0', '#000000', '#374151', '#6b7280', '#9ca3af', '#d1d5db'
 
 export default function Analytics() {
   const { user } = useUser()
+  const navigate = useNavigate()
   const [timeRange, setTimeRange] = useState('30d')
   // 🔥 CRITICAL FIX: Default to current campaign instead of 'all' to prevent data leakage
   const [selectedCampaign, setSelectedCampaign] = useState(() => {
@@ -552,7 +554,11 @@ export default function Analytics() {
                     email.subject.toLowerCase().includes(emailSearchQuery.toLowerCase())
                   )
                   .map((email, index) => (
-                    <tr key={email.id || index} className="hover:bg-[#00f5a0]/5 transition-colors">
+                    <tr
+                      key={email.id || index}
+                      onClick={() => navigate(`/email-thread/${email.id}`)}
+                      className="hover:bg-[#00f5a0]/5 transition-colors cursor-pointer"
+                    >
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm font-medium text-black">{email.to}</div>
                       </td>
