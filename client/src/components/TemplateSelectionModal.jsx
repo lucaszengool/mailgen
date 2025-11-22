@@ -603,17 +603,34 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
               className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
             />
             <label className="block text-xs font-medium text-gray-600">Background Color</label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mb-2">
               <input
                 type="color"
                 value={component.properties.color || '#000000'}
                 onChange={(e) => updateProperty('color', e.target.value)}
-                className="w-12 h-8 border border-gray-300 rounded"
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
               />
               <input
                 type="text"
                 value={component.properties.color || '#000000'}
                 onChange={(e) => updateProperty('color', e.target.value)}
+                placeholder="#000000"
+                className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
+              />
+            </div>
+            <label className="block text-xs font-medium text-gray-600">Text Color</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={component.properties.textColor || '#ffffff'}
+                onChange={(e) => updateProperty('textColor', e.target.value)}
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={component.properties.textColor || '#ffffff'}
+                onChange={(e) => updateProperty('textColor', e.target.value)}
+                placeholder="#ffffff"
                 className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded"
               />
             </div>
