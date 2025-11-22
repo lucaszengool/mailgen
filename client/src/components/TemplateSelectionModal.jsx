@@ -2816,24 +2816,26 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
 
                   {/* Color Scheme */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
                       Primary Color
+                      <span className="block text-xs font-normal text-gray-500 mt-1">Click the color box to choose any color from the palette</span>
                     </label>
-                    <div className="space-y-3">
-                      {/* Color Picker Input */}
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={customTemplateData.customizations?.primaryColor ?? '#000000'}
-                          onChange={(e) => setCustomTemplateData(prev => ({
-                            ...prev,
-                            customizations: {
-                              ...prev.customizations,
-                              primaryColor: e.target.value
-                            }
-                          }))}
-                          className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                        />
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={customTemplateData.customizations?.primaryColor ?? '#000000'}
+                        onChange={(e) => setCustomTemplateData(prev => ({
+                          ...prev,
+                          customizations: {
+                            ...prev.customizations,
+                            primaryColor: e.target.value
+                          }
+                        }))}
+                        className="w-16 h-16 rounded-lg border-2 border-gray-300 cursor-pointer shadow-sm hover:shadow-md transition-shadow"
+                        title="Click to open color picker"
+                      />
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Hex Code</label>
                         <input
                           type="text"
                           value={customTemplateData.customizations?.primaryColor ?? '#000000'}
@@ -2844,30 +2846,9 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                               primaryColor: e.target.value
                             }
                           }))}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
                           placeholder="#000000"
                         />
-                      </div>
-                      {/* Preset Colors */}
-                      <div className="flex gap-2">
-                        {['#000000', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#6b7280', '#000000', '#ffffff'].map((color) => (
-                          <button
-                            key={color}
-                            onClick={() => setCustomTemplateData(prev => ({
-                              ...prev,
-                              customizations: {
-                                ...prev.customizations,
-                                primaryColor: color
-                              }
-                            }))}
-                            className={`w-6 h-6 rounded-full border-2 ${
-                              customTemplateData.customizations?.primaryColor === color
-                                ? 'border-gray-800'
-                                : 'border-gray-300'
-                            }`}
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
                       </div>
                     </div>
                   </div>
@@ -3113,11 +3094,19 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                       </svg>
                       Component Builder
                     </h5>
-                    <p className="text-xs text-gray-600 mb-3">Drag components into your email to build your custom template</p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                      <p className="text-xs text-blue-800 font-semibold mb-2">📌 How to build your template:</p>
+                      <ol className="text-xs text-blue-700 space-y-1 list-decimal list-inside">
+                        <li><strong>Click</strong> a component below to add it to your email</li>
+                        <li><strong>Scroll down</strong> to see "Your Components" section</li>
+                        <li><strong>Edit</strong> text, colors, and settings for each component</li>
+                        <li><strong>Click color boxes</strong> to choose any custom color!</li>
+                      </ol>
+                    </div>
 
                     {/* Component Library */}
                     <div className="mb-4">
-                      <label className="block text-xs font-medium text-gray-700 mb-2">Available Components</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-2">Click to Add Components</label>
                       <div className="grid grid-cols-2 gap-2">
                         {[
                           { type: 'logo', icon: '🏢', label: 'Logo Header' },
@@ -3325,8 +3314,9 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
 
                     {/* Text Color */}
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
                         Text Color
+                        <span className="block text-xs font-normal text-gray-500 mt-1">Click the color box to choose any color</span>
                       </label>
                       <div className="flex items-center gap-3">
                         <input
@@ -3339,42 +3329,25 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                               textColor: e.target.value
                             }
                           }))}
-                          className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-16 h-16 rounded-lg border-2 border-gray-300 cursor-pointer shadow-sm hover:shadow-md transition-shadow"
+                          title="Click to open color picker"
                         />
-                        <input
-                          type="text"
-                          value={customTemplateData.customizations?.textColor ?? '#000000'}
-                          onChange={(e) => setCustomTemplateData(prev => ({
-                            ...prev,
-                            customizations: {
-                              ...prev.customizations,
-                              textColor: e.target.value
-                            }
-                          }))}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                          placeholder="#000000"
-                        />
-                      </div>
-                      {/* Preset Text Colors */}
-                      <div className="flex gap-2 mt-2">
-                        {['#000000', '#333333', '#666666', '#999999', '#ffffff', '#ff0000', '#00ff00', '#0000ff'].map((color) => (
-                          <button
-                            key={color}
-                            onClick={() => setCustomTemplateData(prev => ({
+                        <div className="flex-1">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Hex Code</label>
+                          <input
+                            type="text"
+                            value={customTemplateData.customizations?.textColor ?? '#000000'}
+                            onChange={(e) => setCustomTemplateData(prev => ({
                               ...prev,
                               customizations: {
                                 ...prev.customizations,
-                                textColor: color
+                                textColor: e.target.value
                               }
                             }))}
-                            className={`w-5 h-5 rounded border-2 ${
-                              customTemplateData.customizations?.textColor === color
-                                ? 'border-gray-800'
-                                : 'border-gray-300'
-                            }`}
-                            style={{ backgroundColor: color }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                            placeholder="#000000"
                           />
-                        ))}
+                        </div>
                       </div>
                     </div>
                   </div>

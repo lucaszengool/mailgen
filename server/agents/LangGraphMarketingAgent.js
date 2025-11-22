@@ -1475,11 +1475,21 @@ class LangGraphMarketingAgent {
       }
 
       // 🎯 CRITICAL FIX: Store the selected template globally for all emails in this campaign
+      // 🔥 FIX FOR CUSTOM TEMPLATE: Remove placeholder HTML before storing
+      let cleanedTemplateData = { ...templateData };
+      if (templateId === 'custom_template' && templateData.html) {
+        const hasPlaceholder = templateData.html.includes('Start Building Your Custom Email');
+        if (hasPlaceholder && !templateData.isCustomized && !templateData.userEdited) {
+          console.log('⚠️ [CUSTOM TEMPLATE] Removing placeholder HTML before storing in campaign state');
+          cleanedTemplateData.html = ''; // Remove placeholder HTML
+        }
+      }
+
       this.state.selectedCampaignTemplate = {
         templateId: templateId,
-        templateData: templateData,
+        templateData: cleanedTemplateData,
         enhancedTemplate: enhancedTemplate,
-        isUserCustomized: templateData.isCustomized || !!enhancedTemplate
+        isUserCustomized: cleanedTemplateData.isCustomized || !!enhancedTemplate
       };
       console.log(`📦 Stored selected template globally: ${templateId}`);
       console.log(`   📄 Stored HTML length: ${this.state.selectedCampaignTemplate.templateData.html?.length || 0}`);

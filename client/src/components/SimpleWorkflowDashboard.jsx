@@ -5734,13 +5734,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               <p className="text-black mt-2">AI-powered marketing automation</p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 px-3 py-1 bg-white border border-gray-200 rounded-full">
-                <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: ws ? '#00f5a0' : '#ef4444' }}></div>
-                <span className="text-xs text-black font-medium">
-                  {ws ? 'Live' : 'Offline'}
-                </span>
-              </div>
-
               <button
                 onClick={startWorkflow}
                 disabled={workflowStatus === 'running'}
