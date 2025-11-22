@@ -147,33 +147,42 @@ export default function Prospects() {
             techStack: p.techStack || ['React', 'Node.js']
           }));
 
-          setProspects(prevProspects => {
-            console.log('📊 Previous prospects:', prevProspects.length, 'Batch prospects:', batchProspects.length);
+          // 🚀 CRITICAL: Force immediate re-render by batching state updates
+          const hadNewProspects = (() => {
+            let hasNew = false;
+            setProspects(prevProspects => {
+              console.log('📊 Previous prospects:', prevProspects.length, 'Batch prospects:', batchProspects.length);
 
-            // Deduplicate by email
-            const existingEmails = new Set(prevProspects.map(p => p.email));
-            const newProspects = batchProspects.filter(p => !existingEmails.has(p.email));
+              // Deduplicate by email
+              const existingEmails = new Set(prevProspects.map(p => p.email));
+              const newProspects = batchProspects.filter(p => !existingEmails.has(p.email));
 
-            console.log(`📦 Adding ${newProspects.length} NEW prospects to state (total will be: ${prevProspects.length + newProspects.length})`);
+              console.log(`📦 Adding ${newProspects.length} NEW prospects to state (total will be: ${prevProspects.length + newProspects.length})`);
 
-            // 🔥 NEW: Set visual feedback for new batch arrival
-            if (newProspects.length > 0) {
-              setNewBatchArrived({
-                count: newProspects.length,
-                batchNumber: data.data.batchNumber,
-                timestamp: Date.now()
-              });
+              hasNew = newProspects.length > 0;
 
-              // Clear the badge after 5 seconds
-              setTimeout(() => setNewBatchArrived(null), 5000);
-            }
+              // 🔥 NEW: Set visual feedback for new batch arrival
+              if (newProspects.length > 0) {
+                setNewBatchArrived({
+                  count: newProspects.length,
+                  batchNumber: data.data.batchNumber,
+                  timestamp: Date.now()
+                });
 
-            // Return merged array with new prospects at the end
-            return [...prevProspects, ...newProspects];
-          });
+                // Clear the badge after 5 seconds
+                setTimeout(() => setNewBatchArrived(null), 5000);
+              }
 
-          // 🚀 CRITICAL: Force component re-render AFTER state update completes
-          setTimeout(() => setForceUpdateKey(prev => prev + 1), 0);
+              // Return merged array with new prospects at the end
+              return [...prevProspects, ...newProspects];
+            });
+            return hasNew;
+          })();
+
+          // 🚀 CRITICAL: Force component re-render immediately if new prospects added
+          if (hadNewProspects) {
+            setForceUpdateKey(prev => prev + 1);
+          }
 
           // Show a toast notification
           toast.success(`Found ${data.data.prospects.length} more prospects! (Batch ${data.data.batchNumber})`, {
@@ -204,25 +213,21 @@ export default function Prospects() {
 
           console.log('📊 Processed prospects:', updatedProspects.length)
 
-          const hadNewProspects = (() => {
-            let hasNew = false;
-            setProspects(prev => {
-              // 🔥 FIX: Merge with existing instead of replacing to avoid losing data
-              console.log('📊 Previous prospects:', prev.length, 'New prospects:', updatedProspects.length)
-              const existingEmails = prev.map(p => p.email);
-              const newProspects = updatedProspects.filter(p => !existingEmails.includes(p.email));
-              const merged = [...newProspects, ...prev];
-              console.log('📊 Merged total:', merged.length, 'New added:', newProspects.length);
-              hasNew = newProspects.length > 0;
-              return merged;
-            });
-            return hasNew;
-          })();
+          setProspects(prev => {
+            // 🔥 FIX: Merge with existing instead of replacing to avoid losing data
+            console.log('📊 Previous prospects:', prev.length, 'New prospects:', updatedProspects.length)
+            const existingEmails = prev.map(p => p.email);
+            const newProspects = updatedProspects.filter(p => !existingEmails.includes(p.email));
+            const merged = [...newProspects, ...prev];
+            console.log('📊 Merged total:', merged.length, 'New added:', newProspects.length);
 
-          // 🚀 CRITICAL: Force component re-render AFTER state update if new prospects were added
-          if (hadNewProspects) {
-            setTimeout(() => setForceUpdateKey(prev => prev + 1), 0);
-          }
+            // 🚀 CRITICAL: Force component re-render immediately if new prospects were added
+            if (newProspects.length > 0) {
+              setForceUpdateKey(prevKey => prevKey + 1);
+            }
+
+            return merged;
+          });
 
           // 🚀 Wait 2 seconds for database write to complete, then fetch
           console.log('🚀 Data update with prospects - scheduling fetch after database write...');
@@ -244,22 +249,18 @@ export default function Prospects() {
             companySize: p.companySize || ['1-10', '11-50', '51-200', '201-1000', '1000+'][Math.floor(Math.random() * 5)],
             techStack: p.techStack || ['React', 'Node.js', 'Python', 'AI/ML', 'Cloud'].slice(0, Math.floor(Math.random() * 3) + 1)
           }))
-          const hadNewProspectsFromList = (() => {
-            let hasNew = false;
-            setProspects(prev => {
-              // Merge with existing, avoiding duplicates
-              const existingEmails = prev.map(p => p.email)
-              const newProspects = updatedProspects.filter(p => !existingEmails.includes(p.email))
-              hasNew = newProspects.length > 0;
-              return [...newProspects, ...prev]
-            });
-            return hasNew;
-          })();
+          setProspects(prev => {
+            // Merge with existing, avoiding duplicates
+            const existingEmails = prev.map(p => p.email)
+            const newProspects = updatedProspects.filter(p => !existingEmails.includes(p.email))
 
-          // 🚀 CRITICAL: Force component re-render AFTER state update if new prospects were added
-          if (hadNewProspectsFromList) {
-            setTimeout(() => setForceUpdateKey(prev => prev + 1), 0);
-          }
+            // 🚀 CRITICAL: Force component re-render immediately if new prospects were added
+            if (newProspects.length > 0) {
+              setForceUpdateKey(prevKey => prevKey + 1);
+            }
+
+            return [...newProspects, ...prev]
+          });
           if (data.prospects.length > 0) {
             toast.success(`Updated with ${data.prospects.length} prospects!`)
           }

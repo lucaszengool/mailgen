@@ -1479,9 +1479,11 @@ class LangGraphMarketingAgent {
       let cleanedTemplateData = { ...templateData };
       if (templateId === 'custom_template' && templateData.html) {
         const hasPlaceholder = templateData.html.includes('Start Building Your Custom Email');
-        if (hasPlaceholder && !templateData.isCustomized && !templateData.userEdited) {
+        if (hasPlaceholder) {
           console.log('⚠️ [CUSTOM TEMPLATE] Removing placeholder HTML before storing in campaign state');
-          cleanedTemplateData.html = ''; // Remove placeholder HTML
+          console.log(`   📄 Original HTML length: ${templateData.html.length}`);
+          cleanedTemplateData.html = ''; // Remove placeholder HTML completely
+          console.log(`   ✅ Cleared HTML for custom template - will use manualContent or AI generation`);
         }
       }
 

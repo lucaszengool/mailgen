@@ -2725,9 +2725,17 @@ const TemplateSelectionModal = ({ isOpen, onClose, onSelectTemplate, onConfirm, 
                   if (onConfirm) {
                     // 🔥 FIX: Pass template directly to avoid React state race condition
                     const template = EMAIL_TEMPLATES[selectedTemplate];
+
+                    // 🔥 CRITICAL FIX FOR CUSTOM TEMPLATE: Don't include placeholder HTML
+                    let baseTemplate = { ...template };
+                    if (selectedTemplate === 'custom_template' && baseTemplate.html?.includes('Start Building Your Custom Email')) {
+                      console.log('🎨 [CUSTOM TEMPLATE] Removing placeholder HTML before sending to backend');
+                      baseTemplate.html = ''; // Remove placeholder HTML completely
+                    }
+
                     const finalTemplate = Object.keys(customTemplateData).length > 0
-                      ? { ...template, ...customTemplateData, id: selectedTemplate, templateMode, manualContent: manualEmailContent }
-                      : { ...template, id: selectedTemplate, templateMode, manualContent: manualEmailContent };
+                      ? { ...baseTemplate, ...customTemplateData, id: selectedTemplate, templateMode, manualContent: manualEmailContent }
+                      : { ...baseTemplate, id: selectedTemplate, templateMode, manualContent: manualEmailContent };
                     onConfirm(finalTemplate);
                   }
                 }}
