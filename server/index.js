@@ -159,6 +159,9 @@ const templateRoutes = require('./routes/template');
 templateRoutes.wsManager = wsManager; // Attach wsManager
 app.use('/api/template', templateRoutes);
 
+// 🎯 Admin routes
+app.use('/api/admin', require('./routes/admin'));
+
 // Company Details API routes
 app.use('/api/company', require('./routes/company'));
 

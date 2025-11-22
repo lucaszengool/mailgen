@@ -207,6 +207,19 @@ class Database {
       )
     `);
 
+    // 🎯 Admin: User rate limits table
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS user_limits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL,
+        prospects_per_hour INTEGER DEFAULT 50,
+        is_unlimited BOOLEAN DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // 迁移现有数据：为旧数据添加 user_id
     this.migrateExistingData();
 
@@ -1006,6 +1019,103 @@ class Database {
         }
         resolve();
       });
+    });
+  }
+
+  // 🎯 Admin: Get user's rate limit
+  getUserLimit(userId) {
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        'SELECT * FROM user_limits WHERE user_id = ?',
+        [userId],
+        (err, row) => {
+          if (err) {
+            reject(err);
+          } else if (row) {
+            resolve({
+              userId: row.user_id,
+              email: row.email,
+              prospectsPerHour: row.prospects_per_hour,
+              isUnlimited: row.is_unlimited === 1
+            });
+          } else {
+            // Default: 50 prospects per hour
+            resolve({
+              userId,
+              email: null,
+              prospectsPerHour: 50,
+              isUnlimited: false
+            });
+          }
+        }
+      );
+    });
+  }
+
+  // 🎯 Admin: Set user's rate limit
+  setUserLimit(userId, email, prospectsPerHour, isUnlimited = false) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `INSERT OR REPLACE INTO user_limits (user_id, email, prospects_per_hour, is_unlimited, updated_at)
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        [userId, email, prospectsPerHour, isUnlimited ? 1 : 0],
+        function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            console.log(`✅ [Admin] Set limit for user ${userId}: ${isUnlimited ? 'unlimited' : prospectsPerHour + '/hour'}`);
+            resolve({ success: true, userId, prospectsPerHour, isUnlimited });
+          }
+        }
+      );
+    });
+  }
+
+  // 🎯 Admin: Get all users with their limits
+  getAllUsersWithLimits() {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        'SELECT * FROM user_limits ORDER BY created_at DESC',
+        [],
+        (err, rows) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(rows.map(row => ({
+              userId: row.user_id,
+              email: row.email,
+              prospectsPerHour: row.prospects_per_hour,
+              isUnlimited: row.is_unlimited === 1,
+              createdAt: row.created_at,
+              updatedAt: row.updated_at
+            })));
+          }
+        }
+      );
+    });
+  }
+
+  // 🎯 Admin: Search users by email
+  searchUsersByEmail(emailQuery) {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        'SELECT * FROM user_limits WHERE email LIKE ? ORDER BY created_at DESC',
+        [`%${emailQuery}%`],
+        (err, rows) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(rows.map(row => ({
+              userId: row.user_id,
+              email: row.email,
+              prospectsPerHour: row.prospects_per_hour,
+              isUnlimited: row.is_unlimited === 1,
+              createdAt: row.created_at,
+              updatedAt: row.updated_at
+            })));
+          }
+        }
+      );
     });
   }
 }
