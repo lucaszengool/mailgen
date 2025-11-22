@@ -6335,19 +6335,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center py-16 bg-white rounded-2xl"
                   >
-                    <motion.div
-                      animate={{
-                        rotate: 360,
-                        scale: [1, 1.1, 1]
-                      }}
-                      transition={{
-                        rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-                        scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
-                      }}
-                      className="mx-auto mb-6 w-20 h-20 rounded-full bg-gradient-to-r from-[#00f5a0] to-[#00c98d] flex items-center justify-center"
-                    >
-                      <Mail className="w-10 h-10 text-white" />
-                    </motion.div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Generating personalized emails</h3>
                     <p className="text-sm text-gray-600 mb-6">Please wait while AI analyzes prospects and creates content</p>
 
@@ -6438,19 +6425,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                         animate={{ opacity: 1, y: 0 }}
                         className="text-center py-16 px-4"
                       >
-                        <motion.div
-                          animate={{
-                            rotate: 360,
-                            scale: [1, 1.1, 1]
-                          }}
-                          transition={{
-                            rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-                            scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
-                          }}
-                          className="mx-auto mb-6 w-20 h-20 rounded-full bg-gradient-to-r from-[#00f5a0] to-[#00c98d] flex items-center justify-center"
-                        >
-                          <Mail className="w-10 h-10 text-white" />
-                        </motion.div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
                           Generating personalized emails
                         </h3>
@@ -6499,19 +6473,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                         animate={{ opacity: 1, scale: 1 }}
                         className="text-center py-16 bg-white rounded-2xl"
                       >
-                        <motion.div
-                          animate={{
-                            rotate: 360,
-                            scale: [1, 1.1, 1]
-                          }}
-                          transition={{
-                            rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-                            scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
-                          }}
-                          className="mx-auto mb-6 w-16 h-16 rounded-full bg-gradient-to-r from-[#00f5a0] to-[#00c98d] flex items-center justify-center"
-                        >
-                          <Mail className="w-8 h-8 text-white" />
-                        </motion.div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Generating personalized emails</h3>
                         <p className="text-sm text-gray-600 mb-6">Please wait while AI finds prospects and creates content</p>
 
