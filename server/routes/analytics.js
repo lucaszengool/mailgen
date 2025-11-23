@@ -1280,6 +1280,230 @@ router.get('/email-thread/:recipientEmail', async (req, res) => {
   }
 });
 
+// 🆕 Get complete email thread by email ID (for EmailThreadView component)
+router.get('/email-thread/:emailId', async (req, res) => {
+  try {
+    const { emailId } = req.params;
+    const { userId = 'anonymous' } = req.query;
+
+    console.log(`📧 [EMAIL-THREAD-BY-ID] Fetching thread for email ${emailId}, user ${userId}`);
+
+    // Get the original email
+    const emailQuery = `
+      SELECT
+        e.id,
+        e.to_email,
+        e.subject,
+        e.body,
+        e.campaign_id,
+        e.sent_at,
+        e.tracking_id,
+        e.message_id,
+        (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
+        (SELECT MAX(o.opened_at) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as lastOpenedAt,
+        (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
+        (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replyCount,
+        (SELECT COUNT(*) FROM email_bounces b WHERE b.recipient_email = e.to_email AND b.campaign_id = e.campaign_id) as bounced
+      FROM email_logs e
+      WHERE e.id = ? AND e.user_id = ?
+    `;
+
+    const originalEmail = await new Promise((resolve, reject) => {
+      db.db.get(emailQuery, [emailId, userId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    if (!originalEmail) {
+      return res.status(404).json({ success: false, error: 'Email not found' });
+    }
+
+    // Get prospect info from prospects table
+    const prospectQuery = `
+      SELECT name, email, company, position, industry, location
+      FROM prospects
+      WHERE email = ? AND user_id = ?
+      LIMIT 1
+    `;
+
+    const prospect = await new Promise((resolve, reject) => {
+      db.db.get(prospectQuery, [originalEmail.to_email, userId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row || {
+          name: originalEmail.to_email.split('@')[0],
+          email: originalEmail.to_email,
+          company: null,
+          position: null
+        });
+      });
+    });
+
+    // Get all emails in this thread (sent emails to this prospect)
+    const threadEmailsQuery = `
+      SELECT
+        e.id,
+        e.to_email as "to",
+        e.subject,
+        e.body as content,
+        e.sent_at as timestamp,
+        e.tracking_id,
+        'sent' as type,
+        e.status = 'delivered' as delivered,
+        (SELECT COUNT(*) > 0 FROM email_bounces WHERE recipient_email = e.to_email) as bounced,
+        (SELECT COUNT(*) > 0 FROM email_opens WHERE tracking_id = e.tracking_id) as opened,
+        (SELECT COUNT(*) FROM email_opens WHERE tracking_id = e.tracking_id) as openCount,
+        (SELECT MAX(opened_at) FROM email_opens WHERE tracking_id = e.tracking_id) as lastOpenedAt,
+        (SELECT COUNT(*) > 0 FROM email_clicks WHERE link_id = e.tracking_id) as clicked,
+        (SELECT COUNT(*) FROM email_clicks WHERE link_id = e.tracking_id) as clickCount
+      FROM email_logs e
+      WHERE e.to_email = ? AND e.user_id = ? AND e.campaign_id = ?
+      ORDER BY e.sent_at ASC
+    `;
+
+    const sentEmails = await queryDB(threadEmailsQuery, [originalEmail.to_email, userId, originalEmail.campaign_id]);
+
+    // Get all replies from this prospect
+    const repliesQuery = `
+      SELECT
+        r.id,
+        r.recipient_email as "from",
+        r.subject,
+        r.reply_body as content,
+        r.replied_at as timestamp,
+        'received' as type
+      FROM email_replies r
+      WHERE r.recipient_email = ? AND r.campaign_id = ?
+      ORDER BY r.replied_at ASC
+    `;
+
+    const replies = await queryDB(repliesQuery, [originalEmail.to_email, originalEmail.campaign_id]);
+
+    // Combine and sort all emails chronologically
+    const allEmails = [...sentEmails, ...replies].sort((a, b) =>
+      new Date(a.timestamp) - new Date(b.timestamp)
+    );
+
+    // Build response
+    const threadData = {
+      prospect: {
+        name: prospect.name,
+        email: prospect.email,
+        company: prospect.company,
+        position: prospect.position,
+        industry: prospect.industry,
+        location: prospect.location
+      },
+      originalEmail: {
+        id: originalEmail.id,
+        subject: originalEmail.subject,
+        content: originalEmail.body,
+        sentAt: originalEmail.sent_at,
+        campaignId: originalEmail.campaign_id
+      },
+      stats: {
+        opened: originalEmail.openCount > 0,
+        openCount: originalEmail.openCount,
+        lastOpenedAt: originalEmail.lastOpenedAt,
+        clicked: originalEmail.clickCount > 0,
+        clickCount: originalEmail.clickCount,
+        replied: originalEmail.replyCount > 0,
+        replyCount: originalEmail.replyCount,
+        bounced: originalEmail.bounced > 0
+      },
+      emails: allEmails
+    };
+
+    res.json({
+      success: true,
+      data: threadData
+    });
+  } catch (error) {
+    console.error('❌ [EMAIL-THREAD-BY-ID] ERROR:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 🆕 Send reply from thread view
+router.post('/send-reply', async (req, res) => {
+  try {
+    const { userId, emailId, recipientEmail, replyContent, originalSubject } = req.body;
+
+    console.log(`📧 [SEND-REPLY] Sending reply to ${recipientEmail} from user ${userId}`);
+
+    if (!replyContent || !recipientEmail) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    // Get user's SMTP credentials
+    const smtpQuery = `
+      SELECT smtp_host, smtp_port, smtp_user, smtp_pass
+      FROM smtp_credentials
+      WHERE user_id = ?
+      LIMIT 1
+    `;
+
+    const smtpCreds = await new Promise((resolve, reject) => {
+      db.db.get(smtpQuery, [userId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    if (!smtpCreds) {
+      return res.status(400).json({ success: false, error: 'SMTP credentials not configured' });
+    }
+
+    // Send the email using nodemailer
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: smtpCreds.smtp_host,
+      port: smtpCreds.smtp_port,
+      secure: smtpCreds.smtp_port === 465,
+      auth: {
+        user: smtpCreds.smtp_user,
+        pass: smtpCreds.smtp_pass
+      }
+    });
+
+    // Prepare subject with Re: prefix if not already present
+    const replySubject = originalSubject.startsWith('Re:') ? originalSubject : `Re: ${originalSubject}`;
+
+    const mailOptions = {
+      from: smtpCreds.smtp_user,
+      to: recipientEmail,
+      subject: replySubject,
+      html: replyContent
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log(`✅ [SEND-REPLY] Reply sent successfully. MessageId: ${info.messageId}`);
+
+    // Log the sent reply in email_logs
+    const insertQuery = `
+      INSERT INTO email_logs (user_id, to_email, subject, body, sent_at, status, message_id)
+      VALUES (?, ?, ?, ?, datetime('now'), 'sent', ?)
+    `;
+
+    await new Promise((resolve, reject) => {
+      db.db.run(insertQuery, [userId, recipientEmail, replySubject, replyContent, info.messageId], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    res.json({
+      success: true,
+      message: 'Reply sent successfully',
+      messageId: info.messageId
+    });
+  } catch (error) {
+    console.error('❌ [SEND-REPLY] ERROR:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Export the router as default and tracking functions as named exports
 module.exports = router;
 module.exports.trackEmailSent = trackEmailSentWithWS;

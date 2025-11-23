@@ -1074,24 +1074,102 @@ class Database {
   // 🎯 Admin: Get all users with their limits
   getAllUsersWithLimits() {
     return new Promise((resolve, reject) => {
-      this.db.all(
-        'SELECT * FROM user_limits ORDER BY created_at DESC',
-        [],
-        (err, rows) => {
+      // First ensure user_limits table exists
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS user_limits (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL UNIQUE,
+          email TEXT NOT NULL,
+          prospects_per_hour INTEGER DEFAULT 50,
+          is_unlimited BOOLEAN DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `, (err) => {
+        if (err) {
+          console.error('❌ Failed to create user_limits table:', err);
+          return reject(err);
+        }
+
+        // Query to get all unique users from various tables
+        const query = `
+          SELECT DISTINCT
+            COALESCE(ul.user_id, u.user_id) as user_id,
+            COALESCE(ul.email, u.email) as email,
+            COALESCE(ul.prospects_per_hour, 50) as prospects_per_hour,
+            COALESCE(ul.is_unlimited, 0) as is_unlimited,
+            COALESCE(ul.created_at, u.first_seen) as created_at,
+            COALESCE(ul.updated_at, u.first_seen) as updated_at
+          FROM (
+            SELECT DISTINCT user_id,
+                   (SELECT username FROM smtp_configs WHERE smtp_configs.user_id = base.user_id LIMIT 1) as email,
+                   MIN(created_at) as first_seen
+            FROM (
+              SELECT user_id, created_at FROM smtp_configs WHERE user_id != 'anonymous'
+              UNION
+              SELECT user_id, sent_at as created_at FROM email_logs WHERE user_id != 'anonymous'
+              UNION
+              SELECT user_id, created_at FROM campaigns WHERE user_id != 'anonymous'
+              UNION
+              SELECT user_id, created_at FROM contacts WHERE user_id != 'anonymous'
+            ) base
+            GROUP BY user_id
+          ) u
+          LEFT JOIN user_limits ul ON u.user_id = ul.user_id
+          WHERE u.user_id IS NOT NULL AND u.user_id != '' AND u.user_id != 'anonymous'
+          ORDER BY created_at DESC
+        `;
+
+        this.db.all(query, [], (err, rows) => {
           if (err) {
+            console.error('❌ Failed to fetch users:', err);
             reject(err);
           } else {
-            resolve(rows.map(row => ({
-              userId: row.user_id,
-              email: row.email,
-              prospectsPerHour: row.prospects_per_hour,
-              isUnlimited: row.is_unlimited === 1,
-              createdAt: row.created_at,
-              updatedAt: row.updated_at
-            })));
+            console.log(`✅ Found ${rows.length} unique users`);
+
+            // If no users found, check for 'anonymous' user activity
+            if (rows.length === 0) {
+              // Check if there's any activity with 'anonymous' user
+              this.db.get(`
+                SELECT
+                  'anonymous' as user_id,
+                  (SELECT username FROM smtp_configs WHERE user_id = 'anonymous' LIMIT 1) as email,
+                  50 as prospects_per_hour,
+                  0 as is_unlimited,
+                  (SELECT MIN(created_at) FROM smtp_configs WHERE user_id = 'anonymous') as created_at,
+                  (SELECT MIN(created_at) FROM smtp_configs WHERE user_id = 'anonymous') as updated_at
+                FROM smtp_configs
+                WHERE user_id = 'anonymous'
+                LIMIT 1
+              `, [], (err2, anonymousRow) => {
+                if (anonymousRow && anonymousRow.email) {
+                  console.log('📊 Found anonymous user with activity, displaying it');
+                  resolve([{
+                    userId: 'anonymous',
+                    email: anonymousRow.email + ' (Currently logged in)',
+                    prospectsPerHour: 50,
+                    isUnlimited: false,
+                    createdAt: anonymousRow.created_at,
+                    updatedAt: anonymousRow.updated_at
+                  }]);
+                } else {
+                  console.log('📊 No users or anonymous activity found');
+                  resolve([]);
+                }
+              });
+            } else {
+              resolve(rows.map(row => ({
+                userId: row.user_id,
+                email: row.email || 'No email configured',
+                prospectsPerHour: row.prospects_per_hour,
+                isUnlimited: row.is_unlimited === 1,
+                createdAt: row.created_at,
+                updatedAt: row.updated_at
+              })));
+            }
           }
-        }
-      );
+        });
+      });
     });
   }
 

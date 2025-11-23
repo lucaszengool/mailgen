@@ -382,12 +382,14 @@ const WYSIWYGEmailEditor = ({
         contentEditable
         onInput={updateContent}
         onPaste={handlePaste}
-        className="editor-content min-h-[400px] p-6 focus:outline-none prose max-w-none"
+        className="editor-content p-6 focus:outline-none prose max-w-none overflow-y-auto"
         style={{
           fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
           fontSize: '14px',
           lineHeight: '1.6',
-          color: '#000000'
+          color: '#000000',
+          minHeight: '300px',
+          maxHeight: '500px'
         }}
         suppressContentEditableWarning={true}
       >
