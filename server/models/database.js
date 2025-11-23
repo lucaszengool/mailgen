@@ -1118,6 +1118,50 @@ class Database {
       );
     });
   }
+
+  // 🎯 Ensure user is tracked in user_limits table (auto-add on first use)
+  ensureUserTracked(userId, email) {
+    return new Promise((resolve, reject) => {
+      // First check if user exists
+      this.db.get(
+        'SELECT * FROM user_limits WHERE user_id = ?',
+        [userId],
+        (err, row) => {
+          if (err) {
+            reject(err);
+          } else if (row) {
+            // User already exists, just resolve
+            resolve({
+              userId: row.user_id,
+              email: row.email,
+              prospectsPerHour: row.prospects_per_hour,
+              isUnlimited: row.is_unlimited === 1
+            });
+          } else {
+            // User doesn't exist, create with default limit of 50/hour
+            this.db.run(
+              `INSERT INTO user_limits (user_id, email, prospects_per_hour, is_unlimited, created_at, updated_at)
+               VALUES (?, ?, 50, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+              [userId, email],
+              function(err) {
+                if (err) {
+                  reject(err);
+                } else {
+                  console.log(`✅ [User Tracking] New user tracked: ${email} (${userId}) - Default limit: 50/hour`);
+                  resolve({
+                    userId,
+                    email,
+                    prospectsPerHour: 50,
+                    isUnlimited: false
+                  });
+                }
+              }
+            );
+          }
+        }
+      );
+    });
+  }
 }
 
 // 确保数据目录存在

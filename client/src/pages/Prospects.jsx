@@ -79,18 +79,12 @@ export default function Prospects() {
     fetchProspects()
     connectWebSocket()
 
-    // 🔥 AUTO-REFRESH: Poll for new prospects every 30 seconds as fallback
-    // WebSocket handles real-time updates, polling is just a backup to catch any missed updates
-    const startTime = Date.now();
+    // 🔥 AUTO-REFRESH: Poll for new prospects every 3 seconds for immediate updates
+    // This ensures the UI updates even if WebSocket messages are missed
     const pollInterval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const shouldPoll = workflowStatus === 'finding_prospects' || elapsed < 180000; // 3 minutes
-
-      if (shouldPoll) {
-        console.log('🔄 Fallback polling (WebSocket handles real-time updates)...');
-        fetchProspects();
-      }
-    }, 30000); // 30 seconds instead of 5 (WebSocket provides instant updates)
+      console.log('🔄 Auto-polling for prospect updates...');
+      fetchProspects();
+    }, 3000); // 3 seconds for near-instant updates
 
     return () => {
       if (ws.current) {

@@ -238,6 +238,16 @@ router.post('/start', optionalAuth, async (req, res) => {
   console.log('👤 User ID:', req.userId);
   console.log('📁 Campaign ID:', req.body.campaignId);
   try {
+    // 🎯 Ensure user is tracked in database with default limits
+    if (req.userId && req.userEmail) {
+      try {
+        await db.ensureUserTracked(req.userId, req.userEmail);
+      } catch (trackError) {
+        console.error('❌ Failed to track user:', trackError);
+        // Don't fail the request, just log the error
+      }
+    }
+
     // Get user-specific workflow state
     const workflowState = getUserWorkflowState(req.userId);
 
@@ -2547,10 +2557,29 @@ router.get('/stats', optionalAuth, async (req, res) => {
     const resetTime = now + oneHourInMs;
     const timeUntilReset = oneHourInMs;
 
+    // 🎯 Get user's actual limit from database (default: 50/hour)
+    let maxProspectsPerHour = 50;
+    let maxEmailsPerHour = 100;
+    let isUnlimited = false;
+
+    try {
+      const userLimit = await db.getUserLimit(userId);
+      if (userLimit.isUnlimited) {
+        maxProspectsPerHour = 999999;
+        maxEmailsPerHour = 999999;
+        isUnlimited = true;
+        console.log(`📊 User ${userId} has UNLIMITED quota`);
+      } else if (userLimit.prospectsPerHour) {
+        maxProspectsPerHour = userLimit.prospectsPerHour;
+        maxEmailsPerHour = userLimit.prospectsPerHour; // Same limit for both
+        console.log(`📊 User ${userId} limit: ${maxProspectsPerHour}/hour`);
+      }
+    } catch (limitError) {
+      console.error('❌ Failed to get user limit, using default:', limitError.message);
+    }
+
     // Rate limit based on GENERATED EMAILS, not prospects
-    const maxEmailsPerHour = 100;
-    const maxProspectsPerHour = 100;
-    const isLimited = generatedEmailsCount >= maxEmailsPerHour;
+    const isLimited = !isUnlimited && (generatedEmailsCount >= maxEmailsPerHour || finalProspectsCount >= maxProspectsPerHour);
 
     const stats = {
       rateLimit: {

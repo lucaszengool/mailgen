@@ -222,6 +222,11 @@ server.listen(PORT, () => {
 
   // Log WebSocket server status
   console.log(`✅ WebSocket manager initialized and ready`);
+
+  // 🤖 Start Auto Email Generator service
+  const autoEmailGenerator = require('./services/AutoEmailGenerator');
+  autoEmailGenerator.start();
+  console.log(`✅ Auto Email Generator service started`);
 });
 
 // Initialize LangGraph agent in background (don't block server startup)

@@ -835,12 +835,23 @@ router.post('/generate-strategy-and-search', async (req, res) => {
  */
 router.post('/search-prospects', async (req, res) => {
   try {
-    let { strategy } = req.body;
-    
+    let { strategy, userId, userEmail } = req.body;
+
+    // 🎯 Ensure user is tracked in database with default limits
+    if (userId && userEmail) {
+      try {
+        const db = require('../models/database');
+        await db.ensureUserTracked(userId, userEmail);
+      } catch (trackError) {
+        console.error('❌ Failed to track user:', trackError);
+        // Don't fail the request, just log the error
+      }
+    }
+
     // REQUIRE PROPER MARKETING STRATEGY - NO MORE DEFAULTS
     if (!strategy || strategy === 'undefined' || typeof strategy === 'string' || !strategy.target_audience) {
       console.log('❌ No marketing strategy provided - must generate strategy first');
-      
+
       return res.status(400).json({
         success: false,
         error: 'Marketing strategy required before prospect search',

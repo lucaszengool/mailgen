@@ -4,14 +4,24 @@ import JobRightLayout from '../components/JobRightLayout'
 const ProspectsPage = () => {
   const [prospects, setProspects] = useState([])
   const [loading, setLoading] = useState(true)
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false)
 
   useEffect(() => {
-    fetchProspects()
+    fetchProspects(true)
+
+    // 🔥 FIX: Poll for new prospects every 5 seconds
+    const pollInterval = setInterval(() => {
+      fetchProspects(false)
+    }, 5000)
+
+    return () => clearInterval(pollInterval)
   }, [])
 
-  const fetchProspects = async () => {
+  const fetchProspects = async (isInitialLoad = false) => {
     try {
-      setLoading(true)
+      if (isInitialLoad) {
+        setLoading(true)
+      }
       const response = await fetch('/api/workflow/results')
       const data = await response.json()
       
@@ -100,7 +110,10 @@ const ProspectsPage = () => {
       ]
       setProspects(sampleProspects)
     } finally {
-      setLoading(false)
+      if (isInitialLoad) {
+        setLoading(false)
+        setInitialLoadComplete(true)
+      }
     }
   }
 
