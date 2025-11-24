@@ -163,7 +163,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <Loader className="w-12 h-12 text-[#00f5a0] animate-spin mx-auto mb-4" />
+          <Loader className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Analyzing Website</h2>
           <p className="text-gray-600">Our AI is analyzing {targetWebsite}...</p>
         </div>
@@ -189,7 +189,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
             </button>
             <button
               onClick={analyzeWebsite}
-              className="px-6 py-2.5 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors"
+              className="px-6 py-2.5 bg-white hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors"
             >
               Retry Analysis
             </button>
@@ -207,7 +207,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
-                <Sparkles className="w-6 h-6 text-[#00f5a0]" />
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Website Analysis</h1>
@@ -215,7 +215,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
               </div>
             </div>
             <div className="flex items-center space-x-2 px-4 py-2 bg-black rounded-lg">
-              <CheckCircle className="w-5 h-5 text-[#00f5a0]" />
+              <CheckCircle className="w-5 h-5 text-white" />
               <span className="text-sm font-semibold text-white">Analysis Complete</span>
             </div>
           </div>
@@ -228,7 +228,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
         <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
           <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
             <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-              <Globe className="w-5 h-5 text-[#00f5a0]" />
+              <Globe className="w-5 h-5 text-white" />
             </div>
             Basic Information
           </h2>
@@ -267,7 +267,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
                 type="text"
                 value={analysis?.businessName || ''}
                 onChange={(e) => updateField('businessName', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all font-medium text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00f5a0] focus:border-white transition-all font-medium text-gray-900"
               />
             </div>
             <div>
@@ -278,7 +278,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
                 type="text"
                 value={analysis?.productType || ''}
                 onChange={(e) => updateField('productType', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all font-medium text-gray-900"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00f5a0] focus:border-white transition-all font-medium text-gray-900"
               />
             </div>
           </div>
@@ -288,14 +288,14 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Benchmark brands<span className="text-red-500">*</span>
             </label>
-            <div className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl min-h-[48px] flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-[#00f5a0] focus-within:border-[#00f5a0] transition-all">
+            <div className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl min-h-[48px] flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-[#00f5a0] focus-within:border-white transition-all">
               {analysis?.benchmarkBrands && analysis.benchmarkBrands.length > 0 ? (
                 analysis.benchmarkBrands.map((brand, index) => (
                   <span key={index} className="inline-flex items-center px-3 py-1.5 bg-black text-white rounded-lg text-sm font-medium shadow-sm">
                     {brand}
                     <button
                       onClick={() => removeBenchmarkBrand(brand)}
-                      className="ml-2 text-[#00f5a0] hover:text-white transition-colors"
+                      className="ml-2 text-white hover:text-white transition-colors"
                     >×</button>
                   </span>
                 ))
@@ -319,7 +319,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
         <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
           <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
             <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-              <Sparkles className="w-5 h-5 text-[#00f5a0]" />
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             Business Introduction
           </h2>
@@ -332,7 +332,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
               value={analysis?.businessIntro || ''}
               onChange={(e) => updateField('businessIntro', e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all font-medium text-gray-900"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-[#00f5a0] focus:border-white transition-all font-medium text-gray-900"
             />
           </div>
         </div>
@@ -342,29 +342,29 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
-                <TrendingUp className="w-5 h-5 text-[#00f5a0]" />
+                <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">Core Selling Points</h3>
             </div>
             <button
               onClick={addSellingPoint}
-              className="px-4 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all"
+              className="px-4 py-2 bg-white hover:bg-[#00e090] text-black font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all"
             >
               + Add Point
             </button>
           </div>
           <div className="grid gap-4">
             {analysis?.sellingPoints?.map((point, index) => (
-              <div key={index} className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] transition-all">
+              <div key={index} className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-white transition-all">
                 <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-[#00f5a0]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-[#00f5a0] text-sm font-bold">{index + 1}</span>
+                  <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-sm font-bold">{index + 1}</span>
                   </div>
                   <textarea
                     value={point}
                     onChange={(e) => updateSellingPoint(index, e.target.value)}
                     rows={2}
-                    className="flex-1 text-gray-900 text-sm leading-relaxed border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] resize-none font-medium transition-all"
+                    className="flex-1 text-gray-900 text-sm leading-relaxed border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#00f5a0] focus:border-white resize-none font-medium transition-all"
                   />
                   <button
                     onClick={() => removeSellingPoint(index)}
@@ -381,34 +381,34 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
-                <Users className="w-5 h-5 text-[#00f5a0]" />
+                <Users className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">Target Audiences</h3>
               <span className="text-sm text-gray-600 font-medium">({analysis?.audiences?.length || 0} segments)</span>
             </div>
             <button
               onClick={addAudience}
-              className="px-4 py-2 bg-[#00f5a0] text-black text-sm font-bold rounded-xl hover:bg-[#00e090] shadow-md hover:shadow-lg transition-all"
+              className="px-4 py-2 bg-white text-black text-sm font-bold rounded-xl hover:bg-[#00e090] shadow-md hover:shadow-lg transition-all"
             >
               + Add Audience
             </button>
           </div>
           <div className="grid gap-4">
             {analysis?.audiences?.map((audience, index) => (
-              <div key={index} className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] transition-all">
+              <div key={index} className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-white transition-all">
                 <div className="flex items-start space-x-3">
                   <div className="p-2.5 bg-black rounded-xl flex-shrink-0 shadow-sm">
-                    <Target className="w-5 h-5 text-[#00f5a0]" />
+                    <Target className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-3">
-                      <span className="px-2 py-1 bg-black text-[#00f5a0] font-bold text-xs rounded-lg">{index + 1}</span>
+                      <span className="px-2 py-1 bg-black text-white font-bold text-xs rounded-lg">{index + 1}</span>
                       <input
                         type="text"
                         value={audience.title}
                         onChange={(e) => updateAudience(index, 'title', e.target.value)}
                         placeholder="Audience title"
-                        className="flex-1 font-bold text-gray-900 text-sm border-2 border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all"
+                        className="flex-1 font-bold text-gray-900 text-sm border-2 border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#00f5a0] focus:border-white transition-all"
                       />
                     </div>
                     <textarea
@@ -416,7 +416,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
                       onChange={(e) => updateAudience(index, 'description', e.target.value)}
                       rows={2}
                       placeholder="Audience description"
-                      className="w-full text-gray-700 text-sm leading-relaxed border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] resize-none font-medium transition-all"
+                      className="w-full text-gray-700 text-sm leading-relaxed border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#00f5a0] focus:border-white resize-none font-medium transition-all"
                     />
                   </div>
                   <button
@@ -434,7 +434,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
           <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
               <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-                <Globe className="w-5 h-5 text-[#00f5a0]" />
+                <Globe className="w-5 h-5 text-white" />
               </div>
               Social Media
             </h2>
@@ -490,7 +490,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
           <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="flex items-center space-x-2 mb-6">
               <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
-                <Briefcase className="w-5 h-5 text-[#00f5a0]" />
+                <Briefcase className="w-5 h-5 text-white" />
               </div>
               <h2 className="text-xl font-bold text-gray-900">Technology Stack</h2>
             </div>
@@ -498,7 +498,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
               {analysis.techStack.map((tech, idx) => (
                 <span
                   key={idx}
-                  className="px-4 py-2.5 bg-black text-[#00f5a0] border-2 border-[#00f5a0] rounded-xl text-sm font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer"
+                  className="px-4 py-2.5 bg-black text-white border-2 border-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer"
                 >
                   {tech}
                 </span>
@@ -512,7 +512,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
           <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
               <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
-                <Target className="w-5 h-5 text-[#00f5a0]" />
+                <Target className="w-5 h-5 text-white" />
               </div>
               Contact Information
             </h2>
@@ -546,7 +546,7 @@ const WebsiteAnalysisStep = ({ targetWebsite, onNext, onBack }) => {
             className="px-10 py-3 bg-black text-white font-bold rounded-xl hover:bg-gray-900 transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-xl flex items-center space-x-2"
           >
             <span>Continue to Setup</span>
-            <span className="text-[#00f5a0]">→</span>
+            <span className="text-white">→</span>
           </button>
         </div>
       </div>

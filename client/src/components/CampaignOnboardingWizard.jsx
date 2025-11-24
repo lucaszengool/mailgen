@@ -95,7 +95,7 @@ const CampaignOnboardingWizard = ({ campaign, onComplete, onCancel }) => {
                 onClick={() => setInputType('url')}
                 className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                   inputType === 'url'
-                    ? 'border-green-500 bg-green-50'
+                    ? 'border-white bg-gray-900'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
@@ -108,7 +108,7 @@ const CampaignOnboardingWizard = ({ campaign, onComplete, onCancel }) => {
                 onClick={() => setInputType('manual')}
                 className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                   inputType === 'manual'
-                    ? 'border-green-500 bg-green-50'
+                    ? 'border-white bg-gray-900'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
@@ -193,7 +193,7 @@ const CampaignOnboardingWizard = ({ campaign, onComplete, onCancel }) => {
                 key={idx}
                 className={`h-2 rounded-full transition-all ${
                   idx === 0 ? 'w-8' : 'w-2'
-                } ${idx === 0 ? 'bg-green-500' : 'bg-gray-200'}`}
+                } ${idx === 0 ? 'bg-black' : 'bg-gray-200'}`}
               />
             ))}
           </div>

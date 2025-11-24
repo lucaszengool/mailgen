@@ -1127,33 +1127,42 @@ class Database {
           } else {
             console.log(`✅ Found ${rows.length} unique users`);
 
-            // If no users found, check for 'anonymous' user activity
+            // If no users found, check for 'anonymous' or other activity
             if (rows.length === 0) {
-              // Check if there's any activity with 'anonymous' user
-              this.db.get(`
-                SELECT
-                  'anonymous' as user_id,
-                  (SELECT username FROM smtp_configs WHERE user_id = 'anonymous' LIMIT 1) as email,
+              // Check ALL user_id values that have activity (including 'anonymous' and Clerk IDs)
+              this.db.all(`
+                SELECT DISTINCT
+                  user_id,
+                  (SELECT username FROM smtp_configs WHERE smtp_configs.user_id = base.user_id LIMIT 1) as email,
                   50 as prospects_per_hour,
                   0 as is_unlimited,
-                  (SELECT MIN(created_at) FROM smtp_configs WHERE user_id = 'anonymous') as created_at,
-                  (SELECT MIN(created_at) FROM smtp_configs WHERE user_id = 'anonymous') as updated_at
-                FROM smtp_configs
-                WHERE user_id = 'anonymous'
-                LIMIT 1
-              `, [], (err2, anonymousRow) => {
-                if (anonymousRow && anonymousRow.email) {
-                  console.log('📊 Found anonymous user with activity, displaying it');
-                  resolve([{
-                    userId: 'anonymous',
-                    email: anonymousRow.email + ' (Currently logged in)',
-                    prospectsPerHour: 50,
-                    isUnlimited: false,
-                    createdAt: anonymousRow.created_at,
-                    updatedAt: anonymousRow.updated_at
-                  }]);
+                  MIN(created_at) as created_at,
+                  MIN(created_at) as updated_at
+                FROM (
+                  SELECT user_id, created_at FROM smtp_configs
+                  UNION
+                  SELECT user_id, sent_at as created_at FROM email_logs
+                  UNION
+                  SELECT user_id, created_at FROM campaigns
+                  UNION
+                  SELECT user_id, created_at FROM contacts
+                ) base
+                WHERE user_id IS NOT NULL AND user_id != ''
+                GROUP BY user_id
+                ORDER BY created_at DESC
+              `, [], (err2, allUsers) => {
+                if (allUsers && allUsers.length > 0) {
+                  console.log(`📊 Found ${allUsers.length} users with activity (including anonymous/Clerk users)`);
+                  resolve(allUsers.map(row => ({
+                    userId: row.user_id,
+                    email: row.email || `No SMTP configured (${row.user_id.substring(0, 12)}...)`,
+                    prospectsPerHour: row.prospects_per_hour,
+                    isUnlimited: row.is_unlimited === 1,
+                    createdAt: row.created_at,
+                    updatedAt: row.updated_at
+                  })));
                 } else {
-                  console.log('📊 No users or anonymous activity found');
+                  console.log('📊 No users or activity found');
                   resolve([]);
                 }
               });

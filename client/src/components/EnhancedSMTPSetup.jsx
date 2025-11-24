@@ -373,7 +373,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center space-x-3 mb-2">
               <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
-                <Settings className="w-5 h-5 text-[#00f5a0]" />
+                <Settings className="w-5 h-5 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-gray-900">Configure Email Service</h1>
             </div>
@@ -392,7 +392,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
             <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg">
               <div className="flex items-center space-x-2 mb-6">
                 <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
-                  <Mail className="w-5 h-5 text-[#00f5a0]" />
+                  <Mail className="w-5 h-5 text-white" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">
                   1. Choose Your Email Provider
@@ -408,15 +408,15 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                       className={`
                         relative p-5 rounded-2xl border-2 transition-all duration-200
                         ${isSelected
-                          ? 'border-[#00f5a0] bg-white shadow-lg'
-                          : 'border-gray-200 hover:border-[#00f5a0] hover:shadow-md'
+                          ? 'border-white bg-white shadow-lg'
+                          : 'border-gray-200 hover:border-white hover:shadow-md'
                         }
                       `}
                     >
                       {/* Selection Indicator */}
                       {isSelected && (
                         <div className="absolute top-3 right-3">
-                          <CheckCircle className="w-5 h-5 text-[#00f5a0]" />
+                          <CheckCircle className="w-5 h-5 text-white" />
                         </div>
                       )}
 
@@ -436,7 +436,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                         <div>
                           <span className="text-black">Difficulty:</span>
                           <span className={`ml-1 font-medium ${
-                            provider.difficulty === 'Easy' ? 'text-[#00f5a0]' :
+                            provider.difficulty === 'Easy' ? 'text-white' :
                             provider.difficulty === 'Medium' ? 'text-black' : 'text-black'
                           }`}>
                             {provider.difficulty}
@@ -468,7 +468,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             e.stopPropagation();
                             handleOAuthLogin(provider.id);
                           }}
-                          className="w-full mb-2 py-2 px-4 bg-black hover:bg-gray-900 text-[#00f5a0] text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
+                          className="w-full mb-2 py-2 px-4 bg-black hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
                         >
                           <Shield className="w-4 h-4" />
                           <span>Connect with {provider.name}</span>
@@ -484,7 +484,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                         className={`w-full py-2 px-4 text-sm font-medium rounded-lg transition-colors ${
                           ['gmail', 'outlook', 'yahoo'].includes(provider.id)
                             ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                            : 'bg-black hover:bg-gray-900 text-[#00f5a0]'
+                            : 'bg-black hover:bg-gray-900 text-white'
                         }`}
                       >
                         {['gmail', 'outlook', 'yahoo'].includes(provider.id) ? 'Manual Setup' : 'Select Provider'}
@@ -504,7 +504,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   </h2>
                   <button
                     onClick={startTutorial}
-                    className="flex items-center space-x-2 px-4 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-200 text-black font-semibold rounded-lg transition-colors"
                   >
                     <Play className="w-4 h-4" />
                     <span>Start Tutorial</span>
@@ -517,7 +517,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   <div className="space-y-2">
                     {selectedProviderData.tutorial.map((step, index) => (
                       <div key={index} className="flex items-center space-x-3">
-                        <div className="w-6 h-6 rounded-full bg-black text-[#00f5a0] flex items-center justify-center text-sm font-medium">
+                        <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-sm font-medium">
                           {index + 1}
                         </div>
                         <div className="flex-1">
@@ -529,7 +529,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             href={step.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#00f5a0] hover:text-[#00e090]"
+                            className="text-white hover:text-[#00e090]"
                           >
                             <ExternalLink className="w-4 h-4" />
                           </a>
@@ -546,7 +546,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
               <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg">
                 <div className="flex items-center space-x-2 mb-6">
                   <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
-                    <Shield className="w-5 h-5 text-[#00f5a0]" />
+                    <Shield className="w-5 h-5 text-white" />
                   </div>
                   <h2 className="text-xl font-bold text-gray-900">
                     3. Enter SMTP Configuration
@@ -558,13 +558,13 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                     {/* SMTP Host */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        SMTP Host <span className="text-[#00f5a0]">*</span>
+                        SMTP Host <span className="text-white">*</span>
                       </label>
                       <input
                         type="text"
                         value={smtpConfig.host}
                         onChange={(e) => handleConfigChange('host', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 font-medium focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0] transition-all"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 font-medium focus:ring-2 focus:ring-white focus:border-white transition-all"
                         placeholder="smtp.gmail.com"
                       />
                     </div>
@@ -572,13 +572,13 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                     {/* SMTP Port */}
                     <div>
                       <label className="block text-sm font-medium text-black mb-2">
-                        Port <span className="text-[#00f5a0]">*</span>
+                        Port <span className="text-white">*</span>
                       </label>
                       <input
                         type="number"
                         value={smtpConfig.port}
                         onChange={(e) => handleConfigChange('port', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-white focus:border-transparent"
                         placeholder="587"
                       />
                     </div>
@@ -586,13 +586,13 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                     {/* Email Address */}
                     <div>
                       <label className="block text-sm font-medium text-black mb-2">
-                        Email Address <span className="text-[#00f5a0]">*</span>
+                        Email Address <span className="text-white">*</span>
                       </label>
                       <input
                         type="email"
                         value={smtpConfig.auth.user}
                         onChange={(e) => handleConfigChange('auth.user', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-white focus:border-transparent"
                         placeholder="your-email@gmail.com"
                       />
                     </div>
@@ -600,13 +600,13 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                     {/* Sender Name */}
                     <div>
                       <label className="block text-sm font-medium text-black mb-2">
-                        Sender Name <span className="text-[#00f5a0]">*</span>
+                        Sender Name <span className="text-white">*</span>
                       </label>
                       <input
                         type="text"
                         value={smtpConfig.senderName}
                         onChange={(e) => handleConfigChange('senderName', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-white focus:border-transparent"
                         placeholder="Fruit AI"
                       />
                       <p className="mt-1 text-xs text-black">
@@ -617,14 +617,14 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                     {/* Password */}
                     <div>
                       <label className="block text-sm font-medium text-black mb-2">
-                        Password <span className="text-[#00f5a0]">*</span>
+                        Password <span className="text-white">*</span>
                       </label>
                       <div className="relative">
                         <input
                           type={showPassword ? 'text' : 'password'}
                           value={smtpConfig.auth.pass}
                           onChange={(e) => handleConfigChange('auth.pass', e.target.value)}
-                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-white focus:border-transparent"
                           placeholder="•••••••••••••••••••"
                         />
                         <button
@@ -645,7 +645,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                         type="checkbox"
                         checked={smtpConfig.secure}
                         onChange={(e) => handleConfigChange('secure', e.target.checked)}
-                        className="w-4 h-4 text-[#00f5a0] bg-gray-100 border-gray-300 rounded focus:ring-[#00f5a0]"
+                        className="w-4 h-4 text-white bg-gray-100 border-gray-300 rounded focus:ring-white"
                       />
                       <span className="text-sm text-black">Use secure connection (SSL/TLS)</span>
                     </label>
@@ -653,9 +653,9 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
 
                   {/* Validation Status */}
                   {isFormValid && (
-                    <div className="mt-6 p-4 bg-white border border-[#00f5a0] rounded-lg">
+                    <div className="mt-6 p-4 bg-white border border-white rounded-lg">
                       <div className="flex items-center space-x-2">
-                        <CheckCircle className="w-5 h-5 text-[#00f5a0]" />
+                        <CheckCircle className="w-5 h-5 text-white" />
                         <span className="text-sm font-medium text-black">
                           Configuration looks good! Ready to test and save.
                         </span>
@@ -690,7 +690,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
               `}
             >
               <span>Complete Setup</span>
-              <span className={isFormValid ? 'text-[#00f5a0]' : 'text-gray-600'}>→</span>
+              <span className={isFormValid ? 'text-white' : 'text-gray-600'}>→</span>
             </button>
           </div>
         </div>
@@ -725,7 +725,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   href={selectedProviderData.tutorial[currentTutorialStep].link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors"
+                  className="inline-flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-200 text-black font-semibold rounded-lg transition-colors"
                 >
                   <span>{selectedProviderData.tutorial[currentTutorialStep].action}</span>
                   <ExternalLink className="w-4 h-4" />
@@ -739,7 +739,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
               </div>
               <button
                 onClick={nextTutorialStep}
-                className="flex items-center space-x-2 px-4 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-200 text-black font-semibold rounded-lg transition-colors"
               >
                 <span>
                   {currentTutorialStep === selectedProviderData.tutorial.length - 1 ? 'Finish' : 'Next'}
@@ -759,17 +759,17 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
               <>
                 <div className="text-center">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-[#00f5a0] border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">Testing Connections...</h3>
                   <p className="text-gray-600 mb-4">Verifying SMTP and IMAP connectivity</p>
                   <div className="space-y-2 text-left bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center text-sm text-gray-700">
-                      <div className="w-2 h-2 bg-[#00f5a0] rounded-full mr-2 animate-pulse"></div>
+                      <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
                       Testing SMTP send capability...
                     </div>
                     <div className="flex items-center text-sm text-gray-700">
-                      <div className="w-2 h-2 bg-[#00f5a0] rounded-full mr-2 animate-pulse"></div>
+                      <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
                       Testing IMAP inbox access...
                     </div>
                   </div>
@@ -780,18 +780,18 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
             {verificationResult?.status === 'success' && (
               <>
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-[#00f5a0] bg-white flex items-center justify-center">
-                    <CheckCircle className="w-10 h-10 text-[#00f5a0]" />
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-white bg-white flex items-center justify-center">
+                    <CheckCircle className="w-10 h-10 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold text-black mb-2">✅ Connection Successful!</h3>
                   <p className="text-black mb-4">SMTP and IMAP are configured correctly</p>
-                  <div className="space-y-2 text-left bg-white border border-[#00f5a0] rounded-lg p-4">
+                  <div className="space-y-2 text-left bg-white border border-white rounded-lg p-4">
                     <div className="flex items-center text-sm text-black">
-                      <CheckCircle className="w-4 h-4 mr-2 text-[#00f5a0]" />
+                      <CheckCircle className="w-4 h-4 mr-2 text-white" />
                       SMTP: {verificationResult.smtp?.message || 'Connected'}
                     </div>
                     <div className="flex items-center text-sm text-black">
-                      <CheckCircle className="w-4 h-4 mr-2 text-[#00f5a0]" />
+                      <CheckCircle className="w-4 h-4 mr-2 text-white" />
                       IMAP: {verificationResult.imap?.message || 'Connected'}
                     </div>
                   </div>
@@ -831,7 +831,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                   {/* Help Links */}
                   <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4 text-left">
                     <h4 className="font-semibold text-black mb-2 flex items-center">
-                      <HelpCircle className="w-4 h-4 mr-2 text-[#00f5a0]" />
+                      <HelpCircle className="w-4 h-4 mr-2 text-white" />
                       Need Help? Get App Password:
                     </h4>
                     <div className="space-y-2">
@@ -841,7 +841,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             href="https://myaccount.google.com/apppasswords"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-sm text-[#00f5a0] hover:text-[#00e090]"
+                            className="flex items-center text-sm text-white hover:text-[#00e090]"
                           >
                             <ExternalLink className="w-3 h-3 mr-1" />
                             Generate Gmail App Password
@@ -857,7 +857,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             href="https://account.microsoft.com/security/app-passwords"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-sm text-[#00f5a0] hover:text-[#00e090]"
+                            className="flex items-center text-sm text-white hover:text-[#00e090]"
                           >
                             <ExternalLink className="w-3 h-3 mr-1" />
                             Generate Outlook App Password
@@ -873,7 +873,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                             href="https://login.yahoo.com/account/security"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-sm text-[#00f5a0] hover:text-[#00e090]"
+                            className="flex items-center text-sm text-white hover:text-[#00e090]"
                           >
                             <ExternalLink className="w-3 h-3 mr-1" />
                             Generate Yahoo App Password
@@ -895,7 +895,7 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
                     </button>
                     <button
                       onClick={testConnection}
-                      className="flex-1 px-4 py-2 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-lg transition-colors flex items-center justify-center"
+                      className="flex-1 px-4 py-2 bg-white hover:bg-gray-200 text-black font-semibold rounded-lg transition-colors flex items-center justify-center"
                     >
                       <span>Retry</span>
                       <ArrowRight className="w-4 h-4 ml-2" />

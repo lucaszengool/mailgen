@@ -2604,7 +2604,8 @@ router.get('/stats', optionalAuth, async (req, res) => {
           current: generatedEmailsCount,
           max: maxEmailsPerHour
         }
-      }
+      },
+      isUnlimited: isUnlimited  // 🆕 Add unlimited flag for frontend
     };
 
     console.log(`📊 [User: ${userId}] Stats:`, {

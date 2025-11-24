@@ -129,85 +129,239 @@ class SuperEmailDiscoveryEngine:
         except Exception as e:
             self.logger.error(f"❌ 保存缓存失败: {e}")
     
+    def extract_industry_and_audience(self, query):
+        """智能提取行业和目标受众关键词"""
+        query_lower = query.lower()
+
+        # 行业分类关键词映射
+        industry_keywords = {
+            'technology': ['tech', 'software', 'saas', 'it', 'digital', 'cloud', 'ai', 'ml', 'data'],
+            'healthcare': ['health', 'medical', 'hospital', 'clinic', 'pharma', 'biotech', 'wellness'],
+            'finance': ['finance', 'bank', 'fintech', 'investment', 'insurance', 'accounting'],
+            'retail': ['retail', 'store', 'shop', 'merchant', 'ecommerce', 'commerce'],
+            'manufacturing': ['manufacturing', 'factory', 'industrial', 'production', 'supply'],
+            'food': ['food', 'beverage', 'restaurant', 'culinary', 'nutrition', 'catering'],
+            'education': ['education', 'school', 'university', 'training', 'learning', 'academy'],
+            'real_estate': ['real estate', 'property', 'housing', 'construction', 'building'],
+            'marketing': ['marketing', 'advertising', 'agency', 'branding', 'media'],
+            'logistics': ['logistics', 'shipping', 'freight', 'transport', 'delivery', 'warehouse']
+        }
+
+        # 目标受众关键词映射
+        audience_keywords = {
+            'buyer': ['buyer', 'purchasing', 'procurement', 'sourcing'],
+            'manager': ['manager', 'director', 'head', 'lead', 'supervisor'],
+            'executive': ['ceo', 'cto', 'cfo', 'executive', 'president', 'vp', 'chief'],
+            'owner': ['owner', 'founder', 'entrepreneur', 'principal'],
+            'coordinator': ['coordinator', 'specialist', 'analyst', 'associate'],
+            'farmer': ['farmer', 'agriculture', 'farm', 'grower', 'producer'],
+            'retailer': ['retailer', 'merchant', 'vendor', 'dealer'],
+            'distributor': ['distributor', 'wholesaler', 'supplier'],
+            'developer': ['developer', 'engineer', 'programmer', 'architect'],
+            'designer': ['designer', 'creative', 'artist', 'ux', 'ui']
+        }
+
+        # 检测行业
+        detected_industries = []
+        for industry, keywords in industry_keywords.items():
+            if any(kw in query_lower for kw in keywords):
+                detected_industries.append(industry)
+
+        # 检测目标受众
+        detected_audiences = []
+        for audience, keywords in audience_keywords.items():
+            if any(kw in query_lower for kw in keywords):
+                detected_audiences.append(audience)
+
+        return detected_industries, detected_audiences, query
+
     def generate_professional_search_strategies(self, industry, round_num=1):
-        """生成基于2024年最佳实践的专业搜索策略"""
+        """生成基于2024年最佳实践的专业搜索策略 - 全行业通用"""
         self.logger.info(f"🧠 生成第{round_num}轮专业搜索策略 - {industry}")
-        
+
+        # 🔥 智能提取行业和受众
+        industries, audiences, original_query = self.extract_industry_and_audience(industry)
+
+        self.logger.info(f"   🎯 检测到的行业: {industries if industries else '通用'}")
+        self.logger.info(f"   👥 检测到的受众: {audiences if audiences else '通用'}")
+
         # 基于研究的最有效搜索策略
         base_strategies = []
-        
-        if round_num == 1:
-            # 第一轮：简短高效搜索模式
-            base_strategies = [
-                f'{industry} email contact',
-                f'{industry} CEO email',
-                f'{industry} founder contact',
-                f'{industry} business email',
-                f'{industry} company contact'
-            ]
-        elif round_num == 2:
-            # 第二轮：简短变体搜索
-            base_strategies = [
-                f'{industry} team email',
-                f'{industry} sales contact',
-                f'{industry} support email',
-                f'{industry} info contact',
-                f'{industry} director email'
-            ]
-        elif round_num == 3:
-            # 第三轮：职位相关搜索
-            base_strategies = [
-                f'{industry} manager email',
-                f'{industry} consultant contact',
-                f'{industry} specialist email',
-                f'{industry} expert contact',
-                f'{industry} advisor email'
-            ]
-        elif round_num == 4:
-            # 第四轮：创业与企业搜索
-            base_strategies = [
-                f'{industry} startup email',
-                f'{industry} entrepreneur contact',
-                f'{industry} business owner email',
-                f'{industry} partner contact',
-                f'{industry} investor email'
-            ]
-        elif round_num == 5:
-            # 第五轮：部门与职能搜索
-            base_strategies = [
-                f'{industry} marketing email',
-                f'{industry} operations contact',
-                f'{industry} product manager email',
-                f'{industry} customer success contact',
-                f'{industry} growth email'
-            ]
-        elif round_num % 3 == 0:
-            # 每3轮：地域与市场搜索
-            base_strategies = [
-                f'{industry} North America email',
-                f'{industry} Europe contact',
-                f'{industry} Asia Pacific email',
-                f'{industry} global contact',
-                f'{industry} international email'
-            ]
-        elif round_num % 3 == 1:
-            # 每3轮+1：技术与专业搜索
-            base_strategies = [
-                f'{industry} CTO email',
-                f'{industry} developer contact',
-                f'{industry} engineer email',
-                f'{industry} architect contact',
-                f'{industry} technical lead email'
-            ]
+
+        # 如果有明确的行业+受众组合，生成高度针对性搜索
+        if industries and audiences:
+            industry_key = industries[0]
+            audience_key = audiences[0]
+
+            if round_num == 1:
+                # 第一轮：最精准的职位+行业组合
+                base_strategies = [
+                    f'{audience_key} {industry_key} email',
+                    f'{industry_key} {audience_key} contact',
+                    f'{audience_key} email {industry_key}',
+                    f'{industry_key} {audience_key} director email',
+                    f'senior {audience_key} {industry_key} contact'
+                ]
+            elif round_num == 2:
+                # 第二轮：组织层级搜索
+                base_strategies = [
+                    f'{industry_key} {audience_key} team email',
+                    f'{audience_key} department {industry_key} contact',
+                    f'{industry_key} {audience_key} lead email',
+                    f'{audience_key} {industry_key} head contact',
+                    f'{industry_key} {audience_key} manager email'
+                ]
+            elif round_num == 3:
+                # 第三轮：地域+职位搜索
+                base_strategies = [
+                    f'{audience_key} {industry_key} USA email',
+                    f'{industry_key} {audience_key} North America contact',
+                    f'{audience_key} {industry_key} regional email',
+                    f'{industry_key} {audience_key} national contact',
+                    f'{audience_key} {industry_key} local email'
+                ]
+            else:
+                # 其他轮次：多种组合
+                base_strategies = [
+                    f'{industry_key} {audience_key} professional email',
+                    f'{audience_key} {industry_key} company contact',
+                    f'{industry_key} {audience_key} business email',
+                    f'{audience_key} role {industry_key} contact',
+                    f'{industry_key} {audience_key} executive email'
+                ]
+
+        # 只有行业，没有明确受众
+        elif industries:
+            industry_key = industries[0]
+
+            if round_num == 1:
+                base_strategies = [
+                    f'{industry_key} buyer email',
+                    f'{industry_key} manager contact',
+                    f'{industry_key} director email',
+                    f'{industry_key} CEO contact',
+                    f'{industry_key} executive email'
+                ]
+            elif round_num == 2:
+                base_strategies = [
+                    f'{industry_key} owner email',
+                    f'{industry_key} founder contact',
+                    f'{industry_key} partner email',
+                    f'{industry_key} president contact',
+                    f'{industry_key} VP email'
+                ]
+            elif round_num == 3:
+                base_strategies = [
+                    f'{industry_key} sales email',
+                    f'{industry_key} marketing contact',
+                    f'{industry_key} operations email',
+                    f'{industry_key} procurement contact',
+                    f'{industry_key} purchasing email'
+                ]
+            else:
+                base_strategies = [
+                    f'{industry_key} team email',
+                    f'{industry_key} department contact',
+                    f'{industry_key} specialist email',
+                    f'{industry_key} coordinator contact',
+                    f'{industry_key} analyst email'
+                ]
+
+        # 只有受众，没有明确行业
+        elif audiences:
+            audience_key = audiences[0]
+
+            if round_num == 1:
+                base_strategies = [
+                    f'{audience_key} business email',
+                    f'{audience_key} company contact',
+                    f'{audience_key} corporate email',
+                    f'{audience_key} enterprise contact',
+                    f'{audience_key} professional email'
+                ]
+            elif round_num == 2:
+                base_strategies = [
+                    f'{audience_key} startup email',
+                    f'{audience_key} SMB contact',
+                    f'{audience_key} small business email',
+                    f'{audience_key} mid-market contact',
+                    f'{audience_key} organization email'
+                ]
+            else:
+                base_strategies = [
+                    f'{audience_key} consultant email',
+                    f'{audience_key} advisor contact',
+                    f'{audience_key} specialist email',
+                    f'{audience_key} expert contact',
+                    f'{audience_key} services email'
+                ]
+
+        # 通用搜索（没有检测到行业或受众）
         else:
-            # 其他轮次：混合搜索
-            base_strategies = [
-                f'{industry} company email',
-                f'{industry} business contact',
-                f'{industry} executive email',
-                f'{industry} leadership contact',
-                f'{industry} decision maker email'
-            ]
+            if round_num == 1:
+                base_strategies = [
+                    f'{industry} email contact',
+                    f'{industry} CEO email',
+                    f'{industry} founder contact',
+                    f'{industry} business email',
+                    f'{industry} company contact'
+                ]
+            elif round_num == 2:
+                base_strategies = [
+                    f'{industry} team email',
+                    f'{industry} sales contact',
+                    f'{industry} support email',
+                    f'{industry} info contact',
+                    f'{industry} director email'
+                ]
+            elif round_num == 3:
+                base_strategies = [
+                    f'{industry} manager email',
+                    f'{industry} consultant contact',
+                    f'{industry} specialist email',
+                    f'{industry} expert contact',
+                    f'{industry} advisor email'
+                ]
+            elif round_num == 4:
+                base_strategies = [
+                    f'{industry} startup email',
+                    f'{industry} entrepreneur contact',
+                    f'{industry} business owner email',
+                    f'{industry} partner contact',
+                    f'{industry} investor email'
+                ]
+            elif round_num == 5:
+                base_strategies = [
+                    f'{industry} marketing email',
+                    f'{industry} operations contact',
+                    f'{industry} product manager email',
+                    f'{industry} customer success contact',
+                    f'{industry} growth email'
+                ]
+            elif round_num % 3 == 0:
+                base_strategies = [
+                    f'{industry} North America email',
+                    f'{industry} Europe contact',
+                    f'{industry} Asia Pacific email',
+                    f'{industry} global contact',
+                    f'{industry} international email'
+                ]
+            elif round_num % 3 == 1:
+                base_strategies = [
+                    f'{industry} CTO email',
+                    f'{industry} developer contact',
+                    f'{industry} engineer email',
+                    f'{industry} architect contact',
+                    f'{industry} technical lead email'
+                ]
+            else:
+                base_strategies = [
+                    f'{industry} company email',
+                    f'{industry} business contact',
+                    f'{industry} executive email',
+                    f'{industry} leadership contact',
+                    f'{industry} decision maker email'
+                ]
         
         self.logger.info(f"   ✅ 生成{len(base_strategies)}个专业级搜索策略")
         return base_strategies

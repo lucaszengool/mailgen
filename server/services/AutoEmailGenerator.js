@@ -56,8 +56,8 @@ class AutoEmailGenerator {
    */
   async checkAndGenerateEmails() {
     try {
-      // Get all contacts from database
-      const contacts = await database.getAllContacts();
+      // Get all contacts from database (using getContacts instead of getAllContacts)
+      const contacts = await database.getContacts('anonymous', {}, 10000);
 
       // Filter prospects without personalized emails
       const prospectsNeedingEmails = contacts.filter(contact => {

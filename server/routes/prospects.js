@@ -47,9 +47,18 @@ router.post('/search', optionalAuth, async (req, res) => {
     let searchMethod = 'mock_fallback';
 
     try {
-      // Search for real prospects using SuperEmailDiscoveryEngine.py
-      console.log(`🚀 Calling SuperEmailDiscoveryEngine.py with industry: "${industry}" and limit: ${limit}`);
-      const result = await emailSearchAgent.searchEmails(industry, limit);
+      // Search for real prospects using SuperEmailDiscoveryEngine.py with target audience context
+      console.log(`🚀 Calling SuperEmailDiscoveryEngine.py with industry: "${industry}", target audience: "${targetAudience}", and limit: ${limit}`);
+
+      // 🔥 FIX: Build more targeted search query incorporating target audience
+      let enhancedSearchQuery = industry;
+      if (targetAudience && targetAudience.trim()) {
+        // If target audience is provided, create a more specific search
+        enhancedSearchQuery = `${industry} ${targetAudience}`;
+        console.log(`✨ Enhanced search query: "${enhancedSearchQuery}"`);
+      }
+
+      const result = await emailSearchAgent.searchEmails(enhancedSearchQuery, limit);
 
       console.log(`📊 Search result:`, { success: result.success, prospectsCount: result.prospects?.length || 0 });
 

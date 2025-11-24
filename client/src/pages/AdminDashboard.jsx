@@ -15,6 +15,10 @@ export default function AdminDashboard() {
     if (auth === 'admin123') {
       setIsAuthenticated(true);
       fetchUsers();
+
+      // Auto-refresh every 5 seconds
+      const interval = setInterval(fetchUsers, 5000);
+      return () => clearInterval(interval);
     }
   }, []);
 

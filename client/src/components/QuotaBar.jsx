@@ -25,7 +25,8 @@ const QuotaBar = () => {
         current: 0,
         max: 100
       }
-    }
+    },
+    isUnlimited: false
   });
 
   const [timeRemaining, setTimeRemaining] = useState('60m 0s');
@@ -145,7 +146,7 @@ const QuotaBar = () => {
             Prospect Quota
           </span>
           <span className="text-xs font-semibold text-black" style={{ fontSize: '0.65rem' }}>
-            {quotaData.prospects.quota.current}/{quotaData.prospects.quota.max}
+            {quotaData.isUnlimited ? '∞ Unlimited' : `${quotaData.prospects.quota.current}/${quotaData.prospects.quota.max}`}
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-0.5">
@@ -176,7 +177,7 @@ const QuotaBar = () => {
             Email Gen Quota
           </span>
           <span className="text-xs font-semibold text-black" style={{ fontSize: '0.65rem' }}>
-            {quotaData.emails.quota.current}/{quotaData.emails.quota.max}
+            {quotaData.isUnlimited ? '∞ Unlimited' : `${quotaData.emails.quota.current}/${quotaData.emails.quota.max}`}
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-0.5">
