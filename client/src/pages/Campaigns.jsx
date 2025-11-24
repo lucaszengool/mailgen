@@ -27,6 +27,12 @@ export default function Campaigns() {
       const response = await fetch('/api/campaigns')
       const data = await response.json()
       if (data.success) {
+        // 🔥 AUTO-CREATE: If no campaigns exist, create "My First Campaign"
+        if (data.data.length === 0) {
+          console.log('📝 No campaigns found - auto-creating "My First Campaign"')
+          await createFirstCampaign()
+          return // Will refetch after creating
+        }
         setCampaigns(data.data)
       }
     } catch (error) {
@@ -34,6 +40,28 @@ export default function Campaigns() {
       toast.error('加载活动失败')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const createFirstCampaign = async () => {
+    try {
+      const response = await fetch('/api/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'My First Campaign',
+          description: 'Your first AI-powered email campaign',
+          status: 'draft'
+        })
+      })
+      const data = await response.json()
+      if (data.success) {
+        console.log('✅ Auto-created "My First Campaign"')
+        // Refetch to show the new campaign
+        fetchCampaigns()
+      }
+    } catch (error) {
+      console.error('Failed to auto-create first campaign:', error)
     }
   }
 

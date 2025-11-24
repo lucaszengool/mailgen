@@ -14,6 +14,9 @@ import re
 import requests
 import os
 import hashlib
+import socket
+import dns.resolver
+import smtplib
 from datetime import datetime
 from urllib.parse import quote, urlencode
 from bs4 import BeautifulSoup
@@ -45,6 +48,9 @@ class SuperEmailDiscoveryEngine:
         # 🔥 NEW: Email cache directory for deduplication across runs
         self.cache_dir = os.path.join(os.path.dirname(__file__), '.email_cache')
         os.makedirs(self.cache_dir, exist_ok=True)
+
+        # 🔥 NEW: Domain verification cache (to avoid re-checking same domains)
+        self.domain_verification_cache = {}  # domain -> (has_mx, mx_host, is_catch_all)
 
         # 搜索状态
         self.found_emails = []
@@ -573,37 +579,72 @@ class SuperEmailDiscoveryEngine:
                 'noreply', 'no-reply', 'donotreply', 'bounce', 'mailer-daemon',
                 'privacy@', 'legal@', 'abuse@', 'postmaster@', 'webmaster@',
                 'support@example', 'admin@example', 'info@example', 'sales@example',
-                'sample@', 'demo@', 'fake@', 'null@', 'void@'
+                'sample@', 'demo@', 'fake@', 'null@', 'void@', 'placeholder@',
+                'youremail@', 'your-email@', 'email@', 'mailto:',
             ]
 
             if any(pattern in email_lower for pattern in exclusions):
                 excluded_count += 1
                 continue
 
-            # 验证邮箱格式
-            if self.validate_email_format(email):
-                # 提取邮箱周围的上下文（姓名、职位、部门）
-                context = self.extract_context_around_email(html_content, email) if html_content else {}
+            # 🔥 NEW: Check for suspicious patterns (phone numbers in email addresses)
+            # Pattern: xxx-xxx-xxxx or similar (indicates likely invalid email)
+            if re.search(r'\d{3}[-.]?\d{3}[-.]?\d{4}', email):
+                self.logger.debug(f"   🚫 可疑电话号码模式: {email}")
+                excluded_count += 1
+                continue
 
-                valid_emails.append({
-                    'email': email,
-                    'is_personal': self.is_personal_email(email),
-                    'name': context.get('name'),
-                    'title': context.get('title'),
-                    'department': context.get('department')
-                })
+            # 🔥 NEW: Check local part length (too long = suspicious)
+            local_part = email.split('@')[0]
+            if len(local_part) > 40:  # Abnormally long local part
+                self.logger.debug(f"   🚫 本地部分过长: {email}")
+                excluded_count += 1
+                continue
 
-                domain = email.split('@')[1]
-                self.search_stats['unique_domains'].add(domain)
+            # 步骤1：验证邮箱格式
+            if not self.validate_email_format(email):
+                excluded_count += 1
+                continue
 
-                email_type = "个人" if self.is_personal_email(email) else "通用"
-                self.logger.info(f"   ✅ 发现{email_type}邮箱: {email} (来源: {source[:30]})")
-                if context.get('name'):
-                    self.logger.info(f"      👤 姓名: {context['name']}")
-                if context.get('title'):
-                    self.logger.info(f"      💼 职位: {context['title']}")
-                if context.get('department'):
-                    self.logger.info(f"      🏢 部门: {context['department']}")
+            # 步骤2：综合验证邮箱可投递性（DNS MX + SMTP）
+            is_deliverable, verification_info = self.verify_email_deliverability(email)
+            if not is_deliverable:
+                self.logger.warning(f"   ❌ 邮箱验证失败: {email} - {verification_info.get('reason')}")
+                excluded_count += 1
+                continue
+
+            # 提取邮箱周围的上下文（姓名、职位、部门）
+            context = self.extract_context_around_email(html_content, email) if html_content else {}
+
+            # 计算置信度（基于验证状态）
+            base_confidence = 0.9 if self.is_personal_email(email) else 0.7
+            if verification_info.get('status') == 'catch_all':
+                base_confidence += verification_info.get('confidence_penalty', -0.2)
+            elif verification_info.get('status') == 'unverifiable':
+                base_confidence -= 0.1
+
+            valid_emails.append({
+                'email': email,
+                'is_personal': self.is_personal_email(email),
+                'name': context.get('name'),
+                'title': context.get('title'),
+                'department': context.get('department'),
+                'verification': verification_info,
+                'confidence': base_confidence
+            })
+
+            domain = email.split('@')[1]
+            self.search_stats['unique_domains'].add(domain)
+
+            email_type = "个人" if self.is_personal_email(email) else "通用"
+            verification_status = verification_info.get('status', 'unknown')
+            self.logger.info(f"   ✅ 发现{email_type}邮箱: {email} [验证: {verification_status}] (来源: {source[:30]})")
+            if context.get('name'):
+                self.logger.info(f"      👤 姓名: {context['name']}")
+            if context.get('title'):
+                self.logger.info(f"      💼 职位: {context['title']}")
+            if context.get('department'):
+                self.logger.info(f"      🏢 部门: {context['department']}")
 
         if excluded_count > 0:
             self.logger.debug(f"   🗑️ 排除了{excluded_count}个示例/无效邮箱")
@@ -626,23 +667,149 @@ class SuperEmailDiscoveryEngine:
         """验证邮箱格式"""
         if not (5 < len(email) < 100 and email.count('@') == 1):
             return False
-        
+
         local, domain = email.split('@')
-        
+
         # 检查本地部分
         if not local or len(local) > 64:
             return False
-        
+
         # 检查域名部分
         if not domain or '.' not in domain or len(domain) < 4:
             return False
-        
+
         # 检查顶级域名
         tld = domain.split('.')[-1]
         if len(tld) < 2 or not tld.isalpha():
             return False
-        
+
         return True
+
+    def verify_mx_records(self, domain):
+        """验证域名是否有有效的MX记录"""
+        try:
+            mx_records = dns.resolver.resolve(domain, 'MX')
+            mx_hosts = [str(r.exchange).rstrip('.') for r in mx_records]
+            if mx_hosts:
+                self.logger.debug(f"   ✅ MX记录存在: {domain} -> {mx_hosts[0]}")
+                return True, mx_hosts[0]
+            return False, None
+        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.NoNameservers):
+            self.logger.warning(f"   ❌ 无MX记录: {domain}")
+            return False, None
+        except Exception as e:
+            self.logger.debug(f"   ⚠️ MX查询失败: {domain} - {str(e)}")
+            return False, None
+
+    def verify_email_smtp(self, email, mx_host):
+        """使用SMTP验证邮箱是否存在（无需发送邮件）"""
+        try:
+            # 设置超时
+            smtp = smtplib.SMTP(timeout=15)
+            smtp.set_debuglevel(0)  # 禁用调试输出
+            smtp.connect(mx_host, 25)
+
+            # 使用更可信的HELO域名
+            smtp.helo(socket.getfqdn())
+
+            # 使用更可信的发件人地址
+            smtp.mail('postmaster@' + socket.getfqdn())
+
+            code, message = smtp.rcpt(email)
+            smtp.quit()
+
+            # SMTP响应码：
+            # 250 = 邮箱存在
+            # 550 = 邮箱不存在（明确拒绝）
+            # 551 = 用户不在此服务器
+            # 553 = 邮箱名称不允许
+            # 450/451/452 = 暂时无法验证
+            if code == 250:
+                self.logger.debug(f"   ✅ SMTP验证通过: {email}")
+                return True, "valid"
+            elif code in [450, 451, 452]:
+                self.logger.debug(f"   ⚠️ SMTP暂时无法验证: {email} (code: {code})")
+                return True, "unverifiable"
+            elif code in [550, 551, 553]:
+                self.logger.warning(f"   ❌ SMTP明确拒绝: {email} (code: {code})")
+                return False, "invalid"
+            else:
+                self.logger.debug(f"   ⚠️ SMTP未知响应: {email} (code: {code})")
+                return True, "unverifiable"
+        except smtplib.SMTPServerDisconnected:
+            self.logger.debug(f"   ⚠️ SMTP服务器断开: {email}")
+            return True, "unverifiable"
+        except smtplib.SMTPConnectError as e:
+            self.logger.debug(f"   ⚠️ SMTP连接失败: {email} - {str(e)}")
+            return True, "unverifiable"
+        except socket.timeout:
+            self.logger.debug(f"   ⚠️ SMTP超时: {email}")
+            return True, "unverifiable"
+        except Exception as e:
+            self.logger.debug(f"   ⚠️ SMTP验证异常: {email} - {str(e)}")
+            return True, "unverifiable"
+
+    def is_catch_all_domain(self, domain, mx_host):
+        """检测域名是否为catch-all（接受所有邮箱地址）"""
+        try:
+            # 测试一个肯定不存在的随机邮箱
+            random_email = f"nonexistent{int(time.time())}@{domain}"
+            smtp = smtplib.SMTP(timeout=10)
+            smtp.connect(mx_host)
+            smtp.helo('verification-bot.com')
+            smtp.mail('verify@verification-bot.com')
+            code, message = smtp.rcpt(random_email)
+            smtp.quit()
+
+            if code == 250:
+                self.logger.info(f"   🔍 检测到catch-all域名: {domain}")
+                return True
+            return False
+        except Exception as e:
+            self.logger.debug(f"   ⚠️ Catch-all检测失败: {domain} - {str(e)}")
+            return False  # 无法确定时，保守处理
+
+    def verify_email_deliverability(self, email):
+        """综合验证邮箱可投递性：格式+DNS MX+SMTP（带缓存优化）"""
+        # 步骤1：基本格式验证
+        if not self.validate_email_format(email):
+            self.logger.debug(f"   ❌ 格式无效: {email}")
+            return False, {"reason": "invalid_format"}
+
+        domain = email.split('@')[1]
+
+        # 步骤2：检查域名缓存
+        if domain in self.domain_verification_cache:
+            cache = self.domain_verification_cache[domain]
+            has_mx, mx_host, is_catch_all = cache
+            self.logger.debug(f"   📦 使用缓存: {domain} (MX: {has_mx}, Catch-all: {is_catch_all})")
+        else:
+            # DNS MX记录验证
+            has_mx, mx_host = self.verify_mx_records(domain)
+            if not has_mx:
+                self.logger.debug(f"   ❌ 无MX记录: {email}")
+                self.domain_verification_cache[domain] = (False, None, False)
+                return False, {"reason": "no_mx_record", "domain": domain}
+
+            # 检测catch-all域名
+            is_catch_all = self.is_catch_all_domain(domain, mx_host)
+
+            # 缓存域名验证结果
+            self.domain_verification_cache[domain] = (has_mx, mx_host, is_catch_all)
+
+        # 步骤3：SMTP验证（如果不是catch-all）
+        if not is_catch_all:
+            is_valid, status = self.verify_email_smtp(email, mx_host)
+            if not is_valid:
+                self.logger.debug(f"   ❌ SMTP验证失败: {email}")
+                return False, {"reason": "smtp_rejected", "status": status}
+
+            self.logger.info(f"   ✅ 邮箱验证通过: {email} (status: {status})")
+            return True, {"status": status, "mx_host": mx_host}
+        else:
+            # Catch-all域名：接受但标记低置信度
+            self.logger.info(f"   ⚠️ Catch-all域名: {email} (低置信度)")
+            return True, {"status": "catch_all", "mx_host": mx_host, "confidence_penalty": -0.2}
     
     def scrape_website_advanced(self, url):
         """高级网站爬取 - 专注联系信息，无时间限制 + 上下文提取"""

@@ -115,7 +115,7 @@ export default function FirstCampaignSetup() {
       <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-100 backdrop-blur-lg bg-opacity-90 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#00f5a0] to-[#00d68f] rounded-lg flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <span className="text-2xl font-bold text-gray-900">MailGen</span>
@@ -132,15 +132,15 @@ export default function FirstCampaignSetup() {
             <div className="relative inline-block mb-8">
               {/* Animated rings */}
               <div className="absolute inset-0 animate-ping opacity-20">
-                <div className="w-24 h-24 bg-green-500 rounded-full"></div>
+                <div className="w-24 h-24 bg-[#00f5a0] rounded-full"></div>
               </div>
-              <div className="relative flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-500 to-green-600 rounded-full shadow-xl">
+              <div className="relative flex items-center justify-center w-24 h-24 bg-gradient-to-br from-[#00f5a0] to-[#00d68f] rounded-full shadow-xl">
                 <Sparkles className="w-12 h-12 text-white animate-pulse" />
               </div>
             </div>
 
             <h1 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-500">MailGen</span>
+              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f5a0] to-[#00d68f]">MailGen</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Let's create your first AI-powered email campaign in minutes
@@ -150,8 +150,8 @@ export default function FirstCampaignSetup() {
           {/* Website Input Card - Premium Design */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-10 mb-10 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
-                <Globe className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-[#00f5a0]/10 rounded-xl flex items-center justify-center">
+                <Globe className="w-6 h-6 text-[#00f5a0]" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
@@ -176,7 +176,7 @@ export default function FirstCampaignSetup() {
                     value={websiteUrl}
                     onChange={(e) => setWebsiteUrl(e.target.value)}
                     placeholder="https://yourcompany.com"
-                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg transition-all duration-200 hover:border-gray-300"
+                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00f5a0] focus:border-transparent text-lg transition-all duration-200 hover:border-gray-300"
                     required
                     disabled={isAnalyzing}
                   />
@@ -189,7 +189,7 @@ export default function FirstCampaignSetup() {
               <button
                 type="submit"
                 disabled={isAnalyzing || !websiteUrl.trim()}
-                className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold py-5 px-8 rounded-xl hover:shadow-lg hover:shadow-green-500/50 transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+                className="w-full bg-gradient-to-r from-[#00f5a0] to-[#00d68f] text-white font-semibold py-5 px-8 rounded-xl hover:shadow-lg hover:shadow-[#00f5a0]/50 transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
               >
                 {isAnalyzing ? (
                   <>
@@ -209,8 +209,8 @@ export default function FirstCampaignSetup() {
           {/* Features Preview - Premium Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {/* Feature 1 */}
-            <div className="group bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg hover:border-green-200 transition-all duration-300 cursor-default">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <div className="group bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg hover:border-[#00f5a0] transition-all duration-300 cursor-default">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#00f5a0] to-[#00d68f] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Target className="w-7 h-7 text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-2 text-lg">AI Analysis</h3>
@@ -218,8 +218,8 @@ export default function FirstCampaignSetup() {
             </div>
 
             {/* Feature 2 */}
-            <div className="group bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg hover:border-green-200 transition-all duration-300 cursor-default">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <div className="group bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg hover:border-[#00f5a0] transition-all duration-300 cursor-default">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#00f5a0] to-[#00d68f] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Mail className="w-7 h-7 text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-2 text-lg">Smart Emails</h3>
@@ -227,8 +227,8 @@ export default function FirstCampaignSetup() {
             </div>
 
             {/* Feature 3 */}
-            <div className="group bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg hover:border-green-200 transition-all duration-300 cursor-default">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <div className="group bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg hover:border-[#00f5a0] transition-all duration-300 cursor-default">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#00f5a0] to-[#00d68f] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Zap className="w-7 h-7 text-white" />
               </div>
               <h3 className="font-bold text-gray-900 mb-2 text-lg">Auto Campaigns</h3>
@@ -239,15 +239,15 @@ export default function FirstCampaignSetup() {
           {/* Trust Indicators */}
           <div className="flex items-center justify-center gap-8 mb-8 text-sm text-gray-500">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
+              <CheckCircle className="w-4 h-4 text-[#00f5a0]" />
               <span>No credit card required</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
+              <CheckCircle className="w-4 h-4 text-[#00f5a0]" />
               <span>Setup in 2 minutes</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
+              <CheckCircle className="w-4 h-4 text-[#00f5a0]" />
               <span>Cancel anytime</span>
             </div>
           </div>

@@ -38,6 +38,8 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const response = await axios.get('/api/admin/users');
+      console.log('📊 Admin: Fetched users response:', response.data);
+      console.log('📊 Admin: Users array:', response.data.users);
       setUsers(response.data.users || []);
     } catch (error) {
       console.error('Failed to fetch users:', error);

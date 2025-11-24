@@ -78,19 +78,28 @@ const QuotaBar = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // 🔥 FIX: Check if unlimited (max is 999999 or isUnlimited flag is true)
+  const isActuallyUnlimited = quotaData.isUnlimited || quotaData.prospects.quota.max >= 999999 || quotaData.emails.quota.max >= 999999;
+
   // Calculate percentages for both quotas
-  const prospectPercentage = (quotaData.prospects.quota.current / quotaData.prospects.quota.max) * 100;
-  const emailPercentage = (quotaData.emails.quota.current / quotaData.emails.quota.max) * 100;
+  const prospectPercentage = isActuallyUnlimited ? 0 : (quotaData.prospects.quota.current / quotaData.prospects.quota.max) * 100;
+  const emailPercentage = isActuallyUnlimited ? 0 : (quotaData.emails.quota.current / quotaData.emails.quota.max) * 100;
 
-  const isProspectNearLimit = prospectPercentage >= 80;
-  const isEmailNearLimit = emailPercentage >= 80;
+  const isProspectNearLimit = !isActuallyUnlimited && prospectPercentage >= 80;
+  const isEmailNearLimit = !isActuallyUnlimited && emailPercentage >= 80;
 
-  // Only show as limited if EITHER prospect or email quota is actually at/over limit
-  const isProspectAtLimit = prospectPercentage >= 100;
-  const isEmailAtLimit = emailPercentage >= 100;
-  const isLimited = isProspectAtLimit || isEmailAtLimit;
+  // Only show as limited if NOT unlimited AND either quota is at/over limit
+  const isProspectAtLimit = !isActuallyUnlimited && prospectPercentage >= 100;
+  const isEmailAtLimit = !isActuallyUnlimited && emailPercentage >= 100;
+  const isLimited = !isActuallyUnlimited && (isProspectAtLimit || isEmailAtLimit);
 
-  console.log('📊 QuotaBar rendering with data:', { prospectPercentage, emailPercentage, isLimited, isProspectAtLimit, isEmailAtLimit });
+  console.log('📊 QuotaBar rendering:', {
+    isUnlimited: isActuallyUnlimited,
+    prospectMax: quotaData.prospects.quota.max,
+    prospectPercentage,
+    emailPercentage,
+    isLimited
+  });
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-2 mb-3">
@@ -146,7 +155,7 @@ const QuotaBar = () => {
             Prospect Quota
           </span>
           <span className="text-xs font-semibold text-black" style={{ fontSize: '0.65rem' }}>
-            {quotaData.isUnlimited ? '∞ Unlimited' : `${quotaData.prospects.quota.current}/${quotaData.prospects.quota.max}`}
+            {isActuallyUnlimited ? '∞ Unlimited' : `${quotaData.prospects.quota.current}/${quotaData.prospects.quota.max}`}
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-0.5">
@@ -177,7 +186,7 @@ const QuotaBar = () => {
             Email Gen Quota
           </span>
           <span className="text-xs font-semibold text-black" style={{ fontSize: '0.65rem' }}>
-            {quotaData.isUnlimited ? '∞ Unlimited' : `${quotaData.emails.quota.current}/${quotaData.emails.quota.max}`}
+            {isActuallyUnlimited ? '∞ Unlimited' : `${quotaData.emails.quota.current}/${quotaData.emails.quota.max}`}
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-0.5">
