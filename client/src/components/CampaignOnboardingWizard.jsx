@@ -93,9 +93,9 @@ const CampaignOnboardingWizard = ({ campaign, onComplete, onCancel }) => {
             <div className="flex gap-3 mb-6">
               <button
                 onClick={() => setInputType('url')}
-                className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                className={`flex-1 p-4 rounded-lg border-2 transition-all bg-white ${
                   inputType === 'url'
-                    ? 'border-white bg-gray-900'
+                    ? 'border-green-500 ring-2 ring-green-100'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
@@ -106,9 +106,9 @@ const CampaignOnboardingWizard = ({ campaign, onComplete, onCancel }) => {
 
               <button
                 onClick={() => setInputType('manual')}
-                className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                className={`flex-1 p-4 rounded-lg border-2 transition-all bg-white ${
                   inputType === 'manual'
-                    ? 'border-white bg-gray-900'
+                    ? 'border-green-500 ring-2 ring-green-100'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
