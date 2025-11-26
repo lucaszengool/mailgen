@@ -30,13 +30,22 @@ class SuperEmailDiscoveryEngine:
         # SearxNG配置 - Railway兼容
         self.searxng_url = os.environ.get('SEARXNG_URL', 'http://localhost:8080')
 
-        # 🔥 SearxNG 高级配置 - 基于最佳实践
-        self.searxng_engines = [
+        # 🔥 SearxNG 双模式配置
+        # FAST MODE: 初始7个prospect搜索 (快速)
+        self.fast_engines = ['google', 'bing', 'duckduckgo']  # 仅3个最快引擎
+        self.fast_timeout = 5.0  # 5秒快速超时
+
+        # COMPREHENSIVE MODE: 主batch搜索 (全面)
+        self.full_engines = [
             'google', 'bing', 'duckduckgo', 'brave', 'qwant',
             'startpage', 'mojeek', 'yahoo', 'yandex'
-        ]  # 多引擎并行搜索提高结果质量
-        self.searxng_timeout = 10.0  # 增加超时以获取更多结果
-        self.searxng_max_results = 100  # 每次搜索最大结果数
+        ]  # 9个引擎全面搜索
+        self.full_timeout = 10.0  # 10秒完整超时
+
+        # 默认使用快速模式
+        self.searxng_engines = self.fast_engines
+        self.searxng_timeout = self.fast_timeout
+        self.searxng_max_results = 50
 
         # 网络会话配置 - 优化并行请求
         self.session = requests.Session()
@@ -1204,6 +1213,17 @@ def main():
     session_id = sys.argv[3] if len(sys.argv) > 3 else None  # 🔥 FIX: Accept session_id
 
     engine = SuperEmailDiscoveryEngine()
+
+    # 🔥 智能模式选择: ≤10个prospects使用快速模式，>10使用全面模式
+    if target_count <= 10:
+        print(f"⚡ 使用快速模式: {len(engine.fast_engines)}个引擎, {engine.fast_timeout}秒超时")
+        engine.searxng_engines = engine.fast_engines
+        engine.searxng_timeout = engine.fast_timeout
+    else:
+        print(f"🔥 使用全面模式: {len(engine.full_engines)}个引擎, {engine.full_timeout}秒超时")
+        engine.searxng_engines = engine.full_engines
+        engine.searxng_timeout = engine.full_timeout
+
     # 🔥 FIX: Let max_rounds be calculated dynamically based on target_count
     results = engine.execute_persistent_discovery(industry, target_count, session_id=session_id)
     
