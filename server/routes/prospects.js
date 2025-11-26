@@ -50,13 +50,19 @@ router.post('/search', optionalAuth, async (req, res) => {
       // Search for real prospects using SuperEmailDiscoveryEngine.py with target audience context
       console.log(`🚀 Calling SuperEmailDiscoveryEngine.py with industry: "${industry}", target audience: "${targetAudience}", and limit: ${limit}`);
 
-      // 🔥 FIX: Build more targeted search query incorporating target audience
-      let enhancedSearchQuery = industry;
-      if (targetAudience && targetAudience.trim()) {
-        // If target audience is provided, create a more specific search
-        enhancedSearchQuery = `${industry} ${targetAudience}`;
-        console.log(`✨ Enhanced search query: "${enhancedSearchQuery}"`);
-      }
+      // 🧹 SANITIZE search query - remove special characters like (), /, ?, etc.
+      // Only keep letters, numbers, spaces, and hyphens for clean search
+      const sanitizeQuery = (text) => {
+        return text
+          .replace(/[()\/\?!@#$%^&*+=\[\]{};:'",.<>\\|`~]/g, ' ') // Remove special chars
+          .replace(/\s+/g, ' ') // Collapse multiple spaces
+          .trim();
+      };
+
+      // 🔥 Build simple, clean search query - just use industry for initial quick search
+      let enhancedSearchQuery = sanitizeQuery(industry);
+
+      console.log(`✨ Sanitized search query: "${enhancedSearchQuery}"`);
 
       const result = await emailSearchAgent.searchEmails(enhancedSearchQuery, limit);
 
