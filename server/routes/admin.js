@@ -156,6 +156,12 @@ router.put('/users/:userId/limit', requireAdmin, async (req, res) => {
     const { userId } = req.params;
     const { email, prospectsPerHour, isUnlimited } = req.body;
 
+    console.log(`📝 [Admin] Updating limit for user ${userId}:`, {
+      email,
+      prospectsPerHour,
+      isUnlimited
+    });
+
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
     }
@@ -166,6 +172,8 @@ router.put('/users/:userId/limit', requireAdmin, async (req, res) => {
       isUnlimited ? 0 : prospectsPerHour || 50,
       isUnlimited
     );
+
+    console.log(`✅ [Admin] User limit updated successfully:`, result);
 
     res.json({ success: true, data: result });
   } catch (error) {

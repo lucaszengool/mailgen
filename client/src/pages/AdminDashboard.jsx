@@ -16,8 +16,8 @@ export default function AdminDashboard() {
       setIsAuthenticated(true);
       fetchUsers();
 
-      // Auto-refresh every 5 seconds
-      const interval = setInterval(fetchUsers, 5000);
+      // Auto-refresh every 30 seconds (reduced from 5 seconds)
+      const interval = setInterval(fetchUsers, 30000);
       return () => clearInterval(interval);
     }
   }, []);
@@ -67,17 +67,31 @@ export default function AdminDashboard() {
 
   const handleUpdateLimit = async (user) => {
     try {
-      await axios.put(`/api/admin/users/${user.userId}/limit`, {
+      console.log('📝 Updating user limit:', {
+        userId: user.userId,
+        email: user.email,
+        prospectsPerHour: user.prospectsPerHour,
+        isUnlimited: user.isUnlimited
+      });
+
+      const response = await axios.put(`/api/admin/users/${user.userId}/limit`, {
         email: user.email,
         prospectsPerHour: user.isUnlimited ? 0 : user.prospectsPerHour,
         isUnlimited: user.isUnlimited
       });
 
+      console.log('✅ Update response:', response.data);
+
       setEditingUser(null);
-      fetchUsers();
+
+      // Wait a moment for database to commit, then refresh
+      setTimeout(() => {
+        fetchUsers();
+      }, 500);
+
       alert('User limit updated successfully!');
     } catch (error) {
-      console.error('Update failed:', error);
+      console.error('❌ Update failed:', error);
       alert('Failed to update user limit');
     }
   };
