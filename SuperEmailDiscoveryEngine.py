@@ -30,6 +30,10 @@ class SuperEmailDiscoveryEngine:
         # SearxNG配置 - Railway兼容
         self.searxng_url = os.environ.get('SEARXNG_URL', 'http://localhost:8080')
 
+        # Ollama配置 - AI查询优化
+        self.ollama_url = os.environ.get('OLLAMA_URL', 'http://localhost:11434')
+        self.ollama_model = os.environ.get('OLLAMA_MODEL', 'qwen2.5:0.5b')
+
         # 网络会话配置 - 无超时限制
         self.session = requests.Session()
         self.session.headers.update({
@@ -180,6 +184,77 @@ class SuperEmailDiscoveryEngine:
                 detected_audiences.append(audience)
 
         return detected_industries, detected_audiences, query
+
+    def optimize_query_with_ai(self, original_query, context="B2B email discovery"):
+        """
+        Use Ollama AI to optimize search queries for better results
+        Based on Perplexica-style AI query optimization
+        """
+        try:
+            prompt = f"""You are a professional B2B lead generation expert. Optimize this search query to find decision-maker email addresses.
+
+Original query: {original_query}
+Context: {context}
+
+Generate 3 highly effective search queries that will find professional contact emails. Use:
+- LinkedIn site searches (site:linkedin.com/in)
+- Company website searches (site:*/about, site:*/team)
+- Professional titles (CEO, CTO, VP, Director, Founder)
+- Exclude job postings (-job -career -apply)
+- Use quotes for exact phrases
+
+Return ONLY 3 queries, one per line, no explanations."""
+
+            response = requests.post(
+                f"{self.ollama_url}/api/generate",
+                json={
+                    "model": self.ollama_model,
+                    "prompt": prompt,
+                    "stream": False
+                },
+                timeout=10
+            )
+
+            if response.status_code == 200:
+                ai_response = response.json().get('response', '')
+                queries = [q.strip() for q in ai_response.split('\n') if q.strip() and len(q.strip()) > 10]
+                self.logger.info(f"🤖 AI优化查询: {len(queries)} queries generated")
+                return queries[:3]  # Return top 3
+            else:
+                self.logger.warning(f"⚠️ Ollama API error: {response.status_code}")
+                return []
+        except Exception as e:
+            self.logger.debug(f"⚠️ AI query optimization failed: {str(e)}")
+            return []
+
+    def predict_email_patterns(self, name, company_domain):
+        """
+        Predict possible email patterns based on name and company domain
+        Common patterns: firstname.lastname@, first.last@, flast@, firstnamel@
+        """
+        if not name or not company_domain:
+            return []
+
+        # Clean and split name
+        name_parts = name.lower().replace('.', ' ').split()
+        if len(name_parts) < 2:
+            return []
+
+        first = name_parts[0]
+        last = name_parts[-1]
+
+        # Generate common email patterns
+        patterns = [
+            f"{first}.{last}@{company_domain}",  # john.smith@
+            f"{first}{last}@{company_domain}",    # johnsmith@
+            f"{first[0]}{last}@{company_domain}", # jsmith@
+            f"{first}{last[0]}@{company_domain}", # johns@
+            f"{first}_{last}@{company_domain}",   # john_smith@
+            f"{last}.{first}@{company_domain}",   # smith.john@
+        ]
+
+        self.logger.debug(f"📧 Generated {len(patterns)} email patterns for {name} @ {company_domain}")
+        return patterns
 
     def generate_professional_search_strategies(self, industry, round_num=1):
         """
