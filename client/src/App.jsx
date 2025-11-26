@@ -9,7 +9,7 @@ import Campaigns from './pages/Campaigns';
 import Contacts from './pages/Contacts';
 import Prospects from './pages/ProspectsClean';
 import Analytics from './pages/Analytics';
-import EmailThreadView from './pages/EmailThreadView';
+import EmailThread from './pages/EmailThread';
 import EmailMonitoring from './pages/EmailMonitoring';
 import Settings from './pages/Settings';
 import Privacy from './pages/Privacy';
@@ -635,7 +635,7 @@ function App() {
             <Route path="contacts" element={<Contacts />} />
             <Route path="prospects" element={<Prospects />} />
             <Route path="analytics" element={<Analytics />} />
-            <Route path="email-thread/:emailId" element={<EmailThreadView />} />
+            <Route path="email-thread/:emailId" element={<EmailThread />} />
             <Route path="monitoring" element={<EmailMonitoring />} />
             <Route path="email-marketing" element={<EmailDashboard />} />
             <Route path="editor" element={<ProfessionalEmailEditorPage />} />
