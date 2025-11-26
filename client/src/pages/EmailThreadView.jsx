@@ -33,16 +33,23 @@ export default function EmailThreadView() {
     try {
       setLoading(true)
       const userId = user?.id || 'anonymous'
+      console.log('📧 Fetching email thread:', emailId, 'for user:', userId)
+
       const response = await fetch(`/api/analytics/email-thread/${emailId}?userId=${userId}`)
+      console.log('📧 Response status:', response.status)
+
       const data = await response.json()
+      console.log('📧 Response data:', data)
 
       if (data.success) {
         setThread(data.data)
+        console.log('✅ Email thread loaded successfully')
       } else {
+        console.error('❌ Failed to load thread:', data.error)
         toast.error(data.error || 'Failed to load email thread')
       }
     } catch (error) {
-      console.error('Failed to fetch email thread:', error)
+      console.error('❌ Failed to fetch email thread:', error)
       toast.error('Failed to load email thread')
     } finally {
       setLoading(false)
@@ -76,6 +83,9 @@ export default function EmailThreadView() {
       if (data.success) {
         toast.success('Reply sent successfully!')
         setReplyContent('')
+        if (editorRef.current) {
+          editorRef.current.innerHTML = ''
+        }
         // Refresh thread to show new reply
         fetchEmailThread()
       } else {
@@ -347,8 +357,15 @@ export default function EmailThreadView() {
             lineHeight: '1.6',
             color: '#000000'
           }}
-          placeholder="Write your reply..."
+          data-placeholder="Write your reply..."
         />
+        <style>{`
+          [contenteditable][data-placeholder]:empty:before {
+            content: attr(data-placeholder);
+            color: #9CA3AF;
+            pointer-events: none;
+          }
+        `}</style>
 
         {/* Footer */}
         <div className="border-t border-gray-200 px-6 py-4 flex items-center justify-between">
@@ -358,7 +375,12 @@ export default function EmailThreadView() {
           </div>
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => setReplyContent('')}
+              onClick={() => {
+                setReplyContent('')
+                if (editorRef.current) {
+                  editorRef.current.innerHTML = ''
+                }
+              }}
               className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
             >
               Discard

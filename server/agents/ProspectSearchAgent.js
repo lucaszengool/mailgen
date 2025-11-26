@@ -10,6 +10,7 @@ const ProfessionalEmailDiscovery = require('./ProfessionalEmailDiscovery');
 const OllamaSearxNGEmailDiscovery = require('./OllamaSearxNGEmailDiscovery'); // NEW: Ollama + SearxNG integration
 // const SimplifiedWebEmailSearchEngine = require('./SimplifiedWebEmailSearchEngine'); // DISABLED: Focus on real email discovery only
 const { enhanceProspect } = require('../utils/emailEnrichment'); // Enhanced email parsing
+const ProspectRelevanceFilter = require('../utils/prospectRelevanceFilter'); // 🎯 Advanced relevance filtering
 
 class ProspectSearchAgent {
   constructor() {
@@ -76,8 +77,12 @@ class ProspectSearchAgent {
       }
     };
 
+    // 🎯 Initialize relevance filter
+    this.relevanceFilter = new ProspectRelevanceFilter();
+
     console.log('🔄 Autonomous continuous search system initialized');
     console.log('⚡ Rate limit: 100 emails per hour');
+    console.log('🎯 Advanced relevance filtering enabled');
   }
 
   async searchProspects(strategy, targetIndustry, businessType = 'all', options = {}) {
@@ -148,7 +153,9 @@ class ProspectSearchAgent {
 
       // Return first batch immediately
       if (allProspects.length >= 10) {
-        const enrichedProspects = await this.enrichProspectData(allProspects);
+        // 🎯 Extract website analysis from strategy for relevance filtering
+        const websiteAnalysis = strategy?.websiteAnalysis || options?.websiteAnalysis || null;
+        const enrichedProspects = await this.enrichProspectData(allProspects, websiteAnalysis);
 
         // 🔄 Schedule background batches (non-blocking)
         this.scheduleBackgroundBatches(strategy, targetIndustry, {
@@ -456,10 +463,13 @@ class ProspectSearchAgent {
     // Filter out user's own domain emails BEFORE deduplication
     const userDomain = this.extractStringValue(strategy?.domain);
     const filteredProspects = this.filterOutUserDomain(allProspects, userDomain);
-    
+
     // 去重和过滤
     const uniqueProspects = this.deduplicateProspects(filteredProspects);
-    const enrichedProspects = await this.enrichProspectData(uniqueProspects);
+
+    // 🎯 Extract website analysis from strategy for relevance filtering
+    const websiteAnalysis = strategy?.websiteAnalysis || options?.websiteAnalysis || null;
+    const enrichedProspects = await this.enrichProspectData(uniqueProspects, websiteAnalysis);
 
     // Filter out generic/low-quality prospects
     const highQualityProspects = enrichedProspects.filter(prospect => {
@@ -1597,11 +1607,20 @@ Output: One search query only`;
     return uniqueProspects;
   }
 
-  async enrichProspectData(prospects) {
+  async enrichProspectData(prospects, websiteAnalysis = null) {
     console.log('📊 丰富潜在客户数据...');
-    
+
+    // 🎯 Apply relevance filter if website analysis is available
+    let filteredProspects = prospects;
+    if (websiteAnalysis) {
+      console.log('🎯 Applying advanced relevance filter based on website analysis...');
+      filteredProspects = this.relevanceFilter.filterProspects(prospects, websiteAnalysis);
+    } else {
+      console.log('⚠️ No website analysis provided, skipping relevance filtering');
+    }
+
     const enriched = [];
-    for (const prospect of prospects) {
+    for (const prospect of filteredProspects) {
       try {
         // 添加额外的数据字段
         const enrichedProspect = {
@@ -1617,16 +1636,17 @@ Output: One search query only`;
           next_action: 'initial_contact',
           tags: this.generateTags(prospect)
         };
-        
+
         enriched.push(enrichedProspect);
-        
+
         // 小延迟避免过载
         await this.delay(100);
       } catch (error) {
         console.error(`❌ 数据丰富失败 ${prospect.company}:`, error.message);
       }
     }
-    
+
+    console.log(`✅ Enriched ${enriched.length} prospects (filtered from ${prospects.length})`);
     return enriched;
   }
 
@@ -3880,8 +3900,9 @@ Output: One search query only`;
           if (batchProspects.length > 0) {
             console.log(`✅ [${batchKey}] BATCH ${batchNumber} complete! Found ${batchProspects.length} prospects`);
 
-            // Enrich the batch
-            const enrichedBatch = await this.enrichProspectData(batchProspects);
+            // Enrich the batch with website analysis
+            const websiteAnalysis = strategy?.websiteAnalysis || null;
+            const enrichedBatch = await this.enrichProspectData(batchProspects, websiteAnalysis);
 
             // Notify via callback (WebSocket)
             if (batchCallback && typeof batchCallback === 'function') {
