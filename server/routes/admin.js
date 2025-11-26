@@ -47,8 +47,8 @@ router.get('/users', requireAdmin, async (req, res) => {
         return {
           userId: clerkUser.id,
           email: primaryEmail?.emailAddress || 'No email configured',
-          prospectsPerHour: dbUser?.prospects_per_hour || 50,
-          isUnlimited: dbUser?.is_unlimited || false,
+          prospectsPerHour: dbUser?.prospects_per_hour ?? 50,
+          isUnlimited: Boolean(dbUser?.is_unlimited),  // Convert 0/1 to boolean
           createdAt: clerkUser.createdAt,
           lastSignInAt: clerkUser.lastSignInAt
         };
@@ -63,8 +63,8 @@ router.get('/users', requireAdmin, async (req, res) => {
       mergedUsers = dbUsers.map(u => ({
         userId: u.user_id,
         email: u.email || 'No email configured',
-        prospectsPerHour: u.prospects_per_hour || 50,
-        isUnlimited: u.is_unlimited || false,
+        prospectsPerHour: u.prospects_per_hour ?? 50,
+        isUnlimited: Boolean(u.is_unlimited),  // Convert 0/1 to boolean
         createdAt: u.created_at,
         lastSignInAt: null
       }));
