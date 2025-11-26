@@ -606,7 +606,14 @@ class SuperEmailDiscoveryEngine:
                 excluded_count += 1
                 continue
 
-            # 步骤2：综合验证邮箱可投递性（DNS MX + SMTP）
+            # 🔥 NEW 步骤2：过滤通用/部门邮箱，只保留专业决策者邮箱
+            is_prof, prof_reason = self.is_professional_email(email)
+            if not is_prof:
+                self.logger.info(f"   ⛔ 过滤非专业邮箱: {email} (原因: {prof_reason})")
+                excluded_count += 1
+                continue
+
+            # 步骤3：综合验证邮箱可投递性（DNS MX + SMTP）
             is_deliverable, verification_info = self.verify_email_deliverability(email)
             if not is_deliverable:
                 self.logger.warning(f"   ❌ 邮箱验证失败: {email} - {verification_info.get('reason')}")
@@ -684,6 +691,73 @@ class SuperEmailDiscoveryEngine:
             return False
 
         return True
+
+    def is_professional_email(self, email):
+        """
+        Check if email is from a professional/decision-maker, not generic department email
+        Returns: (is_professional, reason)
+        """
+        email_lower = email.lower()
+        local_part = email_lower.split('@')[0]
+
+        # Generic/department email patterns to REJECT
+        generic_patterns = [
+            'info', 'support', 'help', 'contact', 'admin', 'webmaster',
+            'sales', 'marketing', 'hr', 'media', 'press', 'news',
+            'customer', 'service', 'hello', 'team', 'general',
+            'inquiry', 'enquiry', 'reception', 'office',
+            'noreply', 'no-reply', 'donotreply',
+            'abuse', 'postmaster', 'hostmaster',
+            'careers', 'jobs', 'recruiting',
+            'billing', 'accounts', 'finance',
+            'legal', 'compliance', 'privacy',
+            'customersupport', 'techsupport', 'itsupport'
+        ]
+
+        # Check if local part is exactly a generic pattern
+        if local_part in generic_patterns:
+            return False, f"generic_exact:{local_part}"
+
+        # Check if local part starts with generic pattern
+        for pattern in generic_patterns:
+            if local_part.startswith(pattern + '.') or local_part.startswith(pattern + '-') or local_part.startswith(pattern + '_'):
+                return False, f"generic_prefix:{pattern}"
+
+        # Academic/EDU emails - be more selective
+        domain = email_lower.split('@')[1]
+        if domain.endswith('.edu') or domain.endswith('.ac.uk'):
+            # Allow individual names like firstname.lastname@, but reject department emails
+            if any(gen in local_part for gen in ['president', 'admin', 'it', 'help', 'media', 'office']):
+                return False, "edu_department"
+            # Require at least a dot or number (indicating personal email)
+            if '.' not in local_part and not any(c.isdigit() for c in local_part):
+                return False, "edu_no_personal_indicator"
+
+        # Government emails - usually not B2B targets
+        if domain.endswith('.gov'):
+            return False, "government_email"
+
+        # Must have personal indicators (firstname.lastname pattern is ideal)
+        has_dot = '.' in local_part
+        has_underscore = '_' in local_part
+        has_number = any(c.isdigit() for c in local_part)
+
+        # Ideal: firstname.lastname format
+        if has_dot and len(local_part.split('.')) >= 2:
+            parts = local_part.split('.')
+            if all(len(p) >= 2 for p in parts):  # Each part at least 2 chars
+                return True, "firstname_lastname_format"
+
+        # Good: has personal indicators
+        if has_dot or has_underscore or has_number:
+            return True, "has_personal_indicator"
+
+        # Acceptable: single word but at least 4 chars (could be name)
+        if len(local_part) >= 4 and local_part.isalpha():
+            return True, "single_name_acceptable"
+
+        # Reject: too short or suspicious
+        return False, "no_personal_indicator"
 
     def verify_mx_records(self, domain):
         """验证域名是否有有效的MX记录"""
