@@ -30,17 +30,16 @@ class SuperEmailDiscoveryEngine:
         # SearxNG配置 - Railway兼容
         self.searxng_url = os.environ.get('SEARXNG_URL', 'http://localhost:8080')
 
-        # 🔥 SearxNG 双模式配置
+        # 🔥 SearxNG 双模式配置 - 平衡速度与准确性
         # FAST MODE: 初始7个prospect搜索 (快速)
         self.fast_engines = ['google', 'bing', 'duckduckgo']  # 仅3个最快引擎
         self.fast_timeout = 5.0  # 5秒快速超时
 
-        # COMPREHENSIVE MODE: 主batch搜索 (全面)
+        # COMPREHENSIVE MODE: 主batch搜索 (快速但准确)
         self.full_engines = [
-            'google', 'bing', 'duckduckgo', 'brave', 'qwant',
-            'startpage', 'mojeek', 'yahoo', 'yandex'
-        ]  # 9个引擎全面搜索
-        self.full_timeout = 10.0  # 10秒完整超时
+            'google', 'bing', 'duckduckgo', 'brave', 'qwant'
+        ]  # 5个高质量引擎 (减少从9个以提速)
+        self.full_timeout = 7.0  # 7秒超时 (减少从10秒)
 
         # 默认使用快速模式
         self.searxng_engines = self.fast_engines
