@@ -31,7 +31,8 @@ router.get('/users', requireAdmin, async (req, res) => {
         throw new Error('Clerk client not available');
       }
 
-      const clerkUsers = await clerkClient.users.getUserList({ limit: 500 });
+      const clerkResponse = await clerkClient.users.getUserList({ limit: 500 });
+      const clerkUsers = clerkResponse.data || clerkResponse || [];
       console.log(`📊 [Admin] Found ${clerkUsers.length} users in Clerk`);
 
       // 2. Get user limits from database
@@ -39,7 +40,7 @@ router.get('/users', requireAdmin, async (req, res) => {
       const dbUsersMap = new Map(dbUsers.map(u => [u.user_id, u]));
 
       // 3. Merge Clerk users with database limits
-      mergedUsers = clerkUsers.map(clerkUser => {
+      mergedUsers = (Array.isArray(clerkUsers) ? clerkUsers : []).map(clerkUser => {
         const dbUser = dbUsersMap.get(clerkUser.id);
         const primaryEmail = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId);
 
@@ -99,17 +100,18 @@ router.get('/users/search', requireAdmin, async (req, res) => {
         throw new Error('Clerk client not available');
       }
 
-      const clerkUsers = await clerkClient.users.getUserList({
+      const clerkResponse = await clerkClient.users.getUserList({
         emailAddress: [email],
         limit: 100
       });
+      const clerkUsers = clerkResponse.data || clerkResponse || [];
 
       // Get limits from database
       const dbUsers = await database.getAllUsersWithLimits();
       const dbUsersMap = new Map(dbUsers.map(u => [u.user_id, u]));
 
       // Merge results
-      mergedUsers = clerkUsers.map(clerkUser => {
+      mergedUsers = (Array.isArray(clerkUsers) ? clerkUsers : []).map(clerkUser => {
         const dbUser = dbUsersMap.get(clerkUser.id);
         const primaryEmail = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId);
 
