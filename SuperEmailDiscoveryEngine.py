@@ -30,11 +30,15 @@ class SuperEmailDiscoveryEngine:
         # SearxNG配置 - Railway兼容
         self.searxng_url = os.environ.get('SEARXNG_URL', 'http://localhost:8080')
 
-        # Ollama配置 - AI查询优化
-        self.ollama_url = os.environ.get('OLLAMA_URL', 'http://localhost:11434')
-        self.ollama_model = os.environ.get('OLLAMA_MODEL', 'qwen2.5:0.5b')
+        # 🔥 SearxNG 高级配置 - 基于最佳实践
+        self.searxng_engines = [
+            'google', 'bing', 'duckduckgo', 'brave', 'qwant',
+            'startpage', 'mojeek', 'yahoo', 'yandex'
+        ]  # 多引擎并行搜索提高结果质量
+        self.searxng_timeout = 10.0  # 增加超时以获取更多结果
+        self.searxng_max_results = 100  # 每次搜索最大结果数
 
-        # 网络会话配置 - 无超时限制
+        # 网络会话配置 - 优化并行请求
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -184,77 +188,6 @@ class SuperEmailDiscoveryEngine:
                 detected_audiences.append(audience)
 
         return detected_industries, detected_audiences, query
-
-    def optimize_query_with_ai(self, original_query, context="B2B email discovery"):
-        """
-        Use Ollama AI to optimize search queries for better results
-        Based on Perplexica-style AI query optimization
-        """
-        try:
-            prompt = f"""You are a professional B2B lead generation expert. Optimize this search query to find decision-maker email addresses.
-
-Original query: {original_query}
-Context: {context}
-
-Generate 3 highly effective search queries that will find professional contact emails. Use:
-- LinkedIn site searches (site:linkedin.com/in)
-- Company website searches (site:*/about, site:*/team)
-- Professional titles (CEO, CTO, VP, Director, Founder)
-- Exclude job postings (-job -career -apply)
-- Use quotes for exact phrases
-
-Return ONLY 3 queries, one per line, no explanations."""
-
-            response = requests.post(
-                f"{self.ollama_url}/api/generate",
-                json={
-                    "model": self.ollama_model,
-                    "prompt": prompt,
-                    "stream": False
-                },
-                timeout=10
-            )
-
-            if response.status_code == 200:
-                ai_response = response.json().get('response', '')
-                queries = [q.strip() for q in ai_response.split('\n') if q.strip() and len(q.strip()) > 10]
-                self.logger.info(f"🤖 AI优化查询: {len(queries)} queries generated")
-                return queries[:3]  # Return top 3
-            else:
-                self.logger.warning(f"⚠️ Ollama API error: {response.status_code}")
-                return []
-        except Exception as e:
-            self.logger.debug(f"⚠️ AI query optimization failed: {str(e)}")
-            return []
-
-    def predict_email_patterns(self, name, company_domain):
-        """
-        Predict possible email patterns based on name and company domain
-        Common patterns: firstname.lastname@, first.last@, flast@, firstnamel@
-        """
-        if not name or not company_domain:
-            return []
-
-        # Clean and split name
-        name_parts = name.lower().replace('.', ' ').split()
-        if len(name_parts) < 2:
-            return []
-
-        first = name_parts[0]
-        last = name_parts[-1]
-
-        # Generate common email patterns
-        patterns = [
-            f"{first}.{last}@{company_domain}",  # john.smith@
-            f"{first}{last}@{company_domain}",    # johnsmith@
-            f"{first[0]}{last}@{company_domain}", # jsmith@
-            f"{first}{last[0]}@{company_domain}", # johns@
-            f"{first}_{last}@{company_domain}",   # john_smith@
-            f"{last}.{first}@{company_domain}",   # smith.john@
-        ]
-
-        self.logger.debug(f"📧 Generated {len(patterns)} email patterns for {name} @ {company_domain}")
-        return patterns
 
     def generate_professional_search_strategies(self, industry, round_num=1):
         """
@@ -462,21 +395,37 @@ Return ONLY 3 queries, one per line, no explanations."""
         return base_strategies
     
     def search_with_advanced_logging(self, query, max_results=50):
-        """高级SearxNG搜索 - 无超时限制，尽可能多地获取结果"""
+        """
+        🔥 高级SearxNG搜索 - 多引擎并行 + 增强配置
+        基于SearxNG最佳实践:
+        - 多引擎并行搜索 (Google, Bing, DuckDuckGo等)
+        - 更长超时时间获取更全面结果
+        - 更大结果集提高发现率
+        """
         try:
             self.logger.info(f"🔍 深度专业搜索: {query[:80]}...")
             self.search_stats['total_queries'] += 1
-            
+
+            # 🔥 指定多个引擎并行搜索，提高结果质量和数量
+            engines_param = ','.join(self.searxng_engines)
+
             params = {
                 'q': query,
                 'format': 'json',
                 'categories': 'general',
-                'pageno': 1
+                'engines': engines_param,  # 多引擎并行
+                'pageno': 1,
+                'time_range': '',  # 不限时间范围
+                'language': 'en',  # 英文结果
             }
-            
+
             start_time = time.time()
-            # 移除超时限制 - 让搜索有足够时间完成
-            response = self.session.get(f"{self.searxng_url}/search", params=params)
+            # 使用配置的超时时间（10秒）获取更全面的结果
+            response = self.session.get(
+                f"{self.searxng_url}/search",
+                params=params,
+                timeout=self.searxng_timeout
+            )
             duration = time.time() - start_time
             
             if response.status_code == 200:
