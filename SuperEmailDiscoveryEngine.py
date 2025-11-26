@@ -46,6 +46,9 @@ class SuperEmailDiscoveryEngine:
         self.searxng_timeout = self.fast_timeout
         self.searxng_max_results = 50
 
+        # 🔥 邮箱验证标志 (快速模式跳过SMTP验证以提速)
+        self.skip_smtp_verification = False
+
         # 网络会话配置 - 优化并行请求
         self.session = requests.Session()
         self.session.headers.update({
@@ -660,11 +663,18 @@ class SuperEmailDiscoveryEngine:
                 continue
 
             # 步骤3：综合验证邮箱可投递性（DNS MX + SMTP）
-            is_deliverable, verification_info = self.verify_email_deliverability(email)
-            if not is_deliverable:
-                self.logger.warning(f"   ❌ 邮箱验证失败: {email} - {verification_info.get('reason')}")
-                excluded_count += 1
-                continue
+            # ⚡ 快速模式跳过SMTP验证
+            if self.skip_smtp_verification:
+                # 快速模式：只做基本格式验证，跳过耗时的SMTP验证
+                verification_info = {'status': 'skipped', 'reason': 'fast_mode'}
+                is_deliverable = True
+            else:
+                # 完整模式：DNS MX + SMTP验证
+                is_deliverable, verification_info = self.verify_email_deliverability(email)
+                if not is_deliverable:
+                    self.logger.warning(f"   ❌ 邮箱验证失败: {email} - {verification_info.get('reason')}")
+                    excluded_count += 1
+                    continue
 
             # 提取邮箱周围的上下文（姓名、职位、部门）
             context = self.extract_context_around_email(html_content, email) if html_content else {}
@@ -1215,13 +1225,15 @@ def main():
 
     # 🔥 智能模式选择: ≤10个prospects使用快速模式，>10使用全面模式
     if target_count <= 10:
-        print(f"⚡ 使用快速模式: {len(engine.fast_engines)}个引擎, {engine.fast_timeout}秒超时")
+        print(f"⚡ 使用快速模式: {len(engine.fast_engines)}个引擎, {engine.fast_timeout}秒超时, 跳过SMTP验证")
         engine.searxng_engines = engine.fast_engines
         engine.searxng_timeout = engine.fast_timeout
+        engine.skip_smtp_verification = True  # ⚡ 跳过SMTP验证以极速提升
     else:
-        print(f"🔥 使用全面模式: {len(engine.full_engines)}个引擎, {engine.full_timeout}秒超时")
+        print(f"🔥 使用全面模式: {len(engine.full_engines)}个引擎, {engine.full_timeout}秒超时, 完整验证")
         engine.searxng_engines = engine.full_engines
         engine.searxng_timeout = engine.full_timeout
+        engine.skip_smtp_verification = False  # 保持完整验证
 
     # 🔥 FIX: Let max_rounds be calculated dynamically based on target_count
     results = engine.execute_persistent_discovery(industry, target_count, session_id=session_id)
