@@ -182,7 +182,10 @@ class SuperEmailDiscoveryEngine:
         return detected_industries, detected_audiences, query
 
     def generate_professional_search_strategies(self, industry, round_num=1):
-        """生成基于2024年最佳实践的专业搜索策略 - 全行业通用"""
+        """
+        生成专业平台优先的智能搜索策略
+        重点: LinkedIn, 公司网站, 专业目录
+        """
         self.logger.info(f"🧠 生成第{round_num}轮专业搜索策略 - {industry}")
 
         # 🔥 智能提取行业和受众
@@ -191,7 +194,14 @@ class SuperEmailDiscoveryEngine:
         self.logger.info(f"   🎯 检测到的行业: {industries if industries else '通用'}")
         self.logger.info(f"   👥 检测到的受众: {audiences if audiences else '通用'}")
 
-        # 基于研究的最有效搜索策略
+        # 决策者职位关键词 (优先级排序)
+        decision_maker_titles = {
+            'c_level': ['CEO', 'CTO', 'CFO', 'CMO', 'COO', 'Chief', 'President', 'Founder'],
+            'vp_director': ['VP', 'Vice President', 'Director', 'Head of', 'EVP', 'SVP'],
+            'senior_manager': ['Senior Manager', 'Senior', 'Lead', 'Principal', 'Manager']
+        }
+
+        # 专业平台优先的搜索策略
         base_strategies = []
 
         # 如果有明确的行业+受众组合，生成高度针对性搜索
@@ -200,40 +210,40 @@ class SuperEmailDiscoveryEngine:
             audience_key = audiences[0]
 
             if round_num == 1:
-                # 第一轮：最精准的职位+行业组合
+                # 第一轮：LinkedIn + C-Level 决策者
                 base_strategies = [
-                    f'{audience_key} {industry_key} email',
-                    f'{industry_key} {audience_key} contact',
-                    f'{audience_key} email {industry_key}',
-                    f'{industry_key} {audience_key} director email',
-                    f'senior {audience_key} {industry_key} contact'
+                    f'site:linkedin.com/in {industry_key} CEO email',
+                    f'site:linkedin.com/in {industry_key} CTO contact',
+                    f'site:linkedin.com/in {audience_key} {industry_key} Founder',
+                    f'{industry_key} "Chief" {audience_key} email "@" -job -apply',
+                    f'"{industry_key}" "President" email contact -jobs -career'
                 ]
             elif round_num == 2:
-                # 第二轮：组织层级搜索
+                # 第二轮：LinkedIn + VP/Director 级别
                 base_strategies = [
-                    f'{industry_key} {audience_key} team email',
-                    f'{audience_key} department {industry_key} contact',
-                    f'{industry_key} {audience_key} lead email',
-                    f'{audience_key} {industry_key} head contact',
-                    f'{industry_key} {audience_key} manager email'
+                    f'site:linkedin.com/in "{industry_key}" "VP" email',
+                    f'site:linkedin.com/in "{industry_key}" "Director" contact',
+                    f'{industry_key} {audience_key} "Head of" email -job',
+                    f'"{audience_key}" {industry_key} "Senior" email "@"',
+                    f'{industry_key} "EVP" {audience_key} contact email'
                 ]
             elif round_num == 3:
-                # 第三轮：地域+职位搜索
+                # 第三轮：公司网站 + About/Team 页面
                 base_strategies = [
-                    f'{audience_key} {industry_key} USA email',
-                    f'{industry_key} {audience_key} North America contact',
-                    f'{audience_key} {industry_key} regional email',
-                    f'{industry_key} {audience_key} national contact',
-                    f'{audience_key} {industry_key} local email'
+                    f'{industry_key} site:*/about email {audience_key}',
+                    f'{industry_key} site:*/team contact email',
+                    f'{industry_key} site:*/leadership email',
+                    f'"{industry_key}" site:*/contact {audience_key} email',
+                    f'{industry_key} "our team" email {audience_key}'
                 ]
             else:
-                # 其他轮次：多种组合
+                # 第四轮+：专业目录和行业网站
                 base_strategies = [
-                    f'{industry_key} {audience_key} professional email',
-                    f'{audience_key} {industry_key} company contact',
-                    f'{industry_key} {audience_key} business email',
-                    f'{audience_key} role {industry_key} contact',
-                    f'{industry_key} {audience_key} executive email'
+                    f'{industry_key} {audience_key} email "@*.com" -job -career',
+                    f'"{industry_key}" professional email directory',
+                    f'{audience_key} {industry_key} contact database',
+                    f'{industry_key} business email {audience_key}',
+                    f'"{industry_key}" executive contact list'
                 ]
 
         # 只有行业，没有明确受众
@@ -241,36 +251,40 @@ class SuperEmailDiscoveryEngine:
             industry_key = industries[0]
 
             if round_num == 1:
+                # LinkedIn C-Level for this industry
                 base_strategies = [
-                    f'{industry_key} buyer email',
-                    f'{industry_key} manager contact',
-                    f'{industry_key} director email',
-                    f'{industry_key} CEO contact',
-                    f'{industry_key} executive email'
+                    f'site:linkedin.com/in {industry_key} CEO email',
+                    f'site:linkedin.com/in {industry_key} Founder contact',
+                    f'{industry_key} "Chief Executive" email "@" -job',
+                    f'"{industry_key}" CTO email contact',
+                    f'{industry_key} President email -jobs'
                 ]
             elif round_num == 2:
+                # LinkedIn VP/Director level
                 base_strategies = [
-                    f'{industry_key} owner email',
-                    f'{industry_key} founder contact',
-                    f'{industry_key} partner email',
-                    f'{industry_key} president contact',
-                    f'{industry_key} VP email'
+                    f'site:linkedin.com/in {industry_key} "VP" email',
+                    f'site:linkedin.com/in {industry_key} Director',
+                    f'{industry_key} "Head of" email contact',
+                    f'"{industry_key}" SVP email',
+                    f'{industry_key} "Vice President" contact'
                 ]
             elif round_num == 3:
+                # Company websites + leadership pages
                 base_strategies = [
-                    f'{industry_key} sales email',
-                    f'{industry_key} marketing contact',
-                    f'{industry_key} operations email',
-                    f'{industry_key} procurement contact',
-                    f'{industry_key} purchasing email'
+                    f'{industry_key} site:*/about leadership email',
+                    f'{industry_key} site:*/team management contact',
+                    f'"{industry_key}" site:*/executives email',
+                    f'{industry_key} company "management team" email',
+                    f'{industry_key} "leadership" contact email'
                 ]
             else:
+                # Professional directories and databases
                 base_strategies = [
-                    f'{industry_key} team email',
-                    f'{industry_key} department contact',
-                    f'{industry_key} specialist email',
-                    f'{industry_key} coordinator contact',
-                    f'{industry_key} analyst email'
+                    f'{industry_key} executive directory email',
+                    f'"{industry_key}" professional contact database',
+                    f'{industry_key} business leader email',
+                    f'{industry_key} senior management contact',
+                    f'"{industry_key}" decision maker email'
                 ]
 
         # 只有受众，没有明确行业
