@@ -158,7 +158,13 @@ class Database {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(email, user_id, campaign_id)
       )
-    `);
+    `, (err) => {
+      if (err) {
+        console.error('❌ [DATABASE] Failed to create contacts table:', err.message);
+      } else {
+        console.log('✅ [DATABASE] Contacts table ready');
+      }
+    });
 
     // 邮件草稿表
     this.db.run(`

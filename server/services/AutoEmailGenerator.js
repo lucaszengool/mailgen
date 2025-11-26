@@ -57,7 +57,13 @@ class AutoEmailGenerator {
   async checkAndGenerateEmails() {
     try {
       // Get all contacts from database (using getContacts instead of getAllContacts)
-      const contacts = await database.getContacts('anonymous', {}, 10000);
+      const contacts = await database.getContacts('anonymous', {}, 10000).catch(err => {
+        if (err.message.includes('no such table')) {
+          console.warn('⚠️ [AutoEmailGen] Contacts table not yet initialized, skipping...');
+          return [];
+        }
+        throw err;
+      });
 
       // Filter prospects without personalized emails
       const prospectsNeedingEmails = contacts.filter(contact => {
