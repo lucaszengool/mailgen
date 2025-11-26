@@ -36,7 +36,7 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
 
       // Create abort controller for timeout handling
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout for prospect search
 
       // Call backend API to search for 7 prospects (faster results)
       const response = await fetch('/api/prospects/search', {
@@ -76,7 +76,7 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
       // Provide helpful error messages
       let errorMessage = err.message;
       if (err.name === 'AbortError') {
-        errorMessage = 'Prospect search timed out. Please try again or check your internet connection.';
+        errorMessage = 'Prospect search is taking longer than expected. The search may still be processing. Please refresh the page in a moment or try again.';
       } else if (err.message === 'Failed to fetch') {
         errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
       }

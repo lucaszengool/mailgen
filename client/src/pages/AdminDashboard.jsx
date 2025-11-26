@@ -226,19 +226,19 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
+                  {users.filter(user => user && user.userId).map((user) => (
                     <tr key={user.userId} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {editingUser?.userId === user.userId ? (
                           <input
                             type="email"
-                            value={editingUser.email}
+                            value={editingUser.email || ''}
                             onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
                             className="px-3 py-1 border border-gray-300 rounded"
                             disabled
                           />
                         ) : (
-                          user.email
+                          user.email || 'No email'
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
