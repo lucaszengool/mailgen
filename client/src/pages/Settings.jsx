@@ -7,7 +7,11 @@ import {
   CheckCircle,
   AlertCircle,
   Info,
-  Loader2
+  Loader2,
+  Sparkles,
+  TrendingUp,
+  Users,
+  Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -42,6 +46,22 @@ export default function Settings() {
     ctaLink: ''
   });
 
+  // Website Analysis State
+  const [websiteAnalysis, setWebsiteAnalysis] = useState({
+    targetWebsite: '',
+    businessName: '',
+    logo: '',
+    productType: '',
+    benchmarkBrands: [],
+    businessIntro: '',
+    sellingPoints: [],
+    audiences: [],
+    social: {},
+    techStack: [],
+    contactInfo: {}
+  });
+  const [newBrand, setNewBrand] = useState('');
+
   useEffect(() => {
     loadSettings();
   }, []);
@@ -60,6 +80,12 @@ export default function Settings() {
       const campaignResponse = await apiGet('/api/settings/campaign');
       if (campaignResponse.success && campaignResponse.data) {
         setCampaignConfig(prev => ({ ...prev, ...campaignResponse.data }));
+      }
+
+      // Load website analysis settings
+      const websiteResponse = await apiGet('/api/settings/website-analysis');
+      if (websiteResponse.success && websiteResponse.data) {
+        setWebsiteAnalysis(prev => ({ ...prev, ...websiteResponse.data }));
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -94,7 +120,10 @@ export default function Settings() {
       // Save campaign settings
       const campaignResponse = await apiPost('/api/settings/campaign', campaignConfig);
 
-      if (smtpResponse.success && campaignResponse.success) {
+      // Save website analysis settings
+      const websiteResponse = await apiPost('/api/settings/website-analysis', websiteAnalysis);
+
+      if (smtpResponse.success && campaignResponse.success && websiteResponse.success) {
         toast.success('Configuration updated successfully!');
       } else {
         toast.error('Failed to update some settings');
@@ -105,6 +134,81 @@ export default function Settings() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Website Analysis Helper Functions
+  const updateWebsiteField = (field, value) => {
+    setWebsiteAnalysis({ ...websiteAnalysis, [field]: value });
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'image/svg+xml') {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setWebsiteAnalysis({ ...websiteAnalysis, logo: event.target.result });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      toast.error('Please upload an SVG file');
+    }
+  };
+
+  const addBenchmarkBrand = () => {
+    if (newBrand.trim() && !websiteAnalysis.benchmarkBrands.includes(newBrand.trim())) {
+      setWebsiteAnalysis({
+        ...websiteAnalysis,
+        benchmarkBrands: [...websiteAnalysis.benchmarkBrands, newBrand.trim()]
+      });
+      setNewBrand('');
+    }
+  };
+
+  const removeBenchmarkBrand = (brandToRemove) => {
+    setWebsiteAnalysis({
+      ...websiteAnalysis,
+      benchmarkBrands: websiteAnalysis.benchmarkBrands.filter(b => b !== brandToRemove)
+    });
+  };
+
+  const updateSellingPoint = (index, value) => {
+    const updatedPoints = [...websiteAnalysis.sellingPoints];
+    updatedPoints[index] = value;
+    setWebsiteAnalysis({ ...websiteAnalysis, sellingPoints: updatedPoints });
+  };
+
+  const addSellingPoint = () => {
+    setWebsiteAnalysis({
+      ...websiteAnalysis,
+      sellingPoints: [...websiteAnalysis.sellingPoints, '']
+    });
+  };
+
+  const removeSellingPoint = (index) => {
+    setWebsiteAnalysis({
+      ...websiteAnalysis,
+      sellingPoints: websiteAnalysis.sellingPoints.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateAudience = (index, field, value) => {
+    const updatedAudiences = [...websiteAnalysis.audiences];
+    updatedAudiences[index] = { ...updatedAudiences[index], [field]: value };
+    setWebsiteAnalysis({ ...websiteAnalysis, audiences: updatedAudiences });
+  };
+
+  const addAudience = () => {
+    setWebsiteAnalysis({
+      ...websiteAnalysis,
+      audiences: [...websiteAnalysis.audiences, { title: '', description: '' }]
+    });
+  };
+
+  const removeAudience = (index) => {
+    setWebsiteAnalysis({
+      ...websiteAnalysis,
+      audiences: websiteAnalysis.audiences.filter((_, i) => i !== index)
+    });
   };
 
   const tabs = [
@@ -288,9 +392,225 @@ export default function Settings() {
           )}
 
           {activeTab === 'website' && (
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Website Analysis Settings</h2>
-              <p className="text-gray-600">Website analysis configuration coming soon...</p>
+            <div className="space-y-6">
+              {/* Basic Information Section */}
+              <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
+                    <Globe className="w-5 h-5 text-white" />
+                  </div>
+                  Basic Information
+                </h2>
+
+                {/* Business Logo */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Business Logo</label>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-20 h-20 bg-white border-2 border-gray-200 rounded-2xl flex items-center justify-center overflow-hidden shadow-sm">
+                      {websiteAnalysis.logo ? (
+                        <img src={websiteAnalysis.logo} alt="Business Logo" className="w-full h-full object-contain" />
+                      ) : (
+                        <Globe className="w-8 h-8 text-gray-400" />
+                      )}
+                    </div>
+                    <label className="px-4 py-2 bg-black text-white border border-black rounded-xl text-sm font-semibold hover:bg-gray-900 cursor-pointer transition-all shadow-md">
+                      Upload
+                      <input
+                        type="file"
+                        accept=".svg,image/svg+xml"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">Only support uploading logos in SVG format.</p>
+                </div>
+
+                {/* Business Name and Product Type */}
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Business name<span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={websiteAnalysis.businessName}
+                      onChange={(e) => updateWebsiteField('businessName', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00f5a0] focus:border-white transition-all font-medium text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Product / Service type<span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={websiteAnalysis.productType}
+                      onChange={(e) => updateWebsiteField('productType', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00f5a0] focus:border-white transition-all font-medium text-gray-900"
+                    />
+                  </div>
+                </div>
+
+                {/* Benchmark Brands */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Benchmark brands<span className="text-red-500">*</span>
+                  </label>
+                  <div className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl min-h-[48px] flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-[#00f5a0] focus-within:border-white transition-all">
+                    {websiteAnalysis.benchmarkBrands && websiteAnalysis.benchmarkBrands.length > 0 ? (
+                      websiteAnalysis.benchmarkBrands.map((brand, index) => (
+                        <span key={index} className="inline-flex items-center px-3 py-1.5 bg-black text-white rounded-lg text-sm font-medium shadow-sm">
+                          {brand}
+                          <button
+                            onClick={() => removeBenchmarkBrand(brand)}
+                            className="ml-2 text-white hover:text-white transition-colors"
+                          >×</button>
+                        </span>
+                      ))
+                    ) : null}
+                    <input
+                      type="text"
+                      value={newBrand}
+                      onChange={(e) => setNewBrand(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addBenchmarkBrand()}
+                      placeholder="Type brand name and press Enter"
+                      className="flex-1 min-w-[200px] outline-none text-sm font-medium text-gray-900"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    We'll recommend influencers who have worked with these brands or reached similar audiences.
+                  </p>
+                </div>
+              </div>
+
+              {/* Business Introduction Section */}
+              <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
+                  Business Introduction
+                </h2>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Business introduction<span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={websiteAnalysis.businessIntro}
+                    onChange={(e) => updateWebsiteField('businessIntro', e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-[#00f5a0] focus:border-white transition-all font-medium text-gray-900"
+                  />
+                </div>
+              </div>
+
+              {/* Core Selling Points */}
+              <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
+                      <TrendingUp className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Core Selling Points</h3>
+                  </div>
+                  <button
+                    onClick={addSellingPoint}
+                    className="px-4 py-2 bg-white hover:bg-[#00e090] text-black font-bold text-sm rounded-xl shadow-md transition-all"
+                  >
+                    + Add Point
+                  </button>
+                </div>
+                <div className="grid gap-4">
+                  {websiteAnalysis.sellingPoints?.map((point, index) => (
+                    <div key={index} className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-white transition-all">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-white text-sm font-bold">{index + 1}</span>
+                        </div>
+                        <textarea
+                          value={point}
+                          onChange={(e) => updateSellingPoint(index, e.target.value)}
+                          rows={2}
+                          className="flex-1 text-gray-900 text-sm leading-relaxed border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#00f5a0] focus:border-white resize-none font-medium transition-all"
+                        />
+                        <button
+                          onClick={() => removeSellingPoint(index)}
+                          className="text-red-500 hover:text-red-700 text-xl font-bold transition-colors"
+                        >×</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Target Audiences */}
+              <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Target Audiences</h3>
+                    <span className="text-sm text-gray-600 font-medium">({websiteAnalysis.audiences?.length || 0} segments)</span>
+                  </div>
+                  <button
+                    onClick={addAudience}
+                    className="px-4 py-2 bg-white text-black text-sm font-bold rounded-xl hover:bg-[#00e090] shadow-md transition-all"
+                  >
+                    + Add Audience
+                  </button>
+                </div>
+                <div className="grid gap-4">
+                  {websiteAnalysis.audiences?.map((audience, index) => (
+                    <div key={index} className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-white transition-all">
+                      <div className="flex items-start space-x-3">
+                        <div className="p-2.5 bg-black rounded-xl flex-shrink-0 shadow-sm">
+                          <Target className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-3">
+                            <span className="px-2 py-1 bg-black text-white font-bold text-xs rounded-lg">{index + 1}</span>
+                            <input
+                              type="text"
+                              value={audience.title}
+                              onChange={(e) => updateAudience(index, 'title', e.target.value)}
+                              placeholder="Audience title"
+                              className="flex-1 font-bold text-gray-900 text-sm border-2 border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#00f5a0] focus:border-white transition-all"
+                            />
+                          </div>
+                          <textarea
+                            value={audience.description}
+                            onChange={(e) => updateAudience(index, 'description', e.target.value)}
+                            rows={2}
+                            placeholder="Audience description"
+                            className="w-full text-gray-700 text-sm leading-relaxed border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#00f5a0] focus:border-white resize-none font-medium transition-all"
+                          />
+                        </div>
+                        <button
+                          onClick={() => removeAudience(index)}
+                          className="text-red-500 hover:text-red-700 text-xl font-bold transition-colors"
+                        >×</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Technology Stack Section */}
+              {websiteAnalysis.techStack && websiteAnalysis.techStack.length > 0 && (
+                <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Technology Stack</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {websiteAnalysis.techStack.map((tech, index) => (
+                      <span key={index} className="px-3 py-1.5 bg-black text-white rounded-lg text-sm font-medium">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
