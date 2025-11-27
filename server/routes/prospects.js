@@ -31,35 +31,92 @@ router.post('/search', optionalAuth, async (req, res) => {
 
     console.log(`⚡ ULTRA-FAST initial search: "${industry}" (${limit} prospects)`);
 
-    // 🔥 ULTRA-FAST MODE: Return mock prospects instantly for initial search
+    // 🔥 ULTRA-FAST MODE: Direct SearxNG search with minimal processing
     if (fastMode && limit <= 10) {
-      console.log('⚡⚡⚡ Using ULTRA-FAST mock mode for instant results');
+      console.log('⚡⚡⚡ Using ULTRA-FAST direct SearxNG mode');
 
-      const mockProspects = Array.from({ length: limit }, (_, i) => ({
-        name: `${industry} Professional ${i + 1}`,
-        email: `contact${i + 1}@${industry.toLowerCase().replace(/\s+/g, '')}.com`,
-        company: `${industry} Company ${i + 1}`,
-        role: 'Decision Maker',
-        location: 'United States',
-        score: 85 + Math.floor(Math.random() * 10),
-        source: 'quick_preview',
-        verified: false,
-        metadata: {
-          note: 'Preview results - run full campaign for verified contacts'
+      try {
+        const axios = require('axios');
+        const searxngUrl = process.env.SEARXNG_URL || 'http://localhost:8080';
+
+        // Simple direct query to SearxNG
+        const searchQuery = `${industry} CEO email contact`;
+        const response = await axios.get(`${searxngUrl}/search`, {
+          params: {
+            q: searchQuery,
+            format: 'json',
+            engines: 'google,bing',  // Only 2 fastest engines
+            categories: 'general',
+            language: 'en'
+          },
+          timeout: 5000  // 5 second max
+        });
+
+        const results = response.data.results || [];
+        console.log(`⚡ Got ${results.length} raw results from SearxNG`);
+
+        // Extract emails from results (no verification, just pattern matching)
+        const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+        const foundEmails = new Set();
+        const prospects = [];
+
+        for (const result of results.slice(0, 20)) {
+          const text = `${result.title} ${result.content} ${result.url}`;
+          const emails = text.match(emailRegex);
+
+          if (emails) {
+            for (const email of emails) {
+              const emailLower = email.toLowerCase();
+
+              // Skip generic emails
+              if (emailLower.includes('example') ||
+                  emailLower.includes('noreply') ||
+                  emailLower.startsWith('info@') ||
+                  emailLower.startsWith('support@')) {
+                continue;
+              }
+
+              if (!foundEmails.has(emailLower) && prospects.length < limit) {
+                foundEmails.add(emailLower);
+
+                const domain = emailLower.split('@')[1];
+                prospects.push({
+                  name: result.title.split('-')[0].trim() || 'Professional',
+                  email: emailLower,
+                  company: domain.split('.')[0],
+                  role: 'Contact',
+                  location: 'United States',
+                  score: 75,
+                  source: 'searxng_direct',
+                  sourceUrl: result.url,
+                  verified: false
+                });
+              }
+            }
+          }
+
+          if (prospects.length >= limit) break;
         }
-      }));
 
-      return res.json({
-        success: true,
-        prospects: mockProspects,
-        query: industry,
-        industry,
-        targetAudience: industry,
-        isRealData: false,
-        searchMethod: 'ultra_fast_preview',
-        timestamp: new Date().toISOString(),
-        message: 'Preview results shown instantly. Start campaign for real verified prospects.'
-      });
+        if (prospects.length > 0) {
+          console.log(`⚡ Found ${prospects.length} prospects in ultra-fast mode`);
+          return res.json({
+            success: true,
+            prospects,
+            query: industry,
+            industry,
+            targetAudience: industry,
+            isRealData: true,
+            searchMethod: 'ultra_fast_searxng',
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        console.log('⚡ No emails found in ultra-fast mode, falling back to normal search');
+      } catch (fastError) {
+        console.error('⚡ Ultra-fast mode failed:', fastError.message);
+        // Fall through to normal mode
+      }
     }
 
     // NORMAL MODE: Use Python script (slower but real)
