@@ -30,16 +30,14 @@ class SuperEmailDiscoveryEngine:
         # SearxNG配置 - Railway兼容
         self.searxng_url = os.environ.get('SEARXNG_URL', 'http://localhost:8080')
 
-        # 🔥 SearxNG 双模式配置 - 平衡速度与准确性
-        # FAST MODE: 初始7个prospect搜索 (快速)
-        self.fast_engines = ['google', 'bing', 'duckduckgo']  # 仅3个最快引擎
-        self.fast_timeout = 5.0  # 5秒快速超时
+        # 🔥 SearxNG 双模式配置 - 优化速度
+        # FAST MODE: 初始prospect搜索 (极速)
+        self.fast_engines = ['google', 'bing', 'duckduckgo']  # 3个最快引擎
+        self.fast_timeout = 4.0  # 4秒快速超时
 
-        # COMPREHENSIVE MODE: 主batch搜索 (快速但准确)
-        self.full_engines = [
-            'google', 'bing', 'duckduckgo', 'brave', 'qwant'
-        ]  # 5个高质量引擎 (减少从9个以提速)
-        self.full_timeout = 7.0  # 7秒超时 (减少从10秒)
+        # COMPREHENSIVE MODE: 主batch搜索 (快速+准确)
+        self.full_engines = ['google', 'bing', 'duckduckgo', 'brave']  # 4个高质量引擎
+        self.full_timeout = 5.0  # 5秒超时 (减少延迟)
 
         # 默认使用快速模式
         self.searxng_engines = self.fast_engines
@@ -1000,12 +998,12 @@ class SuperEmailDiscoveryEngine:
             return []
     
     def execute_persistent_discovery(self, industry, target_count=5, max_rounds=None, session_id=None):
-        """执行无限制持续搜索 - 越多越准确"""
-        # 🔥 FIX: Scale max_rounds based on target_count
-        # Each round finds ~5-15 new emails on average (after filtering cached)
-        # Use at least 100 rounds, scale up for larger requests, cap at 500 for safety
+        """执行快速持续搜索 - 平衡速度与准确性"""
+        # 🔥 OPTIMIZED: Reduced max_rounds for faster results
+        # Each round finds ~3-10 emails on average
+        # Cap at 30 rounds max to prevent stuck searches
         if max_rounds is None:
-            max_rounds = min(500, max(100, target_count // 5))  # ~5 emails per round, max 500 rounds
+            max_rounds = min(30, max(10, target_count // 3))  # 快速搜索，最多30轮
 
         self.logger.info(f"🚀 启动无限制超级邮箱搜索 - {industry}")
         self.logger.info(f"   🎯 目标: {target_count}个NEW邮箱 (跳过已返回)")
@@ -1142,24 +1140,25 @@ class SuperEmailDiscoveryEngine:
             if total_cached_skipped > 0:
                 self.logger.info(f"   🔄 已跳过 {total_cached_skipped} 个重复/缓存邮箱 (总发现{total_emails_found}个)")
             
-            # 检查是否需要调整策略，但不轻易放弃
+            # 检查是否需要调整策略 - 快速失败
             if len(round_emails) == 0:
                 consecutive_empty_rounds += 1
-                self.logger.warning(f"⚠️ 连续{consecutive_empty_rounds}轮无结果 - 继续尝试")
-                
-                if consecutive_empty_rounds >= 5:  # 增加容忍度
-                    self.logger.info("🔄 切换到更广泛的搜索策略...")
+                self.logger.warning(f"⚠️ 连续{consecutive_empty_rounds}轮无结果")
+
+                if consecutive_empty_rounds >= 3:  # 快速放弃
+                    self.logger.info("🛑 连续3轮无结果，停止搜索")
+                    break
             else:
                 consecutive_empty_rounds = 0
-            
-            # 即使达到目标也不立即退出 - 继续搜索获得更多邮箱
-            if len(all_emails) >= target_count and round_num >= 5:
-                self.logger.info(f"🎯 已收集足够邮箱并进行了充分搜索，准备结束")
+
+            # 达到目标立即退出
+            if len(all_emails) >= target_count:
+                self.logger.info(f"🎯 已收集足够邮箱 ({len(all_emails)}/{target_count})，结束搜索")
                 break
-            
+
             round_num += 1
             if round_num <= max_rounds:
-                time.sleep(1)  # 减少轮次间隔
+                time.sleep(0.5)  # 极短延迟
         
         # 整理最终结果
         final_emails = all_emails[:target_count]
@@ -1223,17 +1222,19 @@ def main():
 
     engine = SuperEmailDiscoveryEngine()
 
-    # 🔥 智能模式选择: ≤10个prospects使用快速模式，>10使用全面模式
+    # 🔥 智能模式选择: 总是跳过SMTP验证以提速
     if target_count <= 10:
-        print(f"⚡ 使用快速模式: {len(engine.fast_engines)}个引擎, {engine.fast_timeout}秒超时, 跳过SMTP验证")
+        print(f"⚡ 使用快速模式: {len(engine.fast_engines)}个引擎, {engine.fast_timeout}秒超时")
         engine.searxng_engines = engine.fast_engines
         engine.searxng_timeout = engine.fast_timeout
-        engine.skip_smtp_verification = True  # ⚡ 跳过SMTP验证以极速提升
     else:
-        print(f"🔥 使用全面模式: {len(engine.full_engines)}个引擎, {engine.full_timeout}秒超时, 完整验证")
+        print(f"🔥 使用批量模式: {len(engine.full_engines)}个引擎, {engine.full_timeout}秒超时")
         engine.searxng_engines = engine.full_engines
         engine.searxng_timeout = engine.full_timeout
-        engine.skip_smtp_verification = False  # 保持完整验证
+
+    # ⚡ 总是跳过SMTP验证 - 这是最慢的部分，DNS MX验证已足够
+    engine.skip_smtp_verification = True
+    print(f"⚡ 跳过SMTP验证以极速提升 (仅使用DNS MX验证)")
 
     # 🔥 FIX: Let max_rounds be calculated dynamically based on target_count
     results = engine.execute_persistent_discovery(industry, target_count, session_id=session_id)
