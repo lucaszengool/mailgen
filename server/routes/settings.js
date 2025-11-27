@@ -297,16 +297,129 @@ router.post('/ai', (req, res) => {
 });
 
 /**
+ * GET /api/settings/website-analysis - Get website analysis from user's agent config
+ */
+router.get('/website-analysis', async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+    const UserStorageService = require('../services/UserStorageService');
+    const storage = new UserStorageService(userId);
+
+    console.log(`🌐 [User: ${userId}] Loading website analysis settings...`);
+
+    // Get config from user storage (same place the wizard saves it)
+    const config = await storage.getConfig();
+
+    if (config && config.websiteAnalysis) {
+      console.log(`✅ [User: ${userId}] Found website analysis:`, {
+        businessName: config.websiteAnalysis.businessName,
+        productType: config.websiteAnalysis.productType,
+        hasLogo: !!config.websiteAnalysis.logo,
+        benchmarkBrands: config.websiteAnalysis.benchmarkBrands?.length || 0,
+        sellingPoints: config.websiteAnalysis.sellingPoints?.length || 0,
+        audiences: config.websiteAnalysis.audiences?.length || 0,
+        techStack: config.websiteAnalysis.techStack?.length || 0
+      });
+
+      res.json({
+        success: true,
+        data: {
+          targetWebsite: config.targetWebsite || config.websiteAnalysis.url || '',
+          businessName: config.websiteAnalysis.businessName || '',
+          logo: config.websiteAnalysis.logo || '',
+          productType: config.websiteAnalysis.productType || config.websiteAnalysis.industry || '',
+          benchmarkBrands: config.websiteAnalysis.benchmarkBrands || [],
+          businessIntro: config.websiteAnalysis.businessIntro || config.websiteAnalysis.valueProposition || '',
+          sellingPoints: config.websiteAnalysis.sellingPoints || [],
+          audiences: config.websiteAnalysis.audiences || [],
+          social: config.websiteAnalysis.social || {},
+          techStack: config.websiteAnalysis.techStack || [],
+          contactInfo: config.websiteAnalysis.contactInfo || {}
+        }
+      });
+    } else {
+      console.log(`⚠️ [User: ${userId}] No website analysis found in config`);
+      res.json({
+        success: true,
+        data: {
+          targetWebsite: '',
+          businessName: '',
+          logo: '',
+          productType: '',
+          benchmarkBrands: [],
+          businessIntro: '',
+          sellingPoints: [],
+          audiences: [],
+          social: {},
+          techStack: [],
+          contactInfo: {}
+        }
+      });
+    }
+  } catch (error) {
+    console.error('获取网站分析配置失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '获取网站分析配置失败'
+    });
+  }
+});
+
+/**
  * POST /api/settings/website-analysis - Update website analysis configuration
  */
-router.post('/website-analysis', (req, res) => {
+router.post('/website-analysis', async (req, res) => {
   try {
-    const { websiteAnalysisConfig } = req.body;
+    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+    const UserStorageService = require('../services/UserStorageService');
+    const storage = new UserStorageService(userId);
 
-    console.log('🌐 更新网站分析配置:', websiteAnalysisConfig);
+    // Accept both formats: direct fields or wrapped in websiteAnalysisConfig
+    const websiteData = req.body.websiteAnalysisConfig || req.body;
 
+    console.log('🌐 更新网站分析配置:', {
+      userId,
+      businessName: websiteData.businessName,
+      productType: websiteData.productType,
+      hasLogo: !!websiteData.logo,
+      benchmarkBrands: websiteData.benchmarkBrands?.length || 0,
+      sellingPoints: websiteData.sellingPoints?.length || 0,
+      audiences: websiteData.audiences?.length || 0
+    });
+
+    // Get existing config
+    let config = await storage.getConfig() || {};
+
+    // Update websiteAnalysis in the config
+    config.websiteAnalysis = {
+      ...config.websiteAnalysis,
+      businessName: websiteData.businessName,
+      logo: websiteData.logo,
+      productType: websiteData.productType,
+      industry: websiteData.productType, // Also save as industry for compatibility
+      benchmarkBrands: websiteData.benchmarkBrands || [],
+      businessIntro: websiteData.businessIntro,
+      valueProposition: websiteData.businessIntro, // Also save as valueProposition
+      sellingPoints: websiteData.sellingPoints || [],
+      audiences: websiteData.audiences || [],
+      social: websiteData.social || {},
+      techStack: websiteData.techStack || [],
+      contactInfo: websiteData.contactInfo || {},
+      updatedAt: new Date().toISOString()
+    };
+
+    // Also update targetWebsite if provided
+    if (websiteData.targetWebsite) {
+      config.targetWebsite = websiteData.targetWebsite;
+    }
+
+    // Save updated config
+    await storage.saveConfig(config);
+    console.log(`✅ [User: ${userId}] Website analysis saved to user config`);
+
+    // Also update in-memory settings for backwards compatibility
     userSettings.websiteAnalysis = {
-      ...websiteAnalysisConfig,
+      ...websiteData,
       updatedAt: new Date().toISOString()
     };
 
@@ -322,7 +435,7 @@ router.post('/website-analysis', (req, res) => {
     res.json({
       success: true,
       message: '网站分析配置更新成功',
-      data: userSettings.websiteAnalysis
+      data: config.websiteAnalysis
     });
 
   } catch (error) {

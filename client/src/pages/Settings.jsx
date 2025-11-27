@@ -11,8 +11,12 @@ import {
   Sparkles,
   TrendingUp,
   Users,
-  Target
+  Target,
+  RefreshCw
 } from 'lucide-react';
+
+// Alias Info as InformationCircleIcon for compatibility
+const InformationCircleIcon = Info;
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { apiGet, apiPost } from '../utils/apiClient';
@@ -211,6 +215,49 @@ export default function Settings() {
     });
   };
 
+  // Re-analyze website to refresh data
+  const handleReanalyzeWebsite = async () => {
+    if (!websiteAnalysis.targetWebsite) {
+      toast.error('Please enter a website URL');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      toast.loading('Analyzing website...', { id: 'analyze' });
+
+      const response = await apiPost('/api/agent/analyze-website', {
+        url: websiteAnalysis.targetWebsite
+      });
+
+      if (response.success && response.analysis) {
+        // Update state with new analysis
+        setWebsiteAnalysis({
+          ...websiteAnalysis,
+          businessName: response.analysis.businessName || websiteAnalysis.businessName,
+          logo: response.analysis.logo || websiteAnalysis.logo,
+          productType: response.analysis.productType || response.analysis.industry || websiteAnalysis.productType,
+          benchmarkBrands: response.analysis.benchmarkBrands || websiteAnalysis.benchmarkBrands,
+          businessIntro: response.analysis.businessIntro || response.analysis.valueProposition || websiteAnalysis.businessIntro,
+          sellingPoints: response.analysis.sellingPoints || websiteAnalysis.sellingPoints,
+          audiences: response.analysis.audiences || websiteAnalysis.audiences,
+          social: response.analysis.social || websiteAnalysis.social,
+          techStack: response.analysis.techStack || websiteAnalysis.techStack,
+          contactInfo: response.analysis.contactInfo || websiteAnalysis.contactInfo
+        });
+
+        toast.success('Website analyzed successfully!', { id: 'analyze' });
+      } else {
+        toast.error(response.error || 'Failed to analyze website', { id: 'analyze' });
+      }
+    } catch (error) {
+      console.error('Website analysis error:', error);
+      toast.error('Failed to analyze website', { id: 'analyze' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const tabs = [
     { id: 'smtp', label: 'SMTP Settings', icon: Server },
     { id: 'website', label: 'Website Analysis', icon: Globe },
@@ -393,6 +440,51 @@ export default function Settings() {
 
           {activeTab === 'website' && (
             <div className="space-y-6">
+              {/* Website URL Section */}
+              <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mr-3 shadow-md">
+                    <Globe className="w-5 h-5 text-white" />
+                  </div>
+                  Website Analysis
+                </h2>
+
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Target Website <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-3">
+                      <input
+                        type="url"
+                        value={websiteAnalysis.targetWebsite}
+                        onChange={(e) => updateWebsiteField('targetWebsite', e.target.value)}
+                        placeholder="https://your-company.com"
+                        className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00f5a0] focus:border-white transition-all font-medium text-gray-900"
+                      />
+                      <button
+                        onClick={handleReanalyzeWebsite}
+                        disabled={loading || !websiteAnalysis.targetWebsite}
+                        className="px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            Re-analyze
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2">Enter your website URL to automatically extract business information</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Basic Information Section */}
               <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
