@@ -1283,6 +1283,34 @@ class LangGraphMarketingAgent {
       if (prospects.length > 0) {
         console.log('🚀 Real emails discovered! Starting immediate email generation...');
 
+        // 🔥 IMMEDIATE: Trigger template selection popup as soon as prospects found
+        // This shows the popup right after prospects are discovered, not after full search
+        if (this.wsManager && !this.campaignConfig?.emailTemplate) {
+          console.log('🎨🎨🎨 IMMEDIATE TEMPLATE SELECTION - BROADCASTING NOW! 🎨🎨🎨');
+          const TemplatePromptService = require('../services/TemplatePromptService');
+          this.wsManager.broadcast({
+            type: 'template_selection_required',
+            data: {
+              campaignId: campaignId,
+              prospectsFound: prospects.length,
+              prospectsCount: prospects.length,
+              sampleProspects: prospects.slice(0, 5).map(p => ({
+                name: p.name || 'Unknown',
+                company: p.company || 'Unknown',
+                email: p.email
+              })),
+              availableTemplates: TemplatePromptService.getAllTemplates(),
+              defaultTemplate: null,
+              websiteAnalysis: this.campaignConfig?.websiteAnalysis || null,
+              message: `Found ${prospects.length} prospects! Select a template to generate emails.`,
+              canProceed: false,
+              status: 'waiting_for_template',
+              immediate: true // Flag indicating this is immediate trigger
+            }
+          });
+          console.log('✅ Template selection popup triggered IMMEDIATELY after prospects found!');
+        }
+
         // LOG ALL FOUND EMAILS WITH DETAILS
         console.log('\n📧 FOUND EMAILS LOG:');
         console.log('='.repeat(50));

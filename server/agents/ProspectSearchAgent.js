@@ -113,10 +113,10 @@ class ProspectSearchAgent {
     let allProspects = [];
     const uniqueEmails = new Set(); // Track unique emails to prevent duplicates
 
-    // 📦 BATCHED SEARCH: Return in batches of 10 for faster UI updates
+    // 📦 FAST BATCHED SEARCH: Return after just 3 prospects for fast UI feedback
     if (useContinuousMode) {
-      console.log('\n🚀 Starting BATCHED autonomous search (10 prospects per batch)...');
-      console.log('📦 Will return first 10, then continue searching in background');
+      console.log('\n🚀 Starting FAST autonomous search...');
+      console.log('📦 Will return after 3 prospects (or 20s max), then continue in background');
 
       // Extract userId and campaignId for isolated background processing
       const userId = options.userId || 'default';
@@ -126,33 +126,43 @@ class ProspectSearchAgent {
       // Start continuous search in background
       this.startContinuousSearch(strategy, targetIndustry, { userId, campaignId, batchCallback });
 
-      // Wait for FIRST BATCH (10 prospects)
+      // 🚀 FAST: Wait for just 3 prospects OR 20 seconds max
       const startTime = Date.now();
+      const MAX_WAIT_TIME = 20000; // 20 seconds max wait
+      const MIN_PROSPECTS = 3; // Return after just 3 prospects
       let checkCount = 0;
 
-      while (this.autonomousSearch.emailPool.size < 10) {
+      while (this.autonomousSearch.emailPool.size < MIN_PROSPECTS) {
         checkCount++;
-        const elapsedSeconds = Math.round((Date.now() - startTime) / 1000);
+        const elapsedMs = Date.now() - startTime;
+        const elapsedSeconds = Math.round(elapsedMs / 1000);
 
-        if (checkCount % 3 === 0 || this.autonomousSearch.emailPool.size > 0) {
-          console.log(`⏳ [${elapsedSeconds}s] Waiting for FIRST BATCH... (${this.autonomousSearch.emailPool.size}/10 found)`);
+        // 🔥 TIMEOUT: Don't wait forever - return what we have after 20s
+        if (elapsedMs > MAX_WAIT_TIME) {
+          console.log(`⏱️ [${elapsedSeconds}s] TIMEOUT reached - returning ${this.autonomousSearch.emailPool.size} prospects`);
+          break;
         }
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        if (checkCount % 2 === 0 || this.autonomousSearch.emailPool.size > 0) {
+          console.log(`⏳ [${elapsedSeconds}s] Waiting for initial prospects... (${this.autonomousSearch.emailPool.size}/${MIN_PROSPECTS} found)`);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Check every 1 second (faster)
       }
 
       const totalTime = Math.round((Date.now() - startTime) / 1000);
-      console.log(`✅ FIRST BATCH complete! Found ${this.autonomousSearch.emailPool.size} prospects in ${totalTime}s`);
+      const foundCount = this.autonomousSearch.emailPool.size;
+      console.log(`✅ Initial search complete! Found ${foundCount} prospects in ${totalTime}s`);
 
-      // Get FIRST BATCH (10 prospects)
-      const batch1Prospects = this.getEmailsFromPool(10);
-      allProspects = batch1Prospects;
-      batch1Prospects.forEach(p => uniqueEmails.add(p.email));
-      console.log(`📦 Returning BATCH 1: ${allProspects.length} prospects`);
-      console.log(`🔄 Background search will continue for more batches...`);
+      // Get whatever we found (even if less than 10)
+      const initialProspects = this.getEmailsFromPool(Math.min(foundCount, 10));
+      allProspects = initialProspects;
+      initialProspects.forEach(p => uniqueEmails.add(p.email));
+      console.log(`📦 Returning initial batch: ${allProspects.length} prospects`);
+      console.log(`🔄 Background search will continue for more prospects...`);
 
-      // Return first batch immediately
-      if (allProspects.length >= 10) {
+      // Return what we have (even if just 1-3 prospects)
+      if (allProspects.length > 0) {
         // 🎯 Extract website analysis from strategy for relevance filtering
         const websiteAnalysis = strategy?.websiteAnalysis || options?.websiteAnalysis || null;
         const enrichedProspects = await this.enrichProspectData(allProspects, websiteAnalysis);
@@ -162,7 +172,7 @@ class ProspectSearchAgent {
           userId,
           campaignId,
           batchCallback,
-          targetTotal: 50, // Total target: 50 prospects (5 batches of 10)
+          targetTotal: 50, // Total target: 50 prospects
           batchSize: 10
         });
 
