@@ -277,16 +277,19 @@ router.post('/select', optionalAuth, async (req, res) => {
         });
       }
 
-      // Check if agent is waiting for template selection - check both flags
-      if (agent.state?.waitingForTemplateSelection || agent.state?.isWaitingForTemplate) {
-        const waitingState = agent.state.waitingForTemplateSelection || {
+      // Check if agent is waiting for template selection - check both flags AND pausedCampaignData
+      if (agent.state?.waitingForTemplateSelection || agent.state?.isWaitingForTemplate || agent.state?.pausedCampaignData) {
+        // 🔥 CRITICAL FIX: Also use pausedCampaignData as fallback for prospects
+        const waitingState = agent.state.waitingForTemplateSelection || agent.state.pausedCampaignData || {
           prospects: agent.state.foundProspects || [],
           campaignId: agent.state.currentCampaign?.id || campaignId,
-          smtpConfig: agent.campaignConfig?.smtpConfig || agent.state.pausedCampaignData?.smtpConfig || null // 🔥 CRITICAL FIX: Include SMTP config in fallback
+          smtpConfig: agent.campaignConfig?.smtpConfig || null
         };
 
         console.log(`🔄 Resuming email generation for ${waitingState.prospects?.length || 0} prospects`);
-        console.log(`🔍 Using prospects from: ${agent.state.waitingForTemplateSelection ? 'waitingForTemplateSelection' : 'foundProspects'}`);
+        const prospectsSource = agent.state.waitingForTemplateSelection ? 'waitingForTemplateSelection' :
+                                agent.state.pausedCampaignData ? 'pausedCampaignData' : 'foundProspects';
+        console.log(`🔍 Using prospects from: ${prospectsSource}`);
 
         // Continue with email generation using selected template
         setTimeout(async () => {
@@ -435,23 +438,41 @@ router.post('/select', optionalAuth, async (req, res) => {
         // Try to retrieve stored workflow results if available
         console.log(`🔍 [User: ${userId}] Attempting to retrieve stored workflow results for campaign: ${campaignId || 'default'}...`);
         const workflowRoute = require('./workflow');
+
+        // 🔥 CRITICAL FIX: Also check WebSocket state for prospects
+        let wsProspects = [];
+        const wsManager = agent.wsManager || req.app.locals.wsManager;
+        if (wsManager && wsManager.workflowStates && campaignId) {
+          const wsState = wsManager.workflowStates.get(campaignId);
+          if (wsState && wsState.data && wsState.data.prospects) {
+            wsProspects = wsState.data.prospects;
+            console.log(`📡 [WebSocket Fallback] Found ${wsProspects.length} prospects in WebSocket state for campaign ${campaignId}`);
+          }
+        }
+
         if (workflowRoute.getLastWorkflowResults) {
           const storedResults = await workflowRoute.getLastWorkflowResults(userId, campaignId);
           console.log(`🔍 [User: ${userId}] Stored results retrieved:`, {
             found: !!storedResults,
             hasProspects: !!(storedResults && storedResults.prospects),
-            prospectsCount: storedResults?.prospects?.length || 0
+            prospectsCount: storedResults?.prospects?.length || 0,
+            wsProspectsCount: wsProspects.length
           });
-          if (storedResults && storedResults.prospects && storedResults.prospects.length > 0) {
-            console.log(`📦 [User: ${userId}] Found stored workflow results with ${storedResults.prospects.length} prospects`);
 
-            // Resume with stored results
+          // 🔥 Use WebSocket prospects if stored results have none
+          const effectiveProspects = (storedResults?.prospects?.length > 0) ? storedResults.prospects : wsProspects;
+
+          if (effectiveProspects && effectiveProspects.length > 0) {
+            const prospectsSource = (storedResults?.prospects?.length > 0) ? 'stored results' : 'WebSocket state';
+            console.log(`📦 [User: ${userId}] Found ${effectiveProspects.length} prospects from ${prospectsSource}`);
+
+            // Resume with stored results OR WebSocket prospects
             const waitingState = {
-              prospects: storedResults.prospects,
-              campaignId: campaignId || storedResults.campaignId,
-              businessAnalysis: storedResults.businessAnalysis,
-              marketingStrategy: storedResults.marketingStrategy,
-              smtpConfig: storedResults.smtpConfig || agent.campaignConfig?.smtpConfig || null // 🔥 CRITICAL FIX: Include SMTP config from stored results
+              prospects: effectiveProspects,
+              campaignId: campaignId || storedResults?.campaignId,
+              businessAnalysis: storedResults?.businessAnalysis,
+              marketingStrategy: storedResults?.marketingStrategy,
+              smtpConfig: storedResults?.smtpConfig || agent.campaignConfig?.smtpConfig || null // 🔥 CRITICAL FIX: Include SMTP config from stored results
             };
 
             console.log('🚀 Attempting to resume with stored results...');
@@ -572,11 +593,12 @@ router.post('/select', optionalAuth, async (req, res) => {
               }
             }, 100);
           } else {
-            console.log(`❌ [User: ${userId}] No stored workflow results found or no prospects available`);
+            console.log(`❌ [User: ${userId}] No prospects found in stored results OR WebSocket state`);
             console.log('🔍 Stored results detail:', {
               hasStoredResults: !!storedResults,
               hasProspects: !!(storedResults && storedResults.prospects),
-              prospectsLength: storedResults?.prospects?.length
+              prospectsLength: storedResults?.prospects?.length,
+              wsProspectsLength: wsProspects.length
             });
           }
         } else {

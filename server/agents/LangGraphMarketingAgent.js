@@ -923,6 +923,18 @@ class LangGraphMarketingAgent {
             console.log(`📡 Broadcast prospect_list with ${prospects.length} prospects`);
             console.log('⏸️ Waiting for user to select template...');
 
+            // 🔥 CRITICAL FIX: Set waitingForTemplateSelection so template.js can find it
+            this.state.waitingForTemplateSelection = {
+              prospects: prospects,
+              campaignId: campaignId,
+              businessAnalysis: businessAnalysis,
+              marketingStrategy: marketingStrategy,
+              smtpConfig: campaignConfig.smtpConfig || null,
+              timestamp: new Date().toISOString()
+            };
+            this.state.isWaitingForTemplate = true;
+            console.log(`✅ [LOCATION 1 FIX] Set waitingForTemplateSelection with ${prospects.length} prospects for campaign ${campaignId}`);
+
             // Workflow pauses here - will resume when user selects template via resumeWorkflow()
             return;
           }
