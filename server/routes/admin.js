@@ -38,24 +38,33 @@ router.get('/users', requireAdmin, async (req, res) => {
       // 2. Get user limits from database
       const dbUsers = await database.getAllUsersWithLimits();
       console.log(`📊 [Admin] Raw database users:`, dbUsers.map(u => ({
-        user_id: u.user_id,
+        userId: u.userId,
         email: u.email,
-        prospects_per_hour: u.prospects_per_hour,
-        is_unlimited: u.is_unlimited,
-        is_unlimited_type: typeof u.is_unlimited
+        prospectsPerHour: u.prospectsPerHour,
+        isUnlimited: u.isUnlimited,
+        isUnlimited_type: typeof u.isUnlimited
       })));
-      const dbUsersMap = new Map(dbUsers.map(u => [u.user_id, u]));
+      // Use userId (camelCase) - that's what getAllUsersWithLimits returns
+      const dbUsersMap = new Map(dbUsers.map(u => [u.userId, u]));
 
       // 3. Merge Clerk users with database limits
       mergedUsers = (Array.isArray(clerkUsers) ? clerkUsers : []).map(clerkUser => {
         const dbUser = dbUsersMap.get(clerkUser.id);
         const primaryEmail = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId);
 
+        // Log the merge for debugging
+        if (dbUser) {
+          console.log(`📊 [Admin] Merging Clerk user ${clerkUser.id} with DB user:`, {
+            prospectsPerHour: dbUser.prospectsPerHour,
+            isUnlimited: dbUser.isUnlimited
+          });
+        }
+
         return {
           userId: clerkUser.id,
           email: primaryEmail?.emailAddress || 'No email configured',
-          prospectsPerHour: dbUser?.prospects_per_hour ?? 50,
-          isUnlimited: Boolean(dbUser?.is_unlimited),  // Convert 0/1 to boolean
+          prospectsPerHour: dbUser?.prospectsPerHour ?? 50,  // Use camelCase
+          isUnlimited: Boolean(dbUser?.isUnlimited),  // Use camelCase - already boolean from database.js
           createdAt: clerkUser.createdAt,
           lastSignInAt: clerkUser.lastSignInAt
         };

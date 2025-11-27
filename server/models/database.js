@@ -1097,91 +1097,44 @@ class Database {
           return reject(err);
         }
 
-        // Query to get all unique users from various tables
+        // 🔥 FIX: Query user_limits FIRST, then join activity data
+        // This ensures we always get the latest user_limits values
         const query = `
-          SELECT DISTINCT
-            COALESCE(ul.user_id, u.user_id) as user_id,
-            COALESCE(ul.email, u.email) as email,
-            COALESCE(ul.prospects_per_hour, 50) as prospects_per_hour,
-            COALESCE(ul.is_unlimited, 0) as is_unlimited,
-            COALESCE(ul.created_at, u.first_seen) as created_at,
-            COALESCE(ul.updated_at, u.first_seen) as updated_at
-          FROM (
-            SELECT DISTINCT user_id,
-                   (SELECT username FROM smtp_configs WHERE smtp_configs.user_id = base.user_id LIMIT 1) as email,
-                   MIN(created_at) as first_seen
-            FROM (
-              SELECT user_id, created_at FROM smtp_configs WHERE user_id != 'anonymous'
-              UNION
-              SELECT user_id, sent_at as created_at FROM email_logs WHERE user_id != 'anonymous'
-              UNION
-              SELECT user_id, created_at FROM campaigns WHERE user_id != 'anonymous'
-              UNION
-              SELECT user_id, created_at FROM contacts WHERE user_id != 'anonymous'
-            ) base
-            GROUP BY user_id
-          ) u
-          LEFT JOIN user_limits ul ON u.user_id = ul.user_id
-          WHERE u.user_id IS NOT NULL AND u.user_id != '' AND u.user_id != 'anonymous'
-          ORDER BY created_at DESC
+          SELECT
+            ul.user_id,
+            ul.email,
+            ul.prospects_per_hour,
+            ul.is_unlimited,
+            ul.created_at,
+            ul.updated_at
+          FROM user_limits ul
+          WHERE ul.user_id IS NOT NULL AND ul.user_id != '' AND ul.user_id != 'anonymous'
+          ORDER BY ul.updated_at DESC
         `;
 
         this.db.all(query, [], (err, rows) => {
           if (err) {
-            console.error('❌ Failed to fetch users:', err);
+            console.error('❌ Failed to fetch users from user_limits:', err);
             reject(err);
           } else {
-            console.log(`✅ Found ${rows.length} unique users`);
+            console.log(`✅ Found ${rows.length} users in user_limits table`);
 
-            // If no users found, check for 'anonymous' or other activity
-            if (rows.length === 0) {
-              // Check ALL user_id values that have activity (including 'anonymous' and Clerk IDs)
-              this.db.all(`
-                SELECT DISTINCT
-                  user_id,
-                  (SELECT username FROM smtp_configs WHERE smtp_configs.user_id = base.user_id LIMIT 1) as email,
-                  50 as prospects_per_hour,
-                  0 as is_unlimited,
-                  MIN(created_at) as created_at,
-                  MIN(created_at) as updated_at
-                FROM (
-                  SELECT user_id, created_at FROM smtp_configs
-                  UNION
-                  SELECT user_id, sent_at as created_at FROM email_logs
-                  UNION
-                  SELECT user_id, created_at FROM campaigns
-                  UNION
-                  SELECT user_id, created_at FROM contacts
-                ) base
-                WHERE user_id IS NOT NULL AND user_id != ''
-                GROUP BY user_id
-                ORDER BY created_at DESC
-              `, [], (err2, allUsers) => {
-                if (allUsers && allUsers.length > 0) {
-                  console.log(`📊 Found ${allUsers.length} users with activity (including anonymous/Clerk users)`);
-                  resolve(allUsers.map(row => ({
-                    userId: row.user_id,
-                    email: row.email || `No SMTP configured (${row.user_id.substring(0, 12)}...)`,
-                    prospectsPerHour: row.prospects_per_hour,
-                    isUnlimited: row.is_unlimited === 1,
-                    createdAt: row.created_at,
-                    updatedAt: row.updated_at
-                  })));
-                } else {
-                  console.log('📊 No users or activity found');
-                  resolve([]);
-                }
-              });
-            } else {
-              resolve(rows.map(row => ({
-                userId: row.user_id,
-                email: row.email || 'No email configured',
-                prospectsPerHour: row.prospects_per_hour,
-                isUnlimited: row.is_unlimited === 1,
-                createdAt: row.created_at,
-                updatedAt: row.updated_at
-              })));
-            }
+            // Log each user's is_unlimited value for debugging
+            rows.forEach(row => {
+              console.log(`   📊 User ${row.user_id}: is_unlimited=${row.is_unlimited} (type: ${typeof row.is_unlimited})`);
+            });
+
+            // Map results with correct boolean conversion
+            const mappedUsers = rows.map(row => ({
+              userId: row.user_id,
+              email: row.email || 'No email configured',
+              prospectsPerHour: row.prospects_per_hour,
+              isUnlimited: row.is_unlimited === 1 || row.is_unlimited === true,  // Handle both integer and boolean
+              createdAt: row.created_at,
+              updatedAt: row.updated_at
+            }));
+
+            resolve(mappedUsers);
           }
         });
       });
