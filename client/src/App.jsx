@@ -554,6 +554,14 @@ function App() {
               </div>
             )
           } />
+          {/* App Pages that need Layout wrapper */}
+          <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
+          <Route path="/email-thread/:emailId" element={<Layout><EmailThread /></Layout>} />
+          <Route path="/settings" element={<Layout><Settings /></Layout>} />
+          <Route path="/prospects" element={<Layout><Prospects /></Layout>} />
+          <Route path="/campaigns" element={<Layout><Campaigns /></Layout>} />
+          <Route path="/monitoring" element={<Layout><EmailMonitoring /></Layout>} />
+          <Route path="/contacts" element={<Layout><Contacts /></Layout>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </div>

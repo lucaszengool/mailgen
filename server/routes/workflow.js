@@ -16,8 +16,8 @@ const userCampaignWorkflowResults = new Map(); // userId -> Map(campaignId -> wo
 
 console.log(`🚀 [PRODUCTION] Workflow storage initialized - ENV: ${process.env.NODE_ENV || 'development'}`);
 
-// 🎯 FIX: Track if template has been submitted to prevent popup re-triggering (per user)
-const userTemplateSubmitted = new Map(); // userId -> boolean
+// 🎯 FIX: Track if template has been submitted to prevent popup re-triggering (per user AND per campaign)
+const userCampaignTemplateSubmitted = new Map(); // "userId_campaignId" -> boolean
 
 // Global EmailEditorService instance for clearing email data
 const emailEditorService = new EmailEditorService();
@@ -275,8 +275,11 @@ router.post('/start', optionalAuth, async (req, res) => {
       step.details = null;
     });
 
-    // 🎯 FIX: Reset template submission flag when workflow starts (user-specific)
-    userTemplateSubmitted.set(req.userId, false);
+    // 🎯 FIX: Reset template submission flag when workflow starts (per user AND campaign)
+    const campaignId = req.body.campaignId || 'default';
+    const templateKey = `${req.userId}_${campaignId}`;
+    userCampaignTemplateSubmitted.set(templateKey, false);
+    console.log(`🎯 [RESET] Template submitted flag cleared for: ${templateKey}`);
 
     workflowState.currentStep = 'website_analysis';
     workflowState.isRunning = true;
@@ -498,8 +501,13 @@ router.post('/reset', optionalAuth, async (req, res) => {
   // Clear all cached workflow results and email data for this user
   userWorkflowResults.delete(userId);
 
-  // 🎯 FIX: Reset template submission flag for this user
-  userTemplateSubmitted.set(userId, false);
+  // 🎯 FIX: Reset ALL template submission flags for this user (all campaigns)
+  for (const key of userCampaignTemplateSubmitted.keys()) {
+    if (key.startsWith(`${userId}_`)) {
+      userCampaignTemplateSubmitted.delete(key);
+    }
+  }
+  console.log(`🎯 [CLEAR] All template submitted flags cleared for user: ${userId}`);
 
   // Clear EmailEditorService pending emails
   emailEditorService.clearPendingEmails();
@@ -1006,16 +1014,18 @@ router.get('/results', optionalAuth, async (req, res) => {
 
     // Check if agent is waiting for template selection
     // Simple logic: If we have prospects but no email campaign, template selection is needed
-    // 🎯 FIX: Also check if template has already been submitted to prevent popup re-triggering
+    // 🎯 FIX: Also check if template has already been submitted to prevent popup re-triggering (per campaign)
     let templateSelectionRequired = false;
     let templateSelectionStatus = null;
-    const templateSubmitted = userTemplateSubmitted.get(userId) || false;
+    const templateKey = `${userId}_${campaignId || 'default'}`;
+    const templateSubmitted = userCampaignTemplateSubmitted.get(templateKey) || false;
+    console.log(`🎯 [Template Check] Key: ${templateKey}, Submitted: ${templateSubmitted}`);
 
     if (prospects.length > 0 &&
         (!campaignData.emailCampaign ||
          !campaignData.emailCampaign.emails ||
          campaignData.emailCampaign.emails.length === 0) &&
-        !templateSubmitted) {  // 🎯 FIX: Only show popup if template hasn't been submitted yet
+        !templateSubmitted) {  // 🎯 FIX: Only show popup if template hasn't been submitted yet for THIS campaign
       // We have prospects but no emails = template selection required
       templateSelectionRequired = true;
       templateSelectionStatus = 'waiting_for_template';
@@ -1025,7 +1035,7 @@ router.get('/results', optionalAuth, async (req, res) => {
       console.log('   Emails:', campaignData.emailCampaign?.emails?.length || 0);
     } else if (templateSubmitted && (!campaignData.emailCampaign?.emails || campaignData.emailCampaign.emails.length === 0)) {
       // Template has been submitted but emails aren't generated yet
-      console.log(`🎨 [User: ${userId}] Template already submitted - waiting for email generation to complete...`);
+      console.log(`🎨 [User: ${userId}] Template already submitted for campaign ${campaignId} - waiting for email generation to complete...`);
       templateSelectionStatus = 'generating_emails';
     }
 
@@ -2496,10 +2506,11 @@ router.post('/user-decision', async (req, res) => {
 // REMOVED: Duplicate /approve-email route (was using old global workflowState)
 // The correct user-aware /approve-email route is defined at line 1715
 
-// 🎯 FIX: Add setter function for template submission flag (user-specific)
-function setTemplateSubmitted(value, userId = 'anonymous') {
-  userTemplateSubmitted.set(userId, value);
-  console.log(`🎯 [User: ${userId}] Template submitted flag set to: ${value}`);
+// 🎯 FIX: Add setter function for template submission flag (per user AND campaign)
+function setTemplateSubmitted(value, userId = 'anonymous', campaignId = 'default') {
+  const templateKey = `${userId}_${campaignId}`;
+  userCampaignTemplateSubmitted.set(templateKey, value);
+  console.log(`🎯 [User: ${userId}] Template submitted flag set to: ${value} for campaign: ${campaignId}`);
 }
 
 // 🎯 CRITICAL: Update user workflow state (for first email popup)

@@ -2658,10 +2658,23 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                 return 'idle';
               });
             } else {
-              console.log(`📥 [AUTO-LOAD] No data found for campaign ${currentCampaignId} - clearing state`);
-              // Clear state if no data
-              setProspects([]);
-              setGeneratedEmails([]);
+              console.log(`📥 [AUTO-LOAD] No data found for campaign ${currentCampaignId} from API`);
+              // 🔥 FIX: DON'T clear prospects if we already have them in state (prevents race condition)
+              // Only clear if this is truly a fresh campaign with no prior data
+              setProspects(prev => {
+                if (prev.length > 0) {
+                  console.log(`📥 [AUTO-LOAD] Keeping ${prev.length} existing prospects in state (not clearing)`);
+                  return prev;
+                }
+                return [];
+              });
+              setGeneratedEmails(prev => {
+                if (prev.length > 0) {
+                  console.log(`📥 [AUTO-LOAD] Keeping ${prev.length} existing emails in state (not clearing)`);
+                  return prev;
+                }
+                return [];
+              });
               // Only set to idle if not currently running
               setWorkflowStatus(prevStatus => {
                 if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting') {
@@ -2672,9 +2685,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             }
           } catch (error) {
             console.error('❌ [AUTO-LOAD] Failed to load campaign data:', error);
-            // Clear on error
-            setProspects([]);
-            setGeneratedEmails([]);
+            // 🔥 FIX: DON'T clear on error - keep existing data
+            console.log('📥 [AUTO-LOAD] Keeping existing state despite API error');
           }
         }, 500);
       }
@@ -2749,10 +2761,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             return 'idle';
           });
         } else {
-          console.log(`📥 [INITIAL LOAD] No existing data for campaign ${campaignId} - clearing state`);
-          // 🔥 CRITICAL FIX: Clear state if no data returned
-          setProspects([]);
-          setGeneratedEmails([]);
+          console.log(`📥 [INITIAL LOAD] No existing data for campaign ${campaignId} from API`);
+          // 🔥 FIX: DON'T clear if we already have prospects (prevents race condition)
+          setProspects(prev => {
+            if (prev.length > 0) {
+              console.log(`📥 [INITIAL LOAD] Keeping ${prev.length} existing prospects in state`);
+              return prev;
+            }
+            return [];
+          });
+          setGeneratedEmails(prev => {
+            if (prev.length > 0) {
+              console.log(`📥 [INITIAL LOAD] Keeping ${prev.length} existing emails in state`);
+              return prev;
+            }
+            return [];
+          });
           // Only set to idle if not currently running
           setWorkflowStatus(prevStatus => {
             if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting') {
@@ -2763,9 +2787,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         }
       } catch (error) {
         console.error('❌ [INITIAL LOAD] Failed to load campaign data:', error);
-        // Clear state on error to avoid showing wrong data
-        setProspects([]);
-        setGeneratedEmails([]);
+        // 🔥 FIX: Keep existing state on error
+        console.log('📥 [INITIAL LOAD] Keeping existing state despite API error');
       }
     };
 
@@ -4471,6 +4494,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       };
       console.log('🔌 Close code meaning:', closeCodes[event.code] || 'Unknown');
       setWsConnectionStatus('disconnected');
+
+      // 🔥 AUTO-RECONNECT: Reconnect after 3 seconds if abnormal closure
+      if (event.code !== 1000) {
+        console.log('🔄 Auto-reconnecting WebSocket in 3 seconds...');
+        setTimeout(() => {
+          console.log('🔄 Attempting WebSocket reconnection...');
+          connectWebSocket();
+        }, 3000);
+      }
     };
 
     wsInstance.onmessage = (event) => {
