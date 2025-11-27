@@ -5644,6 +5644,9 @@ Return ONLY the JSON object, no other text.`;
   /**
    * 🎨 NEW FUNCTION: Apply user's color customizations to HTML
    * This ensures user-selected colors actually appear in the final email
+   *
+   * Strategy: Apply colors to specific template components by ID/class
+   * rather than just replacing hex values (which may have already been changed)
    */
   applyColorCustomizations(html, customizations) {
     if (!html || !customizations) return html;
@@ -5658,14 +5661,42 @@ Return ONLY the JSON object, no other text.`;
 
     let coloredHtml = html;
 
-    // Apply primary color (replaces green #28a745, #047857, etc.)
+    // Apply primary color to specific template components
     if (primaryColor && primaryColor !== '#6b7280') {
+      // 1. Replace common default colors that might be in the template
       coloredHtml = coloredHtml
         .replace(/#28a745/gi, primaryColor)  // Default green
         .replace(/#047857/gi, primaryColor)  // Dark green
         .replace(/#10b981/gi, primaryColor)  // Light green
         .replace(/#059669/gi, primaryColor)  // Medium green
+        .replace(/#22c55e/gi, primaryColor)  // Tailwind green
+        .replace(/#000000(?=[^"]*"[^>]*(?:component-header-banner|component-feature-grid|component-cta-button))/gi, primaryColor) // Black in components
         .replace(/rgb\(40,\s*167,\s*69\)/gi, `rgb(${this.hexToRgb(primaryColor)})`);
+
+      // 2. Apply to header banner background (id="component-header-banner")
+      coloredHtml = coloredHtml.replace(
+        /(<div[^>]*id="component-header-banner"[^>]*style="[^"]*background:\s*)#[a-fA-F0-9]{6}/gi,
+        `$1${primaryColor}`
+      );
+
+      // 3. Apply to feature grid background (id="component-feature-grid")
+      coloredHtml = coloredHtml.replace(
+        /(<div[^>]*id="component-feature-grid"[^>]*style="[^"]*background:\s*)#[a-fA-F0-9]{6}/gi,
+        `$1${primaryColor}`
+      );
+
+      // 4. Apply to CTA button background (id="component-cta-button" or <a> inside it)
+      coloredHtml = coloredHtml.replace(
+        /(<div[^>]*id="component-cta-button"[^>]*>[\s\S]*?<a[^>]*style="[^"]*background:\s*)#[a-fA-F0-9]{6}/gi,
+        `$1${primaryColor}`
+      );
+
+      // 5. Apply to any inline background styles in component divs
+      coloredHtml = coloredHtml.replace(
+        /(id="component-[^"]*"[^>]*style="[^"]*)(background:\s*)#[a-fA-F0-9]{6}/gi,
+        `$1$2${primaryColor}`
+      );
+
       console.log(`   ✅ Applied primary color: ${primaryColor}`);
     }
 
@@ -5674,7 +5705,15 @@ Return ONLY the JSON object, no other text.`;
       coloredHtml = coloredHtml
         .replace(/#6366f1/gi, accentColor)  // Default accent
         .replace(/#4f46e5/gi, accentColor)  // Dark accent
+        .replace(/#6b7280/gi, accentColor)  // Gray accent
         .replace(/rgb\(99,\s*102,\s*241\)/gi, `rgb(${this.hexToRgb(accentColor)})`);
+
+      // Apply to social proof background
+      coloredHtml = coloredHtml.replace(
+        /(<div[^>]*id="component-social-proof"[^>]*style="[^"]*background:\s*)#[a-fA-F0-9]{6}/gi,
+        `$1${accentColor}`
+      );
+
       console.log(`   ✅ Applied accent color: ${accentColor}`);
     }
 
@@ -5685,6 +5724,13 @@ Return ONLY the JSON object, no other text.`;
         .replace(/#495057/gi, textColor)  // Medium gray text
         .replace(/#1f2937/gi, textColor)  // Very dark gray
         .replace(/rgb\(52,\s*58,\s*64\)/gi, `rgb(${this.hexToRgb(textColor)})`);
+
+      // Apply to paragraph text colors
+      coloredHtml = coloredHtml.replace(
+        /(<div[^>]*id="generated-paragraph-[^"]*"[^>]*>[\s\S]*?<p[^>]*style="[^"]*color:\s*)#[a-fA-F0-9]{6}/gi,
+        `$1${textColor}`
+      );
+
       console.log(`   ✅ Applied text color: ${textColor}`);
     }
 
@@ -6082,6 +6128,46 @@ Generate ONLY the email body paragraphs (no subject, no greeting, no signature).
             console.error(`❌ Failed to generate AI content:`, error.message);
             generatedContent = `I'm reaching out from ${templateData.companyName || businessAnalysis?.companyName || 'our company'} because I believe we could help ${prospect.company || 'your organization'} achieve its goals.\n\n${businessAnalysis?.valueProposition || 'We provide innovative solutions that drive results.'}\n\nWould you be interested in a brief conversation to explore how we might work together?`;
           }
+
+          // 🧹 CLEAN AI CONTENT: Remove subject lines, greetings, and signatures
+          // The AI sometimes ignores instructions and includes these anyway
+          const cleanAIContent = (content) => {
+            let cleaned = content;
+            const originalLength = cleaned.length;
+
+            // Remove subject lines at the start (with or without markdown)
+            cleaned = cleaned.replace(/^\s*\*{0,2}Subject:?\*{0,2}[^\n]*\n*/gi, '');
+
+            // Remove greeting lines at the start (Hi/Hello/Dear followed by name and comma/period)
+            cleaned = cleaned.replace(/^\s*(Hi|Hello|Dear|Hey|Good\s+(morning|afternoon|evening))[,\s]+[^,\n]*[,.]?\s*\n*/gi, '');
+
+            // Remove standalone greeting lines after previous removals
+            cleaned = cleaned.replace(/^\s*(Hi|Hello|Dear|Hey)[,\s]+[A-Za-z]+[,.]?\s*\n*/gi, '');
+
+            // Remove signature/closing lines at the end
+            cleaned = cleaned.replace(/\n\s*(Best\s+regards?|Sincerely|Thank\s+you|Thanks|Warm\s+regards?|Kind\s+regards?|Looking\s+forward|Cheers)[,\s]*\n?.*$/gi, '');
+
+            // Remove lines that are just a name (likely sender signature)
+            cleaned = cleaned.replace(/\n\s*[A-Z][a-z]+\s*$/g, '');
+
+            // Remove [Your Name], [Name], [Contact], etc. placeholders
+            cleaned = cleaned.replace(/\[Your\s+Name\]|\[Name\]|\[Contact.*?\]|\[Your\s+Email\]|\[Email\]/gi, '');
+
+            // Remove markdown bold markers that weren't part of actual content
+            cleaned = cleaned.replace(/^\s*\*\*\s*\*\*\s*/gm, '');
+
+            // Remove empty lines at start and end
+            cleaned = cleaned.trim();
+
+            if (cleaned.length !== originalLength) {
+              console.log(`🧹 Cleaned AI content: removed ${originalLength - cleaned.length} chars of unwanted content`);
+              console.log(`📝 Cleaned content preview: ${cleaned.substring(0, 200)}...`);
+            }
+
+            return cleaned;
+          };
+
+          generatedContent = cleanAIContent(generatedContent);
 
           // Helper function to convert markdown to HTML
           const markdownToHtml = (text) => {

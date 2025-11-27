@@ -127,8 +127,31 @@ function App() {
     try {
       console.log('Fetching config from API...');
 
-      // ROUTE OVERRIDE: If user is on /dashboard, ALWAYS show dashboard
+      // ROUTE OVERRIDE: For specific routes, don't redirect - let React Router handle it
       const currentPath = window.location.pathname;
+
+      // List of paths that should NOT trigger dashboard redirect
+      const preservedPaths = ['/email-thread', '/analytics', '/settings', '/prospects', '/campaigns', '/monitoring', '/contacts'];
+      const isPreservedPath = preservedPaths.some(path => currentPath.startsWith(path));
+
+      if (isPreservedPath) {
+        console.log(`🎯 User on preserved path ${currentPath} - not redirecting to dashboard`);
+        // Still fetch config to set auth state, but don't change view
+        try {
+          const response = await fetch('/api/agent/config');
+          if (response.ok) {
+            const config = await response.json();
+            if (config && config.targetWebsite) {
+              setAgentConfig(config);
+              setIsSetupComplete(true);
+            }
+          }
+        } catch (err) {
+          console.log('Config fetch failed, but staying on current path');
+        }
+        return; // Don't change currentView - let Router handle it
+      }
+
       if (currentPath === '/dashboard') {
         console.log('🎯 User navigated to /dashboard - forcing dashboard view');
         // Fetch config but always show dashboard
