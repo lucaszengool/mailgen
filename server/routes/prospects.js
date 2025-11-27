@@ -15,7 +15,7 @@ const { optionalAuth } = require('../middleware/userContext');
  */
 router.post('/search', optionalAuth, async (req, res) => {
   try {
-    const { query, limit = 7, websiteAnalysis, campaignId } = req.body;
+    const { query, limit = 7, websiteAnalysis, campaignId, fastMode = true } = req.body;
     const userId = req.userId || 'anonymous';
 
     if (!query || query.trim() === '') {
@@ -26,11 +26,46 @@ router.post('/search', optionalAuth, async (req, res) => {
       });
     }
 
+    // Extract industry
+    const industry = websiteAnalysis?.productType || websiteAnalysis?.industry || query;
+
+    console.log(`⚡ ULTRA-FAST initial search: "${industry}" (${limit} prospects)`);
+
+    // 🔥 ULTRA-FAST MODE: Return mock prospects instantly for initial search
+    if (fastMode && limit <= 10) {
+      console.log('⚡⚡⚡ Using ULTRA-FAST mock mode for instant results');
+
+      const mockProspects = Array.from({ length: limit }, (_, i) => ({
+        name: `${industry} Professional ${i + 1}`,
+        email: `contact${i + 1}@${industry.toLowerCase().replace(/\s+/g, '')}.com`,
+        company: `${industry} Company ${i + 1}`,
+        role: 'Decision Maker',
+        location: 'United States',
+        score: 85 + Math.floor(Math.random() * 10),
+        source: 'quick_preview',
+        verified: false,
+        metadata: {
+          note: 'Preview results - run full campaign for verified contacts'
+        }
+      }));
+
+      return res.json({
+        success: true,
+        prospects: mockProspects,
+        query: industry,
+        industry,
+        targetAudience: industry,
+        isRealData: false,
+        searchMethod: 'ultra_fast_preview',
+        timestamp: new Date().toISOString(),
+        message: 'Preview results shown instantly. Start campaign for real verified prospects.'
+      });
+    }
+
+    // NORMAL MODE: Use Python script (slower but real)
     console.log(`🔍 REAL prospect search for query: "${query}" (limit: ${limit})`);
     console.log(`📊 Website analysis data:`, websiteAnalysis);
 
-    // Extract industry and business info from website analysis
-    const industry = websiteAnalysis?.productType || websiteAnalysis?.industry || query;
     const businessName = websiteAnalysis?.businessName || '';
     const targetAudience = websiteAnalysis?.audiences?.[0]?.title || query;
     const businessIntro = websiteAnalysis?.businessIntro || websiteAnalysis?.valueProposition || '';
