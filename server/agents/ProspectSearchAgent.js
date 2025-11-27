@@ -201,10 +201,11 @@ class ProspectSearchAgent {
       try {
         console.log(`\n🔍 Search attempt ${totalSearches + 1}/${maxSearches} with keyword: "${searchTerm}"`);
 
-        // UNLIMITED: Use a very high number (1000) as target count - Python script will find all it can
-        // 🔥 FIX: Pass campaignId as session_id for campaign-specific caching
+        // 🔥 FIX: Use reasonable target count (20) instead of 1000
+        // Each search round will find ~5-15 emails, we don't need 1000
         const campaignId = options.campaignId || null;
-        const prospectSearchResults = await this.emailSearchAgent.searchEmails(searchTerm, 1000, campaignId);
+        const targetCount = 20; // Reasonable target per search
+        const prospectSearchResults = await this.emailSearchAgent.searchEmails(searchTerm, targetCount, campaignId);
 
         totalSearches++;
 
