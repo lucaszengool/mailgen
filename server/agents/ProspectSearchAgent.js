@@ -201,10 +201,9 @@ class ProspectSearchAgent {
       try {
         console.log(`\n🔍 Search attempt ${totalSearches + 1}/${maxSearches} with keyword: "${searchTerm}"`);
 
-        // 🔥 FIX: Use reasonable target count (20) instead of 1000
-        // Each search round will find ~5-15 emails, we don't need 1000
+        // 🔥 FIX: Search for 3 prospects per batch - fast and accurate
         const campaignId = options.campaignId || null;
-        const targetCount = 20; // Reasonable target per search
+        const targetCount = 3; // Small batches for fast results
         const prospectSearchResults = await this.emailSearchAgent.searchEmails(searchTerm, targetCount, campaignId);
 
         totalSearches++;
@@ -3594,12 +3593,11 @@ Output: One search query only`;
         console.log(`   Rate limit: ${this.autonomousSearch.rateLimit.countThisHour}/${this.autonomousSearch.rateLimit.maxPerHour} this hour`);
         console.log(`   Pool size: ${this.autonomousSearch.emailPool.size} emails`);
 
-        // 📦 BATCHED MODE: Request 12 prospects per search
-        // Python script now handles deduplication internally via cache
+        // 📦 BATCHED MODE: Request 3 prospects per search for fast results
         const remainingQuota = this.autonomousSearch.rateLimit.maxPerHour - this.autonomousSearch.rateLimit.countThisHour;
-        const batchSize = 12; // Request 12 prospects - Python skips already-returned emails
+        const batchSize = 3; // 🔥 FIX: Small batches for fast results
         const actualRequest = Math.min(remainingQuota, batchSize);
-        console.log(`📨 Requesting ${actualRequest} NEW prospects (Python handles deduplication)`);
+        console.log(`📨 Requesting ${actualRequest} prospects (batch of ${batchSize})`);
 
         // 🔥 FIX: Pass campaignId as session_id for campaign-specific caching
         const { campaignId } = this.autonomousSearch.options || {};
