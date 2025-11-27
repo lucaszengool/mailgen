@@ -1500,6 +1500,79 @@ class LangGraphMarketingAgent {
       // Resume email generation with the selected template
       console.log('📧 Resuming email generation with selected template...');
 
+      // 🔥 CRITICAL FIX: Check if we need to trigger more prospect searches
+      // If we only have initial preview prospects (< 10), trigger batch search
+      const currentProspectCount = waitingState.prospects?.length || 0;
+      if (currentProspectCount < 10) {
+        console.log(`⚠️ Only ${currentProspectCount} prospects found - triggering batch prospect search...`);
+        console.log(`🔄 Main batch search may have timed out or failed - starting new search`);
+
+        // Get userId from various sources
+        const userId = this.userId || waitingState.userId || 'anonymous';
+
+        // Try to trigger additional prospect search in background
+        if (this.prospectSearchAgent) {
+          const marketingStrategy = waitingState.marketingStrategy || this.marketingStrategyData;
+          const targetIndustry = marketingStrategy?.industry || 'business';
+
+          console.log(`🚀 Starting background batch search for more prospects...`);
+          console.log(`   Target industry: ${targetIndustry}`);
+          console.log(`   Campaign ID: ${campaignId}`);
+
+          // Create batch callback for new prospects
+          const batchCallback = async (batchData) => {
+            const { batchNumber, prospects, totalSoFar, targetTotal } = batchData;
+            console.log(`📦 [RESUMED Batch ${batchNumber}] Received ${prospects.length} NEW prospects (${totalSoFar}/${targetTotal} total)`);
+
+            // Update workflow results with new prospects
+            const workflowRoute = require('../routes/workflow');
+            if (workflowRoute.getLastWorkflowResults && workflowRoute.setLastWorkflowResults) {
+              try {
+                const currentResults = await workflowRoute.getLastWorkflowResults(userId, campaignId);
+                if (currentResults) {
+                  const existingEmails = new Set((currentResults.prospects || []).map(p => p.email));
+                  const newProspects = prospects.filter(p => !existingEmails.has(p.email));
+                  currentResults.prospects = [...(currentResults.prospects || []), ...newProspects];
+                  await workflowRoute.setLastWorkflowResults(currentResults, userId, campaignId);
+                  console.log(`✅ [RESUMED Batch ${batchNumber}] Added ${newProspects.length} new prospects (total: ${currentResults.prospects.length})`);
+                }
+              } catch (err) {
+                console.error(`❌ [RESUMED Batch] Failed to update results:`, err.message);
+              }
+            }
+
+            // Notify frontend via WebSocket
+            if (this.wsManager) {
+              this.wsManager.broadcast({
+                type: 'prospect_batch_update',
+                data: {
+                  userId,
+                  campaignId,
+                  batchNumber,
+                  newProspects: prospects.length,
+                  totalSoFar,
+                  targetTotal,
+                  message: `Found ${prospects.length} more prospects!`
+                }
+              });
+            }
+          };
+
+          // Schedule background batches (non-blocking)
+          this.prospectSearchAgent.scheduleBackgroundBatches(
+            marketingStrategy,
+            targetIndustry,
+            {
+              userId,
+              campaignId,
+              batchCallback,
+              targetTotal: 50,
+              batchSize: 10
+            }
+          );
+        }
+      }
+
       // Send WebSocket updates for UI
       if (this.wsManager) {
         this.wsManager.stepStarted('email_generation', 'Email Generation');
