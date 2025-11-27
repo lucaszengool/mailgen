@@ -37,6 +37,13 @@ router.get('/users', requireAdmin, async (req, res) => {
 
       // 2. Get user limits from database
       const dbUsers = await database.getAllUsersWithLimits();
+      console.log(`📊 [Admin] Raw database users:`, dbUsers.map(u => ({
+        user_id: u.user_id,
+        email: u.email,
+        prospects_per_hour: u.prospects_per_hour,
+        is_unlimited: u.is_unlimited,
+        is_unlimited_type: typeof u.is_unlimited
+      })));
       const dbUsersMap = new Map(dbUsers.map(u => [u.user_id, u]));
 
       // 3. Merge Clerk users with database limits
