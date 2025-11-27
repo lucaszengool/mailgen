@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Users, Mail, TrendingUp, AlertCircle } from 'lucide-react';
+import { apiGet } from '../utils/apiClient';
 
 const QuotaBar = () => {
   const [quotaData, setQuotaData] = useState({
@@ -31,7 +32,7 @@ const QuotaBar = () => {
 
   const [timeRemaining, setTimeRemaining] = useState('60m 0s');
 
-  // Fetch quota data from API
+  // Fetch quota data from API with authentication
   const fetchQuotaData = async () => {
     try {
       // 🔥 PRODUCTION: Get current campaignId from localStorage or context
@@ -42,18 +43,17 @@ const QuotaBar = () => {
 
       console.log(`📊 Fetching stats for campaign: ${currentCampaignId || 'ALL'}`);
 
-      const response = await fetch(url);
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          console.log('📊 Quota data received:', result.data);
-          setQuotaData(result.data);
-        }
+      // 🔥 FIX: Use apiGet for authenticated requests - ensures correct userId
+      const result = await apiGet(url);
+      if (result.success && result.data) {
+        console.log('📊 Quota data received:', result.data);
+        console.log('📊 isUnlimited:', result.data.isUnlimited);
+        setQuotaData(result.data);
       } else {
-        console.warn('📊 Quota API returned non-OK status:', response.status);
+        console.warn('📊 Quota API returned error:', result);
       }
     } catch (error) {
-      console.warn('📊 Quota API not available (dev mode):', error.message);
+      console.warn('📊 Quota API error:', error.message);
     }
   };
 
