@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Users, Mail, TrendingUp, AlertCircle } from 'lucide-react';
 import { apiGet } from '../utils/apiClient';
+import { useUser } from '@clerk/clerk-react';
 
 const QuotaBar = () => {
+  const { user, isLoaded: isUserLoaded } = useUser();
   const [quotaData, setQuotaData] = useState({
     rateLimit: {
       current: 0,
@@ -71,12 +73,25 @@ const QuotaBar = () => {
   }, [quotaData.rateLimit.timeUntilReset]);
 
   // Fetch data on mount and every 5 seconds
+  // 🔥 FIX: Wait for Clerk user to be loaded before fetching
   useEffect(() => {
-    console.log('📊 QuotaBar mounted - fetching quota data');
+    // Don't fetch until user authentication is resolved
+    if (!isUserLoaded) {
+      console.log('📊 QuotaBar waiting for Clerk user to load...');
+      return;
+    }
+
+    console.log('📊 QuotaBar - Clerk loaded, user:', user?.id || 'anonymous');
+    console.log('📊 Fetching quota data...');
     fetchQuotaData();
+
+    // Then fetch every 5 seconds
     const interval = setInterval(fetchQuotaData, 5000);
-    return () => clearInterval(interval);
-  }, []);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isUserLoaded, user?.id]);
 
   // 🔥 FIX: Check if unlimited (max is 999999 or isUnlimited flag is true)
   const isActuallyUnlimited = quotaData.isUnlimited || quotaData.prospects.quota.max >= 999999 || quotaData.emails.quota.max >= 999999;
