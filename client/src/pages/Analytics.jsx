@@ -40,7 +40,7 @@ import {
 // Black/Green/White color scheme
 const COLORS = ['#00f5a0', '#000000', '#374151', '#6b7280', '#9ca3af', '#d1d5db']
 
-export default function Analytics() {
+export default function Analytics({ onEmailClick }) {
   const { user } = useUser()
   const navigate = useNavigate()
   const [timeRange, setTimeRange] = useState('30d')
@@ -556,7 +556,15 @@ export default function Analytics() {
                   .map((email, index) => (
                     <tr
                       key={email.id || index}
-                      onClick={() => navigate(`/email-thread/${email.id}`)}
+                      onClick={() => {
+                        // 🔥 FIX: Use onEmailClick prop if available (for embedded view in dashboard)
+                        // Otherwise fall back to navigate (for standalone page)
+                        if (onEmailClick) {
+                          onEmailClick(email.id);
+                        } else {
+                          navigate(`/email-thread/${email.id}`);
+                        }
+                      }}
                       className="hover:bg-[#00f5a0]/5 transition-colors cursor-pointer"
                     >
                       <td className="px-4 py-3 whitespace-nowrap">

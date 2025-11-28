@@ -30,6 +30,7 @@ import OnboardingTour from './OnboardingTour';
 import MarketResearch from './MarketResearch';
 import AIAssistantChatbot from './AIAssistantChatbot';
 import QuotaBar from './QuotaBar';
+import EmailThreadPanel from './EmailThreadPanel';
 
 
 // Utility function for generating gradient patterns
@@ -1935,6 +1936,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const [chatbotExternalMessage, setChatbotExternalMessage] = useState(null);
   const [wsConnectionStatus, setWsConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'disconnected', 'error'
   const [campaignConfig, setCampaignConfig] = useState(null);
+
+  // 🔥 Email Thread View State - for viewing email threads within the dashboard
+  const [selectedEmailThreadId, setSelectedEmailThreadId] = useState(null);
 
   // 🔥 CRITICAL: Set campaign ID in localStorage immediately on mount
   useEffect(() => {
@@ -6755,8 +6759,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           )}
 
           {/* Analytics View */}
-          {activeView === 'analytics' && (
-            <Analytics />
+          {activeView === 'analytics' && !selectedEmailThreadId && (
+            <Analytics onEmailClick={(emailId) => setSelectedEmailThreadId(emailId)} />
+          )}
+
+          {/* Email Thread View - Shows when an email is selected from Analytics */}
+          {activeView === 'analytics' && selectedEmailThreadId && (
+            <EmailThreadPanel
+              emailId={selectedEmailThreadId}
+              onClose={() => setSelectedEmailThreadId(null)}
+            />
           )}
 
           {/* Research View */}
