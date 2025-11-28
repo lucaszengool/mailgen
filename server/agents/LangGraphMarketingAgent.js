@@ -1298,6 +1298,10 @@ class LangGraphMarketingAgent {
       if (prospects.length > 0) {
         console.log('🚀 Real emails discovered! Starting immediate email generation...');
 
+        // 🔥 CRITICAL FIX: Declare campaignId BEFORE using it in template selection broadcast
+        const localCampaignId = this.campaignConfig?.campaignId || this.state.currentCampaign || campaignId;
+        console.log(`🔍 DEBUG: Using localCampaignId: ${localCampaignId}`);
+
         // 🔥 IMMEDIATE: Trigger template selection popup as soon as prospects found
         // This shows the popup right after prospects are discovered, not after full search
         if (this.wsManager && !this.campaignConfig?.emailTemplate) {
@@ -1306,7 +1310,7 @@ class LangGraphMarketingAgent {
           this.wsManager.broadcast({
             type: 'template_selection_required',
             data: {
-              campaignId: campaignId,
+              campaignId: localCampaignId,
               prospectsFound: prospects.length,
               prospectsCount: prospects.length,
               sampleProspects: prospects.slice(0, 5).map(p => ({
@@ -1348,11 +1352,10 @@ class LangGraphMarketingAgent {
 
         // 🎯 NEW: Check if user has saved template preference first
         const userId = this.userId || 'anonymous';
-        // 🔥 CRITICAL FIX: Get campaignId from campaignConfig, not from currentCampaign (which is just a string)
-        const campaignId = this.campaignConfig?.campaignId || this.state.currentCampaign;
-        console.log(`🔍 DEBUG: Using campaignId: ${campaignId} (from: ${this.campaignConfig?.campaignId ? 'campaignConfig' : 'currentCampaign'})`);
+        // 🔥 NOTE: Using localCampaignId declared at the start of this block (line ~1302)
+        console.log(`🔍 DEBUG: Checking template for campaignId: ${localCampaignId}`);
 
-        const hasAutoAppliedTemplate = await this.checkAndApplySavedTemplate(userId, campaignId);
+        const hasAutoAppliedTemplate = await this.checkAndApplySavedTemplate(userId, localCampaignId);
 
         if (hasAutoAppliedTemplate) {
           console.log(`✅ [LOCATION 2] Template auto-applied for user ${userId} - continuing without pause`);
@@ -1364,11 +1367,11 @@ class LangGraphMarketingAgent {
           if (this.wsManager) {
             console.log('🎨🎨🎨 BROADCASTING TEMPLATE SELECTION REQUIRED MESSAGE (LOCATION 2) 🎨🎨🎨');
             console.log('🎨 Prospects found:', prospects.length);
-            console.log('🎨 Campaign ID:', campaignId);
+            console.log('🎨 Campaign ID:', localCampaignId);
             const message = {
               type: 'template_selection_required',
               data: {
-                campaignId: campaignId,  // 🔥 FIX: Include campaignId in message
+                campaignId: localCampaignId,  // 🔥 FIX: Use localCampaignId
                 prospectsFound: prospects.length,
                 sampleProspects: prospects.slice(0, 3).map(p => ({
                   name: p.name || 'Unknown',
@@ -1389,12 +1392,12 @@ class LangGraphMarketingAgent {
 
           // 🛑 CRITICAL PAUSE: Wait for template selection before proceeding
           console.log('🛑 PAUSING WORKFLOW: Waiting for user to select email template...');
-          console.log(`🔍 DEBUG: Storing campaignId in waitingForTemplateSelection: ${campaignId}`);
+          console.log(`🔍 DEBUG: Storing campaignId in waitingForTemplateSelection: ${localCampaignId}`);
 
           // Set workflow state to waiting for template selection
           this.state.waitingForTemplateSelection = {
             prospects: prospects,
-            campaignId: campaignId,  // 🔥 FIX: Now this will have the correct value
+            campaignId: localCampaignId,  // 🔥 FIX: Use localCampaignId
             businessAnalysis: this.businessAnalysisData || this.state.currentCampaign?.businessAnalysis,
             marketingStrategy: this.marketingStrategyData || this.state.currentCampaign?.marketingStrategy,
             smtpConfig: this.campaignConfig?.smtpConfig || null, // 🔥 CRITICAL FIX: Include SMTP config
