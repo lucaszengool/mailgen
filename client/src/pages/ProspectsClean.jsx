@@ -123,69 +123,81 @@ const ProspectsPage = () => {
         setLoading(true)
       }
 
-      // 🔥 CRITICAL FIX: Include campaignId in request to get correct prospects
       const currentCampaignId = localStorage.getItem('currentCampaignId')
-      const url = currentCampaignId
-        ? `/api/workflow/results?campaignId=${currentCampaignId}`
-        : '/api/workflow/results'
       console.log(`📊 ProspectsClean: Fetching prospects for campaign: ${currentCampaignId || 'ALL'}`)
 
-      const response = await fetch(url)
-      const data = await response.json()
-      
-      if (data.success && data.data?.prospects && data.data.prospects.length > 0) {
-        console.log(`✅ ProspectsClean: Found ${data.data.prospects.length} prospects from workflow results`)
-        setProspects(data.data.prospects)
-      } else {
-        // 🔥 FIX: Try fetching from contacts database if workflow results are empty
-        console.log('⚠️ ProspectsClean: No prospects in workflow results, trying database...')
+      // 🔥 CRITICAL FIX: Fetch from BOTH sources and merge results
+      let allProspects = []
 
-        if (currentCampaignId) {
-          try {
-            const dbResponse = await fetch(`/api/contacts?status=active&limit=1000&campaignId=${currentCampaignId}`)
-            const dbData = await dbResponse.json()
+      // 1. First, try to get from contacts database (persistent storage)
+      if (currentCampaignId) {
+        try {
+          const dbResponse = await fetch(`/api/contacts?status=active&limit=1000&campaignId=${currentCampaignId}`)
+          const dbData = await dbResponse.json()
 
-            if (dbData.success && dbData.data?.contacts && dbData.data.contacts.length > 0) {
-              console.log(`✅ ProspectsClean: Found ${dbData.data.contacts.length} prospects from database`)
-              const dbProspects = dbData.data.contacts.map(c => ({
-                id: c.id || `contact_${c.email}`,
-                email: c.email,
-                name: c.name || 'Unknown',
-                company: c.company || 'Unknown',
-                position: c.position || 'Unknown',
-                confidence: c.confidence || 75,
-                created_at: c.created_at || new Date().toISOString(),
-                source: c.source || 'Database'
-              }))
-              setProspects(dbProspects)
-              return // Found prospects in database, no need for sample data
-            }
-          } catch (dbError) {
-            console.error('⚠️ ProspectsClean: Failed to fetch from database:', dbError)
+          if (dbData.success && dbData.data?.contacts && dbData.data.contacts.length > 0) {
+            console.log(`✅ ProspectsClean: Found ${dbData.data.contacts.length} prospects from DATABASE`)
+            const dbProspects = dbData.data.contacts.map(c => ({
+              id: c.id || `contact_${c.email}`,
+              email: c.email,
+              name: c.name || 'Unknown',
+              company: c.company || 'Unknown',
+              position: c.position || 'Unknown',
+              confidence: c.confidence || 75,
+              created_at: c.created_at || new Date().toISOString(),
+              source: c.source || 'Database'
+            }))
+            allProspects = [...dbProspects]
+          }
+        } catch (dbError) {
+          console.error('⚠️ ProspectsClean: Failed to fetch from database:', dbError)
+        }
+      }
+
+      // 2. Also try workflow results (in-memory/WebSocket state)
+      try {
+        const url = currentCampaignId
+          ? `/api/workflow/results?campaignId=${currentCampaignId}`
+          : '/api/workflow/results'
+
+        const response = await fetch(url)
+        const data = await response.json()
+
+        if (data.success && data.data?.prospects && data.data.prospects.length > 0) {
+          console.log(`✅ ProspectsClean: Found ${data.data.prospects.length} prospects from WORKFLOW`)
+
+          // Merge with database results (avoid duplicates by email)
+          const existingEmails = new Set(allProspects.map(p => p.email))
+          const newProspects = data.data.prospects.filter(p => !existingEmails.has(p.email))
+
+          if (newProspects.length > 0) {
+            console.log(`➕ ProspectsClean: Adding ${newProspects.length} new prospects from workflow`)
+            allProspects = [...allProspects, ...newProspects]
           }
         }
+      } catch (workflowError) {
+        console.error('⚠️ ProspectsClean: Failed to fetch from workflow:', workflowError)
+      }
 
-        // 🔥 CRITICAL FIX: Don't overwrite existing prospects with sample data
-        // Only show sample data if we have NO existing data
+      // 3. Update state with combined results
+      if (allProspects.length > 0) {
+        console.log(`✅ ProspectsClean: Total ${allProspects.length} prospects loaded`)
+        setProspects(allProspects)
+      } else {
+        // Keep existing prospects if we have them, otherwise show empty
         setProspects(prev => {
           if (prev.length > 0) {
             console.log('📊 ProspectsClean: Keeping existing prospects (no new data)')
             return prev
           }
-          console.log('📊 ProspectsClean: No existing prospects, showing empty state')
-          return [] // Return empty instead of sample data
+          console.log('📊 ProspectsClean: No prospects found')
+          return []
         })
       }
     } catch (error) {
       console.error('Error fetching prospects:', error)
-      // 🔥 FIX: Don't overwrite existing prospects on error
-      setProspects(prev => {
-        if (prev.length > 0) {
-          console.log('📊 ProspectsClean: Keeping existing prospects after error')
-          return prev
-        }
-        return [] // Return empty on error
-      })
+      // Keep existing prospects on error
+      setProspects(prev => prev.length > 0 ? prev : [])
     } finally {
       if (isInitialLoad) {
         setLoading(false)

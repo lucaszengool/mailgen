@@ -381,6 +381,73 @@ class WorkflowWebSocketManager extends EventEmitter {
     this.clients.forEach((client, clientId) => {
       this.sendToClient(clientId, data);
     });
+
+    // 🔥 CRITICAL: Auto-save prospects to database when broadcast contains prospect data
+    this.autoSaveProspectsFromBroadcast(data);
+  }
+
+  // 🔥 NEW: Auto-save prospects to database to ensure persistence
+  async autoSaveProspectsFromBroadcast(data) {
+    try {
+      let prospects = null;
+      let campaignId = null;
+      let userId = 'anonymous';
+
+      // Extract prospects from various message types
+      if (data.type === 'prospect_list' && data.prospects) {
+        prospects = data.prospects;
+        campaignId = data.campaignId;
+      } else if (data.type === 'prospect_batch_update' && data.data?.prospects) {
+        prospects = data.data.prospects;
+        campaignId = data.data.campaignId || data.campaignId;
+        userId = data.data.userId || 'anonymous';
+      } else if (data.type === 'workflow_update' && data.stepData?.results?.prospects) {
+        prospects = data.stepData.results.prospects;
+        campaignId = data.campaignId;
+      } else if (data.type === 'data_update' && data.data?.prospects) {
+        prospects = data.data.prospects;
+        campaignId = data.campaignId;
+      }
+
+      // If we found prospects, save them to database
+      if (prospects && prospects.length > 0 && campaignId) {
+        console.log(`💾 [WebSocket] Auto-saving ${prospects.length} prospects to database for campaign: ${campaignId}`);
+
+        const db = require('../models/database');
+        let savedCount = 0;
+
+        for (const prospect of prospects) {
+          if (!prospect.email) continue;
+
+          try {
+            await db.saveContact({
+              email: prospect.email,
+              name: prospect.name || 'Unknown',
+              company: prospect.company || 'Unknown',
+              position: prospect.role || prospect.position || 'Unknown',
+              industry: prospect.industry || 'Unknown',
+              phone: prospect.phone || '',
+              address: '',
+              source: prospect.source || 'websocket_broadcast',
+              tags: '',
+              notes: `Auto-saved from WebSocket broadcast on ${new Date().toLocaleString()}`
+            }, userId, campaignId);
+            savedCount++;
+          } catch (saveError) {
+            // Skip duplicates silently
+            if (!saveError.message?.includes('UNIQUE constraint')) {
+              console.error(`⚠️ [WebSocket] Failed to save prospect ${prospect.email}:`, saveError.message);
+            }
+          }
+        }
+
+        if (savedCount > 0) {
+          console.log(`✅ [WebSocket] Saved ${savedCount}/${prospects.length} prospects to database`);
+        }
+      }
+    } catch (error) {
+      console.error('❌ [WebSocket] Error in autoSaveProspectsFromBroadcast:', error);
+    }
   }
 
   // 清理断开的连接 - DISABLED per user request to keep WebSocket always connected
