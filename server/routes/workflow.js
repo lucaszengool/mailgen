@@ -917,9 +917,11 @@ router.get('/results', optionalAuth, async (req, res) => {
       // Look for prospect data in workflow states that match this campaign
       for (const [workflowId, state] of wsManager.workflowStates) {
         // 🔥 CRITICAL: Only process this state if it belongs to this campaign or if no campaign filter
-        const stateCampaignId = state.data?.campaignId || state.campaignId;
+        // The workflowId IS the campaignId (set in LangGraphMarketingAgent.js line 863)
+        // Also check state.id, state.data?.campaignId, or state.campaignId for backwards compatibility
+        const stateCampaignId = workflowId || state.id || state.data?.campaignId || state.campaignId;
 
-        if (campaignId && stateCampaignId && stateCampaignId !== campaignId) {
+        if (campaignId && stateCampaignId && String(stateCampaignId) !== String(campaignId)) {
           console.log(`⏭️  Skipping workflow ${workflowId} (campaign: ${stateCampaignId}, looking for: ${campaignId})`);
           continue; // Skip states from other campaigns
         }

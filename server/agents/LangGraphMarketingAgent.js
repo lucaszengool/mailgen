@@ -875,6 +875,7 @@ class LangGraphMarketingAgent {
           const workflowState = this.wsManager.workflowStates.get(campaignId);
           workflowState.data.prospects = prospects;
           workflowState.data.totalProspects = prospects.length;
+          workflowState.data.campaignId = campaignId; // 🔥 CRITICAL: Store campaignId in data for lookup
           workflowState.data.lastUpdate = new Date().toISOString();
 
           console.log(`✅ VERIFICATION: Workflow ${campaignId} now has ${workflowState.data.prospects.length} prospects stored`);
@@ -1091,6 +1092,8 @@ class LangGraphMarketingAgent {
             if (!workflowState.data.prospects) {
               workflowState.data.prospects = [];
             }
+            // 🔥 CRITICAL: Ensure campaignId is stored in data for lookup
+            workflowState.data.campaignId = campaignId;
 
             // Add new batch prospects to the workflow state (avoid duplicates)
             const existingEmails = new Set(workflowState.data.prospects.map(p => p.email));

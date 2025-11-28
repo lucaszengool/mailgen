@@ -1186,7 +1186,8 @@ router.get('/email-detail/:emailId', async (req, res) => {
 
     console.log(`📧 [EMAIL-DETAIL] Fetching email ${emailId} for user ${userId}`);
 
-    const emailQuery = `
+    // 🔥 FIX: First try to find by exact user_id match
+    const emailQueryByUser = `
       SELECT
         e.id,
         e.to_email as recipientEmail,
@@ -1197,6 +1198,7 @@ router.get('/email-detail/:emailId', async (req, res) => {
         e.tracking_id as trackingId,
         e.message_id as messageId,
         e.body,
+        e.user_id as userId,
         (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
         (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
         (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replyCount
@@ -1204,14 +1206,51 @@ router.get('/email-detail/:emailId', async (req, res) => {
       WHERE e.id = ? AND e.user_id = ?
     `;
 
-    const email = await new Promise((resolve, reject) => {
-      db.db.get(emailQuery, [emailId, userId], (err, row) => {
+    let email = await new Promise((resolve, reject) => {
+      db.db.get(emailQueryByUser, [emailId, userId], (err, row) => {
         if (err) reject(err);
         else resolve(row);
       });
     });
 
+    // 🔥 FALLBACK: If not found by user_id, try searching by just id
+    // This handles cases where emails were saved with a different or anonymous user_id
     if (!email) {
+      console.log(`📧 [EMAIL-DETAIL] Not found for user ${userId}, trying fallback search...`);
+
+      const emailQueryFallback = `
+        SELECT
+          e.id,
+          e.to_email as recipientEmail,
+          e.subject,
+          e.campaign_id as campaignId,
+          e.sent_at as sentAt,
+          e.status,
+          e.tracking_id as trackingId,
+          e.message_id as messageId,
+          e.body,
+          e.user_id as userId,
+          (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
+          (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
+          (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replyCount
+        FROM email_logs e
+        WHERE e.id = ?
+      `;
+
+      email = await new Promise((resolve, reject) => {
+        db.db.get(emailQueryFallback, [emailId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (email) {
+        console.log(`📧 [EMAIL-DETAIL] Found email via fallback (saved user: ${email.userId})`);
+      }
+    }
+
+    if (!email) {
+      console.log(`📧 [EMAIL-DETAIL] Email ${emailId} not found in database`);
       return res.status(404).json({ success: false, error: 'Email not found' });
     }
 
@@ -1233,21 +1272,48 @@ router.get('/email-thread/:recipientEmail', async (req, res) => {
 
     console.log(`📧 [EMAIL-THREAD] Fetching thread for ${recipientEmail}, user ${userId}`);
 
-    // Get all sent emails to this recipient
-    const sentEmailsQuery = `
+    // 🔥 FIX: First try with user_id, then fallback to all emails for this recipient
+    let sentEmailsQuery = `
       SELECT
         id,
         to_email as recipientEmail,
         subject,
+        body,
         campaign_id as campaignId,
         sent_at as sentAt,
-        'sent' as type
+        tracking_id as trackingId,
+        'sent' as type,
+        (SELECT COUNT(*) > 0 FROM email_opens WHERE tracking_id = email_logs.tracking_id) as opened,
+        (SELECT COUNT(*) FROM email_opens WHERE tracking_id = email_logs.tracking_id) as openCount
       FROM email_logs
       WHERE to_email = ? AND user_id = ?
       ORDER BY sent_at DESC
     `;
 
-    const sentEmails = await queryDB(sentEmailsQuery, [recipientEmail, userId]);
+    let sentEmails = await queryDB(sentEmailsQuery, [recipientEmail, userId]);
+
+    // 🔥 FALLBACK: If no emails found for user, search without user_id filter
+    if (sentEmails.length === 0) {
+      console.log(`📧 [EMAIL-THREAD] No emails for user ${userId}, trying fallback...`);
+      sentEmailsQuery = `
+        SELECT
+          id,
+          to_email as recipientEmail,
+          subject,
+          body,
+          campaign_id as campaignId,
+          sent_at as sentAt,
+          tracking_id as trackingId,
+          'sent' as type,
+          (SELECT COUNT(*) > 0 FROM email_opens WHERE tracking_id = email_logs.tracking_id) as opened,
+          (SELECT COUNT(*) FROM email_opens WHERE tracking_id = email_logs.tracking_id) as openCount
+        FROM email_logs
+        WHERE to_email = ?
+        ORDER BY sent_at DESC
+      `;
+      sentEmails = await queryDB(sentEmailsQuery, [recipientEmail]);
+      console.log(`📧 [EMAIL-THREAD] Fallback found ${sentEmails.length} emails`);
+    }
 
     // Get all replies from this recipient
     const repliesQuery = `
@@ -1255,6 +1321,7 @@ router.get('/email-thread/:recipientEmail', async (req, res) => {
         id,
         recipient_email as recipientEmail,
         subject,
+        body,
         campaign_id as campaignId,
         replied_at as sentAt,
         'reply' as type
@@ -1265,9 +1332,9 @@ router.get('/email-thread/:recipientEmail', async (req, res) => {
 
     const replies = await queryDB(repliesQuery, [recipientEmail]);
 
-    // Combine and sort by date
+    // Combine and sort by date (oldest first for chronological thread view)
     const allEmails = [...sentEmails, ...replies].sort((a, b) =>
-      new Date(b.sentAt) - new Date(a.sentAt)
+      new Date(a.sentAt) - new Date(b.sentAt)
     );
 
     res.json({
