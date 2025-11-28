@@ -100,6 +100,46 @@ router.post('/search', optionalAuth, async (req, res) => {
 
         if (prospects.length > 0) {
           console.log(`⚡ Found ${prospects.length} prospects in ultra-fast mode`);
+
+          // 🔥 CRITICAL FIX: Save prospects to database even in ultra-fast mode
+          console.log(`💾 [Ultra-Fast] Saving ${prospects.length} prospects to database...`);
+          let savedCount = 0;
+          for (const prospect of prospects) {
+            try {
+              await db.saveContact({
+                email: prospect.email,
+                name: prospect.name || 'Unknown',
+                company: prospect.company || 'Unknown',
+                position: prospect.role || 'Contact',
+                industry: industry,
+                phone: '',
+                address: prospect.location || '',
+                source: 'ultra_fast_searxng',
+                tags: '',
+                notes: `Found via ultra-fast SearxNG on ${new Date().toLocaleString()}. Score: ${prospect.score}`
+              }, userId, campaignId || 'default');
+              savedCount++;
+            } catch (saveError) {
+              if (!saveError.message?.includes('UNIQUE constraint')) {
+                console.error(`⚠️ [Ultra-Fast] Failed to save prospect ${prospect.email}:`, saveError.message);
+              }
+            }
+          }
+          console.log(`✅ [Ultra-Fast] Saved ${savedCount}/${prospects.length} prospects to database`);
+
+          // 🔥 Also broadcast via WebSocket for real-time updates
+          const wsManager = req.app?.locals?.wsManager;
+          if (wsManager && campaignId) {
+            wsManager.broadcast({
+              type: 'prospect_list',
+              prospects: prospects,
+              campaignId: campaignId,
+              totalCount: prospects.length,
+              timestamp: new Date().toISOString()
+            });
+            console.log(`📡 [Ultra-Fast] Broadcast prospect_list with ${prospects.length} prospects`);
+          }
+
           return res.json({
             success: true,
             prospects,

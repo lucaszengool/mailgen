@@ -1187,7 +1187,7 @@ router.get('/email-detail/:emailId', async (req, res) => {
     console.log(`📧 [EMAIL-DETAIL] Fetching email ${emailId} for user ${userId}`);
 
     // 🔥 FIX: First try to find by exact user_id match
-    // NOTE: email_logs table doesn't have a 'body' column - body is stored separately in generated_emails
+    // NOTE: email_logs table doesn't have a 'body' column - body will be null
     const emailQueryByUser = `
       SELECT
         e.id,
@@ -1202,7 +1202,7 @@ router.get('/email-detail/:emailId', async (req, res) => {
         (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
         (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
         (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replyCount,
-        (SELECT g.body FROM generated_emails g WHERE g.recipient_email = e.to_email AND g.campaign_id = e.campaign_id LIMIT 1) as body
+        NULL as body
       FROM email_logs e
       WHERE e.id = ? AND e.user_id = ?
     `;
@@ -1233,7 +1233,7 @@ router.get('/email-detail/:emailId', async (req, res) => {
           (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
           (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
           (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replyCount,
-          (SELECT g.body FROM generated_emails g WHERE g.recipient_email = e.to_email AND g.campaign_id = e.campaign_id LIMIT 1) as body
+          NULL as body
         FROM email_logs e
         WHERE e.id = ?
       `;
@@ -1274,7 +1274,7 @@ router.get('/email-thread/:recipientEmail', async (req, res) => {
     console.log(`📧 [EMAIL-THREAD] Fetching thread for ${recipientEmail}, user ${userId}`);
 
     // 🔥 FIX: First try with user_id, then fallback to all emails for this recipient
-    // NOTE: email_logs doesn't have body column, get it from generated_emails
+    // NOTE: email_logs doesn't have body column - body will be null
     let sentEmailsQuery = `
       SELECT
         e.id,
@@ -1286,7 +1286,7 @@ router.get('/email-thread/:recipientEmail', async (req, res) => {
         'sent' as type,
         (SELECT COUNT(*) > 0 FROM email_opens WHERE tracking_id = e.tracking_id) as opened,
         (SELECT COUNT(*) FROM email_opens WHERE tracking_id = e.tracking_id) as openCount,
-        (SELECT g.body FROM generated_emails g WHERE g.recipient_email = e.to_email AND g.campaign_id = e.campaign_id LIMIT 1) as body
+        NULL as body
       FROM email_logs e
       WHERE e.to_email = ? AND e.user_id = ?
       ORDER BY e.sent_at DESC
@@ -1308,7 +1308,7 @@ router.get('/email-thread/:recipientEmail', async (req, res) => {
           'sent' as type,
           (SELECT COUNT(*) > 0 FROM email_opens WHERE tracking_id = e.tracking_id) as opened,
           (SELECT COUNT(*) FROM email_opens WHERE tracking_id = e.tracking_id) as openCount,
-          (SELECT g.body FROM generated_emails g WHERE g.recipient_email = e.to_email AND g.campaign_id = e.campaign_id LIMIT 1) as body
+          NULL as body
         FROM email_logs e
         WHERE e.to_email = ?
         ORDER BY e.sent_at DESC
@@ -1318,7 +1318,6 @@ router.get('/email-thread/:recipientEmail', async (req, res) => {
     }
 
     // Get all replies from this recipient
-    // NOTE: email_replies table may or may not have body column, handle gracefully
     const repliesQuery = `
       SELECT
         id,
