@@ -14,9 +14,6 @@ import re
 import requests
 import os
 import hashlib
-import socket
-import dns.resolver
-import smtplib
 from datetime import datetime
 from urllib.parse import quote, urlencode
 from bs4 import BeautifulSoup
@@ -30,24 +27,7 @@ class SuperEmailDiscoveryEngine:
         # SearxNG配置 - Railway兼容
         self.searxng_url = os.environ.get('SEARXNG_URL', 'http://localhost:8080')
 
-        # 🔥 SearxNG 双模式配置 - 优化速度
-        # FAST MODE: 初始prospect搜索 (极速)
-        self.fast_engines = ['google', 'bing', 'duckduckgo']  # 3个最快引擎
-        self.fast_timeout = 4.0  # 4秒快速超时
-
-        # COMPREHENSIVE MODE: 主batch搜索 (快速+准确)
-        self.full_engines = ['google', 'bing', 'duckduckgo', 'brave']  # 4个高质量引擎
-        self.full_timeout = 5.0  # 5秒超时 (减少延迟)
-
-        # 默认使用快速模式
-        self.searxng_engines = self.fast_engines
-        self.searxng_timeout = self.fast_timeout
-        self.searxng_max_results = 50
-
-        # 🔥 邮箱验证标志 (快速模式跳过SMTP验证以提速)
-        self.skip_smtp_verification = False
-
-        # 网络会话配置 - 优化并行请求
+        # 网络会话配置 - 无超时限制
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -65,9 +45,6 @@ class SuperEmailDiscoveryEngine:
         # 🔥 NEW: Email cache directory for deduplication across runs
         self.cache_dir = os.path.join(os.path.dirname(__file__), '.email_cache')
         os.makedirs(self.cache_dir, exist_ok=True)
-
-        # 🔥 NEW: Domain verification cache (to avoid re-checking same domains)
-        self.domain_verification_cache = {}  # domain -> (has_mx, mx_host, is_catch_all)
 
         # 搜索状态
         self.found_emails = []
@@ -152,289 +129,105 @@ class SuperEmailDiscoveryEngine:
         except Exception as e:
             self.logger.error(f"❌ 保存缓存失败: {e}")
     
-    def extract_industry_and_audience(self, query):
-        """智能提取行业和目标受众关键词"""
-        query_lower = query.lower()
-
-        # 行业分类关键词映射
-        industry_keywords = {
-            'technology': ['tech', 'software', 'saas', 'it', 'digital', 'cloud', 'ai', 'ml', 'data'],
-            'healthcare': ['health', 'medical', 'hospital', 'clinic', 'pharma', 'biotech', 'wellness'],
-            'finance': ['finance', 'bank', 'fintech', 'investment', 'insurance', 'accounting'],
-            'retail': ['retail', 'store', 'shop', 'merchant', 'ecommerce', 'commerce'],
-            'manufacturing': ['manufacturing', 'factory', 'industrial', 'production', 'supply'],
-            'food': ['food', 'beverage', 'restaurant', 'culinary', 'nutrition', 'catering'],
-            'education': ['education', 'school', 'university', 'training', 'learning', 'academy'],
-            'real_estate': ['real estate', 'property', 'housing', 'construction', 'building'],
-            'marketing': ['marketing', 'advertising', 'agency', 'branding', 'media'],
-            'logistics': ['logistics', 'shipping', 'freight', 'transport', 'delivery', 'warehouse']
-        }
-
-        # 目标受众关键词映射
-        audience_keywords = {
-            'buyer': ['buyer', 'purchasing', 'procurement', 'sourcing'],
-            'manager': ['manager', 'director', 'head', 'lead', 'supervisor'],
-            'executive': ['ceo', 'cto', 'cfo', 'executive', 'president', 'vp', 'chief'],
-            'owner': ['owner', 'founder', 'entrepreneur', 'principal'],
-            'coordinator': ['coordinator', 'specialist', 'analyst', 'associate'],
-            'farmer': ['farmer', 'agriculture', 'farm', 'grower', 'producer'],
-            'retailer': ['retailer', 'merchant', 'vendor', 'dealer'],
-            'distributor': ['distributor', 'wholesaler', 'supplier'],
-            'developer': ['developer', 'engineer', 'programmer', 'architect'],
-            'designer': ['designer', 'creative', 'artist', 'ux', 'ui']
-        }
-
-        # 检测行业
-        detected_industries = []
-        for industry, keywords in industry_keywords.items():
-            if any(kw in query_lower for kw in keywords):
-                detected_industries.append(industry)
-
-        # 检测目标受众
-        detected_audiences = []
-        for audience, keywords in audience_keywords.items():
-            if any(kw in query_lower for kw in keywords):
-                detected_audiences.append(audience)
-
-        return detected_industries, detected_audiences, query
-
     def generate_professional_search_strategies(self, industry, round_num=1):
-        """
-        生成专业平台优先的智能搜索策略
-        重点: LinkedIn, 公司网站, 专业目录
-        """
+        """生成基于2024年最佳实践的专业搜索策略"""
         self.logger.info(f"🧠 生成第{round_num}轮专业搜索策略 - {industry}")
-
-        # 🔥 智能提取行业和受众
-        industries, audiences, original_query = self.extract_industry_and_audience(industry)
-
-        self.logger.info(f"   🎯 检测到的行业: {industries if industries else '通用'}")
-        self.logger.info(f"   👥 检测到的受众: {audiences if audiences else '通用'}")
-
-        # 决策者职位关键词 (优先级排序)
-        decision_maker_titles = {
-            'c_level': ['CEO', 'CTO', 'CFO', 'CMO', 'COO', 'Chief', 'President', 'Founder'],
-            'vp_director': ['VP', 'Vice President', 'Director', 'Head of', 'EVP', 'SVP'],
-            'senior_manager': ['Senior Manager', 'Senior', 'Lead', 'Principal', 'Manager']
-        }
-
-        # 专业平台优先的搜索策略
+        
+        # 基于研究的最有效搜索策略
         base_strategies = []
-
-        # 如果有明确的行业+受众组合，生成高度针对性搜索
-        if industries and audiences:
-            industry_key = industries[0]
-            audience_key = audiences[0]
-
-            if round_num == 1:
-                # 第一轮：LinkedIn + C-Level 决策者
-                base_strategies = [
-                    f'site:linkedin.com/in {industry_key} CEO email',
-                    f'site:linkedin.com/in {industry_key} CTO contact',
-                    f'site:linkedin.com/in {audience_key} {industry_key} Founder',
-                    f'{industry_key} "Chief" {audience_key} email "@" -job -apply',
-                    f'"{industry_key}" "President" email contact -jobs -career'
-                ]
-            elif round_num == 2:
-                # 第二轮：LinkedIn + VP/Director 级别
-                base_strategies = [
-                    f'site:linkedin.com/in "{industry_key}" "VP" email',
-                    f'site:linkedin.com/in "{industry_key}" "Director" contact',
-                    f'{industry_key} {audience_key} "Head of" email -job',
-                    f'"{audience_key}" {industry_key} "Senior" email "@"',
-                    f'{industry_key} "EVP" {audience_key} contact email'
-                ]
-            elif round_num == 3:
-                # 第三轮：公司网站 + About/Team 页面
-                base_strategies = [
-                    f'{industry_key} site:*/about email {audience_key}',
-                    f'{industry_key} site:*/team contact email',
-                    f'{industry_key} site:*/leadership email',
-                    f'"{industry_key}" site:*/contact {audience_key} email',
-                    f'{industry_key} "our team" email {audience_key}'
-                ]
-            else:
-                # 第四轮+：专业目录和行业网站
-                base_strategies = [
-                    f'{industry_key} {audience_key} email "@*.com" -job -career',
-                    f'"{industry_key}" professional email directory',
-                    f'{audience_key} {industry_key} contact database',
-                    f'{industry_key} business email {audience_key}',
-                    f'"{industry_key}" executive contact list'
-                ]
-
-        # 只有行业，没有明确受众
-        elif industries:
-            industry_key = industries[0]
-
-            if round_num == 1:
-                # LinkedIn C-Level for this industry
-                base_strategies = [
-                    f'site:linkedin.com/in {industry_key} CEO email',
-                    f'site:linkedin.com/in {industry_key} Founder contact',
-                    f'{industry_key} "Chief Executive" email "@" -job',
-                    f'"{industry_key}" CTO email contact',
-                    f'{industry_key} President email -jobs'
-                ]
-            elif round_num == 2:
-                # LinkedIn VP/Director level
-                base_strategies = [
-                    f'site:linkedin.com/in {industry_key} "VP" email',
-                    f'site:linkedin.com/in {industry_key} Director',
-                    f'{industry_key} "Head of" email contact',
-                    f'"{industry_key}" SVP email',
-                    f'{industry_key} "Vice President" contact'
-                ]
-            elif round_num == 3:
-                # Company websites + leadership pages
-                base_strategies = [
-                    f'{industry_key} site:*/about leadership email',
-                    f'{industry_key} site:*/team management contact',
-                    f'"{industry_key}" site:*/executives email',
-                    f'{industry_key} company "management team" email',
-                    f'{industry_key} "leadership" contact email'
-                ]
-            else:
-                # Professional directories and databases
-                base_strategies = [
-                    f'{industry_key} executive directory email',
-                    f'"{industry_key}" professional contact database',
-                    f'{industry_key} business leader email',
-                    f'{industry_key} senior management contact',
-                    f'"{industry_key}" decision maker email'
-                ]
-
-        # 只有受众，没有明确行业
-        elif audiences:
-            audience_key = audiences[0]
-
-            if round_num == 1:
-                base_strategies = [
-                    f'{audience_key} business email',
-                    f'{audience_key} company contact',
-                    f'{audience_key} corporate email',
-                    f'{audience_key} enterprise contact',
-                    f'{audience_key} professional email'
-                ]
-            elif round_num == 2:
-                base_strategies = [
-                    f'{audience_key} startup email',
-                    f'{audience_key} SMB contact',
-                    f'{audience_key} small business email',
-                    f'{audience_key} mid-market contact',
-                    f'{audience_key} organization email'
-                ]
-            else:
-                base_strategies = [
-                    f'{audience_key} consultant email',
-                    f'{audience_key} advisor contact',
-                    f'{audience_key} specialist email',
-                    f'{audience_key} expert contact',
-                    f'{audience_key} services email'
-                ]
-
-        # 通用搜索（没有检测到行业或受众）
+        
+        if round_num == 1:
+            # 第一轮：简短高效搜索模式
+            base_strategies = [
+                f'{industry} email contact',
+                f'{industry} CEO email',
+                f'{industry} founder contact',
+                f'{industry} business email',
+                f'{industry} company contact'
+            ]
+        elif round_num == 2:
+            # 第二轮：简短变体搜索
+            base_strategies = [
+                f'{industry} team email',
+                f'{industry} sales contact',
+                f'{industry} support email',
+                f'{industry} info contact',
+                f'{industry} director email'
+            ]
+        elif round_num == 3:
+            # 第三轮：职位相关搜索
+            base_strategies = [
+                f'{industry} manager email',
+                f'{industry} consultant contact',
+                f'{industry} specialist email',
+                f'{industry} expert contact',
+                f'{industry} advisor email'
+            ]
+        elif round_num == 4:
+            # 第四轮：创业与企业搜索
+            base_strategies = [
+                f'{industry} startup email',
+                f'{industry} entrepreneur contact',
+                f'{industry} business owner email',
+                f'{industry} partner contact',
+                f'{industry} investor email'
+            ]
+        elif round_num == 5:
+            # 第五轮：部门与职能搜索
+            base_strategies = [
+                f'{industry} marketing email',
+                f'{industry} operations contact',
+                f'{industry} product manager email',
+                f'{industry} customer success contact',
+                f'{industry} growth email'
+            ]
+        elif round_num % 3 == 0:
+            # 每3轮：地域与市场搜索
+            base_strategies = [
+                f'{industry} North America email',
+                f'{industry} Europe contact',
+                f'{industry} Asia Pacific email',
+                f'{industry} global contact',
+                f'{industry} international email'
+            ]
+        elif round_num % 3 == 1:
+            # 每3轮+1：技术与专业搜索
+            base_strategies = [
+                f'{industry} CTO email',
+                f'{industry} developer contact',
+                f'{industry} engineer email',
+                f'{industry} architect contact',
+                f'{industry} technical lead email'
+            ]
         else:
-            if round_num == 1:
-                base_strategies = [
-                    f'{industry} email contact',
-                    f'{industry} CEO email',
-                    f'{industry} founder contact',
-                    f'{industry} business email',
-                    f'{industry} company contact'
-                ]
-            elif round_num == 2:
-                base_strategies = [
-                    f'{industry} team email',
-                    f'{industry} sales contact',
-                    f'{industry} support email',
-                    f'{industry} info contact',
-                    f'{industry} director email'
-                ]
-            elif round_num == 3:
-                base_strategies = [
-                    f'{industry} manager email',
-                    f'{industry} consultant contact',
-                    f'{industry} specialist email',
-                    f'{industry} expert contact',
-                    f'{industry} advisor email'
-                ]
-            elif round_num == 4:
-                base_strategies = [
-                    f'{industry} startup email',
-                    f'{industry} entrepreneur contact',
-                    f'{industry} business owner email',
-                    f'{industry} partner contact',
-                    f'{industry} investor email'
-                ]
-            elif round_num == 5:
-                base_strategies = [
-                    f'{industry} marketing email',
-                    f'{industry} operations contact',
-                    f'{industry} product manager email',
-                    f'{industry} customer success contact',
-                    f'{industry} growth email'
-                ]
-            elif round_num % 3 == 0:
-                base_strategies = [
-                    f'{industry} North America email',
-                    f'{industry} Europe contact',
-                    f'{industry} Asia Pacific email',
-                    f'{industry} global contact',
-                    f'{industry} international email'
-                ]
-            elif round_num % 3 == 1:
-                base_strategies = [
-                    f'{industry} CTO email',
-                    f'{industry} developer contact',
-                    f'{industry} engineer email',
-                    f'{industry} architect contact',
-                    f'{industry} technical lead email'
-                ]
-            else:
-                base_strategies = [
-                    f'{industry} company email',
-                    f'{industry} business contact',
-                    f'{industry} executive email',
-                    f'{industry} leadership contact',
-                    f'{industry} decision maker email'
-                ]
+            # 其他轮次：混合搜索
+            base_strategies = [
+                f'{industry} company email',
+                f'{industry} business contact',
+                f'{industry} executive email',
+                f'{industry} leadership contact',
+                f'{industry} decision maker email'
+            ]
         
         self.logger.info(f"   ✅ 生成{len(base_strategies)}个专业级搜索策略")
         return base_strategies
     
     def search_with_advanced_logging(self, query, max_results=50):
-        """
-        🔥 高级SearxNG搜索 - 多引擎并行 + 增强配置
-        基于SearxNG最佳实践:
-        - 多引擎并行搜索 (Google, Bing, DuckDuckGo等)
-        - 更长超时时间获取更全面结果
-        - 更大结果集提高发现率
-        """
+        """高级SearxNG搜索 - 无超时限制，尽可能多地获取结果"""
         try:
             self.logger.info(f"🔍 深度专业搜索: {query[:80]}...")
             self.search_stats['total_queries'] += 1
-
-            # 🔥 指定多个引擎并行搜索，提高结果质量和数量
-            engines_param = ','.join(self.searxng_engines)
-
+            
             params = {
                 'q': query,
                 'format': 'json',
                 'categories': 'general',
-                'engines': engines_param,  # 多引擎并行
-                'pageno': 1,
-                'time_range': '',  # 不限时间范围
-                'language': 'en',  # 英文结果
+                'pageno': 1
             }
-
+            
             start_time = time.time()
-            # 使用配置的超时时间（10秒）获取更全面的结果
-            response = self.session.get(
-                f"{self.searxng_url}/search",
-                params=params,
-                timeout=self.searxng_timeout
-            )
+            # 移除超时限制 - 让搜索有足够时间完成
+            response = self.session.get(f"{self.searxng_url}/search", params=params)
             duration = time.time() - start_time
             
             if response.status_code == 200:
@@ -626,86 +419,37 @@ class SuperEmailDiscoveryEngine:
                 'noreply', 'no-reply', 'donotreply', 'bounce', 'mailer-daemon',
                 'privacy@', 'legal@', 'abuse@', 'postmaster@', 'webmaster@',
                 'support@example', 'admin@example', 'info@example', 'sales@example',
-                'sample@', 'demo@', 'fake@', 'null@', 'void@', 'placeholder@',
-                'youremail@', 'your-email@', 'email@', 'mailto:',
+                'sample@', 'demo@', 'fake@', 'null@', 'void@'
             ]
 
             if any(pattern in email_lower for pattern in exclusions):
                 excluded_count += 1
                 continue
 
-            # 🔥 NEW: Check for suspicious patterns (phone numbers in email addresses)
-            # Pattern: xxx-xxx-xxxx or similar (indicates likely invalid email)
-            if re.search(r'\d{3}[-.]?\d{3}[-.]?\d{4}', email):
-                self.logger.debug(f"   🚫 可疑电话号码模式: {email}")
-                excluded_count += 1
-                continue
+            # 验证邮箱格式
+            if self.validate_email_format(email):
+                # 提取邮箱周围的上下文（姓名、职位、部门）
+                context = self.extract_context_around_email(html_content, email) if html_content else {}
 
-            # 🔥 NEW: Check local part length (too long = suspicious)
-            local_part = email.split('@')[0]
-            if len(local_part) > 40:  # Abnormally long local part
-                self.logger.debug(f"   🚫 本地部分过长: {email}")
-                excluded_count += 1
-                continue
+                valid_emails.append({
+                    'email': email,
+                    'is_personal': self.is_personal_email(email),
+                    'name': context.get('name'),
+                    'title': context.get('title'),
+                    'department': context.get('department')
+                })
 
-            # 步骤1：验证邮箱格式
-            if not self.validate_email_format(email):
-                excluded_count += 1
-                continue
+                domain = email.split('@')[1]
+                self.search_stats['unique_domains'].add(domain)
 
-            # 🔥 NEW 步骤2：过滤通用/部门邮箱，只保留专业决策者邮箱
-            is_prof, prof_reason = self.is_professional_email(email)
-            if not is_prof:
-                self.logger.info(f"   ⛔ 过滤非专业邮箱: {email} (原因: {prof_reason})")
-                excluded_count += 1
-                continue
-
-            # 步骤3：综合验证邮箱可投递性（DNS MX + SMTP）
-            # ⚡ 快速模式跳过SMTP验证
-            if self.skip_smtp_verification:
-                # 快速模式：只做基本格式验证，跳过耗时的SMTP验证
-                verification_info = {'status': 'skipped', 'reason': 'fast_mode'}
-                is_deliverable = True
-            else:
-                # 完整模式：DNS MX + SMTP验证
-                is_deliverable, verification_info = self.verify_email_deliverability(email)
-                if not is_deliverable:
-                    self.logger.warning(f"   ❌ 邮箱验证失败: {email} - {verification_info.get('reason')}")
-                    excluded_count += 1
-                    continue
-
-            # 提取邮箱周围的上下文（姓名、职位、部门）
-            context = self.extract_context_around_email(html_content, email) if html_content else {}
-
-            # 计算置信度（基于验证状态）
-            base_confidence = 0.9 if self.is_personal_email(email) else 0.7
-            if verification_info.get('status') == 'catch_all':
-                base_confidence += verification_info.get('confidence_penalty', -0.2)
-            elif verification_info.get('status') == 'unverifiable':
-                base_confidence -= 0.1
-
-            valid_emails.append({
-                'email': email,
-                'is_personal': self.is_personal_email(email),
-                'name': context.get('name'),
-                'title': context.get('title'),
-                'department': context.get('department'),
-                'verification': verification_info,
-                'confidence': base_confidence
-            })
-
-            domain = email.split('@')[1]
-            self.search_stats['unique_domains'].add(domain)
-
-            email_type = "个人" if self.is_personal_email(email) else "通用"
-            verification_status = verification_info.get('status', 'unknown')
-            self.logger.info(f"   ✅ 发现{email_type}邮箱: {email} [验证: {verification_status}] (来源: {source[:30]})")
-            if context.get('name'):
-                self.logger.info(f"      👤 姓名: {context['name']}")
-            if context.get('title'):
-                self.logger.info(f"      💼 职位: {context['title']}")
-            if context.get('department'):
-                self.logger.info(f"      🏢 部门: {context['department']}")
+                email_type = "个人" if self.is_personal_email(email) else "通用"
+                self.logger.info(f"   ✅ 发现{email_type}邮箱: {email} (来源: {source[:30]})")
+                if context.get('name'):
+                    self.logger.info(f"      👤 姓名: {context['name']}")
+                if context.get('title'):
+                    self.logger.info(f"      💼 职位: {context['title']}")
+                if context.get('department'):
+                    self.logger.info(f"      🏢 部门: {context['department']}")
 
         if excluded_count > 0:
             self.logger.debug(f"   🗑️ 排除了{excluded_count}个示例/无效邮箱")
@@ -728,216 +472,23 @@ class SuperEmailDiscoveryEngine:
         """验证邮箱格式"""
         if not (5 < len(email) < 100 and email.count('@') == 1):
             return False
-
+        
         local, domain = email.split('@')
-
+        
         # 检查本地部分
         if not local or len(local) > 64:
             return False
-
+        
         # 检查域名部分
         if not domain or '.' not in domain or len(domain) < 4:
             return False
-
+        
         # 检查顶级域名
         tld = domain.split('.')[-1]
         if len(tld) < 2 or not tld.isalpha():
             return False
-
+        
         return True
-
-    def is_professional_email(self, email):
-        """
-        Check if email is from a professional/decision-maker, not generic department email
-        Returns: (is_professional, reason)
-        """
-        email_lower = email.lower()
-        local_part = email_lower.split('@')[0]
-
-        # Generic/department email patterns to REJECT
-        generic_patterns = [
-            'info', 'support', 'help', 'contact', 'admin', 'webmaster',
-            'sales', 'marketing', 'hr', 'media', 'press', 'news',
-            'customer', 'service', 'hello', 'team', 'general',
-            'inquiry', 'enquiry', 'reception', 'office',
-            'noreply', 'no-reply', 'donotreply',
-            'abuse', 'postmaster', 'hostmaster',
-            'careers', 'jobs', 'recruiting',
-            'billing', 'accounts', 'finance',
-            'legal', 'compliance', 'privacy',
-            'customersupport', 'techsupport', 'itsupport'
-        ]
-
-        # Check if local part is exactly a generic pattern
-        if local_part in generic_patterns:
-            return False, f"generic_exact:{local_part}"
-
-        # Check if local part starts with generic pattern
-        for pattern in generic_patterns:
-            if local_part.startswith(pattern + '.') or local_part.startswith(pattern + '-') or local_part.startswith(pattern + '_'):
-                return False, f"generic_prefix:{pattern}"
-
-        # Academic/EDU emails - be more selective
-        domain = email_lower.split('@')[1]
-        if domain.endswith('.edu') or domain.endswith('.ac.uk'):
-            # Allow individual names like firstname.lastname@, but reject department emails
-            if any(gen in local_part for gen in ['president', 'admin', 'it', 'help', 'media', 'office']):
-                return False, "edu_department"
-            # Require at least a dot or number (indicating personal email)
-            if '.' not in local_part and not any(c.isdigit() for c in local_part):
-                return False, "edu_no_personal_indicator"
-
-        # Government emails - usually not B2B targets
-        if domain.endswith('.gov'):
-            return False, "government_email"
-
-        # Must have personal indicators (firstname.lastname pattern is ideal)
-        has_dot = '.' in local_part
-        has_underscore = '_' in local_part
-        has_number = any(c.isdigit() for c in local_part)
-
-        # Ideal: firstname.lastname format
-        if has_dot and len(local_part.split('.')) >= 2:
-            parts = local_part.split('.')
-            if all(len(p) >= 2 for p in parts):  # Each part at least 2 chars
-                return True, "firstname_lastname_format"
-
-        # Good: has personal indicators
-        if has_dot or has_underscore or has_number:
-            return True, "has_personal_indicator"
-
-        # Acceptable: single word but at least 4 chars (could be name)
-        if len(local_part) >= 4 and local_part.isalpha():
-            return True, "single_name_acceptable"
-
-        # Reject: too short or suspicious
-        return False, "no_personal_indicator"
-
-    def verify_mx_records(self, domain):
-        """验证域名是否有有效的MX记录"""
-        try:
-            mx_records = dns.resolver.resolve(domain, 'MX')
-            mx_hosts = [str(r.exchange).rstrip('.') for r in mx_records]
-            if mx_hosts:
-                self.logger.debug(f"   ✅ MX记录存在: {domain} -> {mx_hosts[0]}")
-                return True, mx_hosts[0]
-            return False, None
-        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.NoNameservers):
-            self.logger.warning(f"   ❌ 无MX记录: {domain}")
-            return False, None
-        except Exception as e:
-            self.logger.debug(f"   ⚠️ MX查询失败: {domain} - {str(e)}")
-            return False, None
-
-    def verify_email_smtp(self, email, mx_host):
-        """使用SMTP验证邮箱是否存在（无需发送邮件）"""
-        try:
-            # 设置超时
-            smtp = smtplib.SMTP(timeout=15)
-            smtp.set_debuglevel(0)  # 禁用调试输出
-            smtp.connect(mx_host, 25)
-
-            # 使用更可信的HELO域名
-            smtp.helo(socket.getfqdn())
-
-            # 使用更可信的发件人地址
-            smtp.mail('postmaster@' + socket.getfqdn())
-
-            code, message = smtp.rcpt(email)
-            smtp.quit()
-
-            # SMTP响应码：
-            # 250 = 邮箱存在
-            # 550 = 邮箱不存在（明确拒绝）
-            # 551 = 用户不在此服务器
-            # 553 = 邮箱名称不允许
-            # 450/451/452 = 暂时无法验证
-            if code == 250:
-                self.logger.debug(f"   ✅ SMTP验证通过: {email}")
-                return True, "valid"
-            elif code in [450, 451, 452]:
-                self.logger.debug(f"   ⚠️ SMTP暂时无法验证: {email} (code: {code})")
-                return True, "unverifiable"
-            elif code in [550, 551, 553]:
-                self.logger.warning(f"   ❌ SMTP明确拒绝: {email} (code: {code})")
-                return False, "invalid"
-            else:
-                self.logger.debug(f"   ⚠️ SMTP未知响应: {email} (code: {code})")
-                return True, "unverifiable"
-        except smtplib.SMTPServerDisconnected:
-            self.logger.debug(f"   ⚠️ SMTP服务器断开: {email}")
-            return True, "unverifiable"
-        except smtplib.SMTPConnectError as e:
-            self.logger.debug(f"   ⚠️ SMTP连接失败: {email} - {str(e)}")
-            return True, "unverifiable"
-        except socket.timeout:
-            self.logger.debug(f"   ⚠️ SMTP超时: {email}")
-            return True, "unverifiable"
-        except Exception as e:
-            self.logger.debug(f"   ⚠️ SMTP验证异常: {email} - {str(e)}")
-            return True, "unverifiable"
-
-    def is_catch_all_domain(self, domain, mx_host):
-        """检测域名是否为catch-all（接受所有邮箱地址）"""
-        try:
-            # 测试一个肯定不存在的随机邮箱
-            random_email = f"nonexistent{int(time.time())}@{domain}"
-            smtp = smtplib.SMTP(timeout=10)
-            smtp.connect(mx_host)
-            smtp.helo('verification-bot.com')
-            smtp.mail('verify@verification-bot.com')
-            code, message = smtp.rcpt(random_email)
-            smtp.quit()
-
-            if code == 250:
-                self.logger.info(f"   🔍 检测到catch-all域名: {domain}")
-                return True
-            return False
-        except Exception as e:
-            self.logger.debug(f"   ⚠️ Catch-all检测失败: {domain} - {str(e)}")
-            return False  # 无法确定时，保守处理
-
-    def verify_email_deliverability(self, email):
-        """综合验证邮箱可投递性：格式+DNS MX+SMTP（带缓存优化）"""
-        # 步骤1：基本格式验证
-        if not self.validate_email_format(email):
-            self.logger.debug(f"   ❌ 格式无效: {email}")
-            return False, {"reason": "invalid_format"}
-
-        domain = email.split('@')[1]
-
-        # 步骤2：检查域名缓存
-        if domain in self.domain_verification_cache:
-            cache = self.domain_verification_cache[domain]
-            has_mx, mx_host, is_catch_all = cache
-            self.logger.debug(f"   📦 使用缓存: {domain} (MX: {has_mx}, Catch-all: {is_catch_all})")
-        else:
-            # DNS MX记录验证
-            has_mx, mx_host = self.verify_mx_records(domain)
-            if not has_mx:
-                self.logger.debug(f"   ❌ 无MX记录: {email}")
-                self.domain_verification_cache[domain] = (False, None, False)
-                return False, {"reason": "no_mx_record", "domain": domain}
-
-            # 检测catch-all域名
-            is_catch_all = self.is_catch_all_domain(domain, mx_host)
-
-            # 缓存域名验证结果
-            self.domain_verification_cache[domain] = (has_mx, mx_host, is_catch_all)
-
-        # 步骤3：SMTP验证（如果不是catch-all）
-        if not is_catch_all:
-            is_valid, status = self.verify_email_smtp(email, mx_host)
-            if not is_valid:
-                self.logger.debug(f"   ❌ SMTP验证失败: {email}")
-                return False, {"reason": "smtp_rejected", "status": status}
-
-            self.logger.info(f"   ✅ 邮箱验证通过: {email} (status: {status})")
-            return True, {"status": status, "mx_host": mx_host}
-        else:
-            # Catch-all域名：接受但标记低置信度
-            self.logger.info(f"   ⚠️ Catch-all域名: {email} (低置信度)")
-            return True, {"status": "catch_all", "mx_host": mx_host, "confidence_penalty": -0.2}
     
     def scrape_website_advanced(self, url):
         """高级网站爬取 - 专注联系信息，无时间限制 + 上下文提取"""
@@ -998,12 +549,12 @@ class SuperEmailDiscoveryEngine:
             return []
     
     def execute_persistent_discovery(self, industry, target_count=5, max_rounds=None, session_id=None):
-        """执行快速持续搜索 - 平衡速度与准确性"""
-        # 🔥 OPTIMIZED: Reduced max_rounds for faster results
-        # Each round finds ~3-10 emails on average
-        # Cap at 30 rounds max to prevent stuck searches
+        """执行无限制持续搜索 - 越多越准确"""
+        # 🔥 FIX: Scale max_rounds based on target_count
+        # Each round finds ~5-15 new emails on average (after filtering cached)
+        # Use at least 100 rounds, scale up for larger requests, cap at 500 for safety
         if max_rounds is None:
-            max_rounds = min(30, max(10, target_count // 3))  # 快速搜索，最多30轮
+            max_rounds = min(500, max(100, target_count // 5))  # ~5 emails per round, max 500 rounds
 
         self.logger.info(f"🚀 启动无限制超级邮箱搜索 - {industry}")
         self.logger.info(f"   🎯 目标: {target_count}个NEW邮箱 (跳过已返回)")
@@ -1097,29 +648,24 @@ class SuperEmailDiscoveryEngine:
                             site = future_to_result[future]
                             website_emails = future.result()
 
-                            for email_data in website_emails:
+                            for email in website_emails:
                                 total_emails_found += 1  # 🔥 FIX: Count all emails found
-                                email_addr = email_data['email']
                                 # 🔥 NEW: Skip already-returned emails
-                                if email_addr in self.already_returned_emails:
+                                if email in self.already_returned_emails:
                                     total_cached_skipped += 1  # 🔥 FIX: Track skipped
                                     continue
-                                if not any(e['email'] == email_addr for e in round_emails):
+                                if not any(e['email'] == email for e in round_emails):
                                     round_emails.append({
-                                        'email': email_addr,
-                                        'name': email_data.get('name'),
-                                        'title': email_data.get('title'),
-                                        'department': email_data.get('department'),
-                                        'is_personal': email_data.get('is_personal', False),
+                                        'email': email,
                                         'source': 'website_scraping',
                                         'source_url': site['url'],
                                         'source_title': site.get('title', ''),
-                                        'confidence': 0.95 if email_data.get('is_personal') else 0.8,
+                                        'confidence': 0.95,
                                         'round': round_num,
                                         'strategy': strategy,
                                         'discovery_method': 'deep_scraping'
                                     })
-                        except Exception as ex:
+                        except Exception as e:
                             continue
                 
                 # 检查进度，但不立即停止 - 让它继续搜索更多
@@ -1140,25 +686,24 @@ class SuperEmailDiscoveryEngine:
             if total_cached_skipped > 0:
                 self.logger.info(f"   🔄 已跳过 {total_cached_skipped} 个重复/缓存邮箱 (总发现{total_emails_found}个)")
             
-            # 检查是否需要调整策略 - 快速失败
+            # 检查是否需要调整策略，但不轻易放弃
             if len(round_emails) == 0:
                 consecutive_empty_rounds += 1
-                self.logger.warning(f"⚠️ 连续{consecutive_empty_rounds}轮无结果")
-
-                if consecutive_empty_rounds >= 3:  # 快速放弃
-                    self.logger.info("🛑 连续3轮无结果，停止搜索")
-                    break
+                self.logger.warning(f"⚠️ 连续{consecutive_empty_rounds}轮无结果 - 继续尝试")
+                
+                if consecutive_empty_rounds >= 5:  # 增加容忍度
+                    self.logger.info("🔄 切换到更广泛的搜索策略...")
             else:
                 consecutive_empty_rounds = 0
-
-            # 达到目标立即退出
-            if len(all_emails) >= target_count:
-                self.logger.info(f"🎯 已收集足够邮箱 ({len(all_emails)}/{target_count})，结束搜索")
+            
+            # 即使达到目标也不立即退出 - 继续搜索获得更多邮箱
+            if len(all_emails) >= target_count and round_num >= 5:
+                self.logger.info(f"🎯 已收集足够邮箱并进行了充分搜索，准备结束")
                 break
-
+            
             round_num += 1
             if round_num <= max_rounds:
-                time.sleep(0.5)  # 极短延迟
+                time.sleep(1)  # 减少轮次间隔
         
         # 整理最终结果
         final_emails = all_emails[:target_count]
@@ -1221,21 +766,6 @@ def main():
     session_id = sys.argv[3] if len(sys.argv) > 3 else None  # 🔥 FIX: Accept session_id
 
     engine = SuperEmailDiscoveryEngine()
-
-    # 🔥 智能模式选择: 总是跳过SMTP验证以提速
-    if target_count <= 10:
-        print(f"⚡ 使用快速模式: {len(engine.fast_engines)}个引擎, {engine.fast_timeout}秒超时")
-        engine.searxng_engines = engine.fast_engines
-        engine.searxng_timeout = engine.fast_timeout
-    else:
-        print(f"🔥 使用批量模式: {len(engine.full_engines)}个引擎, {engine.full_timeout}秒超时")
-        engine.searxng_engines = engine.full_engines
-        engine.searxng_timeout = engine.full_timeout
-
-    # ⚡ 总是跳过SMTP验证 - 这是最慢的部分，DNS MX验证已足够
-    engine.skip_smtp_verification = True
-    print(f"⚡ 跳过SMTP验证以极速提升 (仅使用DNS MX验证)")
-
     # 🔥 FIX: Let max_rounds be calculated dynamically based on target_count
     results = engine.execute_persistent_discovery(industry, target_count, session_id=session_id)
     
