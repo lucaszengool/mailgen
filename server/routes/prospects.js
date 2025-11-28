@@ -39,64 +39,98 @@ router.post('/search', optionalAuth, async (req, res) => {
         const axios = require('axios');
         const searxngUrl = process.env.SEARXNG_URL || 'http://localhost:8080';
 
-        // Simple direct query to SearxNG
-        const searchQuery = `${industry} CEO email contact`;
-        const response = await axios.get(`${searxngUrl}/search`, {
-          params: {
-            q: searchQuery,
-            format: 'json',
-            engines: 'google,bing',  // Only 2 fastest engines
-            categories: 'general',
-            language: 'en'
-          },
-          timeout: 5000  // 5 second max
-        });
+        // 🔥 IMPROVED: Try multiple search queries to find more emails
+        const searchQueries = [
+          `${industry} CEO email contact`,
+          `${industry} founder email address`,
+          `${industry} company director email`,
+          `${industry} executive team contact`,
+          `${industry} business owner email`,
+          `${industry} manager email linkedin`
+        ];
 
-        const results = response.data.results || [];
-        console.log(`⚡ Got ${results.length} raw results from SearxNG`);
-
-        // Extract emails from results (no verification, just pattern matching)
         const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
         const foundEmails = new Set();
         const prospects = [];
 
-        for (const result of results.slice(0, 20)) {
-          const text = `${result.title} ${result.content} ${result.url}`;
-          const emails = text.match(emailRegex);
-
-          if (emails) {
-            for (const email of emails) {
-              const emailLower = email.toLowerCase();
-
-              // Skip generic emails
-              if (emailLower.includes('example') ||
-                  emailLower.includes('noreply') ||
-                  emailLower.startsWith('info@') ||
-                  emailLower.startsWith('support@')) {
-                continue;
-              }
-
-              if (!foundEmails.has(emailLower) && prospects.length < limit) {
-                foundEmails.add(emailLower);
-
-                const domain = emailLower.split('@')[1];
-                prospects.push({
-                  name: result.title.split('-')[0].trim() || 'Professional',
-                  email: emailLower,
-                  company: domain.split('.')[0],
-                  role: 'Contact',
-                  location: 'United States',
-                  score: 75,
-                  source: 'searxng_direct',
-                  sourceUrl: result.url,
-                  verified: false
-                });
-              }
-            }
-          }
-
+        // Try each search query until we have enough prospects
+        for (const searchQuery of searchQueries) {
           if (prospects.length >= limit) break;
+
+          console.log(`⚡ Trying search query: "${searchQuery}"`);
+
+          try {
+            const response = await axios.get(`${searxngUrl}/search`, {
+              params: {
+                q: searchQuery,
+                format: 'json',
+                engines: 'google,bing,duckduckgo',  // More engines for better results
+                categories: 'general',
+                language: 'en'
+              },
+              timeout: 8000  // 8 second timeout per query
+            });
+
+            const results = response.data.results || [];
+            console.log(`⚡ Got ${results.length} raw results from SearxNG for query: "${searchQuery}"`);
+
+            for (const result of results.slice(0, 30)) {
+              const text = `${result.title} ${result.content} ${result.url}`;
+              const emails = text.match(emailRegex);
+
+              if (emails) {
+                for (const email of emails) {
+                  const emailLower = email.toLowerCase();
+
+                  // Skip generic emails
+                  if (emailLower.includes('example') ||
+                      emailLower.includes('noreply') ||
+                      emailLower.includes('test@') ||
+                      emailLower.includes('demo@') ||
+                      emailLower.startsWith('info@') ||
+                      emailLower.startsWith('support@') ||
+                      emailLower.startsWith('contact@') ||
+                      emailLower.startsWith('sales@') ||
+                      emailLower.startsWith('admin@') ||
+                      emailLower.startsWith('hello@') ||
+                      emailLower.includes('@example.') ||
+                      emailLower.includes('@test.')) {
+                    continue;
+                  }
+
+                  if (!foundEmails.has(emailLower) && prospects.length < limit) {
+                    foundEmails.add(emailLower);
+
+                    const domain = emailLower.split('@')[1];
+                    const namePart = result.title.split('-')[0].split('|')[0].trim();
+                    prospects.push({
+                      name: namePart.length > 3 && namePart.length < 50 ? namePart : 'Professional',
+                      email: emailLower,
+                      company: domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1),
+                      role: 'Decision Maker',
+                      location: 'United States',
+                      score: 75,
+                      source: 'searxng_direct',
+                      sourceUrl: result.url,
+                      verified: false
+                    });
+
+                    console.log(`⚡ Found email: ${emailLower}`);
+                  }
+                }
+              }
+
+              if (prospects.length >= limit) break;
+            }
+          } catch (queryError) {
+            console.log(`⚡ Query "${searchQuery}" failed: ${queryError.message}`);
+            // Continue to next query
+          }
         }
+
+        console.log(`⚡ Total prospects found in ultra-fast mode: ${prospects.length}`);
+
+        // Only return if we found at least 1 prospect (will fall back to normal mode otherwise)
 
         if (prospects.length > 0) {
           console.log(`⚡ Found ${prospects.length} prospects in ultra-fast mode`);

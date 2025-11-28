@@ -91,6 +91,7 @@ export default function EmailThreadPanel({ emailId, onClose }) {
       setSending(true)
       const userId = user?.id || 'anonymous'
 
+      // 🔥 FIX: API expects 'html' or 'text', not 'body'
       const response = await fetch('/api/send-email/send', {
         method: 'POST',
         headers: {
@@ -100,7 +101,8 @@ export default function EmailThreadPanel({ emailId, onClose }) {
           userId,
           to: emailData.recipientEmail,
           subject: replySubject,
-          body: replyContent,
+          html: replyContent, // 🔥 Changed from 'body' to 'html'
+          text: replyContent.replace(/<[^>]*>/g, ''), // Plain text version
           campaignId: emailData.campaignId,
           inReplyTo: emailData.messageId
         })
@@ -267,7 +269,11 @@ export default function EmailThreadPanel({ emailId, onClose }) {
                 {expandedEmails.has(email.id) && (
                   <div className="px-4 pb-4 border-t border-gray-100">
                     <div className="mt-3 text-gray-700 whitespace-pre-wrap">
-                      {email.body || email.content || 'No content'}
+                      {email.body || email.content || (
+                        <span className="text-gray-400 italic">
+                          Email content not stored. Subject: {email.subject || emailData?.subject || 'N/A'}
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
@@ -292,7 +298,11 @@ export default function EmailThreadPanel({ emailId, onClose }) {
             </div>
             <div className="px-4 py-4">
               <div className="text-gray-700 whitespace-pre-wrap">
-                {emailData.body || 'No content'}
+                {emailData.body || (
+                  <span className="text-gray-400 italic">
+                    Email content not stored. Subject: {emailData?.subject || 'N/A'}
+                  </span>
+                )}
               </div>
             </div>
           </div>
