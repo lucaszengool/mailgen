@@ -197,6 +197,40 @@ router.post('/search', optionalAuth, async (req, res) => {
       try {
         console.log(`💾 [User: ${userId}] Saving ${formattedProspects.length} prospects to database...`);
 
+        // 🔥 CRITICAL FIX: Also store in WebSocket state for real-time updates
+        const wsManager = req.app.locals.wsManager;
+        if (wsManager && wsManager.workflowStates && campaignId) {
+          const existingState = wsManager.workflowStates.get(campaignId) || { data: { prospects: [] } };
+          const existingProspects = existingState.data?.prospects || [];
+
+          // Merge new prospects with existing ones
+          const existingEmails = new Set(existingProspects.map(p => p.email));
+          const newProspects = formattedProspects.filter(p => !existingEmails.has(p.email));
+
+          if (newProspects.length > 0) {
+            const allProspects = [...existingProspects, ...newProspects];
+            wsManager.workflowStates.set(campaignId, {
+              ...existingState,
+              data: {
+                ...existingState.data,
+                prospects: allProspects
+              }
+            });
+            console.log(`📡 [WebSocket] Stored ${allProspects.length} prospects in workflow state for campaign ${campaignId}`);
+
+            // Broadcast to connected clients
+            wsManager.broadcast({
+              type: 'prospect_list',
+              workflowId: campaignId,
+              prospects: allProspects,
+              total: allProspects.length,
+              newCount: newProspects.length,
+              timestamp: new Date().toISOString()
+            });
+            console.log(`📡 [WebSocket] Broadcast prospect_list with ${allProspects.length} prospects`);
+          }
+        }
+
         let savedCount = 0;
         for (const prospect of formattedProspects) {
           try {
@@ -323,35 +357,83 @@ router.post('/batch-search', optionalAuth, async (req, res) => {
 
           console.log(`✅ [${searchId}] Saved ${savedCount}/${result.prospects.length} prospects to database`);
 
-          // Send WebSocket notification about completion
-          const wsManager = require('../websocket/WorkflowWebSocketManager');
-          wsManager.broadcastToWorkflow(campaignId || 'default', {
-            type: 'batch_search_complete',
-            data: {
-              searchId,
-              totalFound: savedCount,
-              industry,
-              region,
-              keywords
+          // 🔥 CRITICAL FIX: Also store in WebSocket state for real-time updates
+          const wsManager = req.app.locals.wsManager;
+          if (wsManager && wsManager.workflowStates && campaignId) {
+            const existingState = wsManager.workflowStates.get(campaignId) || { data: { prospects: [] } };
+            const existingProspects = existingState.data?.prospects || [];
+
+            // Format prospects for storage
+            const formattedProspects = result.prospects.map((p, i) => ({
+              name: p.name || `Prospect ${i + 1}`,
+              email: p.email,
+              company: p.company || 'Company',
+              role: p.estimatedRole || p.role || 'Decision Maker',
+              location: p.location || region || 'Unknown',
+              score: Math.round((p.confidence || 0.8) * 100),
+              source: p.source || 'batch_search'
+            }));
+
+            // Merge new prospects with existing ones
+            const existingEmails = new Set(existingProspects.map(p => p.email));
+            const newProspects = formattedProspects.filter(p => !existingEmails.has(p.email));
+
+            if (newProspects.length > 0) {
+              const allProspects = [...existingProspects, ...newProspects];
+              wsManager.workflowStates.set(campaignId, {
+                ...existingState,
+                data: {
+                  ...existingState.data,
+                  prospects: allProspects
+                }
+              });
+              console.log(`📡 [${searchId}] Stored ${allProspects.length} prospects in WebSocket state`);
+
+              // Broadcast prospect_list to connected clients
+              wsManager.broadcast({
+                type: 'prospect_list',
+                workflowId: campaignId,
+                prospects: allProspects,
+                total: allProspects.length,
+                newCount: newProspects.length,
+                timestamp: new Date().toISOString()
+              });
+              console.log(`📡 [${searchId}] Broadcast prospect_list with ${allProspects.length} prospects`);
             }
-          });
+          }
+
+          // Send WebSocket notification about completion
+          if (wsManager) {
+            wsManager.broadcast({
+              type: 'batch_search_complete',
+              data: {
+                searchId,
+                totalFound: savedCount,
+                industry,
+                region,
+                keywords
+              }
+            });
+          }
 
           console.log(`🎉 [${searchId}] Batch search complete!`);
         } else {
           console.warn(`⚠️ [${searchId}] No prospects found`);
 
           // Send notification even if no results
-          const wsManager = require('../websocket/WorkflowWebSocketManager');
-          wsManager.broadcastToWorkflow(campaignId || 'default', {
-            type: 'batch_search_complete',
-            data: {
-              searchId,
-              totalFound: 0,
-              industry,
-              region,
-              keywords
-            }
-          });
+          const wsManager = req.app.locals.wsManager;
+          if (wsManager) {
+            wsManager.broadcast({
+              type: 'batch_search_complete',
+              data: {
+                searchId,
+                totalFound: 0,
+                industry,
+                region,
+                keywords
+              }
+            });
+          }
         }
       } catch (error) {
         console.error(`❌ [${searchId}] Background batch search failed:`, error);
