@@ -80,6 +80,24 @@ const ProspectsPage = () => {
               }
               return prev
             })
+          } else if (data.type === 'template_selection_required' && data.data?.sampleProspects) {
+            // 🔥 NEW: Also handle template_selection_required which contains prospect samples
+            console.log(`🎨 ProspectsClean: Received ${data.data.sampleProspects.length} sample prospects from template_selection_required`)
+            console.log(`🎨 ProspectsClean: Total prospects found: ${data.data.prospectsFound || data.data.prospectsCount}`)
+
+            // Trigger a fetch to get all prospects from the database
+            fetchProspects(false)
+          } else if (data.type === 'workflow_update' && data.stepData?.results?.prospects) {
+            // 🔥 NEW: Handle workflow_update with prospect results
+            console.log(`🔄 ProspectsClean: Received ${data.stepData.results.prospects.length} prospects from workflow_update`)
+            setProspects(prev => {
+              const existingEmails = new Set(prev.map(p => p.email))
+              const newProspects = data.stepData.results.prospects.filter(p => !existingEmails.has(p.email))
+              if (newProspects.length > 0) {
+                return [...prev, ...newProspects]
+              }
+              return prev
+            })
           }
         } catch (error) {
           console.error('❌ ProspectsClean: Failed to parse WebSocket message:', error)

@@ -1285,6 +1285,17 @@ class LangGraphMarketingAgent {
               ]
             }
           });
+
+          // 🔥 CRITICAL: Send dedicated prospect_list message for Prospects page
+          // This ensures the Prospects page receives ALL prospects immediately
+          console.log(`📤 Broadcasting prospect_list with ${prospects.length} prospects to all clients`);
+          this.wsManager.broadcast({
+            type: 'prospect_list',
+            prospects: prospects,
+            campaignId: campaignId,
+            totalCount: prospects.length,
+            timestamp: new Date().toISOString()
+          });
         }
       }
       
