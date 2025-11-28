@@ -2565,34 +2565,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     }
   }, [backgroundWorkflowRunning, microSteps.length]);
 
-  // 🔥 CRITICAL FIX: Poll for workflow RESULTS every 3 seconds when workflow is running
-  // This ensures template popup and prospects update in real-time
-  useEffect(() => {
-    // Also poll when waiting for template (workflow is paused but still active)
-    const isWorkflowActive = backgroundWorkflowRunning ||
-                              workflowStatus === 'running' ||
-                              workflowStatus === 'starting' ||
-                              workflowStatus === 'waiting' ||
-                              workflowStatus === 'paused';
-
-    if (isWorkflowActive) {
-      console.log('🔄 Starting workflow results polling (workflow is active, status:', workflowStatus, ')');
-
-      // Immediate first poll
-      fetchAndTriggerWorkflowSteps();
-
-      const resultsInterval = setInterval(() => {
-        console.log('🔄 Polling workflow results...');
-        fetchAndTriggerWorkflowSteps();
-      }, 3000); // Poll every 3 seconds for faster updates
-
-      return () => {
-        console.log('🔄 Stopping workflow results polling');
-        clearInterval(resultsInterval);
-      };
-    }
-  }, [backgroundWorkflowRunning, workflowStatus]);
-
   // Original states for other views
   const [ws, setWs] = useState(null);
   const [workflowStatus, setWorkflowStatus] = useState('idle');
@@ -2843,6 +2815,34 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       // We do this by not modifying agentConfig directly, just consuming the flag
     }
   }, [agentConfig?.workflowJustStarted]);
+
+  // 🔥 CRITICAL FIX: Poll for workflow RESULTS every 3 seconds when workflow is running
+  // This ensures template popup and prospects update in real-time
+  useEffect(() => {
+    // Also poll when waiting for template (workflow is paused but still active)
+    const isWorkflowActive = backgroundWorkflowRunning ||
+                              workflowStatus === 'running' ||
+                              workflowStatus === 'starting' ||
+                              workflowStatus === 'waiting' ||
+                              workflowStatus === 'paused';
+
+    if (isWorkflowActive) {
+      console.log('🔄 Starting workflow results polling (workflow is active, status:', workflowStatus, ')');
+
+      // Immediate first poll
+      fetchAndTriggerWorkflowSteps();
+
+      const resultsInterval = setInterval(() => {
+        console.log('🔄 Polling workflow results...');
+        fetchAndTriggerWorkflowSteps();
+      }, 3000); // Poll every 3 seconds for faster updates
+
+      return () => {
+        console.log('🔄 Stopping workflow results polling');
+        clearInterval(resultsInterval);
+      };
+    }
+  }, [backgroundWorkflowRunning, workflowStatus]);
 
   // 🔔 Watch for workflow status changes and show notifications
   useEffect(() => {
