@@ -2605,25 +2605,43 @@ class LangGraphMarketingAgent {
 
         // 🚀 CRITICAL: Send single email immediately to frontend after generation
         if (this.wsManager) {
+          // 🔥 FIX: Add campaignId to all broadcasts for proper filtering
+          const emailWithCampaign = { ...emailRecord, campaignId: campaignId };
+
           this.wsManager.broadcast({
             type: 'data_update',
             data: {
+              campaignId: campaignId,  // 🔥 Add campaignId at top level
               emailCampaign: {
-                emails: [emailRecord], // Single email
-                emailsSent: [emailRecord],
-                sent: 1, // Indicates single email
-                isSingleUpdate: true, // Flag for frontend
+                campaignId: campaignId,  // 🔥 Also add inside
+                emails: [emailWithCampaign],
+                emailsSent: [emailWithCampaign],
+                sent: 1,
+                isSingleUpdate: true,
                 opened: 0,
                 replied: 0
               }
             }
           });
-          
+
+          // 🔥 NEW: Send instant email update with all required fields
+          this.wsManager.broadcast({
+            type: 'email_generated',
+            data: {
+              ...emailWithCampaign,
+              campaignId: campaignId,
+              isInstant: true,  // Flag for instant display
+              timestamp: new Date().toISOString()
+            }
+          });
+
           // Also send individual email sent event
           this.wsManager.broadcast({
             type: 'email_sent',
-            data: emailRecord
+            data: emailWithCampaign
           });
+
+          console.log(`📡 [INSTANT] Broadcasted email_generated for ${emailRecord.to} in campaign ${campaignId}`);
         }
 
         // 存储邮件学习数据（包含发送状态）
@@ -5119,11 +5137,26 @@ ${senderName || senderCompany}`;
           console.log('⚠️ Could not update workflow results:', error.message);
         }
 
-        // Broadcast progress
+        // 🔥 INSTANT: Broadcast email immediately to frontend
         if (this.wsManager) {
+          // Send instant email_generated update with full email data
+          this.wsManager.broadcast({
+            type: 'email_generated',
+            data: {
+              ...newEmail,
+              campaignId: campaignId,
+              isInstant: true,
+              emailIndex: i + 1,
+              totalEmails: remainingProspects.length,
+              timestamp: new Date().toISOString()
+            }
+          });
+
+          // Also send email_sent for backward compatibility
           this.wsManager.broadcast({
             type: 'email_sent',
             data: {
+              ...newEmail,
               campaignId: campaignId,
               prospect: prospect,
               emailIndex: i + 1,
@@ -5131,6 +5164,24 @@ ${senderName || senderCompany}`;
               status: emailContent.status
             }
           });
+
+          // Also send data_update for dashboard stats
+          this.wsManager.broadcast({
+            type: 'data_update',
+            data: {
+              campaignId: campaignId,
+              emailCampaign: {
+                campaignId: campaignId,
+                emails: [newEmail],
+                isSingleUpdate: true,
+                sent: 1,
+                opened: 0,
+                replied: 0
+              }
+            }
+          });
+
+          console.log(`📡 [INSTANT] Broadcasted email_generated for ${newEmail.to} (${i + 1}/${remainingProspects.length})`);
         }
 
         // Anti-spam delay

@@ -114,10 +114,20 @@ export default function Prospects() {
       ws.current.onmessage = (event) => {
         const data = JSON.parse(event.data)
         console.log('🔌 WebSocket message received:', data.type, data)
-        
+
+        // 🔒 CRITICAL: Get current campaign ID for validation
+        const currentCampaignId = localStorage.getItem('currentCampaignId');
+
         if (data.type === 'marketing_research_update') {
           setRealTimeData(data.data)
         } else if (data.type === 'new_prospect') {
+          // 🔒 Validate campaign
+          const prospectCampaignId = data.campaignId || data.prospect?.campaignId;
+          if (prospectCampaignId && currentCampaignId && prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping new_prospect from different campaign`);
+            return;
+          }
+
           setProspects(prev => [data.prospect, ...prev])
           // toast.success(`New prospect found: ${data.prospect.email}`)
 
@@ -125,8 +135,17 @@ export default function Prospects() {
           console.log('🚀 New prospect received - triggering immediate fetch');
           fetchProspects();
         } else if (data.type === 'prospect_batch_update') {
+          // 🔒 CRITICAL: Validate campaign ID to prevent mixing
+          const batchCampaignId = data.data?.campaignId || data.campaignId;
+          console.log(`🔍 [CAMPAIGN CHECK] Batch campaign: ${batchCampaignId}, Current: ${currentCampaignId}`);
+
+          if (batchCampaignId && currentCampaignId && batchCampaignId !== currentCampaignId && batchCampaignId !== String(currentCampaignId)) {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_batch_update from different campaign (Batch: ${batchCampaignId}, Current: ${currentCampaignId})`);
+            return;
+          }
+
           // 🔥 FIX: Handle later prospect batches arriving - UPDATE STATE IMMEDIATELY
-          console.log(`📦 🔥 Batch ${data.data.batchNumber} received: ${data.data.prospects.length} new prospects (${data.data.totalSoFar}/${data.data.targetTotal} total)`);
+          console.log(`📦 🔥 Batch ${data.data.batchNumber} received: ${data.data.prospects?.length || 0} new prospects (${data.data.totalSoFar}/${data.data.targetTotal} total)`);
           console.log(`📦 Raw batch prospects:`, data.data.prospects);
 
           // 🚀 INSTANT UPDATE: Add new prospects to state immediately (don't wait for slow fetch)
@@ -184,6 +203,13 @@ export default function Prospects() {
             position: 'bottom-right'
           });
         } else if (data.type === 'data_update' && data.data?.prospects) {
+          // 🔒 CRITICAL: Validate campaign ID
+          const updateCampaignId = data.data?.campaignId || data.campaignId;
+          if (updateCampaignId && currentCampaignId && updateCampaignId !== currentCampaignId && updateCampaignId !== String(currentCampaignId)) {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping data_update from different campaign (Update: ${updateCampaignId}, Current: ${currentCampaignId})`);
+            return;
+          }
+
           // Real-time prospect data update from LangGraphMarketingAgent
           console.log('📊 🔥 CRITICAL: Updating prospects from data_update:', data.data.prospects.length)
           console.log('📊 Raw prospect data:', data.data.prospects)
@@ -232,6 +258,13 @@ export default function Prospects() {
 
           // toast.success(`🎉 ${data.data.prospects.length} prospects found from AI campaign!`)
         } else if (data.type === 'prospect_list') {
+          // 🔒 CRITICAL: Validate campaign ID
+          const listCampaignId = data.campaignId || data.data?.campaignId;
+          if (listCampaignId && currentCampaignId && listCampaignId !== currentCampaignId && listCampaignId !== String(currentCampaignId)) {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_list from different campaign (List: ${listCampaignId}, Current: ${currentCampaignId})`);
+            return;
+          }
+
           // Direct prospect list update
           console.log('📋 Updating prospects from prospect_list:', data.prospects.length)
           const updatedProspects = data.prospects.map(p => ({

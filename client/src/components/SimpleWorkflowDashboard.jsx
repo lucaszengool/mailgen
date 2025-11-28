@@ -4568,20 +4568,33 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       } else if (data.type === 'prospect_batch_update') {
         // 📦 Handle background prospect batch updates
         console.log(`📦 Received prospect batch ${data.data.batchNumber}:`, data.data);
-        console.log(`📦 Batch contains ${data.data.prospects.length} new prospects`);
+        console.log(`📦 Batch contains ${data.data.prospects?.length || 0} new prospects`);
         console.log(`📦 Total so far: ${data.data.totalSoFar}/${data.data.targetTotal}`);
+
+        // 🔒 CRITICAL: Validate campaign ID to prevent mixing prospects between campaigns
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const prospectCampaignId = data.data.campaignId || data.campaignId;
+
+        console.log(`🔍 [CAMPAIGN CHECK] Prospect batch campaign: ${prospectCampaignId}, Current campaign: ${currentCampaignId}`);
+
+        if (prospectCampaignId && currentCampaignId && prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect batch from different campaign (Batch: ${prospectCampaignId}, Current: ${currentCampaignId})`);
+          return; // Skip this batch - it's from a different campaign
+        }
+
+        console.log(`✅ [CAMPAIGN MATCH] Processing prospect batch for campaign ${prospectCampaignId || currentCampaignId}`);
 
         // Append new prospects to existing list (avoid duplicates by email)
         setProspects(prev => {
           const existingEmails = new Set(prev.map(p => p.email));
-          const newProspects = data.data.prospects.filter(p => !existingEmails.has(p.email));
+          const newProspects = (data.data.prospects || []).filter(p => !existingEmails.has(p.email));
           const updated = [...prev, ...newProspects];
           console.log(`📦 Updated prospects: ${prev.length} → ${updated.length} (+${newProspects.length} new)`);
           return updated;
         });
 
         // Show toast notification for batch update
-        toast.success(`🎯 Found ${data.data.prospects.length} more prospects! (${data.data.totalSoFar}/${data.data.targetTotal} total)`, {
+        toast.success(`🎯 Found ${data.data.prospects?.length || 0} more prospects! (${data.data.totalSoFar}/${data.data.targetTotal} total)`, {
           duration: 3000,
           icon: '📦',
         });
@@ -4761,9 +4774,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         }
       }
 
-      // Check for email generation progress
+      // Check for email generation progress - 🔥 INSTANT UPDATE
       if (data.type === 'email_sent' || data.type === 'email_generated' || data.type === 'email_awaiting_approval') {
-        console.log('📧 Email activity detected - checking for new emails');
+        console.log('📧🚀 [INSTANT] Email activity detected:', data.type, data.data?.to);
+
+        // 🔥 INSTANT: Show toast notification for real-time feedback
+        if (data.type === 'email_generated' && data.data?.isInstant) {
+          console.log(`📧🚀 [INSTANT] Email generated for: ${data.data.to} (${data.data.emailIndex}/${data.data.totalEmails})`);
+          // toast.success() would go here but may cause too many toasts
+        }
 
         // Show confirmation modal when first email is sent
         if (data.type === 'email_sent' && data.data?.isFirstEmail) {
@@ -4771,15 +4790,28 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           setShowEmailSendConfirmation(true);
         }
 
-        setTimeout(() => {
-          checkForEmailUpdates();
-        }, 1000);
+        // 🔥 INSTANT: Fetch immediately without delay for real-time updates
+        checkForEmailUpdates();
       }
       
       // Handle other message types
       if (data.type === 'prospect_list') {
         // Handle prospect list updates and trigger micro-steps
         console.log('👥 Prospect list received:', data.prospects);
+
+        // 🔒 CRITICAL: Validate campaign ID to prevent mixing prospects between campaigns
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const prospectCampaignId = data.campaignId || data.data?.campaignId;
+
+        console.log(`🔍 [CAMPAIGN CHECK] Prospect list campaign: ${prospectCampaignId}, Current campaign: ${currentCampaignId}`);
+
+        if (prospectCampaignId && currentCampaignId && prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_list from different campaign (List: ${prospectCampaignId}, Current: ${currentCampaignId})`);
+          return; // Skip - different campaign
+        }
+
+        console.log(`✅ [CAMPAIGN MATCH] Processing prospect_list for campaign ${prospectCampaignId || currentCampaignId}`);
+
         const receivedProspects = data.prospects || [];
         console.log(`📦 Merging ${receivedProspects.length} prospects from prospect_list`);
         setProspects(prev => {
@@ -4803,11 +4835,20 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         fetchAndTriggerWorkflowSteps();
       } else if (data.type === 'prospect_updated') {
         // Handle individual prospect updates
+        // 🔒 CRITICAL: Validate campaign ID
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const prospectCampaignId = data.campaignId || data.data?.campaignId;
+
+        if (prospectCampaignId && currentCampaignId && prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_updated from different campaign`);
+          return;
+        }
+
         if (data.data && data.data.prospect) {
           setProspects(prev => {
             const existing = prev.find(p => p.email === data.data.prospect.email);
             if (existing) {
-              return prev.map(p => 
+              return prev.map(p =>
                 p.email === data.data.prospect.email ? { ...p, ...data.data.prospect } : p
               );
             } else {
@@ -4816,12 +4857,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           });
         }
       } else if (data.type === 'email_sent' || data.type === 'email_generated' || data.emailCampaign) {
-        // Handle email sent/generated updates
+        // Handle email sent/generated updates - 🔥 INSTANT
         const email = data.data || data.email;
         const emailCampaign = data.emailCampaign;
 
         if (email) {
-          console.log('📧 Email update received:', email);
+          console.log('📧🚀 [INSTANT] Email update received:', email.to, email.subject?.substring(0, 30));
           // 🔒 CRITICAL: Always read LATEST campaignId from localStorage to avoid race conditions
           const latestCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
           const emailCampaignId = email.campaignId || email.campaign_id || data.data?.campaignId;
@@ -4829,46 +4870,43 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           console.log(`🔍 [CAMPAIGN CHECK] Email campaign: ${emailCampaignId}, Current campaign: ${latestCampaignId}`);
 
           if (emailCampaignId === latestCampaignId || emailCampaignId === String(latestCampaignId) || !emailCampaignId) {
-            console.log(`✅ [CAMPAIGN MATCH] Processing email update for campaign ${emailCampaignId}`);
-            const wasUpdated = (() => {
-              let updated = false;
-              setGeneratedEmails(prev => {
-                const existing = prev.find(e => e.to === email.to);
-                const newEmails = existing
-                  ? prev.map(e => e.to === email.to ? { ...e, ...email } : e)
-                  : [...prev, email];
-                console.log('📧 Updated email list:', newEmails);
+            console.log(`✅🚀 [INSTANT] Processing email for campaign ${emailCampaignId}`);
 
-                // Check if this was a new email or an update
-                if (!existing || JSON.stringify(existing) !== JSON.stringify(email)) {
-                  updated = true;
-                }
-
+            // 🔥 INSTANT: Update email list immediately
+            setGeneratedEmails(prev => {
+              const existing = prev.find(e => e.to === email.to);
+              if (existing) {
+                // Update existing email
+                const newEmails = prev.map(e => e.to === email.to ? { ...e, ...email } : e);
+                console.log(`📧 Updated existing email for ${email.to}`);
                 return newEmails;
-              });
-              return updated;
-            })();
+              } else {
+                // Add new email
+                console.log(`📧🚀 [INSTANT] Added new email for ${email.to} (total: ${prev.length + 1})`);
+                return [...prev, email];
+              }
+            });
 
-            // 🚀 CRITICAL: Force component re-render AFTER state update when email added or updated
-            if (wasUpdated) {
-              setTimeout(() => setEmailForceUpdateKey(k => k + 1), 0);
-            }
+            // 🚀 INSTANT: Force component re-render immediately
+            setEmailForceUpdateKey(k => k + 1);
           } else {
             console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email update from different campaign (Email: ${emailCampaignId}, Current: ${latestCampaignId})`);
           }
+
+          // Update stats
           setEmailCampaignStats(prev => ({
             ...prev,
             emails: [...prev.emails, email],
             totalSent: data.type === 'email_sent' ? prev.totalSent + 1 : prev.totalSent
           }));
         }
-        
+
         // Trigger email campaign micro-steps
         if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
           triggerEmailMicroSteps(emailCampaign.emails);
         }
 
-        // 🚀 Immediately fetch latest workflow state to get all emails
+        // 🔥 INSTANT: Fetch immediately without delay
         console.log('🚀 Email generated/sent - triggering immediate fetch');
         fetchAndTriggerWorkflowSteps();
       } else if (data.type === 'email_awaiting_approval') {
@@ -5101,12 +5139,27 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         }
       } else if (data.type === 'data_update') {
         // Handle general data updates
+        // 🔒 CRITICAL: Validate campaign ID to prevent mixing data between campaigns
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const updateCampaignId = data.data?.campaignId || data.campaignId;
+
+        if (updateCampaignId && currentCampaignId && updateCampaignId !== currentCampaignId && updateCampaignId !== String(currentCampaignId)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping data_update from different campaign (Update: ${updateCampaignId}, Current: ${currentCampaignId})`);
+          return;
+        }
+
         if (data.data) {
           if (data.data.emailCampaign) {
-            setEmailCampaignStats(prev => ({
-              ...prev,
-              ...data.data.emailCampaign
-            }));
+            // 🔒 Additional check for email campaign ID
+            const emailCampaignId = data.data.emailCampaign.campaignId;
+            if (!emailCampaignId || emailCampaignId === currentCampaignId || emailCampaignId === String(currentCampaignId)) {
+              setEmailCampaignStats(prev => ({
+                ...prev,
+                ...data.data.emailCampaign
+              }));
+            } else {
+              console.log(`🚫 [CAMPAIGN ISOLATION] Skipping emailCampaign stats from different campaign`);
+            }
           }
           if (data.data.prospects) {
             console.log(`📦 Received data_update with ${data.data.prospects.length} prospects - merging`);
