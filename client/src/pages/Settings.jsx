@@ -215,6 +215,36 @@ export default function Settings() {
     });
   };
 
+  // Save website analysis to backend
+  const handleSaveWebsiteAnalysis = async () => {
+    setLoading(true);
+    try {
+      toast.loading('Saving website analysis...', { id: 'save-website' });
+
+      const response = await apiPost('/api/settings/website-analysis', websiteAnalysis);
+
+      if (response.success) {
+        // Also save to localStorage for campaign use
+        localStorage.setItem('websiteAnalysis', JSON.stringify(websiteAnalysis));
+
+        // Update agentConfig with websiteAnalysis
+        const existingConfig = localStorage.getItem('agentConfig');
+        const agentConfig = existingConfig ? JSON.parse(existingConfig) : {};
+        agentConfig.websiteAnalysis = websiteAnalysis;
+        localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
+
+        toast.success('Website analysis saved successfully!', { id: 'save-website' });
+      } else {
+        toast.error(response.error || 'Failed to save website analysis', { id: 'save-website' });
+      }
+    } catch (error) {
+      console.error('Save website analysis error:', error);
+      toast.error('Failed to save website analysis', { id: 'save-website' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Re-analyze website to refresh data
   const handleReanalyzeWebsite = async () => {
     if (!websiteAnalysis.targetWebsite) {
@@ -703,6 +733,27 @@ export default function Settings() {
                   </div>
                 </div>
               )}
+
+              {/* Save Website Analysis Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSaveWebsiteAnalysis}
+                  disabled={loading}
+                  className="px-6 py-3 bg-[#00f5a0] text-black font-bold rounded-xl hover:bg-[#00e090] transition-all shadow-lg disabled:opacity-50 flex items-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Save Website Analysis
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           )}
 

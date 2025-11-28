@@ -120,11 +120,16 @@ export default function EmailThreadPanel({ emailId, onClose }) {
         // Refresh thread to show new reply
         fetchEmailThread()
       } else {
-        toast.error(data.error || 'Failed to send reply')
+        // 🔥 Show helpful error message for SMTP issues
+        let errorMsg = data.error || 'Failed to send reply'
+        if (errorMsg.includes('Missing credentials') || errorMsg.includes('PLAIN')) {
+          errorMsg = 'SMTP not configured. Please configure your email settings in Settings → SMTP Settings.'
+        }
+        toast.error(errorMsg, { duration: 5000 })
       }
     } catch (error) {
       console.error('Failed to send reply:', error)
-      toast.error('Failed to send reply')
+      toast.error('Failed to send reply. Please check your SMTP settings.')
     } finally {
       setSending(false)
     }

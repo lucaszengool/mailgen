@@ -343,8 +343,8 @@ class Database {
   logEmailSent(emailData, userId = 'anonymous') {
     return new Promise((resolve, reject) => {
       const stmt = this.db.prepare(`
-        INSERT INTO email_logs (to_email, subject, campaign_id, user_id, message_id, status, error_message, recipient_index, sent_at, tracking_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO email_logs (to_email, subject, campaign_id, user_id, message_id, status, error_message, recipient_index, sent_at, tracking_id, body)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       stmt.run([
@@ -357,7 +357,8 @@ class Database {
         emailData.error,
         emailData.recipientIndex,
         emailData.sentAt,
-        emailData.trackingId || null // 📊 NEW: Store tracking ID for analytics
+        emailData.trackingId || null, // 📊 NEW: Store tracking ID for analytics
+        emailData.body || null // 🔥 NEW: Store email body for thread display
       ], function(err) {
         if (err) {
           reject(err);

@@ -1606,9 +1606,10 @@ class LangGraphMarketingAgent {
                   userId,
                   campaignId,
                   batchNumber,
-                  newProspects: prospects.length,
+                  prospects,  // 🔥 FIX: Send actual prospects array, not just count
                   totalSoFar,
                   targetTotal,
+                  status: 'batch_complete',
                   message: `Found ${prospects.length} more prospects!`
                 }
               });

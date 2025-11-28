@@ -335,6 +335,38 @@ export default function Prospects() {
 
           // Refresh prospects to show new results
           fetchProspects()
+        } else if (data.type === 'template_selection_required') {
+          // 🔥 INSTANT: Handle template selection required - show immediately
+          console.log('🎨🎨🎨 TEMPLATE SELECTION REQUIRED RECEIVED ON PROSPECTS PAGE! 🎨🎨🎨')
+          console.log('🎨 Prospects found:', data.data?.prospectsFound || data.data?.prospectsCount)
+
+          // 🚀 INSTANT: Also update prospects list immediately from sample data
+          if (data.data?.sampleProspects && data.data.sampleProspects.length > 0) {
+            console.log('🚀 Adding sample prospects to state immediately...')
+            setProspects(prev => {
+              const existingEmails = new Set(prev.map(p => p.email))
+              const newProspects = data.data.sampleProspects
+                .filter(p => p.email && !existingEmails.has(p.email))
+                .map(p => ({
+                  ...p,
+                  id: p.id || `prospect_${Date.now()}_${Math.random()}`,
+                  source: 'AI Campaign',
+                  confidence: 80,
+                  created_at: new Date().toISOString()
+                }))
+
+              if (newProspects.length > 0) {
+                console.log(`🚀 Adding ${newProspects.length} prospects from template_selection_required`)
+                setForceUpdateKey(prevKey => prevKey + 1)
+                return [...prev, ...newProspects]
+              }
+              return prev
+            })
+          }
+
+          // 🔥 The TemplateSelectionHandler global component will show the popup
+          // But we also trigger a fetch to ensure we have all prospects
+          fetchProspects()
         }
       }
       
@@ -444,7 +476,28 @@ export default function Prospects() {
 
       console.log(`📊 Total unique prospects after deduplication: ${uniqueProspects.length}`)
 
-      setProspects(uniqueProspects)
+      // 🔥 CRITICAL FIX: MERGE with existing state instead of REPLACING
+      // This preserves real-time WebSocket prospects that haven't been saved to DB yet
+      setProspects(prevProspects => {
+        // Get emails from fetched data
+        const fetchedEmails = new Set(uniqueProspects.map(p => p.email));
+
+        // Keep any prospects in state that aren't in the fetched data yet
+        // (these are real-time WebSocket prospects not yet persisted)
+        const realTimeOnly = prevProspects.filter(p => !fetchedEmails.has(p.email));
+
+        // Merge: fetched data + real-time only (that haven't been saved yet)
+        const merged = [...uniqueProspects, ...realTimeOnly];
+
+        console.log(`📊 Merged: ${uniqueProspects.length} fetched + ${realTimeOnly.length} real-time only = ${merged.length} total`);
+
+        // 🚀 INSTANT: Force re-render if count changed
+        if (merged.length !== prevProspects.length) {
+          setForceUpdateKey(prev => prev + 1);
+        }
+
+        return merged;
+      })
 
       // 🔥 FIX: Don't clear workflow status yet - background batches may still be arriving
       // The workflow status will be cleared when we receive a 'complete' status from backend

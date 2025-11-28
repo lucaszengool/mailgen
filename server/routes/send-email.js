@@ -267,7 +267,8 @@ router.post('/send', async (req, res) => {
         error: null,
         recipientIndex: 0,
         sentAt: result.sentAt,
-        userId: actualUserId
+        userId: actualUserId,
+        body: html || text // 🔥 NEW: Store email body for thread display
       });
 
       console.log(`   ✅ Email logged to database`);
