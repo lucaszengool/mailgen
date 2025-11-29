@@ -118,6 +118,7 @@ router.post('/', async (req, res) => {
 
     // Log to database
     try {
+      const actualUserId = req.userId || userId || 'anonymous';
       await db.logEmailSent({
         to,
         subject,
@@ -126,8 +127,9 @@ router.post('/', async (req, res) => {
         status: 'sent',
         error: null,
         recipientIndex: 0,
-        sentAt: result.sentAt
-      });
+        sentAt: result.sentAt,
+        body: html || text // 🔥 FIX: Store email body for thread display
+      }, actualUserId); // 🔥 FIX: Pass userId for multi-user isolation
       console.log('📊 Email logged to database');
     } catch (dbError) {
       console.error('Database logging error:', dbError);
