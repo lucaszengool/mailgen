@@ -1493,6 +1493,226 @@ router.get('/email-thread/:emailId', async (req, res) => {
   }
 });
 
+// 🆕 Get COMPLETE email thread with sent emails + replies (for EmailThreadPanel)
+router.get('/complete-thread/:emailId', async (req, res) => {
+  try {
+    const { emailId } = req.params;
+    const { userId = 'anonymous' } = req.query;
+
+    console.log(`📧 [COMPLETE-THREAD] Fetching complete thread for email ${emailId}, user ${userId}`);
+
+    // Step 1: Get the original email
+    const emailQuery = `
+      SELECT
+        e.id,
+        e.to_email,
+        e.subject,
+        e.body,
+        e.campaign_id,
+        e.sent_at,
+        e.tracking_id,
+        e.message_id,
+        e.user_id,
+        (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
+        (SELECT MAX(o.opened_at) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as lastOpenedAt,
+        (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
+        (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email) as replyCount
+      FROM email_logs e
+      WHERE e.id = ?
+    `;
+
+    let originalEmail = await new Promise((resolve, reject) => {
+      db.db.get(emailQuery, [emailId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    // If not found, try without user filter (for backward compatibility)
+    if (!originalEmail) {
+      console.log(`📧 [COMPLETE-THREAD] Email ${emailId} not found, trying fallback...`);
+      return res.status(404).json({ success: false, error: 'Email not found' });
+    }
+
+    const recipientEmail = originalEmail.to_email;
+    const campaignId = originalEmail.campaign_id;
+
+    console.log(`📧 [COMPLETE-THREAD] Found email to ${recipientEmail}, campaign ${campaignId}`);
+
+    // Step 2: Get prospect info
+    const prospectQuery = `
+      SELECT name, email, company, position, industry, location
+      FROM prospects
+      WHERE email = ?
+      LIMIT 1
+    `;
+
+    const prospect = await new Promise((resolve, reject) => {
+      db.db.get(prospectQuery, [recipientEmail], (err, row) => {
+        if (err) reject(err);
+        else resolve(row || {
+          name: recipientEmail.split('@')[0],
+          email: recipientEmail,
+          company: recipientEmail.split('@')[1]?.split('.')[0] || null
+        });
+      });
+    });
+
+    // Step 3: Get ALL sent emails to this prospect (across all campaigns)
+    const sentEmailsQuery = `
+      SELECT
+        e.id,
+        'You' as "from",
+        e.to_email as "to",
+        e.subject,
+        e.body as content,
+        e.sent_at as timestamp,
+        'sent' as type,
+        e.tracking_id,
+        (SELECT COUNT(*) > 0 FROM email_opens WHERE tracking_id = e.tracking_id) as opened,
+        (SELECT COUNT(*) FROM email_opens WHERE tracking_id = e.tracking_id) as openCount,
+        (SELECT MAX(opened_at) FROM email_opens WHERE tracking_id = e.tracking_id) as lastOpenedAt,
+        (SELECT COUNT(*) > 0 FROM email_clicks WHERE link_id = e.tracking_id) as clicked
+      FROM email_logs e
+      WHERE e.to_email = ?
+      ORDER BY e.sent_at ASC
+    `;
+
+    const sentEmails = await queryDB(sentEmailsQuery, [recipientEmail]);
+    console.log(`📧 [COMPLETE-THREAD] Found ${sentEmails.length} sent emails`);
+
+    // Step 4: Get ALL replies from this prospect
+    const repliesQuery = `
+      SELECT
+        r.id,
+        r.recipient_email as "from",
+        'You' as "to",
+        r.subject,
+        r.reply_body as content,
+        r.replied_at as timestamp,
+        'received' as type,
+        0 as opened,
+        0 as openCount,
+        NULL as lastOpenedAt,
+        0 as clicked
+      FROM email_replies r
+      WHERE r.recipient_email = ?
+      ORDER BY r.replied_at ASC
+    `;
+
+    const replies = await queryDB(repliesQuery, [recipientEmail]);
+    console.log(`📧 [COMPLETE-THREAD] Found ${replies.length} replies`);
+
+    // Step 5: Combine and sort all emails chronologically
+    const allEmails = [...sentEmails, ...replies].sort((a, b) =>
+      new Date(a.timestamp) - new Date(b.timestamp)
+    );
+
+    // Step 6: Build response with complete thread data
+    const threadData = {
+      prospect: {
+        name: prospect.name,
+        email: prospect.email,
+        company: prospect.company,
+        position: prospect.position,
+        industry: prospect.industry,
+        location: prospect.location
+      },
+      originalEmail: {
+        id: originalEmail.id,
+        subject: originalEmail.subject,
+        content: originalEmail.body,
+        sentAt: originalEmail.sent_at,
+        campaignId: originalEmail.campaign_id,
+        trackingId: originalEmail.tracking_id
+      },
+      stats: {
+        opened: originalEmail.openCount > 0,
+        openCount: originalEmail.openCount || 0,
+        lastOpenedAt: originalEmail.lastOpenedAt,
+        clicked: originalEmail.clickCount > 0,
+        clickCount: originalEmail.clickCount || 0,
+        replied: originalEmail.replyCount > 0,
+        replyCount: originalEmail.replyCount || 0,
+        totalEmails: allEmails.length
+      },
+      emails: allEmails
+    };
+
+    console.log(`📧 [COMPLETE-THREAD] Returning thread with ${allEmails.length} total emails`);
+
+    res.json({
+      success: true,
+      data: threadData
+    });
+  } catch (error) {
+    console.error('❌ [COMPLETE-THREAD] ERROR:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 🆕 Get email thread by recipient email (alternative endpoint)
+router.get('/email-thread-by-recipient/:recipientEmail', async (req, res) => {
+  try {
+    const { recipientEmail } = req.params;
+    const { userId = 'anonymous' } = req.query;
+
+    console.log(`📧 [THREAD-BY-RECIPIENT] Fetching thread for ${recipientEmail}, user ${userId}`);
+
+    // Get all sent emails to this recipient
+    const sentEmailsQuery = `
+      SELECT
+        e.id,
+        'You' as "from",
+        e.to_email as "to",
+        e.subject,
+        e.body as content,
+        e.sent_at as timestamp,
+        'sent' as type,
+        e.tracking_id,
+        (SELECT COUNT(*) > 0 FROM email_opens WHERE tracking_id = e.tracking_id) as opened
+      FROM email_logs e
+      WHERE e.to_email = ?
+      ORDER BY e.sent_at ASC
+    `;
+
+    const sentEmails = await queryDB(sentEmailsQuery, [decodeURIComponent(recipientEmail)]);
+
+    // Get all replies from this recipient
+    const repliesQuery = `
+      SELECT
+        r.id,
+        r.recipient_email as "from",
+        'You' as "to",
+        r.subject,
+        r.reply_body as content,
+        r.replied_at as timestamp,
+        'received' as type,
+        0 as opened
+      FROM email_replies r
+      WHERE r.recipient_email = ?
+      ORDER BY r.replied_at ASC
+    `;
+
+    const replies = await queryDB(repliesQuery, [decodeURIComponent(recipientEmail)]);
+
+    // Combine and sort chronologically
+    const allEmails = [...sentEmails, ...replies].sort((a, b) =>
+      new Date(a.timestamp) - new Date(b.timestamp)
+    );
+
+    console.log(`📧 [THREAD-BY-RECIPIENT] Found ${sentEmails.length} sent, ${replies.length} replies`);
+
+    res.json({
+      success: true,
+      data: allEmails
+    });
+  } catch (error) {
+    console.error('❌ [THREAD-BY-RECIPIENT] ERROR:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // 🆕 Send reply from thread view
 router.post('/send-reply', async (req, res) => {
   try {

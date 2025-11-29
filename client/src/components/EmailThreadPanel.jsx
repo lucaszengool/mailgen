@@ -46,32 +46,63 @@ export default function EmailThreadPanel({ emailId, onClose }) {
       setLoading(true)
       const userId = user?.id || 'anonymous'
 
-      console.log('📧 Fetching email details for ID:', emailId)
+      console.log('📧 Fetching complete email thread for ID:', emailId)
 
-      // Fetch the email details
-      const emailResponse = await fetch(`/api/analytics/email-detail/${emailId}?userId=${userId}`)
-      const emailResult = await emailResponse.json()
+      // 🔥 FIX: Use the complete thread endpoint that includes sent emails AND replies
+      const threadResponse = await fetch(`/api/analytics/complete-thread/${emailId}?userId=${userId}`)
+      const threadResult = await threadResponse.json()
 
-      console.log('📧 Email response:', emailResult)
+      console.log('📧 Complete thread response:', threadResult)
 
-      if (emailResult.success && emailResult.data) {
-        setEmailData(emailResult.data)
-        setReplySubject(`Re: ${emailResult.data.subject}`)
-        // Expand the current email by default
-        setExpandedEmails(new Set([emailResult.data.id]))
+      if (threadResult.success && threadResult.data) {
+        const threadData = threadResult.data
 
-        // Fetch thread history (past emails between user and this prospect)
-        const threadResponse = await fetch(`/api/analytics/email-thread/${encodeURIComponent(emailResult.data.recipientEmail)}?userId=${userId}`)
-        const threadResult = await threadResponse.json()
+        // Set email data from the thread response
+        setEmailData({
+          id: threadData.originalEmail?.id,
+          subject: threadData.originalEmail?.subject,
+          recipientEmail: threadData.prospect?.email,
+          sentAt: threadData.originalEmail?.sentAt,
+          body: threadData.originalEmail?.content,
+          openCount: threadData.stats?.openCount || 0,
+          clickCount: threadData.stats?.clickCount || 0,
+          replyCount: threadData.stats?.replyCount || 0
+        })
 
-        console.log('📧 Thread history response:', threadResult)
+        setReplySubject(`Re: ${threadData.originalEmail?.subject}`)
 
-        if (threadResult.success) {
-          setThreadHistory(threadResult.data || [])
+        // Set thread history with all emails (sent + received) sorted chronologically
+        const allEmails = threadData.emails || []
+        setThreadHistory(allEmails)
+
+        // Expand the most recent email by default
+        if (allEmails.length > 0) {
+          const lastEmail = allEmails[allEmails.length - 1]
+          setExpandedEmails(new Set([lastEmail.id || allEmails.length - 1]))
         }
+
+        console.log(`📧 Thread loaded: ${allEmails.length} emails (sent + replies)`)
       } else {
-        console.error('Failed to load email details:', emailResult.error)
-        toast.error('Failed to load email details')
+        // Fallback to original endpoint if complete-thread fails
+        console.log('📧 Falling back to email-detail endpoint...')
+        const emailResponse = await fetch(`/api/analytics/email-detail/${emailId}?userId=${userId}`)
+        const emailResult = await emailResponse.json()
+
+        if (emailResult.success && emailResult.data) {
+          setEmailData(emailResult.data)
+          setReplySubject(`Re: ${emailResult.data.subject}`)
+          setExpandedEmails(new Set([emailResult.data.id]))
+
+          // Fetch thread history by recipient email
+          const historyResponse = await fetch(`/api/analytics/email-thread-by-recipient/${encodeURIComponent(emailResult.data.recipientEmail)}?userId=${userId}`)
+          const historyResult = await historyResponse.json()
+
+          if (historyResult.success) {
+            setThreadHistory(historyResult.data || [])
+          }
+        } else {
+          toast.error('Failed to load email details')
+        }
       }
     } catch (error) {
       console.error('Error fetching email thread:', error)
@@ -270,11 +301,25 @@ export default function EmailThreadPanel({ emailId, onClose }) {
                   </div>
                 </div>
 
-                {/* Email Body - Expandable */}
+                {/* Email Body - Expandable with HTML support */}
                 {expandedEmails.has(email.id) && (
                   <div className="px-4 pb-4 border-t border-gray-100">
-                    <div className="mt-3 text-gray-700 whitespace-pre-wrap">
-                      {email.body || email.content || (
+                    <div className="mt-3 text-gray-700">
+                      {email.body || email.content ? (
+                        // Check if content is HTML (contains tags)
+                        (email.body || email.content).includes('<') && (email.body || email.content).includes('>') ? (
+                          <div
+                            className="email-html-content prose prose-sm max-w-none"
+                            dangerouslySetInnerHTML={{ __html: email.body || email.content }}
+                            style={{ maxHeight: '400px', overflowY: 'auto' }}
+                          />
+                        ) : (
+                          // Plain text - preserve whitespace
+                          <div className="whitespace-pre-wrap">
+                            {email.body || email.content}
+                          </div>
+                        )
+                      ) : (
                         <span className="text-gray-400 italic">
                           Email content not stored. Subject: {email.subject || emailData?.subject || 'N/A'}
                         </span>
@@ -302,8 +347,19 @@ export default function EmailThreadPanel({ emailId, onClose }) {
               </div>
             </div>
             <div className="px-4 py-4">
-              <div className="text-gray-700 whitespace-pre-wrap">
-                {emailData.body || (
+              <div className="text-gray-700">
+                {emailData.body ? (
+                  // Check if content is HTML
+                  emailData.body.includes('<') && emailData.body.includes('>') ? (
+                    <div
+                      className="email-html-content prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: emailData.body }}
+                      style={{ maxHeight: '400px', overflowY: 'auto' }}
+                    />
+                  ) : (
+                    <div className="whitespace-pre-wrap">{emailData.body}</div>
+                  )
+                ) : (
                   <span className="text-gray-400 italic">
                     Email content not stored. Subject: {emailData?.subject || 'N/A'}
                   </span>
