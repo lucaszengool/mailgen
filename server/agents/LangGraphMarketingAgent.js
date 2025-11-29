@@ -7047,9 +7047,9 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
           host: smtpConfig.host || 'smtp.gmail.com',
           port: parseInt(smtpConfig.port || '587'),
           secure: smtpConfig.secure === true,
-          connectionTimeout: 90000, // 90 seconds (increased for Railway network latency)
-          greetingTimeout: 90000,   // 90 seconds (increased for Railway network latency)
-          socketTimeout: 120000,    // 120 seconds (increased for Railway network latency)
+          connectionTimeout: 20000, // 20 seconds (Railway times out at 30s)
+          greetingTimeout: 15000,   // 15 seconds
+          socketTimeout: 25000,     // 25 seconds (must be < Railway 30s timeout)
           auth: {
             user: smtpConfig.auth?.user || smtpConfig.username || smtpConfig.email,
             pass: smtpConfig.auth?.pass || smtpConfig.password || smtpConfig.pass
@@ -7147,9 +7147,9 @@ Generate ONLY the email body text (no subject line, no placeholders). Make it fe
           maxMessages: 100, // Max messages per connection
           rateDelta: 1000, // Wait 1 second between messages
           rateLimit: 1, // Send 1 message per rateDelta
-          connectionTimeout: 60000, // 60 second connection timeout (increased from 10s)
-          greetingTimeout: 60000, // 60 second greeting timeout (increased from 10s)
-          socketTimeout: 120000 // 120 second socket timeout (increased from 30s)
+          connectionTimeout: 20000, // 20 second connection timeout (Railway times out at 30s)
+          greetingTimeout: 15000, // 15 second greeting timeout
+          socketTimeout: 25000 // 25 second socket timeout (must be < Railway 30s timeout)
         });
 
         // Skip verify() - Gmail often blocks it but still allows sending
