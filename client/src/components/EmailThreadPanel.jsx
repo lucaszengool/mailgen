@@ -320,9 +320,18 @@ export default function EmailThreadPanel({ emailId, onClose }) {
                           </div>
                         )
                       ) : (
-                        <span className="text-gray-400 italic">
-                          Email content not stored. Subject: {email.subject || emailData?.subject || 'N/A'}
-                        </span>
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                          <p className="text-gray-500 text-sm mb-2">
+                            📧 Email sent on {new Date(email.timestamp || email.sentAt).toLocaleDateString()}
+                          </p>
+                          <p className="font-medium text-gray-700 mb-2">
+                            Subject: {email.subject || emailData?.subject || 'N/A'}
+                          </p>
+                          <p className="text-gray-400 text-xs italic">
+                            Email content was not stored for this message.
+                            Future emails will have full content displayed.
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -360,9 +369,18 @@ export default function EmailThreadPanel({ emailId, onClose }) {
                     <div className="whitespace-pre-wrap">{emailData.body}</div>
                   )
                 ) : (
-                  <span className="text-gray-400 italic">
-                    Email content not stored. Subject: {emailData?.subject || 'N/A'}
-                  </span>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p className="text-gray-500 text-sm mb-2">
+                      📧 Email sent on {emailData?.sentAt ? new Date(emailData.sentAt).toLocaleDateString() : 'Unknown date'}
+                    </p>
+                    <p className="font-medium text-gray-700 mb-2">
+                      Subject: {emailData?.subject || 'N/A'}
+                    </p>
+                    <p className="text-gray-400 text-xs italic">
+                      Email content was not stored for this message.
+                      Future emails will have full content displayed.
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
