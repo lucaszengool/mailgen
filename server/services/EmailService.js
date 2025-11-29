@@ -53,7 +53,8 @@ class EmailService {
       let transporter = this.transporter;
       let senderEmail = process.env.SMTP_USERNAME;
 
-      if (userId) {
+      if (userId && userId !== 'anonymous') {
+        // Try Gmail OAuth first
         try {
           const oauthConfig = await GmailOAuthService.getSMTPConfigWithOAuth(userId);
           if (oauthConfig) {
@@ -62,8 +63,47 @@ class EmailService {
             senderEmail = oauthConfig.auth.user;
           }
         } catch (error) {
-          console.log('⚠️ Gmail OAuth not available, falling back to SMTP:', error.message);
+          console.log('⚠️ Gmail OAuth not available:', error.message);
+
+          // 🔥 FIX: Try user-specific SMTP credentials from database
+          try {
+            const db = require('../models/database');
+            const smtpCreds = await new Promise((resolve, reject) => {
+              db.db.get(
+                'SELECT smtp_host, smtp_port, smtp_user, smtp_pass FROM smtp_credentials WHERE user_id = ? LIMIT 1',
+                [userId],
+                (err, row) => {
+                  if (err) reject(err);
+                  else resolve(row);
+                }
+              );
+            });
+
+            if (smtpCreds && smtpCreds.smtp_user && smtpCreds.smtp_pass) {
+              console.log('✅ Using user-specific SMTP credentials from database');
+              transporter = nodemailer.createTransport({
+                host: smtpCreds.smtp_host || 'smtp.gmail.com',
+                port: parseInt(smtpCreds.smtp_port) || 587,
+                secure: smtpCreds.smtp_port === '465' || smtpCreds.smtp_port === 465,
+                auth: {
+                  user: smtpCreds.smtp_user,
+                  pass: smtpCreds.smtp_pass
+                },
+                tls: { rejectUnauthorized: false }
+              });
+              senderEmail = smtpCreds.smtp_user;
+            } else {
+              console.log('⚠️ No user-specific SMTP credentials found, falling back to env vars');
+            }
+          } catch (dbError) {
+            console.log('⚠️ Error fetching SMTP credentials from DB:', dbError.message);
+          }
         }
+      }
+
+      // 🔥 FIX: Check if transporter is properly configured
+      if (!transporter || !senderEmail) {
+        throw new Error('SMTP not configured. Please configure your email settings in Settings → SMTP Settings.');
       }
 
       // Add tracking pixel if trackingId provided

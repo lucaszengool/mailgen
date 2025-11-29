@@ -2584,6 +2584,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   // 🔥 FIX: Declare steps, prospects, generatedEmails BEFORE useEffect that uses them
   const [steps, setSteps] = useState([]);
   const [prospects, setProspects] = useState([]);
+  const [prospectForceUpdateKey, setProspectForceUpdateKey] = useState(0); // 🔥 Force re-render for prospects
   const [generatedEmails, setGeneratedEmails] = useState([]);
   const [emailForceUpdateKey, setEmailForceUpdateKey] = useState(0); // Force re-render for emails
   const [emailCampaignStats, setEmailCampaignStats] = useState({
@@ -4584,17 +4585,27 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
         console.log(`✅ [CAMPAIGN MATCH] Processing prospect batch for campaign ${prospectCampaignId || currentCampaignId}`);
 
-        // Append new prospects to existing list (avoid duplicates by email)
-        setProspects(prev => {
-          const existingEmails = new Set(prev.map(p => p.email));
-          const newProspects = (data.data.prospects || []).filter(p => !existingEmails.has(p.email));
-          const updated = [...prev, ...newProspects];
-          console.log(`📦 Updated prospects: ${prev.length} → ${updated.length} (+${newProspects.length} new)`);
-          return updated;
-        });
+        // 🔥 INSTANT: Append new prospects and force UI re-render
+        const batchProspects = data.data.prospects || [];
+        if (batchProspects.length > 0) {
+          setProspects(prev => {
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newProspects = batchProspects.filter(p => p.email && !existingEmails.has(p.email));
+            if (newProspects.length > 0) {
+              const updated = [...prev, ...newProspects];
+              console.log(`📦🚀 [INSTANT] Updated prospects: ${prev.length} → ${updated.length} (+${newProspects.length} new)`);
+              return updated;
+            }
+            return prev;
+          });
+
+          // 🔥 INSTANT: Force component re-render
+          setProspectForceUpdateKey(k => k + 1);
+          console.log(`🔥 [INSTANT] Forced prospect UI re-render`);
+        }
 
         // Show toast notification for batch update
-        toast.success(`🎯 Found ${data.data.prospects?.length || 0} more prospects! (${data.data.totalSoFar}/${data.data.targetTotal} total)`, {
+        toast.success(`🎯 Found ${batchProspects.length} more prospects! (${data.data.totalSoFar}/${data.data.targetTotal} total)`, {
           duration: 3000,
           icon: '📦',
         });
@@ -4814,15 +4825,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
         const receivedProspects = data.prospects || [];
         console.log(`📦 Merging ${receivedProspects.length} prospects from prospect_list`);
-        setProspects(prev => {
-          const existingEmails = new Set(prev.map(p => p.email));
-          const newProspects = receivedProspects.filter(p => !existingEmails.has(p.email));
-          if (newProspects.length > 0) {
-            console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
-            return [...prev, ...newProspects];
-          }
-          return prev;
-        });
+
+        if (receivedProspects.length > 0) {
+          setProspects(prev => {
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newProspects = receivedProspects.filter(p => p.email && !existingEmails.has(p.email));
+            if (newProspects.length > 0) {
+              console.log(`📦🚀 [INSTANT] Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
+              return [...prev, ...newProspects];
+            }
+            return prev;
+          });
+
+          // 🔥 INSTANT: Force component re-render
+          setProspectForceUpdateKey(k => k + 1);
+          console.log(`🔥 [INSTANT] Forced prospect UI re-render from prospect_list`);
+        }
 
         // Create micro-steps for prospect discovery
         if (receivedProspects.length > 0 && !hasShownProspectSteps) {
@@ -5161,17 +5179,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               console.log(`🚫 [CAMPAIGN ISOLATION] Skipping emailCampaign stats from different campaign`);
             }
           }
-          if (data.data.prospects) {
+          if (data.data.prospects && data.data.prospects.length > 0) {
             console.log(`📦 Received data_update with ${data.data.prospects.length} prospects - merging`);
             setProspects(prev => {
               const existingEmails = new Set(prev.map(p => p.email));
-              const newProspects = data.data.prospects.filter(p => !existingEmails.has(p.email));
+              const newProspects = data.data.prospects.filter(p => p.email && !existingEmails.has(p.email));
               if (newProspects.length > 0) {
-                console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
+                console.log(`📦🚀 [INSTANT] Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
                 return [...prev, ...newProspects];
               }
               return prev;
             });
+
+            // 🔥 INSTANT: Force component re-render
+            setProspectForceUpdateKey(k => k + 1);
+            console.log(`🔥 [INSTANT] Forced prospect UI re-render from data_update`);
           }
         }
       } else if (data.type === 'email_batch') {
@@ -6330,7 +6352,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   </div>
                 )}
 
-                <div className="space-y-3">
+                {/* 🔥 INSTANT: Key forces re-render when prospects change */}
+                <div className="space-y-3" key={`prospects-${prospectForceUpdateKey}-${prospects.length}`}>
                   {isLoadingProspects ? (
                     // Show loading skeletons
                     <>
