@@ -26,12 +26,14 @@ class Database {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         to_email TEXT NOT NULL,
         subject TEXT,
+        body TEXT,
         campaign_id TEXT,
         user_id TEXT NOT NULL DEFAULT 'anonymous',
         message_id TEXT,
         status TEXT DEFAULT 'pending',
         error_message TEXT,
         recipient_index INTEGER,
+        tracking_id TEXT,
         sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -68,6 +70,21 @@ class Database {
           });
         } else {
           console.log('✅ tracking_id column already exists in email_logs table');
+        }
+
+        // 🔥 MIGRATION: Add body column for email content storage
+        const hasBody = columns.some(col => col.name === 'body');
+        if (!hasBody) {
+          console.log('🔄 MIGRATION: Adding body column to email_logs table...');
+          this.db.run(`ALTER TABLE email_logs ADD COLUMN body TEXT`, (err) => {
+            if (err) {
+              console.error('❌ Failed to add body column:', err);
+            } else {
+              console.log('✅ Successfully added body column to email_logs table');
+            }
+          });
+        } else {
+          console.log('✅ body column already exists in email_logs table');
         }
       } else if (err) {
         console.error('❌ Failed to check email_logs table structure:', err);
