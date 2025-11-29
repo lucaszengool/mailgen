@@ -912,8 +912,10 @@ class LangGraphMarketingAgent {
             console.log('✅ Template selection broadcast completed!');
 
             // Also broadcast prospects data directly
+            // 🔥 CRITICAL: Include campaignId for proper isolation
             this.wsManager.broadcast({
               type: 'prospect_list',
+              campaignId: campaignId,  // 🔥 CRITICAL for isolation
               workflowId: campaignId,
               prospects: prospects,
               total: prospects.length,
@@ -1196,9 +1198,12 @@ class LangGraphMarketingAgent {
         }
 
         // Update workflow state with prospect data
+        // 🔥 CRITICAL: Include campaignId for proper isolation
         this.wsManager.broadcastWorkflowUpdate(campaignId, {
           type: 'data_update',
+          campaignId: campaignId,  // 🔥 CRITICAL for isolation
           data: {
+            campaignId: campaignId,  // 🔥 Also inside data
             prospects: prospects,
             totalProspects: prospects.length,
             prospectSources: prospects.map(p => p.source || 'unknown').filter((v, i, a) => a.indexOf(v) === i),
@@ -1994,9 +1999,12 @@ class LangGraphMarketingAgent {
           this.wsManager.sendLogUpdate('email_generation', `   ✅ Persona: ${userPersona.type} (${userPersona.communicationStyle})`, 'success');
           
           // 🚀 Send updated prospect with full persona to frontend immediately
+          // 🔥 CRITICAL: Include campaignId for proper isolation
           this.wsManager.broadcast({
             type: 'prospect_updated',
+            campaignId: campaignId,  // 🔥 CRITICAL for isolation
             data: {
+              campaignId: campaignId,  // 🔥 Also inside data
               prospect: prospect,
               persona: userPersona,
               step: 'persona_generated',
@@ -2754,10 +2762,14 @@ class LangGraphMarketingAgent {
       });
       
       // Broadcast comprehensive data update
+      // 🔥 CRITICAL: Include campaignId for proper isolation
       this.wsManager.broadcast({
         type: 'data_update',
+        campaignId: campaignId,  // 🔥 CRITICAL for isolation
         data: {
+          campaignId: campaignId,  // 🔥 Also inside data
           emailCampaign: {
+            campaignId: campaignId,
             emails: emailCampaign.emails,
             emailsSent: emailCampaign.emails,
             sent: emailCampaign.emails.length,
