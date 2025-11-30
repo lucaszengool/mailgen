@@ -1433,25 +1433,10 @@ router.get('/email-thread/:emailId', async (req, res) => {
     const sentEmails = await queryDB(threadEmailsQuery, [originalEmail.to_email, userId, originalEmail.campaign_id]);
 
     // Get all replies from this prospect
-    // Note: reply_body column may not exist in older databases - try with column first, then fallback
+    // 🔥 FIX: Skip reply_body entirely since column doesn't exist in production
     let replies = [];
     try {
-      const repliesQueryWithBody = `
-        SELECT
-          r.id,
-          r.recipient_email as "from",
-          r.subject,
-          COALESCE(r.reply_body, r.subject, 'Reply received') as content,
-          r.replied_at as timestamp,
-          'received' as type
-        FROM email_replies r
-        WHERE r.recipient_email = ? AND r.campaign_id = ?
-        ORDER BY r.replied_at ASC
-      `;
-      replies = await queryDB(repliesQueryWithBody, [originalEmail.to_email, originalEmail.campaign_id]);
-    } catch (replyError) {
-      console.log('⚠️ reply_body column not available, using fallback query');
-      const repliesQueryFallback = `
+      const repliesQuery = `
         SELECT
           r.id,
           r.recipient_email as "from",
@@ -1463,7 +1448,10 @@ router.get('/email-thread/:emailId', async (req, res) => {
         WHERE r.recipient_email = ? AND r.campaign_id = ?
         ORDER BY r.replied_at ASC
       `;
-      replies = await queryDB(repliesQueryFallback, [originalEmail.to_email, originalEmail.campaign_id]);
+      replies = await queryDB(repliesQuery, [originalEmail.to_email, originalEmail.campaign_id]);
+    } catch (replyError) {
+      console.log('⚠️ Error querying replies:', replyError.message);
+      replies = [];
     }
 
     // Combine and sort all emails chronologically
@@ -1600,30 +1588,12 @@ router.get('/complete-thread/:emailId', async (req, res) => {
     console.log(`📧 [COMPLETE-THREAD] Found ${sentEmails.length} sent emails`);
 
     // Step 4: Get ALL replies from this prospect
-    // Note: reply_body column may not exist in older databases - try with column first, then fallback
+    // 🔥 FIX: Skip reply_body entirely since column doesn't exist in production
+    // This avoids the SQLITE_ERROR: no such column error
     let replies = [];
     try {
-      const repliesQueryWithBody = `
-        SELECT
-          r.id,
-          r.recipient_email as "from",
-          'You' as "to",
-          r.subject,
-          COALESCE(r.reply_body, r.subject, 'Reply received') as content,
-          r.replied_at as timestamp,
-          'received' as type,
-          0 as opened,
-          0 as openCount,
-          NULL as lastOpenedAt,
-          0 as clicked
-        FROM email_replies r
-        WHERE r.recipient_email = ?
-        ORDER BY r.replied_at ASC
-      `;
-      replies = await queryDB(repliesQueryWithBody, [recipientEmail]);
-    } catch (replyError) {
-      console.log('⚠️ reply_body column not available, using fallback query');
-      const repliesQueryFallback = `
+      console.log('📧 [COMPLETE-THREAD] Querying replies (without reply_body)...');
+      const repliesQuery = `
         SELECT
           r.id,
           r.recipient_email as "from",
@@ -1640,7 +1610,10 @@ router.get('/complete-thread/:emailId', async (req, res) => {
         WHERE r.recipient_email = ?
         ORDER BY r.replied_at ASC
       `;
-      replies = await queryDB(repliesQueryFallback, [recipientEmail]);
+      replies = await queryDB(repliesQuery, [recipientEmail]);
+    } catch (replyError) {
+      console.log('⚠️ [COMPLETE-THREAD] Error querying replies:', replyError.message);
+      replies = []; // Return empty array on error
     }
     console.log(`📧 [COMPLETE-THREAD] Found ${replies.length} replies`);
 
@@ -1720,27 +1693,10 @@ router.get('/email-thread-by-recipient/:recipientEmail', async (req, res) => {
     const sentEmails = await queryDB(sentEmailsQuery, [decodeURIComponent(recipientEmail)]);
 
     // Get all replies from this recipient
-    // Note: reply_body column may not exist in older databases - try with column first, then fallback
+    // 🔥 FIX: Skip reply_body entirely since column doesn't exist in production
     let replies = [];
     try {
-      const repliesQueryWithBody = `
-        SELECT
-          r.id,
-          r.recipient_email as "from",
-          'You' as "to",
-          r.subject,
-          COALESCE(r.reply_body, r.subject, 'Reply received') as content,
-          r.replied_at as timestamp,
-          'received' as type,
-          0 as opened
-        FROM email_replies r
-        WHERE r.recipient_email = ?
-        ORDER BY r.replied_at ASC
-      `;
-      replies = await queryDB(repliesQueryWithBody, [decodeURIComponent(recipientEmail)]);
-    } catch (replyError) {
-      console.log('⚠️ reply_body column not available, using fallback query');
-      const repliesQueryFallback = `
+      const repliesQuery = `
         SELECT
           r.id,
           r.recipient_email as "from",
@@ -1754,7 +1710,10 @@ router.get('/email-thread-by-recipient/:recipientEmail', async (req, res) => {
         WHERE r.recipient_email = ?
         ORDER BY r.replied_at ASC
       `;
-      replies = await queryDB(repliesQueryFallback, [decodeURIComponent(recipientEmail)]);
+      replies = await queryDB(repliesQuery, [decodeURIComponent(recipientEmail)]);
+    } catch (replyError) {
+      console.log('⚠️ Error querying replies:', replyError.message);
+      replies = [];
     }
 
     // Combine and sort chronologically
