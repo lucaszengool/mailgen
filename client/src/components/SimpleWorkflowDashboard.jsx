@@ -3887,6 +3887,19 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       
       // Handle prospects data and trigger micro-steps
       if (data.prospects) {
+        // 🔒 CRITICAL: Campaign isolation check to prevent mixing prospects
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const prospectCampaignId = data.campaignId || data.data?.campaignId;
+
+        console.log(`📦 [WORKFLOW] Campaign check: prospects=${prospectCampaignId}, current=${currentCampaignId}`);
+
+        if (prospectCampaignId && currentCampaignId &&
+            prospectCampaignId !== currentCampaignId &&
+            prospectCampaignId !== String(currentCampaignId)) {
+          console.log(`🚫 [WORKFLOW] Skipping prospects from different campaign`);
+          return; // Skip - different campaign
+        }
+
         console.log(`📦 Received ${data.prospects.length} prospects via WebSocket - merging`);
         setProspects(prev => {
           const existingEmails = new Set(prev.map(p => p.email));
@@ -4815,18 +4828,30 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       
       // IMMEDIATE CHECK - trigger prospect steps if we have prospect data
       if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0 && !hasShownProspectSteps) {
-        console.log('🎯 FOUND PROSPECTS - triggering micro-steps immediately!');
-        triggerProspectMicroSteps(data.prospects);
-        console.log(`📦 Merging ${data.prospects.length} prospects from immediate check`);
-        setProspects(prev => {
-          const existingEmails = new Set(prev.map(p => p.email));
-          const newProspects = data.prospects.filter(p => !existingEmails.has(p.email));
-          if (newProspects.length > 0) {
-            console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
-            return [...prev, ...newProspects];
-          }
-          return prev;
-        });
+        // 🔒 CRITICAL: Campaign isolation check to prevent mixing prospects
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const prospectCampaignId = data.campaignId || data.data?.campaignId;
+
+        console.log(`📦 [IMMEDIATE] Campaign check: prospects=${prospectCampaignId}, current=${currentCampaignId}`);
+
+        if (prospectCampaignId && currentCampaignId &&
+            prospectCampaignId !== currentCampaignId &&
+            prospectCampaignId !== String(currentCampaignId)) {
+          console.log(`🚫 [IMMEDIATE] Skipping prospects from different campaign`);
+        } else {
+          console.log('🎯 FOUND PROSPECTS - triggering micro-steps immediately!');
+          triggerProspectMicroSteps(data.prospects);
+          console.log(`📦 Merging ${data.prospects.length} prospects from immediate check`);
+          setProspects(prev => {
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newProspects = data.prospects.filter(p => !existingEmails.has(p.email));
+            if (newProspects.length > 0) {
+              console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
+              return [...prev, ...newProspects];
+            }
+            return prev;
+          });
+        }
       }
       
       // Check for data_update and fetch workflow data

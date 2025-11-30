@@ -621,9 +621,10 @@ class WorkflowWebSocketManager extends EventEmitter {
   }
 
   // 发送客户更新
-  updateClientData(prospects) {
-    console.log(`📡 Broadcasting prospect data update: ${prospects.length} prospects`);
-    
+  // 🔥 CRITICAL: Added campaignId parameter to prevent mixing prospects between campaigns
+  updateClientData(prospects, campaignId = null) {
+    console.log(`📡 Broadcasting prospect data update: ${prospects.length} prospects for campaign: ${campaignId}`);
+
     // Update all workflow states with prospect data
     this.workflowStates.forEach((state, workflowId) => {
       if (!state.data) state.data = {};
@@ -631,29 +632,34 @@ class WorkflowWebSocketManager extends EventEmitter {
       state.data.totalProspects = prospects.length;
       state.data.lastUpdate = new Date().toISOString();
     });
-    
+
     // Broadcast to all connected clients
+    // 🔥 CRITICAL: Include campaignId for proper isolation
     this.broadcast({
       type: 'data_update',
+      campaignId: campaignId,  // 🔥 CRITICAL for isolation
       data: {
+        campaignId: campaignId,  // 🔥 Also inside data
         prospects: prospects,
         totalProspects: prospects.length
       },
       timestamp: new Date().toISOString()
     });
-    
+
     // Also send as clients_update for backward compatibility
     this.broadcast({
-      type: 'clients_update', 
+      type: 'clients_update',
+      campaignId: campaignId,  // 🔥 CRITICAL for isolation
       clients: prospects,
       total: prospects.length,
       timestamp: new Date().toISOString()
     });
-    
+
     // Send prospect list to all clients
     this.clients.forEach((client, clientId) => {
       this.sendToClient(clientId, {
         type: 'prospect_list',
+        campaignId: campaignId,  // 🔥 CRITICAL for isolation
         prospects: prospects,
         total: prospects.length,
         timestamp: new Date().toISOString()
@@ -696,7 +702,8 @@ class WorkflowWebSocketManager extends EventEmitter {
   }
 
   // 步骤完成
-  stepCompleted(stepId, results = null, progress = 100) {
+  // 🔥 CRITICAL: Added campaignId parameter to prevent mixing prospects between campaigns
+  stepCompleted(stepId, results = null, progress = 100, campaignId = null) {
     const stepData = {
       status: 'completed',
       progress,
@@ -706,27 +713,30 @@ class WorkflowWebSocketManager extends EventEmitter {
 
     // Store prospects data in workflow state if this is the prospect_search step
     if (stepId === 'prospect_search' && results && results.prospects) {
-      console.log(`📊 Storing ${results.prospects.length} prospects in workflow state`);
-      
+      console.log(`📊 Storing ${results.prospects.length} prospects in workflow state for campaign: ${campaignId}`);
+
       // Find the most recent workflow or create one
-      let workflowId = null;
-      for (const [id, state] of this.workflowStates) {
-        if (state.status === 'running') {
-          workflowId = id;
-          break;
+      let workflowId = campaignId || null;  // 🔥 Use campaignId as workflowId if provided
+      if (!workflowId) {
+        for (const [id, state] of this.workflowStates) {
+          if (state.status === 'running') {
+            workflowId = id;
+            break;
+          }
         }
       }
-      
+
       if (!workflowId) {
         workflowId = `workflow_${Date.now()}`;
         this.workflowStates.set(workflowId, {
           id: workflowId,
+          campaignId: campaignId,  // 🔥 Store campaignId
           status: 'running',
           startTime: new Date().toISOString(),
           data: {}
         });
       }
-      
+
       // Update the workflow state with prospects
       const state = this.workflowStates.get(workflowId);
       if (state) {
@@ -736,11 +746,13 @@ class WorkflowWebSocketManager extends EventEmitter {
         state.data.lastUpdate = new Date().toISOString();
         console.log(`✅ Prospects stored in workflow ${workflowId}`);
       }
-      
+
       // Also broadcast a specific prospect_list message
+      // 🔥 CRITICAL: Include campaignId for proper isolation
       this.broadcast({
         type: 'prospect_list',
         workflowId: workflowId,
+        campaignId: campaignId,  // 🔥 CRITICAL for isolation
         prospects: results.prospects,
         total: results.prospects.length,
         timestamp: new Date().toISOString()

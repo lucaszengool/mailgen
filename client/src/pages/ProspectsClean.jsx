@@ -48,8 +48,22 @@ const ProspectsPage = () => {
         try {
           const data = JSON.parse(event.data)
 
+          // 🔒 CRITICAL: Get current campaign ID for validation
+          const currentCampaignId = localStorage.getItem('currentCampaignId')
+
+          // 🔒 Helper function to check campaign isolation
+          const isSameCampaign = (msgCampaignId) => {
+            if (!msgCampaignId || !currentCampaignId) return true // Allow if no campaign filter
+            return msgCampaignId === currentCampaignId || msgCampaignId === String(currentCampaignId)
+          }
+
           // Handle prospect-related WebSocket messages
           if (data.type === 'prospect_batch_update' && data.data?.prospects) {
+            const batchCampaignId = data.data?.campaignId || data.campaignId
+            if (!isSameCampaign(batchCampaignId)) {
+              console.log(`🚫 ProspectsClean: Skipping batch from different campaign (${batchCampaignId} vs ${currentCampaignId})`)
+              return
+            }
             console.log(`📦 ProspectsClean: Received ${data.data.prospects.length} prospects from batch update`)
             setProspects(prev => {
               const existingEmails = new Set(prev.map(p => p.email))
@@ -61,6 +75,11 @@ const ProspectsPage = () => {
               return prev
             })
           } else if (data.type === 'prospect_list' && data.prospects) {
+            const listCampaignId = data.campaignId || data.data?.campaignId
+            if (!isSameCampaign(listCampaignId)) {
+              console.log(`🚫 ProspectsClean: Skipping list from different campaign (${listCampaignId} vs ${currentCampaignId})`)
+              return
+            }
             console.log(`📋 ProspectsClean: Received ${data.prospects.length} prospects from prospect_list`)
             setProspects(prev => {
               const existingEmails = new Set(prev.map(p => p.email))
@@ -71,6 +90,11 @@ const ProspectsPage = () => {
               return prev
             })
           } else if (data.type === 'data_update' && data.data?.prospects) {
+            const updateCampaignId = data.campaignId || data.data?.campaignId
+            if (!isSameCampaign(updateCampaignId)) {
+              console.log(`🚫 ProspectsClean: Skipping data_update from different campaign (${updateCampaignId} vs ${currentCampaignId})`)
+              return
+            }
             console.log(`📊 ProspectsClean: Received ${data.data.prospects.length} prospects from data_update`)
             setProspects(prev => {
               const existingEmails = new Set(prev.map(p => p.email))
@@ -81,6 +105,11 @@ const ProspectsPage = () => {
               return prev
             })
           } else if (data.type === 'template_selection_required' && data.data?.sampleProspects) {
+            const templateCampaignId = data.data?.campaignId || data.campaignId
+            if (!isSameCampaign(templateCampaignId)) {
+              console.log(`🚫 ProspectsClean: Skipping template_selection from different campaign`)
+              return
+            }
             // 🔥 NEW: Also handle template_selection_required which contains prospect samples
             console.log(`🎨 ProspectsClean: Received ${data.data.sampleProspects.length} sample prospects from template_selection_required`)
             console.log(`🎨 ProspectsClean: Total prospects found: ${data.data.prospectsFound || data.data.prospectsCount}`)
@@ -88,6 +117,11 @@ const ProspectsPage = () => {
             // Trigger a fetch to get all prospects from the database
             fetchProspects(false)
           } else if (data.type === 'workflow_update' && data.stepData?.results?.prospects) {
+            const workflowCampaignId = data.campaignId || data.stepData?.campaignId
+            if (!isSameCampaign(workflowCampaignId)) {
+              console.log(`🚫 ProspectsClean: Skipping workflow_update from different campaign`)
+              return
+            }
             // 🔥 NEW: Handle workflow_update with prospect results
             console.log(`🔄 ProspectsClean: Received ${data.stepData.results.prospects.length} prospects from workflow_update`)
             setProspects(prev => {

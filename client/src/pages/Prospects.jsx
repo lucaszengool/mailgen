@@ -319,16 +319,23 @@ export default function Prospects() {
           
           toast.success(`🎭 AI profile generated for ${data.data.prospect.name || data.data.prospect.email}`)
         } else if (data.type === 'prospect_updated') {
+          // 🔒 CRITICAL: Validate campaign ID to prevent mixing prospects
+          const prospectCampaignId = data.campaignId || data.data?.campaignId;
+          if (prospectCampaignId && currentCampaignId && prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_updated from different campaign (Update: ${prospectCampaignId}, Current: ${currentCampaignId})`);
+            return;
+          }
+
           // Individual prospect profile update
           console.log('🔄 Prospect profile updated:', data.data.email)
           const updatedEmail = data.data.email
-          
-          setProspects(prev => prev.map(p => 
-            p.email === updatedEmail 
+
+          setProspects(prev => prev.map(p =>
+            p.email === updatedEmail
               ? { ...p, ...data.data }
               : p
           ))
-          
+
           // Update selected prospect if it matches
           setSelectedProspect(prev =>
             prev && prev.email === updatedEmail
