@@ -1724,42 +1724,59 @@ router.post('/send-reply', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Missing required fields' });
     }
 
-    // Get user's SMTP credentials
+    // Get SMTP credentials from smtp_configs table
     const smtpQuery = `
-      SELECT smtp_host, smtp_port, smtp_user, smtp_pass
-      FROM smtp_credentials
-      WHERE user_id = ?
+      SELECT host, port, username, password, secure
+      FROM smtp_configs
+      WHERE is_default = 1 OR id = 1
       LIMIT 1
     `;
 
-    const smtpCreds = await new Promise((resolve, reject) => {
-      db.db.get(smtpQuery, [userId], (err, row) => {
+    let smtpCreds = await new Promise((resolve, reject) => {
+      db.db.get(smtpQuery, [], (err, row) => {
         if (err) reject(err);
         else resolve(row);
       });
     });
 
+    // Fallback to user_configs if smtp_configs not found
     if (!smtpCreds) {
-      return res.status(400).json({ success: false, error: 'SMTP credentials not configured' });
+      const userConfigQuery = `
+        SELECT smtp_host as host, smtp_port as port, smtp_user as username, smtp_pass as password
+        FROM user_configs
+        WHERE user_id = ?
+        LIMIT 1
+      `;
+      smtpCreds = await new Promise((resolve, reject) => {
+        db.db.get(userConfigQuery, [userId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+    }
+
+    if (!smtpCreds || !smtpCreds.username || !smtpCreds.password) {
+      return res.status(400).json({ success: false, error: 'SMTP not configured. Please configure your email settings in Settings → SMTP Settings.' });
     }
 
     // Send the email using nodemailer
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
-      host: smtpCreds.smtp_host,
-      port: smtpCreds.smtp_port,
-      secure: smtpCreds.smtp_port === 465,
+      host: smtpCreds.host || 'smtp.gmail.com',
+      port: parseInt(smtpCreds.port) || 587,
+      secure: smtpCreds.secure || smtpCreds.port === 465,
       auth: {
-        user: smtpCreds.smtp_user,
-        pass: smtpCreds.smtp_pass
-      }
+        user: smtpCreds.username,
+        pass: smtpCreds.password
+      },
+      tls: { rejectUnauthorized: false }
     });
 
     // Prepare subject with Re: prefix if not already present
     const replySubject = originalSubject.startsWith('Re:') ? originalSubject : `Re: ${originalSubject}`;
 
     const mailOptions = {
-      from: smtpCreds.smtp_user,
+      from: smtpCreds.username,
       to: recipientEmail,
       subject: replySubject,
       html: replyContent

@@ -68,10 +68,12 @@ class EmailService {
           // 🔥 FIX: Try user-specific SMTP credentials from database
           try {
             const db = require('../models/database');
-            const smtpCreds = await new Promise((resolve, reject) => {
+
+            // First try smtp_configs table (main SMTP settings table)
+            let smtpCreds = await new Promise((resolve, reject) => {
               db.db.get(
-                'SELECT smtp_host, smtp_port, smtp_user, smtp_pass FROM smtp_credentials WHERE user_id = ? LIMIT 1',
-                [userId],
+                'SELECT host, port, username, password, secure FROM smtp_configs WHERE is_default = 1 OR id = 1 LIMIT 1',
+                [],
                 (err, row) => {
                   if (err) reject(err);
                   else resolve(row);
@@ -79,21 +81,43 @@ class EmailService {
               );
             });
 
-            if (smtpCreds && smtpCreds.smtp_user && smtpCreds.smtp_pass) {
-              console.log('✅ Using user-specific SMTP credentials from database');
+            // If not found, try user_configs table
+            if (!smtpCreds) {
+              const userConfig = await new Promise((resolve, reject) => {
+                db.db.get(
+                  'SELECT smtp_host, smtp_port, smtp_user, smtp_pass FROM user_configs WHERE user_id = ? LIMIT 1',
+                  [userId],
+                  (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                  }
+                );
+              });
+              if (userConfig) {
+                smtpCreds = {
+                  host: userConfig.smtp_host,
+                  port: userConfig.smtp_port,
+                  username: userConfig.smtp_user,
+                  password: userConfig.smtp_pass
+                };
+              }
+            }
+
+            if (smtpCreds && smtpCreds.username && smtpCreds.password) {
+              console.log('✅ Using SMTP credentials from database');
               transporter = nodemailer.createTransport({
-                host: smtpCreds.smtp_host || 'smtp.gmail.com',
-                port: parseInt(smtpCreds.smtp_port) || 587,
-                secure: smtpCreds.smtp_port === '465' || smtpCreds.smtp_port === 465,
+                host: smtpCreds.host || 'smtp.gmail.com',
+                port: parseInt(smtpCreds.port) || 587,
+                secure: smtpCreds.secure || smtpCreds.port === '465' || smtpCreds.port === 465,
                 auth: {
-                  user: smtpCreds.smtp_user,
-                  pass: smtpCreds.smtp_pass
+                  user: smtpCreds.username,
+                  pass: smtpCreds.password
                 },
                 tls: { rejectUnauthorized: false }
               });
-              senderEmail = smtpCreds.smtp_user;
+              senderEmail = smtpCreds.username;
             } else {
-              console.log('⚠️ No user-specific SMTP credentials found, falling back to env vars');
+              console.log('⚠️ No SMTP credentials found in database, falling back to env vars');
             }
           } catch (dbError) {
             console.log('⚠️ Error fetching SMTP credentials from DB:', dbError.message);
