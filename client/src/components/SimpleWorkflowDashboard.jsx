@@ -2586,6 +2586,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const [prospects, setProspects] = useState([]);
   const [prospectForceUpdateKey, setProspectForceUpdateKey] = useState(0); // 🔥 Force re-render for prospects
   const [generatedEmails, setGeneratedEmails] = useState([]);
+
   const [emailForceUpdateKey, setEmailForceUpdateKey] = useState(0); // Force re-render for emails
   const [emailCampaignStats, setEmailCampaignStats] = useState({
     emails: [],
@@ -3718,6 +3719,112 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     }
   };
 
+  // 🔥 DEDICATED HANDLER: Process prospect_batch_update messages
+  const handleProspectBatchUpdate = (data) => {
+    const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+    const batchCampaignId = data.data?.campaignId || data.campaignId;
+
+    console.log(`📦 [BATCH] Campaign check: batch=${batchCampaignId}, current=${currentCampaignId}`);
+
+    // Campaign isolation check
+    if (batchCampaignId && currentCampaignId &&
+        batchCampaignId !== currentCampaignId &&
+        batchCampaignId !== String(currentCampaignId)) {
+      console.log(`🚫 [BATCH] Skipping - different campaign`);
+      return;
+    }
+
+    const batchProspects = data.data?.prospects || [];
+    console.log(`📦 [BATCH] Processing ${batchProspects.length} prospects`);
+
+    if (batchProspects.length > 0) {
+      setProspects(prev => {
+        const existingEmails = new Set(prev.map(p => p.email));
+        const newProspects = batchProspects.filter(p => p.email && !existingEmails.has(p.email));
+        if (newProspects.length > 0) {
+          console.log(`📦🚀 [BATCH] Adding ${newProspects.length} prospects (${prev.length} → ${prev.length + newProspects.length})`);
+          return [...prev, ...newProspects];
+        }
+        console.log(`📦 [BATCH] No new prospects to add (all duplicates)`);
+        return prev;
+      });
+
+      // Force re-render
+      setProspectForceUpdateKey(k => k + 1);
+
+      // Toast notification
+      toast.success(`🎯 Found ${batchProspects.length} prospects!`, { duration: 3000 });
+    }
+  };
+
+  // 🔥 DEDICATED HANDLER: Process prospect_list messages
+  const handleProspectListUpdate = (data) => {
+    const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+    const listCampaignId = data.campaignId || data.workflowId;
+
+    console.log(`📋 [LIST] Campaign check: list=${listCampaignId}, current=${currentCampaignId}`);
+
+    // Campaign isolation check
+    if (listCampaignId && currentCampaignId &&
+        listCampaignId !== currentCampaignId &&
+        listCampaignId !== String(currentCampaignId)) {
+      console.log(`🚫 [LIST] Skipping - different campaign`);
+      return;
+    }
+
+    const listProspects = data.prospects || [];
+    console.log(`📋 [LIST] Processing ${listProspects.length} prospects`);
+
+    if (listProspects.length > 0) {
+      setProspects(prev => {
+        const existingEmails = new Set(prev.map(p => p.email));
+        const newProspects = listProspects.filter(p => p.email && !existingEmails.has(p.email));
+        if (newProspects.length > 0) {
+          console.log(`📋🚀 [LIST] Adding ${newProspects.length} prospects (${prev.length} → ${prev.length + newProspects.length})`);
+          return [...prev, ...newProspects];
+        }
+        return prev;
+      });
+
+      // Force re-render
+      setProspectForceUpdateKey(k => k + 1);
+    }
+  };
+
+  // 🔥 DEDICATED HANDLER: Process data_update with prospects
+  const handleDataUpdateProspects = (data) => {
+    const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+    const updateCampaignId = data.campaignId || data.data?.campaignId;
+
+    console.log(`📊 [DATA] Campaign check: update=${updateCampaignId}, current=${currentCampaignId}`);
+
+    // Campaign isolation check
+    if (updateCampaignId && currentCampaignId &&
+        updateCampaignId !== currentCampaignId &&
+        updateCampaignId !== String(currentCampaignId)) {
+      console.log(`🚫 [DATA] Skipping - different campaign`);
+      return;
+    }
+
+    const dataProspects = data.data?.prospects || [];
+    console.log(`📊 [DATA] Processing ${dataProspects.length} prospects`);
+
+    if (dataProspects.length > 0) {
+      setProspects(prev => {
+        const existingEmails = new Set(prev.map(p => p.email));
+        const newProspects = dataProspects.filter(p => p.email && !existingEmails.has(p.email));
+        if (newProspects.length > 0) {
+          console.log(`📊🚀 [DATA] Adding ${newProspects.length} prospects (${prev.length} → ${prev.length + newProspects.length})`);
+          return [...prev, ...newProspects];
+        }
+        return prev;
+      });
+
+      // Force re-render
+      setProspectForceUpdateKey(k => k + 1);
+    }
+  };
+
   // Handle workflow updates for agent desktop view
   const handleWorkflowUpdate = (data) => {
     console.log('🎯 Processing workflow update:', data.type);
@@ -4544,14 +4651,33 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
     wsInstance.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log('🔍 WebSocket message received:', data);
-      console.log('🔍 Data type:', data.type);
-      console.log('🔍 Has prospects:', !!data.prospects);
-      console.log('🔍 Prospects length:', data.prospects ? data.prospects.length : 'N/A');
-      console.log('🔍 Full message content:', JSON.stringify(data, null, 2));
-      
-      // Process backend messages - avoid duplicate processing
-      // Only use one handler to prevent duplicate messages
+      console.log('🔍 WebSocket message received:', data.type);
+
+      // 🔥 CRITICAL FIX: Handle prospect messages FIRST before general workflow updates
+      // This ensures prospect_batch_update is never routed to handleWorkflowUpdate
+
+      // Handle prospect_batch_update FIRST (priority over workflow_update)
+      if (data.type === 'prospect_batch_update') {
+        console.log(`📦 [PRIORITY] Processing prospect_batch_update FIRST`);
+        handleProspectBatchUpdate(data);
+        return; // Don't process further
+      }
+
+      // Handle prospect_list FIRST
+      if (data.type === 'prospect_list') {
+        console.log(`📦 [PRIORITY] Processing prospect_list FIRST`);
+        handleProspectListUpdate(data);
+        return;
+      }
+
+      // Handle data_update with prospects FIRST
+      if (data.type === 'data_update' && data.data?.prospects) {
+        console.log(`📦 [PRIORITY] Processing data_update with prospects FIRST`);
+        handleDataUpdateProspects(data);
+        // Don't return - continue to process other data_update parts
+      }
+
+      // Now handle other message types
       if (data.type === 'workflow_update' || data.stepId) {
         // Use workflow update handler for structured workflow data
         handleWorkflowUpdate(data);
@@ -4566,49 +4692,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         setCurrentMicroStepIndex(0);
         setIsAnimating(false);
         setBackgroundWorkflowRunning(false);
-      } else if (data.type === 'prospect_batch_update') {
-        // 📦 Handle background prospect batch updates
-        console.log(`📦 Received prospect batch ${data.data.batchNumber}:`, data.data);
-        console.log(`📦 Batch contains ${data.data.prospects?.length || 0} new prospects`);
-        console.log(`📦 Total so far: ${data.data.totalSoFar}/${data.data.targetTotal}`);
-
-        // 🔒 CRITICAL: Validate campaign ID to prevent mixing prospects between campaigns
-        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
-        const prospectCampaignId = data.data.campaignId || data.campaignId;
-
-        console.log(`🔍 [CAMPAIGN CHECK] Prospect batch campaign: ${prospectCampaignId}, Current campaign: ${currentCampaignId}`);
-
-        if (prospectCampaignId && currentCampaignId && prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
-          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect batch from different campaign (Batch: ${prospectCampaignId}, Current: ${currentCampaignId})`);
-          return; // Skip this batch - it's from a different campaign
-        }
-
-        console.log(`✅ [CAMPAIGN MATCH] Processing prospect batch for campaign ${prospectCampaignId || currentCampaignId}`);
-
-        // 🔥 INSTANT: Append new prospects and force UI re-render
-        const batchProspects = data.data.prospects || [];
-        if (batchProspects.length > 0) {
-          setProspects(prev => {
-            const existingEmails = new Set(prev.map(p => p.email));
-            const newProspects = batchProspects.filter(p => p.email && !existingEmails.has(p.email));
-            if (newProspects.length > 0) {
-              const updated = [...prev, ...newProspects];
-              console.log(`📦🚀 [INSTANT] Updated prospects: ${prev.length} → ${updated.length} (+${newProspects.length} new)`);
-              return updated;
-            }
-            return prev;
-          });
-
-          // 🔥 INSTANT: Force component re-render
-          setProspectForceUpdateKey(k => k + 1);
-          console.log(`🔥 [INSTANT] Forced prospect UI re-render`);
-        }
-
-        // Show toast notification for batch update
-        toast.success(`🎯 Found ${batchProspects.length} more prospects! (${data.data.totalSoFar}/${data.data.targetTotal} total)`, {
-          duration: 3000,
-          icon: '📦',
-        });
+      // NOTE: prospect_batch_update is now handled at the TOP of onmessage with priority
       } else if (data.type === 'stage_start' || data.type === 'workflow_status_update') {
         // 🚀 NEW: Handle workflow stage/status updates from backend
         console.log(`🚀 Received ${data.type}:`, data);
