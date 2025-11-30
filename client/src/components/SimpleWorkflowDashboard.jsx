@@ -4537,6 +4537,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
     // Check on workflow, dashboard, emails, and prospects views
     const shouldCheckForUpdates = workflowStatus === 'running' ||
+                                   workflowStatus === 'starting' ||
+                                   workflowStatus === 'waiting' ||
                                    workflowStatus.includes('waitingForUserApproval') || // Keep polling during email approval!
                                    activeView === 'workflow' ||
                                    activeView === 'dashboard' ||
@@ -4544,12 +4546,25 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                                    activeView === 'prospects';
 
     if (shouldCheckForUpdates) {
+      // 🔥 CRITICAL: Use FAST polling when workflow is running (WebSocket backup)
+      const pollingInterval = workflowStatus === 'running' || workflowStatus === 'starting' || workflowStatus === 'waiting'
+        ? 5000   // Poll every 5 seconds when workflow is active
+        : 30000; // Poll every 30 seconds otherwise
+
+      console.log(`⏰ Setting up polling interval: ${pollingInterval}ms (status: ${workflowStatus})`);
+
       const interval = setInterval(() => {
-        console.log('⏰ Periodic check for workflow updates');
+        console.log(`⏰ Periodic check for workflow updates (status: ${workflowStatus})`);
         checkForEmailUpdates();
-        // Always fetch workflow steps to get newly generated emails
+        // Always fetch workflow steps to get newly generated emails and prospects
         fetchAndTriggerWorkflowSteps();
-      }, 60000); // Check every 60 seconds (WebSocket provides real-time updates)
+      }, pollingInterval);
+
+      // 🔥 IMMEDIATE: Also fetch immediately when workflow starts or view changes
+      if (workflowStatus === 'running' || workflowStatus === 'starting' || workflowStatus === 'waiting') {
+        console.log('🚀 Immediate fetch on workflow status change');
+        fetchAndTriggerWorkflowSteps();
+      }
 
       return () => clearInterval(interval);
     }
@@ -4696,15 +4711,26 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         handleWorkflowUpdate(data);
       } else if (data.type === 'workflow_data_cleared') {
         // Handle workflow reset/clear message from backend
-        console.log('🗑️ Received workflow data cleared message - refreshing UI');
-        // Force refresh all data
-        setProspects([]);
-        setEmailCampaignStats({ emails: [], totalSent: 0, totalOpened: 0, totalClicked: 0 });
-        setGeneratedEmails([]);
-        setMicroSteps([]);
-        setCurrentMicroStepIndex(0);
-        setIsAnimating(false);
-        setBackgroundWorkflowRunning(false);
+        // 🔒 CRITICAL: Only clear if it's for THIS campaign
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const clearCampaignId = data.campaignId || data.data?.campaignId;
+
+        console.log(`🗑️ Received workflow data cleared message - Campaign check: clear=${clearCampaignId}, current=${currentCampaignId}`);
+
+        // Only clear if no campaign specified OR it matches current campaign
+        if (!clearCampaignId || clearCampaignId === currentCampaignId || clearCampaignId === String(currentCampaignId)) {
+          console.log('🗑️ Clearing UI data for this campaign');
+          // Force refresh all data
+          setProspects([]);
+          setEmailCampaignStats({ emails: [], totalSent: 0, totalOpened: 0, totalClicked: 0 });
+          setGeneratedEmails([]);
+          setMicroSteps([]);
+          setCurrentMicroStepIndex(0);
+          setIsAnimating(false);
+          setBackgroundWorkflowRunning(false);
+        } else {
+          console.log(`🚫 Ignoring workflow_data_cleared for different campaign: ${clearCampaignId}`);
+        }
       // NOTE: prospect_batch_update is now handled at the TOP of onmessage with priority
       } else if (data.type === 'stage_start' || data.type === 'workflow_status_update') {
         // 🚀 NEW: Handle workflow stage/status updates from backend
@@ -4796,9 +4822,38 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         // 🎨 NEW: Handle template selection required
         console.log('🎨🎨🎨 TEMPLATE SELECTION REQUIRED MESSAGE RECEIVED! 🎨🎨🎨');
         console.log('🎨 Template selection data:', JSON.stringify(data.data, null, 2));
-        console.log('🎨 Calling handleTemplateSelectionRequired...');
-        handleTemplateSelectionRequired(data.data);
-        console.log('🎨 handleTemplateSelectionRequired called successfully');
+
+        // 🔒 Campaign isolation check
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const templateCampaignId = data.data?.campaignId || data.campaignId;
+        console.log(`🎨 Campaign check: template=${templateCampaignId}, current=${currentCampaignId}`);
+
+        if (templateCampaignId && currentCampaignId &&
+            templateCampaignId !== currentCampaignId &&
+            templateCampaignId !== String(currentCampaignId)) {
+          console.log(`🚫 [TEMPLATE] Skipping template_selection_required from different campaign`);
+        } else {
+          console.log('🎨 Calling handleTemplateSelectionRequired...');
+
+          // 🔥 CRITICAL: Also add prospects immediately from the message
+          if (data.data?.sampleProspects && data.data.sampleProspects.length > 0) {
+            console.log(`📦 [TEMPLATE WS] Adding ${data.data.sampleProspects.length} prospects IMMEDIATELY`);
+            setProspects(prev => {
+              const existingEmails = new Set(prev.map(p => p.email));
+              const newProspects = data.data.sampleProspects.filter(p => p.email && !existingEmails.has(p.email));
+              if (newProspects.length > 0) {
+                console.log(`📦 [TEMPLATE WS] Added ${newProspects.length} new prospects`);
+                return [...prev, ...newProspects];
+              }
+              return prev;
+            });
+            // Force re-render
+            setProspectForceUpdateKey(k => k + 1);
+          }
+
+          handleTemplateSelectionRequired(data.data);
+          console.log('🎨 handleTemplateSelectionRequired called successfully');
+        }
       } else if (data.type === 'template_selected') {
         // 🎨 NEW: Handle template selected confirmation
         console.log('✅ Template selected confirmed:', data.data);

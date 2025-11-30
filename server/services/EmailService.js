@@ -49,12 +49,12 @@ class EmailService {
         throw new Error('Missing required email parameters: to, subject, and content');
       }
 
-      // Try to use Gmail OAuth if userId is provided
-      let transporter = this.transporter;
-      let senderEmail = process.env.SMTP_USERNAME;
+      // 🔥 CRITICAL FIX: Always check for SMTP config from database first
+      let transporter = null;
+      let senderEmail = null;
 
+      // Step 1: Try Gmail OAuth if userId is provided
       if (userId && userId !== 'anonymous') {
-        // Try Gmail OAuth first
         try {
           const oauthConfig = await GmailOAuthService.getSMTPConfigWithOAuth(userId);
           if (oauthConfig) {
@@ -64,15 +64,37 @@ class EmailService {
           }
         } catch (error) {
           console.log('⚠️ Gmail OAuth not available:', error.message);
+        }
+      }
 
-          // 🔥 FIX: Try user-specific SMTP credentials from database
-          try {
-            const db = require('../models/database');
+      // Step 2: If no OAuth, try SMTP credentials from database (ALWAYS check this)
+      if (!transporter) {
+        try {
+          const db = require('../models/database');
+          let smtpCreds = null;
 
-            // First try smtp_configs table (main SMTP settings table)
-            let smtpCreds = await new Promise((resolve, reject) => {
+          // First try user-specific smtp_configs if userId provided
+          if (userId && userId !== 'anonymous') {
+            smtpCreds = await new Promise((resolve, reject) => {
               db.db.get(
-                'SELECT host, port, username, password, secure FROM smtp_configs WHERE is_default = 1 OR id = 1 LIMIT 1',
+                'SELECT host, port, username, password, secure FROM smtp_configs WHERE user_id = ? AND is_default = 1 ORDER BY created_at DESC LIMIT 1',
+                [userId],
+                (err, row) => {
+                  if (err) reject(err);
+                  else resolve(row);
+                }
+              );
+            });
+            if (smtpCreds) {
+              console.log(`📧 Found SMTP config for user: ${userId}`);
+            }
+          }
+
+          // If no user-specific config, try any default config
+          if (!smtpCreds) {
+            smtpCreds = await new Promise((resolve, reject) => {
+              db.db.get(
+                'SELECT host, port, username, password, secure FROM smtp_configs WHERE is_default = 1 ORDER BY created_at DESC LIMIT 1',
                 [],
                 (err, row) => {
                   if (err) reject(err);
@@ -80,52 +102,74 @@ class EmailService {
                 }
               );
             });
-
-            // If not found, try user_configs table
-            if (!smtpCreds) {
-              const userConfig = await new Promise((resolve, reject) => {
-                db.db.get(
-                  'SELECT smtp_host, smtp_port, smtp_user, smtp_pass FROM user_configs WHERE user_id = ? LIMIT 1',
-                  [userId],
-                  (err, row) => {
-                    if (err) reject(err);
-                    else resolve(row);
-                  }
-                );
-              });
-              if (userConfig) {
-                smtpCreds = {
-                  host: userConfig.smtp_host,
-                  port: userConfig.smtp_port,
-                  username: userConfig.smtp_user,
-                  password: userConfig.smtp_pass
-                };
-              }
-            }
-
-            if (smtpCreds && smtpCreds.username && smtpCreds.password) {
-              console.log('✅ Using SMTP credentials from database');
-              transporter = nodemailer.createTransport({
-                host: smtpCreds.host || 'smtp.gmail.com',
-                port: parseInt(smtpCreds.port) || 587,
-                secure: smtpCreds.secure || smtpCreds.port === '465' || smtpCreds.port === 465,
-                auth: {
-                  user: smtpCreds.username,
-                  pass: smtpCreds.password
-                },
-                tls: { rejectUnauthorized: false }
-              });
-              senderEmail = smtpCreds.username;
-            } else {
-              console.log('⚠️ No SMTP credentials found in database, falling back to env vars');
-            }
-          } catch (dbError) {
-            console.log('⚠️ Error fetching SMTP credentials from DB:', dbError.message);
           }
+
+          // If still not found, try getting any config at all
+          if (!smtpCreds) {
+            smtpCreds = await new Promise((resolve, reject) => {
+              db.db.get(
+                'SELECT host, port, username, password, secure FROM smtp_configs ORDER BY created_at DESC LIMIT 1',
+                [],
+                (err, row) => {
+                  if (err) reject(err);
+                  else resolve(row);
+                }
+              );
+            });
+          }
+
+          // Last resort: try user_configs table
+          if (!smtpCreds && userId) {
+            const userConfig = await new Promise((resolve, reject) => {
+              db.db.get(
+                'SELECT smtp_host, smtp_port, smtp_user, smtp_pass FROM user_configs WHERE user_id = ? LIMIT 1',
+                [userId],
+                (err, row) => {
+                  if (err) reject(err);
+                  else resolve(row);
+                }
+              );
+            });
+            if (userConfig && userConfig.smtp_user) {
+              smtpCreds = {
+                host: userConfig.smtp_host,
+                port: userConfig.smtp_port,
+                username: userConfig.smtp_user,
+                password: userConfig.smtp_pass
+              };
+            }
+          }
+
+          if (smtpCreds && smtpCreds.username && smtpCreds.password) {
+            console.log('✅ Using SMTP credentials from database:', smtpCreds.username);
+            console.log(`   Host: ${smtpCreds.host}, Port: ${smtpCreds.port}`);
+            transporter = nodemailer.createTransport({
+              host: smtpCreds.host || 'smtp.gmail.com',
+              port: parseInt(smtpCreds.port) || 587,
+              secure: smtpCreds.secure === true || smtpCreds.secure === 1 || smtpCreds.port === '465' || smtpCreds.port === 465,
+              auth: {
+                user: smtpCreds.username,
+                pass: smtpCreds.password
+              },
+              tls: { rejectUnauthorized: false }
+            });
+            senderEmail = smtpCreds.username;
+          } else {
+            console.log('⚠️ No SMTP credentials found in database');
+          }
+        } catch (dbError) {
+          console.log('⚠️ Error fetching SMTP credentials from DB:', dbError.message);
         }
       }
 
-      // 🔥 FIX: Check if transporter is properly configured
+      // Step 3: Fall back to environment variables
+      if (!transporter && process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD) {
+        console.log('✅ Using SMTP credentials from environment variables');
+        transporter = this.transporter;
+        senderEmail = process.env.SMTP_USERNAME;
+      }
+
+      // Step 4: Check if transporter is properly configured
       if (!transporter || !senderEmail) {
         throw new Error('SMTP not configured. Please configure your email settings in Settings → SMTP Settings.');
       }

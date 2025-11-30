@@ -729,6 +729,31 @@ router.get('/results', optionalAuth, async (req, res) => {
       let enrichedProspects = processedResults.prospects || [];
 
       if (enrichedProspects.length > 0) {
+        // 🔒 CRITICAL: Filter prospects by campaignId FIRST to prevent mixing
+        const prospectsBeforeCampaignFilter = enrichedProspects.length;
+        if (campaignId) {
+          enrichedProspects = enrichedProspects.filter(p => {
+            const prospectCampaignId = p.campaignId || p.campaign_id || p.campaign;
+
+            // If prospect has no campaignId, check if it matches current campaign
+            if (!prospectCampaignId) {
+              // If processedResults.campaignId matches requested campaignId, keep the prospect
+              if (processedResults.campaignId === campaignId || processedResults.campaignId === String(campaignId)) {
+                return true;
+              }
+              console.log(`   🗑️  [CAMPAIGN ISOLATION] Filtering out prospect WITHOUT campaignId: ${p.email}`);
+              return false;
+            }
+
+            const matches = prospectCampaignId === campaignId || prospectCampaignId === String(campaignId);
+            if (!matches) {
+              console.log(`   🗑️  [CAMPAIGN ISOLATION] Filtering out prospect from campaign ${prospectCampaignId}: ${p.email} (requested: ${campaignId})`);
+            }
+            return matches;
+          });
+          console.log(`   🔒 Campaign prospect isolation: ${prospectsBeforeCampaignFilter} total → ${enrichedProspects.length} for campaign ${campaignId}`);
+        }
+
         // Filter out fake/example emails
         const fakeEmails = ['example@gmail.com', 'youremail@yourbusinessname.com', 'test@test.com', 'demo@demo.com'];
         enrichedProspects = enrichedProspects.filter(p => {
@@ -1680,7 +1705,7 @@ async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
 
     // If campaignId specified, return that campaign's results
     if (campaignId) {
-      const result = userCampaigns.get(campaignId);
+      const result = userCampaigns.get(campaignId) || userCampaigns.get(String(campaignId));
       if (result) {
         console.log(`   ✅ [MEMORY HIT] Found results for Campaign: ${campaignId}`);
         console.log(`   📊 Prospects: ${result.prospects?.length || 0}, Emails: ${result.emailCampaign?.emails?.length || 0}`);
@@ -1688,8 +1713,11 @@ async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
         return result;
       } else {
         console.log(`   ⚠️  [MEMORY MISS] Campaign ${campaignId} not found in memory`);
+        // 🔒 CRITICAL: Don't fall through to "most recent" - go to database fallback instead
+        console.log(`${'─'.repeat(80)}\n`);
+        // Continue to database fallback below, don't return wrong campaign data
       }
-    } else {
+    } else if (!campaignId) {
       // Otherwise return most recent campaign
       const campaigns = Array.from(userCampaigns.values());
       if (campaigns.length > 0) {

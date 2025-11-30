@@ -1388,16 +1388,16 @@ router.get('/email-thread/:emailId', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Email not found' });
     }
 
-    // Get prospect info from prospects table
-    const prospectQuery = `
-      SELECT name, email, company, position, industry, location
-      FROM prospects
+    // Get prospect info from contacts table (not prospects)
+    const contactQuery = `
+      SELECT name, email, company, position, industry, address as location
+      FROM contacts
       WHERE email = ? AND user_id = ?
       LIMIT 1
     `;
 
     const prospect = await new Promise((resolve, reject) => {
-      db.db.get(prospectQuery, [originalEmail.to_email, userId], (err, row) => {
+      db.db.get(contactQuery, [originalEmail.to_email, userId], (err, row) => {
         if (err) reject(err);
         else resolve(row || {
           name: originalEmail.to_email.split('@')[0],
@@ -1539,16 +1539,16 @@ router.get('/complete-thread/:emailId', async (req, res) => {
 
     console.log(`📧 [COMPLETE-THREAD] Found email to ${recipientEmail}, campaign ${campaignId}`);
 
-    // Step 2: Get prospect info
-    const prospectQuery = `
-      SELECT name, email, company, position, industry, location
-      FROM prospects
+    // Step 2: Get prospect/contact info (using contacts table, not prospects)
+    const contactQuery = `
+      SELECT name, email, company, position, industry, address as location
+      FROM contacts
       WHERE email = ?
       LIMIT 1
     `;
 
     const prospect = await new Promise((resolve, reject) => {
-      db.db.get(prospectQuery, [recipientEmail], (err, row) => {
+      db.db.get(contactQuery, [recipientEmail], (err, row) => {
         if (err) reject(err);
         else resolve(row || {
           name: recipientEmail.split('@')[0],
