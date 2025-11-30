@@ -3721,53 +3721,65 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
   // 🔥 DEDICATED HANDLER: Process prospect_batch_update messages
   const handleProspectBatchUpdate = (data) => {
-    const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+    // 🔥 CRITICAL: Always read FRESH from localStorage to avoid stale prop values
+    const currentCampaignId = localStorage.getItem('currentCampaignId') || campaign?.id;
     const batchCampaignId = data.data?.campaignId || data.campaignId;
 
-    console.log(`📦 [BATCH] Campaign check: batch=${batchCampaignId}, current=${currentCampaignId}`);
+    console.log(`📦 [BATCH] Campaign check: batch=${batchCampaignId} (type: ${typeof batchCampaignId}), current=${currentCampaignId} (type: ${typeof currentCampaignId})`);
 
-    // Campaign isolation check
-    if (batchCampaignId && currentCampaignId &&
-        batchCampaignId !== currentCampaignId &&
-        batchCampaignId !== String(currentCampaignId)) {
-      console.log(`🚫 [BATCH] Skipping - different campaign`);
+    // 🔒 Campaign isolation check - normalize to strings for comparison
+    const batchStr = String(batchCampaignId || '');
+    const currentStr = String(currentCampaignId || '');
+
+    if (batchStr && currentStr && batchStr !== currentStr) {
+      console.log(`🚫 [BATCH] Skipping - different campaign (${batchStr} !== ${currentStr})`);
       return;
     }
 
     const batchProspects = data.data?.prospects || [];
-    console.log(`📦 [BATCH] Processing ${batchProspects.length} prospects`);
+    console.log(`📦 [BATCH] ✅ PROCESSING ${batchProspects.length} prospects for campaign ${currentStr}`);
 
     if (batchProspects.length > 0) {
+      console.log(`📦 [BATCH] 🚀 About to call setProspects with ${batchProspects.length} prospects`);
+
       setProspects(prev => {
+        console.log(`📦 [BATCH] Inside setProspects: prev.length = ${prev.length}`);
         const existingEmails = new Set(prev.map(p => p.email));
         const newProspects = batchProspects.filter(p => p.email && !existingEmails.has(p.email));
         if (newProspects.length > 0) {
-          console.log(`📦🚀 [BATCH] Adding ${newProspects.length} prospects (${prev.length} → ${prev.length + newProspects.length})`);
-          return [...prev, ...newProspects];
+          console.log(`📦🚀 [BATCH] Adding ${newProspects.length} NEW prospects (${prev.length} → ${prev.length + newProspects.length})`);
+          const updated = [...prev, ...newProspects];
+          console.log(`📦🚀 [BATCH] New array length: ${updated.length}`);
+          return updated;
         }
-        console.log(`📦 [BATCH] No new prospects to add (all duplicates)`);
+        console.log(`📦 [BATCH] No new prospects to add (all ${batchProspects.length} are duplicates)`);
         return prev;
       });
 
-      // Force re-render
+      // 🔥 CRITICAL: Force re-render by updating the key
+      console.log(`📦 [BATCH] Forcing re-render via setProspectForceUpdateKey`);
       setProspectForceUpdateKey(k => k + 1);
 
       // Toast notification
       toast.success(`🎯 Found ${batchProspects.length} prospects!`, { duration: 3000 });
+    } else {
+      console.log(`📦 [BATCH] ⚠️ No prospects in batch data!`);
     }
   };
 
   // 🔥 DEDICATED HANDLER: Process prospect_list messages
   const handleProspectListUpdate = (data) => {
-    const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+    // 🔥 CRITICAL: Always read FRESH from localStorage to avoid stale prop values
+    const currentCampaignId = localStorage.getItem('currentCampaignId') || campaign?.id;
     const listCampaignId = data.campaignId || data.workflowId;
 
     console.log(`📋 [LIST] Campaign check: list=${listCampaignId}, current=${currentCampaignId}`);
 
-    // Campaign isolation check
-    if (listCampaignId && currentCampaignId &&
-        listCampaignId !== currentCampaignId &&
-        listCampaignId !== String(currentCampaignId)) {
+    // 🔒 Campaign isolation check - normalize to strings for comparison
+    const listStr = String(listCampaignId || '');
+    const currentStr = String(currentCampaignId || '');
+
+    if (listStr && currentStr && listStr !== currentStr) {
       console.log(`🚫 [LIST] Skipping - different campaign`);
       return;
     }
@@ -6517,6 +6529,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                 )}
 
                 {/* 🔥 INSTANT: Key forces re-render when prospects change */}
+                {/* Debug logging */}
+                {console.log(`🔥🔥🔥 RENDERING PROSPECTS VIEW: prospects.length=${prospects.length}, forceKey=${prospectForceUpdateKey}, isLoading=${isLoadingProspects}, workflowStatus=${workflowStatus}`)}
                 <div className="space-y-3" key={`prospects-${prospectForceUpdateKey}-${prospects.length}`}>
                   {isLoadingProspects ? (
                     // Show loading skeletons

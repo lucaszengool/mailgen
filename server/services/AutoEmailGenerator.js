@@ -5,12 +5,17 @@
  */
 
 const database = require('../models/database');
+const PersonalizedEmailGeneratorClass = require('./PersonalizedEmailGenerator');
+
+// Create a singleton instance of the email generator
+const emailGeneratorInstance = new PersonalizedEmailGeneratorClass();
 
 class AutoEmailGenerator {
   constructor() {
     this.isRunning = false;
     this.checkInterval = 30000; // Check every 30 seconds
     this.intervalId = null;
+    this.emailGenerator = emailGeneratorInstance;
   }
 
   /**
@@ -111,37 +116,42 @@ class AutoEmailGenerator {
    */
   async generateEmailsForBatch(prospects, campaignId) {
     try {
-      // 🔥 TEMP FIX: PersonalizedEmailGenerator has syntax errors, skip for now
-      let PersonalizedEmailGenerator;
-      try {
-        PersonalizedEmailGenerator = require('./PersonalizedEmailGenerator');
-      } catch (requireError) {
-        console.error('❌ [AutoEmailGen] PersonalizedEmailGenerator has syntax errors, skipping batch:', requireError.message);
-        return; // Skip this batch
-      }
-
+      // 🔥 FIX: Use the instance method instead of static call
       for (const prospect of prospects) {
         try {
-          // Generate personalized email
-          const emailData = await PersonalizedEmailGenerator.generatePersonalizedEmail({
-            prospectName: prospect.name || 'there',
-            prospectEmail: prospect.email,
-            companyName: prospect.company || 'your company',
-            industry: prospect.industry || 'technology',
-            estimatedRole: prospect.position || 'professional',
-            specificPainPoints: ['efficiency', 'growth'],
-            ourCompany: 'Our Company',
-            ourProduct: 'our solution',
-            senderName: 'The Team',
-            website: '',
-            emailGoal: 'initial_contact',
-            templateId: prospect.templateId || 'professional'
-          });
+          // Build prospect object for the email generator
+          const prospectData = {
+            email: prospect.email,
+            name: prospect.name || 'there',
+            company: prospect.company || 'your company',
+            position: prospect.position || 'professional',
+            industry: prospect.industry || 'technology'
+          };
 
-          if (emailData && emailData.body) {
+          // Build minimal business analysis
+          const businessAnalysis = {
+            companyName: 'Our Company',
+            targetWebsite: ''
+          };
+
+          // Build minimal marketing strategy
+          const marketingStrategy = {
+            emailGoal: 'initial_contact'
+          };
+
+          // Generate personalized email using instance method
+          const emailData = await this.emailGenerator.generatePersonalizedEmail(
+            prospectData,
+            businessAnalysis,
+            marketingStrategy,
+            'partnership',
+            null
+          );
+
+          if (emailData && (emailData.body || emailData.html)) {
             // Save to database
             await database.updateContact(prospect.email, {
-              personalizedEmail: emailData.body,
+              personalizedEmail: emailData.body || emailData.html,
               emailSubject: emailData.subject || 'Let\'s connect',
               generatedAt: new Date().toISOString()
             });

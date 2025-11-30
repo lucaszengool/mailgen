@@ -1433,20 +1433,38 @@ router.get('/email-thread/:emailId', async (req, res) => {
     const sentEmails = await queryDB(threadEmailsQuery, [originalEmail.to_email, userId, originalEmail.campaign_id]);
 
     // Get all replies from this prospect
-    const repliesQuery = `
-      SELECT
-        r.id,
-        r.recipient_email as "from",
-        r.subject,
-        r.reply_body as content,
-        r.replied_at as timestamp,
-        'received' as type
-      FROM email_replies r
-      WHERE r.recipient_email = ? AND r.campaign_id = ?
-      ORDER BY r.replied_at ASC
-    `;
-
-    const replies = await queryDB(repliesQuery, [originalEmail.to_email, originalEmail.campaign_id]);
+    // Note: reply_body column may not exist in older databases - try with column first, then fallback
+    let replies = [];
+    try {
+      const repliesQueryWithBody = `
+        SELECT
+          r.id,
+          r.recipient_email as "from",
+          r.subject,
+          COALESCE(r.reply_body, r.subject, 'Reply received') as content,
+          r.replied_at as timestamp,
+          'received' as type
+        FROM email_replies r
+        WHERE r.recipient_email = ? AND r.campaign_id = ?
+        ORDER BY r.replied_at ASC
+      `;
+      replies = await queryDB(repliesQueryWithBody, [originalEmail.to_email, originalEmail.campaign_id]);
+    } catch (replyError) {
+      console.log('⚠️ reply_body column not available, using fallback query');
+      const repliesQueryFallback = `
+        SELECT
+          r.id,
+          r.recipient_email as "from",
+          r.subject,
+          COALESCE(r.subject, 'Reply received') as content,
+          r.replied_at as timestamp,
+          'received' as type
+        FROM email_replies r
+        WHERE r.recipient_email = ? AND r.campaign_id = ?
+        ORDER BY r.replied_at ASC
+      `;
+      replies = await queryDB(repliesQueryFallback, [originalEmail.to_email, originalEmail.campaign_id]);
+    }
 
     // Combine and sort all emails chronologically
     const allEmails = [...sentEmails, ...replies].sort((a, b) =>
@@ -1582,25 +1600,48 @@ router.get('/complete-thread/:emailId', async (req, res) => {
     console.log(`📧 [COMPLETE-THREAD] Found ${sentEmails.length} sent emails`);
 
     // Step 4: Get ALL replies from this prospect
-    const repliesQuery = `
-      SELECT
-        r.id,
-        r.recipient_email as "from",
-        'You' as "to",
-        r.subject,
-        r.reply_body as content,
-        r.replied_at as timestamp,
-        'received' as type,
-        0 as opened,
-        0 as openCount,
-        NULL as lastOpenedAt,
-        0 as clicked
-      FROM email_replies r
-      WHERE r.recipient_email = ?
-      ORDER BY r.replied_at ASC
-    `;
-
-    const replies = await queryDB(repliesQuery, [recipientEmail]);
+    // Note: reply_body column may not exist in older databases - try with column first, then fallback
+    let replies = [];
+    try {
+      const repliesQueryWithBody = `
+        SELECT
+          r.id,
+          r.recipient_email as "from",
+          'You' as "to",
+          r.subject,
+          COALESCE(r.reply_body, r.subject, 'Reply received') as content,
+          r.replied_at as timestamp,
+          'received' as type,
+          0 as opened,
+          0 as openCount,
+          NULL as lastOpenedAt,
+          0 as clicked
+        FROM email_replies r
+        WHERE r.recipient_email = ?
+        ORDER BY r.replied_at ASC
+      `;
+      replies = await queryDB(repliesQueryWithBody, [recipientEmail]);
+    } catch (replyError) {
+      console.log('⚠️ reply_body column not available, using fallback query');
+      const repliesQueryFallback = `
+        SELECT
+          r.id,
+          r.recipient_email as "from",
+          'You' as "to",
+          r.subject,
+          COALESCE(r.subject, 'Reply received') as content,
+          r.replied_at as timestamp,
+          'received' as type,
+          0 as opened,
+          0 as openCount,
+          NULL as lastOpenedAt,
+          0 as clicked
+        FROM email_replies r
+        WHERE r.recipient_email = ?
+        ORDER BY r.replied_at ASC
+      `;
+      replies = await queryDB(repliesQueryFallback, [recipientEmail]);
+    }
     console.log(`📧 [COMPLETE-THREAD] Found ${replies.length} replies`);
 
     // Step 5: Combine and sort all emails chronologically
@@ -1679,22 +1720,42 @@ router.get('/email-thread-by-recipient/:recipientEmail', async (req, res) => {
     const sentEmails = await queryDB(sentEmailsQuery, [decodeURIComponent(recipientEmail)]);
 
     // Get all replies from this recipient
-    const repliesQuery = `
-      SELECT
-        r.id,
-        r.recipient_email as "from",
-        'You' as "to",
-        r.subject,
-        r.reply_body as content,
-        r.replied_at as timestamp,
-        'received' as type,
-        0 as opened
-      FROM email_replies r
-      WHERE r.recipient_email = ?
-      ORDER BY r.replied_at ASC
-    `;
-
-    const replies = await queryDB(repliesQuery, [decodeURIComponent(recipientEmail)]);
+    // Note: reply_body column may not exist in older databases - try with column first, then fallback
+    let replies = [];
+    try {
+      const repliesQueryWithBody = `
+        SELECT
+          r.id,
+          r.recipient_email as "from",
+          'You' as "to",
+          r.subject,
+          COALESCE(r.reply_body, r.subject, 'Reply received') as content,
+          r.replied_at as timestamp,
+          'received' as type,
+          0 as opened
+        FROM email_replies r
+        WHERE r.recipient_email = ?
+        ORDER BY r.replied_at ASC
+      `;
+      replies = await queryDB(repliesQueryWithBody, [decodeURIComponent(recipientEmail)]);
+    } catch (replyError) {
+      console.log('⚠️ reply_body column not available, using fallback query');
+      const repliesQueryFallback = `
+        SELECT
+          r.id,
+          r.recipient_email as "from",
+          'You' as "to",
+          r.subject,
+          COALESCE(r.subject, 'Reply received') as content,
+          r.replied_at as timestamp,
+          'received' as type,
+          0 as opened
+        FROM email_replies r
+        WHERE r.recipient_email = ?
+        ORDER BY r.replied_at ASC
+      `;
+      replies = await queryDB(repliesQueryFallback, [decodeURIComponent(recipientEmail)]);
+    }
 
     // Combine and sort chronologically
     const allEmails = [...sentEmails, ...replies].sort((a, b) =>

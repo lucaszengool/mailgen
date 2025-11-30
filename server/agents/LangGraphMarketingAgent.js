@@ -1107,20 +1107,28 @@ class LangGraphMarketingAgent {
             console.warn(`⚠️ [Batch ${batchNumber}] Workflow state not found for campaign: ${campaignId}`);
           }
 
+          // 🔒 CRITICAL: Ensure EVERY prospect has campaignId before broadcasting
+          const prospectsWithCampaignId = prospects.map(p => ({
+            ...p,
+            campaignId: p.campaignId || campaignId,
+            campaign_id: p.campaign_id || campaignId
+          }));
+
           // Notify frontend via WebSocket
           this.wsManager.broadcast({
             type: 'prospect_batch_update',
+            campaignId,  // 🔒 CRITICAL: Include campaignId at top level
             data: {
               userId,
               campaignId,
               batchNumber,
-              prospects,
+              prospects: prospectsWithCampaignId,  // 🔒 Use prospects with campaignId
               totalSoFar,
               targetTotal,
               status: 'batch_complete'
             }
           });
-          console.log(`📡 [Batch ${batchNumber}] WebSocket notification sent`);
+          console.log(`📡 [Batch ${batchNumber}] WebSocket notification sent with campaignId: ${campaignId}`);
         }
 
         // 🔥 CRITICAL FIX: Update in-memory workflow results so /api/workflow/results returns all batches
@@ -1605,13 +1613,21 @@ class LangGraphMarketingAgent {
 
             // Notify frontend via WebSocket
             if (this.wsManager) {
+              // 🔒 CRITICAL: Ensure EVERY prospect has campaignId before broadcasting
+              const prospectsWithCampaignId = prospects.map(p => ({
+                ...p,
+                campaignId: p.campaignId || campaignId,
+                campaign_id: p.campaign_id || campaignId
+              }));
+
               this.wsManager.broadcast({
                 type: 'prospect_batch_update',
+                campaignId,  // 🔒 CRITICAL: Include campaignId at top level
                 data: {
                   userId,
                   campaignId,
                   batchNumber,
-                  prospects,  // 🔥 FIX: Send actual prospects array, not just count
+                  prospects: prospectsWithCampaignId,  // 🔒 Use prospects with campaignId
                   totalSoFar,
                   targetTotal,
                   status: 'batch_complete',

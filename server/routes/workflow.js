@@ -1590,6 +1590,13 @@ async function setLastWorkflowResults(results, userId = 'anonymous', campaignId 
   const userCampaigns = userCampaignWorkflowResults.get(userId);
   const lastWorkflowResults = userCampaigns.get(finalCampaignId);
 
+  // 🔒 CRITICAL: Ensure EVERY prospect has campaignId before storing
+  const prospectsWithCampaignId = (results.prospects || []).map(p => ({
+    ...p,
+    campaignId: p.campaignId || p.campaign_id || finalCampaignId,
+    campaign_id: p.campaign_id || p.campaignId || finalCampaignId
+  }));
+
   // 🔥 FIX: Don't overwrite if we already have emails and the new results don't
   if (lastWorkflowResults &&
       lastWorkflowResults.emailCampaign &&
@@ -1600,12 +1607,14 @@ async function setLastWorkflowResults(results, userId = 'anonymous', campaignId 
     // Merge: keep existing emails but update other fields
     userCampaigns.set(finalCampaignId, {
       ...results,
+      prospects: prospectsWithCampaignId,  // 🔒 Use prospects with campaignId
       campaignId: finalCampaignId,
       emailCampaign: lastWorkflowResults.emailCampaign  // Keep existing emails
     });
   } else {
     userCampaigns.set(finalCampaignId, {
       ...results,
+      prospects: prospectsWithCampaignId,  // 🔒 Use prospects with campaignId
       campaignId: finalCampaignId
     });
   }
@@ -1748,15 +1757,19 @@ async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
 
     if (prospects.length > 0 || emails.length > 0) {
       // Reconstruct workflow results from database
+      const effectiveCampaignId = campaignId || prospects[0]?.campaign_id || prospects[0]?.campaignId || 'reconstructed';
       const reconstructed = {
-        campaignId: campaignId || prospects[0]?.campaignId || 'reconstructed',
+        campaignId: effectiveCampaignId,
         prospects: prospects.map(p => ({
           email: p.email,
           name: p.name,
           company: p.company,
           position: p.position,
           industry: p.industry,
-          source: p.source
+          source: p.source,
+          // 🔒 CRITICAL: Include campaignId on EVERY prospect for frontend filtering
+          campaignId: p.campaign_id || p.campaignId || effectiveCampaignId,
+          campaign_id: p.campaign_id || p.campaignId || effectiveCampaignId
         })),
         emailCampaign: {
           emails: emails.map(e => {

@@ -123,7 +123,9 @@ class Database {
         recipient_email TEXT NOT NULL,
         replied_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         subject TEXT,
-        message_id TEXT
+        message_id TEXT,
+        reply_body TEXT,
+        user_id TEXT DEFAULT 'anonymous'
       )
     `);
 
@@ -350,6 +352,38 @@ class Database {
             console.error('添加 user_id 到 smtp_configs 失败:', err);
           } else {
             console.log('✅ SMTP Configs 表已添加 user_id 列');
+          }
+        });
+      }
+    });
+
+    // 🔥 MIGRATION: Check email_replies table for reply_body and user_id columns
+    this.db.all("PRAGMA table_info(email_replies)", (err, columns) => {
+      if (err) {
+        console.error('❌ Failed to check email_replies table structure:', err);
+        return;
+      }
+
+      const hasReplyBody = columns.some(col => col.name === 'reply_body');
+      if (!hasReplyBody) {
+        console.log('🔄 MIGRATION: Adding reply_body column to email_replies table...');
+        this.db.run("ALTER TABLE email_replies ADD COLUMN reply_body TEXT", (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('❌ Failed to add reply_body to email_replies:', err);
+          } else {
+            console.log('✅ email_replies table: added reply_body column');
+          }
+        });
+      }
+
+      const hasUserId = columns.some(col => col.name === 'user_id');
+      if (!hasUserId) {
+        console.log('🔄 MIGRATION: Adding user_id column to email_replies table...');
+        this.db.run("ALTER TABLE email_replies ADD COLUMN user_id TEXT DEFAULT 'anonymous'", (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('❌ Failed to add user_id to email_replies:', err);
+          } else {
+            console.log('✅ email_replies table: added user_id column');
           }
         });
       }
