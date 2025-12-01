@@ -1284,7 +1284,7 @@ const SettingsView = () => {
         console.log('🔧 Loading current configuration from backend...');
 
         // Try backend API first
-        const response = await apiGet('/config/current');
+        const response = await apiGet('/api/config/current');
 
         if (response.success) {
           console.log('✅ Config loaded from backend:', response);
@@ -1412,7 +1412,7 @@ const SettingsView = () => {
 
       // Save to backend (new unified API)
       console.log('💾 Saving configuration to backend...');
-      const response = await apiPost('/config/update', {
+      const response = await apiPost('/api/config/update', {
         smtp: smtpConfig,
         website: websiteConfig,
         campaign: campaignConfig
