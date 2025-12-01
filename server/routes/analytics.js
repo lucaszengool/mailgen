@@ -946,6 +946,65 @@ router.post('/backfill-from-database', async (req, res) => {
   }
 });
 
+// 🔥 NEW: Backfill email body content from workflow results
+router.post('/backfill-email-bodies', async (req, res) => {
+  try {
+    const { userId = 'demo', campaignId } = req.body;
+    const workflowRoutes = require('./workflow');
+    const getLastWorkflowResults = workflowRoutes.getLastWorkflowResults;
+
+    console.log(`📧 [BACKFILL BODIES] Starting for user: ${userId}, campaign: ${campaignId || 'ALL'}`);
+
+    // Get workflow results which have the email bodies
+    const workflowResults = await getLastWorkflowResults(userId, campaignId);
+
+    if (!workflowResults || !workflowResults.emailCampaign?.emails) {
+      return res.json({ success: true, message: 'No workflow emails found', updated: 0 });
+    }
+
+    const workflowEmails = workflowResults.emailCampaign.emails;
+    console.log(`📧 [BACKFILL BODIES] Found ${workflowEmails.length} emails in workflow results`);
+
+    let updatedCount = 0;
+
+    // Update each email in email_logs with body from workflow
+    for (const email of workflowEmails) {
+      const body = email.body || email.html;
+      const toEmail = email.to;
+      const subject = email.subject;
+
+      if (!body || !toEmail) continue;
+
+      // Update email_logs where body is null
+      await new Promise((resolve, reject) => {
+        db.db.run(
+          `UPDATE email_logs SET body = ? WHERE to_email = ? AND subject = ? AND (body IS NULL OR body = '')`,
+          [body, toEmail, subject],
+          function(err) {
+            if (err) {
+              console.error(`❌ Error updating ${toEmail}:`, err.message);
+              reject(err);
+            } else {
+              if (this.changes > 0) {
+                console.log(`✅ Updated body for ${toEmail} - ${subject.substring(0, 30)}...`);
+                updatedCount += this.changes;
+              }
+              resolve();
+            }
+          }
+        );
+      });
+    }
+
+    console.log(`📧 [BACKFILL BODIES] Completed - Updated ${updatedCount} emails`);
+    res.json({ success: true, message: `Updated ${updatedCount} email bodies`, updated: updatedCount });
+
+  } catch (error) {
+    console.error('❌ [BACKFILL BODIES] Error:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Manual tracking endpoint for historical emails
 router.post('/track-manual-emails', (req, res) => {
   try {
