@@ -2759,40 +2759,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           });
         } else {
           console.log(`📥 [INITIAL LOAD] No existing data for campaign ${campaignId} from API`);
-          // 🔥 CRITICAL FIX: Check if existing prospects belong to current campaign
-          // If they don't match (or have no campaignId), clear them to prevent mixing
-          setProspects(prev => {
-            if (prev.length > 0) {
-              // Check if ANY prospect has a different campaignId
-              const hasMismatch = prev.some(p => {
-                const prospectCampaignId = p.campaignId || p.campaign_id;
-                return prospectCampaignId && prospectCampaignId !== campaignId && prospectCampaignId !== String(campaignId);
-              });
-              if (hasMismatch) {
-                console.log(`🧹 [INITIAL LOAD] Clearing ${prev.length} prospects - campaignId mismatch detected`);
-                return [];
-              }
-              console.log(`📥 [INITIAL LOAD] Keeping ${prev.length} prospects - they belong to current campaign`);
-              return prev;
-            }
-            return [];
-          });
-          setGeneratedEmails(prev => {
-            if (prev.length > 0) {
-              // Check if ANY email has a different campaignId
-              const hasMismatch = prev.some(e => {
-                const emailCampaignId = e.campaignId || e.campaign_id;
-                return emailCampaignId && emailCampaignId !== campaignId && emailCampaignId !== String(campaignId);
-              });
-              if (hasMismatch) {
-                console.log(`🧹 [INITIAL LOAD] Clearing ${prev.length} emails - campaignId mismatch detected`);
-                return [];
-              }
-              console.log(`📥 [INITIAL LOAD] Keeping ${prev.length} emails - they belong to current campaign`);
-              return prev;
-            }
-            return [];
-          });
+          // 🔥 CRITICAL FIX: ALWAYS clear when API returns no data for a campaign
+          // This prevents stale data from other campaigns being displayed
+          console.log(`🧹 [INITIAL LOAD] Clearing all prospects and emails - fresh campaign state`);
+          setProspects([]);
+          setGeneratedEmails([]);
           // Only set to idle if not currently running
           setWorkflowStatus(prevStatus => {
             if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting') {
@@ -2803,29 +2774,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         }
       } catch (error) {
         console.error('❌ [INITIAL LOAD] Failed to load campaign data:', error);
-        // 🔥 CRITICAL FIX: On error, check for campaign mismatch and clear if needed
-        setProspects(prev => {
-          const hasMismatch = prev.some(p => {
-            const prospectCampaignId = p.campaignId || p.campaign_id;
-            return prospectCampaignId && prospectCampaignId !== campaignId && prospectCampaignId !== String(campaignId);
-          });
-          if (hasMismatch) {
-            console.log(`🧹 [INITIAL LOAD] Clearing stale prospects on error - campaignId mismatch`);
-            return [];
-          }
-          return prev;
-        });
-        setGeneratedEmails(prev => {
-          const hasMismatch = prev.some(e => {
-            const emailCampaignId = e.campaignId || e.campaign_id;
-            return emailCampaignId && emailCampaignId !== campaignId && emailCampaignId !== String(campaignId);
-          });
-          if (hasMismatch) {
-            console.log(`🧹 [INITIAL LOAD] Clearing stale emails on error - campaignId mismatch`);
-            return [];
-          }
-          return prev;
-        });
+        // 🔥 CRITICAL FIX: On error, clear all data to prevent stale data display
+        console.log('🧹 [INITIAL LOAD] Clearing all data due to error');
+        setProspects([]);
+        setGeneratedEmails([]);
       }
     };
 
