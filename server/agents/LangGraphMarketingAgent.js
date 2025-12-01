@@ -1114,21 +1114,42 @@ class LangGraphMarketingAgent {
             campaign_id: p.campaign_id || campaignId
           }));
 
-          // Notify frontend via WebSocket
-          this.wsManager.broadcast({
-            type: 'prospect_batch_update',
-            campaignId,  // 🔒 CRITICAL: Include campaignId at top level
-            data: {
-              userId,
-              campaignId,
+          // 🔥 NEW: Use user-specific broadcast for proper multi-tenant isolation
+          // This ensures only the user who started this workflow sees these prospects
+          if (userId && userId !== 'demo' && userId !== 'anonymous') {
+            // Send batch update to specific user+campaign only
+            this.wsManager.broadcastToUserCampaign(userId, campaignId, {
+              type: 'prospect_batch_update',
               batchNumber,
-              prospects: prospectsWithCampaignId,  // 🔒 Use prospects with campaignId
+              prospects: prospectsWithCampaignId,
               totalSoFar,
               targetTotal,
               status: 'batch_complete'
+            });
+
+            // 🔥 Also send individual prospect updates for real-time UI updates
+            for (const prospect of prospectsWithCampaignId) {
+              this.wsManager.broadcastProspectUpdate(userId, campaignId, prospect);
             }
-          });
-          console.log(`📡 [Batch ${batchNumber}] WebSocket notification sent with campaignId: ${campaignId}`);
+
+            console.log(`📡 [Batch ${batchNumber}] User-specific WebSocket notification sent to ${userId}/${campaignId}`);
+          } else {
+            // Fallback to broadcast (backward compatibility)
+            this.wsManager.broadcast({
+              type: 'prospect_batch_update',
+              campaignId,
+              data: {
+                userId,
+                campaignId,
+                batchNumber,
+                prospects: prospectsWithCampaignId,
+                totalSoFar,
+                targetTotal,
+                status: 'batch_complete'
+              }
+            });
+            console.log(`📡 [Batch ${batchNumber}] WebSocket broadcast sent (fallback mode)`);
+          }
         }
 
         // 🔥 CRITICAL FIX: Update in-memory workflow results so /api/workflow/results returns all batches
@@ -5167,49 +5188,70 @@ ${senderName || senderCompany}`;
 
         // 🔥 INSTANT: Broadcast email immediately to frontend
         if (this.wsManager) {
-          // Send instant email_generated update with full email data
-          this.wsManager.broadcast({
-            type: 'email_generated',
-            data: {
-              ...newEmail,
-              campaignId: campaignId,
-              isInstant: true,
-              emailIndex: i + 1,
-              totalEmails: remainingProspects.length,
-              timestamp: new Date().toISOString()
-            }
-          });
+          const emailData = {
+            ...newEmail,
+            campaignId: campaignId,
+            isInstant: true,
+            emailIndex: i + 1,
+            totalEmails: remainingProspects.length,
+            timestamp: new Date().toISOString()
+          };
 
-          // Also send email_sent for backward compatibility
-          this.wsManager.broadcast({
-            type: 'email_sent',
-            data: {
-              ...newEmail,
-              campaignId: campaignId,
-              prospect: prospect,
-              emailIndex: i + 1,
-              totalEmails: remainingProspects.length,
-              status: emailContent.status
-            }
-          });
+          // 🔥 NEW: Use user-specific broadcast for proper multi-tenant isolation
+          const userId = this.userId || 'default';
+          if (userId && userId !== 'demo' && userId !== 'anonymous') {
+            // Send to specific user+campaign only
+            this.wsManager.broadcastEmailUpdate(userId, campaignId, emailData);
 
-          // Also send data_update for dashboard stats
-          this.wsManager.broadcast({
-            type: 'data_update',
-            data: {
-              campaignId: campaignId,
+            // Also send batch update for dashboard
+            this.wsManager.broadcastToUserCampaign(userId, campaignId, {
+              type: 'data_update',
               emailCampaign: {
-                campaignId: campaignId,
                 emails: [newEmail],
                 isSingleUpdate: true,
                 sent: 1,
                 opened: 0,
                 replied: 0
               }
-            }
-          });
+            });
 
-          console.log(`📡 [INSTANT] Broadcasted email_generated for ${newEmail.to} (${i + 1}/${remainingProspects.length})`);
+            console.log(`📡 [INSTANT] User-specific email broadcast for ${newEmail.to} to ${userId}/${campaignId}`);
+          } else {
+            // Fallback to broadcast for backward compatibility
+            this.wsManager.broadcast({
+              type: 'email_generated',
+              data: emailData
+            });
+
+            this.wsManager.broadcast({
+              type: 'email_sent',
+              data: {
+                ...newEmail,
+                campaignId: campaignId,
+                prospect: prospect,
+                emailIndex: i + 1,
+                totalEmails: remainingProspects.length,
+                status: emailContent.status
+              }
+            });
+
+            this.wsManager.broadcast({
+              type: 'data_update',
+              data: {
+                campaignId: campaignId,
+                emailCampaign: {
+                  campaignId: campaignId,
+                  emails: [newEmail],
+                  isSingleUpdate: true,
+                  sent: 1,
+                  opened: 0,
+                  replied: 0
+                }
+              }
+            });
+
+            console.log(`📡 [INSTANT] Broadcasted email_generated for ${newEmail.to} (fallback mode)`);
+          }
         }
 
         // Anti-spam delay

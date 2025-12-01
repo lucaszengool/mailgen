@@ -11,7 +11,7 @@ import {
   Server, Eye, Cpu, Layers, Workflow, Gauge, Home, RefreshCw, Palette as SwatchIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SignedIn, UserButton } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react';
 import toast from 'react-hot-toast';
 import { apiGet, apiPost } from '../utils/apiClient';
 import TemplateSelectionService from '../services/TemplateSelectionService';
@@ -1931,14 +1931,59 @@ const EmailCardSkeleton = () => (
 
 const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampaigns }) => {
   const navigate = useNavigate();
+
+  // 🔥 Authentication - REQUIRED for all workflow operations
+  const { isSignedIn, isLoaded, user } = useUser();
+
   const [activeView, setActiveView] = useState('workflow');
   const [showChatbot, setShowChatbot] = useState(true); // Always show on initial load
   const [chatbotExternalMessage, setChatbotExternalMessage] = useState(null);
   const [wsConnectionStatus, setWsConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'disconnected', 'error'
   const [campaignConfig, setCampaignConfig] = useState(null);
+  const [wsAuthenticated, setWsAuthenticated] = useState(false); // Track WebSocket auth status
 
   // 🔥 Email Thread View State - for viewing email threads within the dashboard
   const [selectedEmailThreadId, setSelectedEmailThreadId] = useState(null);
+  // 🔥 NEW: Email thread for Email Campaign tab - stores the full email object for thread view
+  const [selectedCampaignEmail, setSelectedCampaignEmail] = useState(null);
+
+  // 🔥 AUTHENTICATION CHECK - Redirect to home if not signed in
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      console.log('🚫 User not signed in - redirecting to home page');
+      toast.error('Please sign in to access the dashboard');
+      navigate('/');
+    }
+  }, [isLoaded, isSignedIn, navigate]);
+
+  // Show loading state while Clerk loads
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00f5a0] mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If not signed in after loading, don't render dashboard (will redirect)
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-400 mb-4">Please sign in to continue</p>
+          <button
+            onClick={() => navigate('/')}
+            className="px-6 py-2 bg-[#00f5a0] text-black rounded-lg hover:bg-[#00d890] transition-colors"
+          >
+            Go to Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // 🔥 CRITICAL: Set campaign ID in localStorage immediately on mount
   useEffect(() => {
@@ -4615,10 +4660,39 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       console.log('✅ Connection established to:', wsUrl);
       setWsConnectionStatus('connected');
 
-      // 🔥 CRITICAL: Subscribe to current campaign's workflow
+      // 🔥 NEW: Authenticate WebSocket with user ID
+      const userId = user?.id;
+      if (userId) {
+        console.log(`🔐 Authenticating WebSocket for user: ${userId}`);
+        wsInstance.send(JSON.stringify({
+          type: 'authenticate',
+          userId: userId
+        }));
+      } else {
+        console.warn('⚠️ No user ID available for WebSocket authentication');
+      }
+
+      // 🔥 CRITICAL: Subscribe to current campaign's workflow with user+campaign isolation
       const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
-      if (currentCampaignId) {
-        console.log(`📡 Subscribing to campaign workflow: ${currentCampaignId}`);
+      if (currentCampaignId && userId) {
+        console.log(`📡 Subscribing to user+campaign workflow: ${userId}/${currentCampaignId}`);
+
+        // 🔥 NEW: Subscribe with user+campaign for proper isolation
+        wsInstance.send(JSON.stringify({
+          type: 'subscribe_user_campaign',
+          userId: userId,
+          campaignId: currentCampaignId
+        }));
+
+        // 🔥 Request session state to restore data on reconnect
+        wsInstance.send(JSON.stringify({
+          type: 'request_session_state',
+          userId: userId,
+          campaignId: currentCampaignId
+        }));
+      } else {
+        // Fallback to old subscription method
+        console.log(`📡 Subscribing to campaign workflow (legacy): ${currentCampaignId}`);
         wsInstance.send(JSON.stringify({
           type: 'subscribe_workflow',
           workflowId: currentCampaignId
@@ -4698,6 +4772,112 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         console.log(`📦 [PRIORITY] Processing data_update with prospects FIRST`);
         handleDataUpdateProspects(data);
         // Don't return - continue to process other data_update parts
+      }
+
+      // 🔥 NEW: Handle session state restoration on reconnect
+      if (data.type === 'session_state') {
+        console.log(`📋 [SESSION] Received session state:`, data);
+        const { session, prospects: sessionProspects, emails: sessionEmails } = data;
+
+        // Restore workflow status from session
+        if (session && session.status) {
+          console.log(`📋 [SESSION] Restoring workflow status: ${session.status}`);
+          setWorkflowStatus(session.status);
+
+          if (session.status === 'running') {
+            setBackgroundWorkflowRunning(true);
+            toast.info('🔄 Workflow is running - restoring state...', { duration: 2000 });
+          }
+        }
+
+        // Restore prospects from database
+        if (sessionProspects && sessionProspects.length > 0) {
+          console.log(`📋 [SESSION] Restoring ${sessionProspects.length} prospects from database`);
+          setProspects(prev => {
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newProspects = sessionProspects.filter(p => !existingEmails.has(p.email));
+            return [...prev, ...newProspects];
+          });
+          toast.success(`Restored ${sessionProspects.length} prospects`, { duration: 2000 });
+        }
+
+        // Restore emails from database
+        if (sessionEmails && sessionEmails.length > 0) {
+          console.log(`📋 [SESSION] Restoring ${sessionEmails.length} emails from database`);
+          setGeneratedEmails(prev => {
+            const existingIds = new Set(prev.map(e => e.id || e.to));
+            const newEmails = sessionEmails.filter(e => !existingIds.has(e.id || e.to));
+            return [...prev, ...newEmails];
+          });
+          toast.success(`Restored ${sessionEmails.length} emails`, { duration: 2000 });
+        }
+
+        return; // Session state handled
+      }
+
+      // 🔥 NEW: Handle WebSocket authentication response
+      if (data.type === 'authenticated') {
+        console.log(`✅ [WS AUTH] WebSocket authenticated for user: ${data.userId}`);
+        setWsAuthenticated(true);
+        return;
+      }
+
+      if (data.type === 'auth_error') {
+        console.error(`❌ [WS AUTH] Authentication failed: ${data.message}`);
+        toast.error('WebSocket authentication failed. Please refresh.');
+        return;
+      }
+
+      // 🔥 NEW: Handle instant prospect updates (individual prospects)
+      if (data.type === 'prospect_found') {
+        console.log(`📧 [INSTANT] Received single prospect:`, data.prospect?.email);
+        const prospect = data.prospect;
+        if (prospect && prospect.email) {
+          setProspects(prev => {
+            // Check if prospect already exists
+            const exists = prev.some(p => p.email === prospect.email);
+            if (exists) return prev;
+            console.log(`✅ [INSTANT] Adding new prospect: ${prospect.email}`);
+            return [...prev, prospect];
+          });
+        }
+        return;
+      }
+
+      // 🔥 NEW: Handle instant email updates (individual emails)
+      if (data.type === 'email_generated') {
+        console.log(`✉️ [INSTANT] Received new email for:`, data.email?.to || data.to);
+        const email = data.email || data;
+        if (email && (email.to || email.id)) {
+          setGeneratedEmails(prev => {
+            // Check if email already exists
+            const exists = prev.some(e => (e.id && e.id === email.id) || (e.to && e.to === email.to));
+            if (exists) {
+              // Update existing email
+              console.log(`🔄 [INSTANT] Updating existing email: ${email.to}`);
+              return prev.map(e =>
+                ((e.id && e.id === email.id) || (e.to && e.to === email.to)) ? { ...e, ...email } : e
+              );
+            }
+            console.log(`✅ [INSTANT] Adding new email: ${email.to}`);
+            return [...prev, email];
+          });
+        }
+        return;
+      }
+
+      // 🔥 NEW: Handle workflow status updates from user-specific broadcast
+      if (data.type === 'workflow_status') {
+        console.log(`🚦 [STATUS] Workflow status update: ${data.status}`);
+        setWorkflowStatus(data.status);
+
+        // Update UI based on status
+        if (data.status === 'running') {
+          setBackgroundWorkflowRunning(true);
+        } else if (data.status === 'completed' || data.status === 'idle') {
+          setBackgroundWorkflowRunning(false);
+        }
+        return;
       }
 
       // Now handle other message types
@@ -6629,9 +6809,20 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           )}
 
           {activeView === 'emails' && (
-            <div className="bg-white min-h-full">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Campaign</h2>
+            <div className={`bg-white min-h-full ${selectedCampaignEmail ? 'flex' : ''}`}>
+              {/* Email List Section - narrower when thread panel is open */}
+              <div className={`${selectedCampaignEmail ? 'w-1/2 border-r border-gray-200 overflow-auto h-full' : 'w-full'} p-6`}>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Email Campaign</h2>
+                  {selectedCampaignEmail && (
+                    <button
+                      onClick={() => setSelectedCampaignEmail(null)}
+                      className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                    >
+                      ← Back to full view
+                    </button>
+                  )}
+                </div>
 
                 {/* Show generating state if workflow is running and no emails yet */}
                 {(workflowStatus === 'generating_emails' || workflowStatus === 'running' || workflowStatus === 'analyzing_prospects' || workflowStatus === 'finding_prospects') && generatedEmails.length === 0 && (
@@ -6847,6 +7038,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                         showFilters={false} // Filters now shown separately above
                         selectedFilters={emailFilters}
                         onFilterChange={handleEmailFilterChange}
+                        onClick={(clickedEmail) => {
+                          // 🔥 NEW: Open email thread panel when clicking on email card
+                          console.log('📧 Email card clicked, opening thread for:', clickedEmail.to, 'ID:', clickedEmail.id);
+                          setSelectedCampaignEmail(clickedEmail);
+                        }}
                         onSend={(emailToSend) => {
                         console.log('🚀 Attempting to send email:', emailToSend);
                         
@@ -6930,6 +7126,18 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   )}
                 </div>
               </div>
+
+              {/* 🔥 NEW: Email Thread Panel - Shows when an email card is clicked */}
+              {selectedCampaignEmail && (
+                <div className="w-1/2 h-full overflow-auto">
+                  <EmailThreadPanel
+                    emailId={selectedCampaignEmail.id}
+                    recipientEmail={selectedCampaignEmail.to}
+                    initialEmailData={selectedCampaignEmail}
+                    onClose={() => setSelectedCampaignEmail(null)}
+                  />
+                </div>
+              )}
             </div>
           )}
 

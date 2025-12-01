@@ -21,11 +21,17 @@ import {
 /**
  * Gmail-style Email Thread Panel Component
  * Displays email thread history and allows replying
+ *
+ * Props:
+ * - emailId: Database email ID for fetching thread (optional if recipientEmail provided)
+ * - recipientEmail: Fallback recipient email for IMAP-only fetch (used when no database record exists)
+ * - initialEmailData: Optional email data to display immediately (for draft emails)
+ * - onClose: Callback when panel is closed
  */
-export default function EmailThreadPanel({ emailId, onClose }) {
+export default function EmailThreadPanel({ emailId, recipientEmail, initialEmailData, onClose }) {
   const { user } = useUser()
   const [loading, setLoading] = useState(true)
-  const [emailData, setEmailData] = useState(null)
+  const [emailData, setEmailData] = useState(initialEmailData || null)
   const [threadHistory, setThreadHistory] = useState([])
   const [replyContent, setReplyContent] = useState('')
   const [replySubject, setReplySubject] = useState('')
@@ -38,8 +44,16 @@ export default function EmailThreadPanel({ emailId, onClose }) {
     if (emailId) {
       console.log('📧 EmailThreadPanel: Loading email thread for ID:', emailId)
       fetchEmailThread()
+    } else if (recipientEmail) {
+      console.log('📧 EmailThreadPanel: No emailId, fetching by recipient:', recipientEmail)
+      fetchEmailThreadByRecipient()
+    } else if (initialEmailData) {
+      // Just show the initial email data without fetching (for drafts)
+      console.log('📧 EmailThreadPanel: Showing initial email data (draft)')
+      setLoading(false)
+      setReplySubject(`Re: ${initialEmailData.subject}`)
     }
-  }, [emailId])
+  }, [emailId, recipientEmail])
 
   const fetchEmailThread = async () => {
     try {
@@ -200,6 +214,106 @@ export default function EmailThreadPanel({ emailId, onClose }) {
       }
     } catch (error) {
       console.error('Error fetching email thread:', error)
+      toast.error('Failed to load email thread')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 🔥 NEW: Fetch email thread directly by recipient email (for cases without database record)
+  const fetchEmailThreadByRecipient = async () => {
+    try {
+      setLoading(true)
+      const userId = user?.id
+
+      console.log('📧 Fetching email thread by recipient:', recipientEmail)
+
+      // Try to fetch from Gmail via IMAP first
+      try {
+        const gmailResponse = await fetch(`/api/analytics/fetch-gmail-thread/${encodeURIComponent(recipientEmail)}?userId=${userId}`)
+        const gmailResult = await gmailResponse.json()
+
+        if (gmailResult.success && gmailResult.data && gmailResult.data.length > 0) {
+          console.log(`📧 Fetched ${gmailResult.data.length} emails from Gmail for ${recipientEmail}`)
+
+          const gmailEmails = gmailResult.data.map(ge => ({
+            id: ge.id,
+            from: ge.from,
+            to: ge.to,
+            subject: ge.subject,
+            content: ge.content,
+            body: ge.content,
+            timestamp: ge.timestamp,
+            type: ge.type,
+            opened: false
+          }))
+
+          // Set email data from first email in thread
+          const firstEmail = gmailEmails[0]
+          setEmailData({
+            id: firstEmail.id,
+            subject: firstEmail.subject,
+            recipientEmail: recipientEmail,
+            sentAt: firstEmail.timestamp,
+            body: firstEmail.content,
+            openCount: 0,
+            clickCount: 0,
+            replyCount: gmailEmails.filter(e => e.type === 'received').length
+          })
+
+          setReplySubject(`Re: ${firstEmail.subject}`)
+          setThreadHistory(gmailEmails)
+
+          // Expand most recent email
+          if (gmailEmails.length > 0) {
+            const lastEmail = gmailEmails[gmailEmails.length - 1]
+            setExpandedEmails(new Set([lastEmail.id || gmailEmails.length - 1]))
+          }
+        } else {
+          // No Gmail thread found - show initial data if available
+          if (initialEmailData) {
+            setEmailData({
+              id: initialEmailData.id,
+              subject: initialEmailData.subject,
+              recipientEmail: recipientEmail,
+              body: initialEmailData.body || initialEmailData.content,
+              openCount: 0,
+              clickCount: 0,
+              replyCount: 0
+            })
+            setReplySubject(`Re: ${initialEmailData.subject}`)
+            setThreadHistory([{
+              id: initialEmailData.id || 'draft-1',
+              from: initialEmailData.from || 'You',
+              to: recipientEmail,
+              subject: initialEmailData.subject,
+              content: initialEmailData.body || initialEmailData.content,
+              timestamp: new Date().toISOString(),
+              type: 'sent',
+              isDraft: true
+            }])
+          } else {
+            toast.error('No email history found for this recipient')
+          }
+        }
+      } catch (gmailError) {
+        console.warn('📧 Gmail IMAP fetch failed:', gmailError.message)
+        // Fallback to showing initial data
+        if (initialEmailData) {
+          setEmailData({
+            id: initialEmailData.id,
+            subject: initialEmailData.subject,
+            recipientEmail: recipientEmail,
+            body: initialEmailData.body || initialEmailData.content,
+            openCount: 0,
+            clickCount: 0,
+            replyCount: 0
+          })
+          setReplySubject(`Re: ${initialEmailData.subject}`)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching email thread by recipient:', error)
       toast.error('Failed to load email thread')
     } finally {
       setLoading(false)

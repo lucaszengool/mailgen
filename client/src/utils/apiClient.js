@@ -1,11 +1,13 @@
 /**
  * API Client with Multi-Tenant Support
  * Centralized API communication with automatic user authentication
+ *
+ * 🔥 IMPORTANT: No anonymous/demo users allowed - authentication is REQUIRED
  */
 
 /**
  * Get authentication headers
- * Extracts user ID from Clerk or uses fallback for development
+ * Extracts user ID from Clerk - no fallback to anonymous
  */
 const getAuthHeaders = async () => {
   const headers = {
@@ -18,7 +20,12 @@ const getAuthHeaders = async () => {
       const token = await window.Clerk.session.getToken();
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        console.log('✅ Using Clerk authentication');
+      }
+
+      // 🔥 CRITICAL: Also include user ID in x-user-id header for backend compatibility
+      if (window.Clerk.user && window.Clerk.user.id) {
+        headers['x-user-id'] = window.Clerk.user.id;
+        console.log(`✅ Using Clerk user ID: ${window.Clerk.user.id}`);
         return headers;
       }
     }
@@ -26,18 +33,17 @@ const getAuthHeaders = async () => {
     console.warn('⚠️ Clerk authentication not available:', error.message);
   }
 
-  // Fallback: Check for development user ID in localStorage
+  // Fallback: Check for development user ID in localStorage (for local dev only)
   const devUserId = localStorage.getItem('dev_user_id');
-  if (devUserId) {
+  if (devUserId && devUserId !== 'demo' && devUserId !== 'anonymous') {
     headers['x-user-id'] = devUserId;
     console.log(`✅ Using development user ID: ${devUserId}`);
     return headers;
   }
 
-  // Default to anonymous user
-  headers['x-user-id'] = 'anonymous';
-  console.log('⚠️ Using anonymous user (no authentication)');
-
+  // 🔥 NO MORE ANONYMOUS FALLBACK - throw error if not authenticated
+  console.error('❌ No authentication available - user must be signed in');
+  // Don't set anonymous - let the backend reject it
   return headers;
 };
 
@@ -163,7 +169,8 @@ export const setDevUserId = (userId) => {
 };
 
 /**
- * Get current user ID
+ * Get current user ID - returns null if not authenticated
+ * 🔥 NO MORE ANONYMOUS FALLBACK
  */
 export const getCurrentUserId = async () => {
   try {
@@ -175,13 +182,14 @@ export const getCurrentUserId = async () => {
     console.warn('Could not get Clerk user ID:', error);
   }
 
-  // Fallback to dev user ID
+  // Fallback to dev user ID (for local development only)
   const devUserId = localStorage.getItem('dev_user_id');
-  if (devUserId) {
+  if (devUserId && devUserId !== 'demo' && devUserId !== 'anonymous') {
     return devUserId;
   }
 
-  return 'anonymous';
+  // 🔥 Return null instead of 'anonymous' - caller must handle auth requirement
+  return null;
 };
 
 /**

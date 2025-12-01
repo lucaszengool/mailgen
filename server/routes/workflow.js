@@ -6,7 +6,7 @@ const EmailEditorService = require('../services/EmailEditorService');
 const KnowledgeBaseSingleton = require('../models/KnowledgeBaseSingleton');
 const db = require('../models/database');
 const UserStorageService = require('../services/UserStorageService');
-const { optionalAuth } = require('../middleware/userContext');
+const { optionalAuth, strictAuth } = require('../middleware/userContext');
 const { enhanceProspect, GENERIC_PREFIXES } = require('../utils/emailEnrichment');
 
 // 🔥 PRODUCTION FIX: Store last workflow results per user AND per campaign
@@ -136,15 +136,106 @@ router.get('/status', optionalAuth, (req, res) => {
   });
 });
 
+// 🔥 NEW: Get workflow session for reconnection/resume
+// Returns the persisted session state from database
+router.get('/session/:campaignId', strictAuth, async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+    const userId = req.userId;
+
+    console.log(`📋 Getting workflow session for ${userId}/${campaignId}`);
+
+    // Get session from database
+    const session = await db.getWorkflowSession(userId, campaignId);
+
+    // Get prospects from database
+    const prospects = await db.getContacts(userId, campaignId);
+
+    // Get emails from database
+    const emails = await db.getEmailDrafts(userId, campaignId);
+
+    if (!session) {
+      return res.json({
+        success: true,
+        data: {
+          session: { status: 'idle', currentStep: null },
+          prospects: prospects || [],
+          emails: emails || [],
+          isNew: true
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        session: {
+          ...session,
+          status: session.status,
+          currentStep: session.current_step,
+          prospectsFound: session.prospects_found,
+          emailsGenerated: session.emails_generated,
+          startedAt: session.started_at,
+          lastActivity: session.last_activity
+        },
+        prospects: prospects || [],
+        emails: emails || [],
+        isNew: false
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error getting workflow session:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get workflow session',
+      message: error.message
+    });
+  }
+});
+
+// 🔥 NEW: Get all active workflow sessions for a user
+router.get('/sessions', strictAuth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    console.log(`📋 Getting all active workflow sessions for ${userId}`);
+
+    const sessions = await db.getActiveWorkflowSessions(userId);
+
+    res.json({
+      success: true,
+      data: sessions
+    });
+  } catch (error) {
+    console.error('❌ Error getting workflow sessions:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get workflow sessions',
+      message: error.message
+    });
+  }
+});
+
 // NOTE: Main /stats endpoint is defined later in this file (line ~2526)
 // It properly checks getUserLimit for isUnlimited status
 
-// Start workflow
-router.post('/start', optionalAuth, async (req, res) => {
+// Start workflow - 🔥 REQUIRES AUTHENTICATION (no demo users)
+router.post('/start', strictAuth, async (req, res) => {
   console.log('🚀 WORKFLOW START ENDPOINT CALLED!');
   console.log('🔍 Request body:', req.body);
   console.log('👤 User ID:', req.userId);
   console.log('📁 Campaign ID:', req.body.campaignId);
+
+  // 🔥 CRITICAL: Validate authentication
+  if (!req.userId || req.userId === 'demo' || req.userId === 'anonymous') {
+    console.log('❌ Workflow start rejected - authentication required');
+    return res.status(401).json({
+      success: false,
+      error: 'Authentication required',
+      message: 'Please sign in to start a workflow.',
+      requiresAuth: true
+    });
+  }
+
   try {
     // 🎯 Ensure user is tracked in database with default limits
     if (req.userId && req.userEmail) {
@@ -153,6 +244,22 @@ router.post('/start', optionalAuth, async (req, res) => {
       } catch (trackError) {
         console.error('❌ Failed to track user:', trackError);
         // Don't fail the request, just log the error
+      }
+    }
+
+    // 🔥 NEW: Create/update workflow session in database
+    const campaignId = req.body.campaignId;
+    if (campaignId) {
+      try {
+        await db.saveWorkflowSession(req.userId, campaignId, {
+          status: 'running',
+          currentStep: 'website_analysis',
+          startedAt: new Date().toISOString()
+        });
+        console.log(`✅ [DATABASE] Workflow session created for ${req.userId}/${campaignId}`);
+      } catch (sessionError) {
+        console.error('❌ Failed to create workflow session:', sessionError);
+        // Don't fail - session tracking is best-effort
       }
     }
 

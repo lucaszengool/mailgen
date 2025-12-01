@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const EventEmitter = require('events');
+const db = require('../models/database');
 
 class WorkflowWebSocketManager extends EventEmitter {
   constructor(server) {
@@ -14,13 +15,14 @@ class WorkflowWebSocketManager extends EventEmitter {
         console.log('   Origin:', info.origin);
         console.log('   Secure:', info.secure);
         console.log('   Request URL:', info.req.url);
-        console.log('   Request headers:', JSON.stringify(info.req.headers, null, 2));
         // Accept all origins for now
         return true;
       }
     });
     this.clients = new Map();
     this.workflowStates = new Map();
+    // 🔥 NEW: Track clients by userId+campaignId for proper isolation
+    this.userCampaignClients = new Map(); // "userId_campaignId" -> Set of clientIds
     this.setupWebSocketServer();
     console.log('🔌 WorkflowWebSocketManager initialized with path /ws/workflow');
   }
@@ -49,10 +51,12 @@ class WorkflowWebSocketManager extends EventEmitter {
       console.log(`   URL: ${req.url}`);
       console.log(`   Headers:`, JSON.stringify(req.headers, null, 2));
       
-      // 存储客户端
+      // 存储客户端 - 🔥 Enhanced with user tracking
       this.clients.set(clientId, {
         ws,
         subscriptions: new Set(),
+        userId: null,  // Will be set on authenticate message
+        campaignId: null,  // Will be set on subscribe
         lastActivity: Date.now()
       });
 
@@ -88,6 +92,16 @@ class WorkflowWebSocketManager extends EventEmitter {
       console.log(`📨 Received from ${clientId}:`, data.type);
 
       switch (data.type) {
+        // 🔥 NEW: Handle authentication message from frontend
+        case 'authenticate':
+          this.handleAuthentication(clientId, data);
+          break;
+
+        // 🔥 NEW: Subscribe with user+campaign for proper isolation
+        case 'subscribe_user_campaign':
+          this.subscribeUserCampaign(clientId, data.userId, data.campaignId);
+          break;
+
         case 'subscribe_workflow':
           this.subscribeToWorkflow(clientId, data.workflowId);
           break;
@@ -99,36 +113,136 @@ class WorkflowWebSocketManager extends EventEmitter {
         case 'update_strategy':
           this.handleStrategyUpdate(clientId, data);
           break;
-          
+
         case 'update_analysis':
           this.handleAnalysisUpdate(clientId, data);
           break;
-          
+
         case 'update_email':
           this.handleEmailUpdate(clientId, data);
           break;
-          
+
         case 'request_prospects':
-          this.sendProspectList(clientId, data.workflowId);
+          this.sendProspectList(clientId, data.workflowId, data.userId, data.campaignId);
           break;
-          
+
         case 'request_emails':
-          this.sendEmailList(clientId, data.workflowId);
+          this.sendEmailList(clientId, data.workflowId, data.userId, data.campaignId);
           break;
-          
+
+        // 🔥 NEW: Request workflow session state on reconnect
+        case 'request_session_state':
+          this.sendSessionState(clientId, data.userId, data.campaignId);
+          break;
+
         case 'user_feedback':
           this.handleUserFeedback(clientId, data);
           break;
-          
+
         case 'ping':
           this.sendToClient(clientId, { type: 'pong' });
           break;
-          
+
         default:
           console.log(`⚠️ Unknown message type: ${data.type}`);
       }
     } catch (error) {
       console.error('❌ Error handling client message:', error);
+    }
+  }
+
+  // 🔥 NEW: Handle authentication from frontend
+  handleAuthentication(clientId, data) {
+    const client = this.clients.get(clientId);
+    if (!client) return;
+
+    const { userId } = data;
+
+    // Reject anonymous/demo users
+    if (!userId || userId === 'demo' || userId === 'anonymous') {
+      console.log(`❌ WebSocket auth rejected - invalid userId: ${userId}`);
+      this.sendToClient(clientId, {
+        type: 'auth_error',
+        message: 'Authentication required. Please sign in.'
+      });
+      return;
+    }
+
+    client.userId = userId;
+    console.log(`✅ WebSocket client ${clientId} authenticated as user: ${userId}`);
+
+    this.sendToClient(clientId, {
+      type: 'authenticated',
+      userId,
+      message: 'Successfully authenticated'
+    });
+  }
+
+  // 🔥 NEW: Subscribe to specific user+campaign updates
+  subscribeUserCampaign(clientId, userId, campaignId) {
+    const client = this.clients.get(clientId);
+    if (!client) return;
+
+    // Validate authentication
+    if (!userId || userId === 'demo' || userId === 'anonymous') {
+      console.log(`❌ Subscription rejected - invalid userId: ${userId}`);
+      this.sendToClient(clientId, {
+        type: 'subscription_error',
+        message: 'Authentication required'
+      });
+      return;
+    }
+
+    // Store user info on client
+    client.userId = userId;
+    client.campaignId = campaignId;
+
+    const key = `${userId}_${campaignId}`;
+
+    // Add to user+campaign tracking
+    if (!this.userCampaignClients.has(key)) {
+      this.userCampaignClients.set(key, new Set());
+    }
+    this.userCampaignClients.get(key).add(clientId);
+
+    // Also add to workflow subscriptions for backward compatibility
+    client.subscriptions.add(campaignId);
+
+    console.log(`👁️ Client ${clientId} subscribed to user ${userId} campaign ${campaignId}`);
+
+    // Send current session state if available
+    this.sendSessionState(clientId, userId, campaignId);
+  }
+
+  // 🔥 NEW: Send session state to client on connect/reconnect
+  async sendSessionState(clientId, userId, campaignId) {
+    try {
+      if (!userId || userId === 'demo' || userId === 'anonymous') {
+        return;
+      }
+
+      // Get session from database
+      const session = await db.getWorkflowSession(userId, campaignId);
+
+      // Get prospects from database
+      const prospects = await db.getContacts(userId, campaignId);
+
+      // Get emails from database
+      const emails = await db.getEmailDrafts(userId, campaignId);
+
+      this.sendToClient(clientId, {
+        type: 'session_state',
+        userId,
+        campaignId,
+        session: session || { status: 'idle' },
+        prospects: prospects || [],
+        emails: emails || [],
+        timestamp: new Date().toISOString()
+      });
+
+      console.log(`📤 Sent session state to ${clientId}: ${prospects?.length || 0} prospects, ${emails?.length || 0} emails, status: ${session?.status || 'idle'}`);
+    } catch (error) {
+      console.error('❌ Error sending session state:', error);
     }
   }
 
@@ -376,7 +490,66 @@ class WorkflowWebSocketManager extends EventEmitter {
     }
   }
 
-  // 广播消息给所有客户端
+  // 🔥 NEW: Broadcast to specific user+campaign only (proper isolation)
+  broadcastToUserCampaign(userId, campaignId, data) {
+    if (!userId || userId === 'demo' || userId === 'anonymous') {
+      console.log(`⚠️ [WebSocket] Cannot broadcast to invalid user: ${userId}`);
+      return;
+    }
+
+    const key = `${userId}_${campaignId}`;
+    const clientIds = this.userCampaignClients.get(key);
+
+    if (clientIds && clientIds.size > 0) {
+      console.log(`📡 [WebSocket] Broadcasting to ${clientIds.size} clients for user ${userId} campaign ${campaignId}`);
+      clientIds.forEach(clientId => {
+        this.sendToClient(clientId, {
+          ...data,
+          userId,
+          campaignId
+        });
+      });
+    } else {
+      console.log(`⚠️ [WebSocket] No clients subscribed to user ${userId} campaign ${campaignId}`);
+    }
+  }
+
+  // 🔥 NEW: Broadcast instant prospect update to specific user+campaign
+  broadcastProspectUpdate(userId, campaignId, prospect) {
+    this.broadcastToUserCampaign(userId, campaignId, {
+      type: 'prospect_found',
+      prospect,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // 🔥 NEW: Broadcast instant email update to specific user+campaign
+  broadcastEmailUpdate(userId, campaignId, email) {
+    this.broadcastToUserCampaign(userId, campaignId, {
+      type: 'email_generated',
+      email,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // 🔥 NEW: Broadcast workflow status update to specific user+campaign
+  broadcastWorkflowStatus(userId, campaignId, status, additionalData = {}) {
+    this.broadcastToUserCampaign(userId, campaignId, {
+      type: 'workflow_status',
+      status,
+      ...additionalData,
+      timestamp: new Date().toISOString()
+    });
+
+    // Also update session in database
+    if (userId && userId !== 'demo' && userId !== 'anonymous') {
+      db.updateWorkflowSessionStatus(userId, campaignId, status, additionalData).catch(err => {
+        console.error('❌ [WebSocket] Failed to update session status:', err);
+      });
+    }
+  }
+
+  // 广播消息给所有客户端 (use sparingly - prefer user-specific broadcast)
   broadcast(data) {
     this.clients.forEach((client, clientId) => {
       this.sendToClient(clientId, data);

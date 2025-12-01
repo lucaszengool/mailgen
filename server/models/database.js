@@ -245,6 +245,34 @@ class Database {
       )
     `);
 
+    // 🔥 NEW: Workflow sessions table for persistent state management
+    // This enables workflow resume on browser refresh/reconnect
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS workflow_sessions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        campaign_id TEXT NOT NULL,
+        status TEXT DEFAULT 'idle',
+        current_step TEXT,
+        workflow_state TEXT,
+        prospects_found INTEGER DEFAULT 0,
+        emails_generated INTEGER DEFAULT 0,
+        last_activity DATETIME DEFAULT CURRENT_TIMESTAMP,
+        started_at DATETIME,
+        completed_at DATETIME,
+        error_message TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, campaign_id)
+      )
+    `, (err) => {
+      if (err) {
+        console.error('❌ [DATABASE] Failed to create workflow_sessions table:', err.message);
+      } else {
+        console.log('✅ [DATABASE] workflow_sessions table ready');
+      }
+    });
+
     // 迁移现有数据：为旧数据添加 user_id
     this.migrateExistingData();
 
@@ -1255,6 +1283,220 @@ class Database {
                 }
               }
             );
+          }
+        }
+      );
+    });
+  }
+  // ============================================
+  // 🔥 WORKFLOW SESSION METHODS - For persistent state management
+  // ============================================
+
+  /**
+   * Save or update a workflow session
+   * @param {string} userId - User ID (required, no anonymous)
+   * @param {string} campaignId - Campaign ID
+   * @param {object} sessionData - Session state data
+   */
+  saveWorkflowSession(userId, campaignId, sessionData) {
+    return new Promise((resolve, reject) => {
+      if (!userId || userId === 'demo' || userId === 'anonymous') {
+        return reject(new Error('Valid authenticated userId required'));
+      }
+      if (!campaignId) {
+        return reject(new Error('campaignId is required'));
+      }
+
+      const sessionId = `${userId}_${campaignId}`;
+      const now = new Date().toISOString();
+
+      this.db.run(
+        `INSERT INTO workflow_sessions (id, user_id, campaign_id, status, current_step, workflow_state, prospects_found, emails_generated, last_activity, started_at, completed_at, error_message, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(user_id, campaign_id) DO UPDATE SET
+           status = excluded.status,
+           current_step = excluded.current_step,
+           workflow_state = excluded.workflow_state,
+           prospects_found = excluded.prospects_found,
+           emails_generated = excluded.emails_generated,
+           last_activity = excluded.last_activity,
+           started_at = COALESCE(excluded.started_at, started_at),
+           completed_at = excluded.completed_at,
+           error_message = excluded.error_message,
+           updated_at = excluded.updated_at`,
+        [
+          sessionId,
+          userId,
+          campaignId,
+          sessionData.status || 'idle',
+          sessionData.currentStep || null,
+          JSON.stringify(sessionData.workflowState || {}),
+          sessionData.prospectsFound || 0,
+          sessionData.emailsGenerated || 0,
+          now,
+          sessionData.startedAt || null,
+          sessionData.completedAt || null,
+          sessionData.errorMessage || null,
+          now
+        ],
+        (err) => {
+          if (err) {
+            console.error('❌ [DATABASE] Failed to save workflow session:', err);
+            reject(err);
+          } else {
+            console.log(`✅ [DATABASE] Workflow session saved: ${sessionId} - Status: ${sessionData.status}`);
+            resolve({ success: true, sessionId });
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Get workflow session for a user and campaign
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   */
+  getWorkflowSession(userId, campaignId) {
+    return new Promise((resolve, reject) => {
+      if (!userId || userId === 'demo' || userId === 'anonymous') {
+        return resolve(null);
+      }
+
+      this.db.get(
+        `SELECT * FROM workflow_sessions WHERE user_id = ? AND campaign_id = ?`,
+        [userId, campaignId],
+        (err, row) => {
+          if (err) {
+            console.error('❌ [DATABASE] Failed to get workflow session:', err);
+            reject(err);
+          } else if (row) {
+            // Parse JSON fields
+            try {
+              row.workflowState = JSON.parse(row.workflow_state || '{}');
+            } catch (e) {
+              row.workflowState = {};
+            }
+            resolve(row);
+          } else {
+            resolve(null);
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Get all active workflow sessions for a user
+   * @param {string} userId - User ID
+   */
+  getActiveWorkflowSessions(userId) {
+    return new Promise((resolve, reject) => {
+      if (!userId || userId === 'demo' || userId === 'anonymous') {
+        return resolve([]);
+      }
+
+      this.db.all(
+        `SELECT * FROM workflow_sessions WHERE user_id = ? AND status IN ('running', 'paused', 'paused_for_review', 'paused_for_editing') ORDER BY last_activity DESC`,
+        [userId],
+        (err, rows) => {
+          if (err) {
+            console.error('❌ [DATABASE] Failed to get active workflow sessions:', err);
+            reject(err);
+          } else {
+            // Parse JSON fields
+            const sessions = (rows || []).map(row => {
+              try {
+                row.workflowState = JSON.parse(row.workflow_state || '{}');
+              } catch (e) {
+                row.workflowState = {};
+              }
+              return row;
+            });
+            resolve(sessions);
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Update workflow session status
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   * @param {string} status - New status
+   * @param {object} additionalData - Additional data to update
+   */
+  updateWorkflowSessionStatus(userId, campaignId, status, additionalData = {}) {
+    return new Promise((resolve, reject) => {
+      if (!userId || userId === 'demo' || userId === 'anonymous') {
+        return reject(new Error('Valid authenticated userId required'));
+      }
+
+      const now = new Date().toISOString();
+      let updateFields = ['status = ?', 'last_activity = ?', 'updated_at = ?'];
+      let updateValues = [status, now, now];
+
+      if (additionalData.currentStep) {
+        updateFields.push('current_step = ?');
+        updateValues.push(additionalData.currentStep);
+      }
+      if (additionalData.prospectsFound !== undefined) {
+        updateFields.push('prospects_found = ?');
+        updateValues.push(additionalData.prospectsFound);
+      }
+      if (additionalData.emailsGenerated !== undefined) {
+        updateFields.push('emails_generated = ?');
+        updateValues.push(additionalData.emailsGenerated);
+      }
+      if (additionalData.errorMessage) {
+        updateFields.push('error_message = ?');
+        updateValues.push(additionalData.errorMessage);
+      }
+      if (status === 'completed') {
+        updateFields.push('completed_at = ?');
+        updateValues.push(now);
+      }
+      if (status === 'running' && additionalData.isStart) {
+        updateFields.push('started_at = ?');
+        updateValues.push(now);
+      }
+
+      updateValues.push(userId, campaignId);
+
+      this.db.run(
+        `UPDATE workflow_sessions SET ${updateFields.join(', ')} WHERE user_id = ? AND campaign_id = ?`,
+        updateValues,
+        (err) => {
+          if (err) {
+            console.error('❌ [DATABASE] Failed to update workflow session status:', err);
+            reject(err);
+          } else {
+            console.log(`✅ [DATABASE] Workflow session updated: ${userId}/${campaignId} -> ${status}`);
+            resolve({ success: true });
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Delete workflow session
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   */
+  deleteWorkflowSession(userId, campaignId) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `DELETE FROM workflow_sessions WHERE user_id = ? AND campaign_id = ?`,
+        [userId, campaignId],
+        (err) => {
+          if (err) {
+            console.error('❌ [DATABASE] Failed to delete workflow session:', err);
+            reject(err);
+          } else {
+            console.log(`✅ [DATABASE] Workflow session deleted: ${userId}/${campaignId}`);
+            resolve({ success: true });
           }
         }
       );
