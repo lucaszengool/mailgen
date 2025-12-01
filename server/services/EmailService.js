@@ -118,11 +118,11 @@ class EmailService {
             });
           }
 
-          // Last resort: try user_configs table
+          // Last resort: try user_configs table (stores SMTP as JSON in smtp_config column)
           if (!smtpCreds && userId) {
             const userConfig = await new Promise((resolve, reject) => {
               db.db.get(
-                'SELECT smtp_host, smtp_port, smtp_user, smtp_pass FROM user_configs WHERE user_id = ? LIMIT 1',
+                'SELECT smtp_config FROM user_configs WHERE user_id = ? LIMIT 1',
                 [userId],
                 (err, row) => {
                   if (err) reject(err);
@@ -130,13 +130,22 @@ class EmailService {
                 }
               );
             });
-            if (userConfig && userConfig.smtp_user) {
-              smtpCreds = {
-                host: userConfig.smtp_host,
-                port: userConfig.smtp_port,
-                username: userConfig.smtp_user,
-                password: userConfig.smtp_pass
-              };
+            if (userConfig && userConfig.smtp_config) {
+              try {
+                const smtpJson = JSON.parse(userConfig.smtp_config);
+                if (smtpJson && smtpJson.username && smtpJson.password) {
+                  smtpCreds = {
+                    host: smtpJson.host,
+                    port: smtpJson.port,
+                    username: smtpJson.username,
+                    password: smtpJson.password,
+                    secure: smtpJson.secure
+                  };
+                  console.log(`📧 Found SMTP config in user_configs JSON for user: ${userId}`);
+                }
+              } catch (parseErr) {
+                console.log('⚠️ Failed to parse smtp_config JSON:', parseErr.message);
+              }
             }
           }
 

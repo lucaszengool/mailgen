@@ -1759,20 +1759,38 @@ router.post('/send-reply', async (req, res) => {
       });
     });
 
-    // Fallback to user_configs if smtp_configs not found
+    // Fallback to user_configs if smtp_configs not found (stores SMTP as JSON)
     if (!smtpCreds) {
       const userConfigQuery = `
-        SELECT smtp_host as host, smtp_port as port, smtp_user as username, smtp_pass as password
+        SELECT smtp_config
         FROM user_configs
         WHERE user_id = ?
         LIMIT 1
       `;
-      smtpCreds = await new Promise((resolve, reject) => {
+      const userConfigRow = await new Promise((resolve, reject) => {
         db.db.get(userConfigQuery, [userId], (err, row) => {
           if (err) reject(err);
           else resolve(row);
         });
       });
+
+      if (userConfigRow && userConfigRow.smtp_config) {
+        try {
+          const smtpJson = JSON.parse(userConfigRow.smtp_config);
+          if (smtpJson && smtpJson.username && smtpJson.password) {
+            smtpCreds = {
+              host: smtpJson.host,
+              port: smtpJson.port,
+              username: smtpJson.username,
+              password: smtpJson.password,
+              secure: smtpJson.secure
+            };
+            console.log(`📧 [SEND-REPLY] Found SMTP config in user_configs JSON for user: ${userId}`);
+          }
+        } catch (parseErr) {
+          console.log('⚠️ [SEND-REPLY] Failed to parse smtp_config JSON:', parseErr.message);
+        }
+      }
     }
 
     if (!smtpCreds || !smtpCreds.username || !smtpCreds.password) {
