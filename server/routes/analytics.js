@@ -1565,13 +1565,14 @@ router.get('/complete-thread/:emailId', async (req, res) => {
     });
 
     // Step 3: Get ALL sent emails to this prospect (across all campaigns)
+    // 🔥 FIX: Also try to get content from email_drafts as fallback for old emails
     const sentEmailsQuery = `
       SELECT
         e.id,
         'You' as "from",
         e.to_email as "to",
         e.subject,
-        e.body as content,
+        COALESCE(e.body, d.html, 'Email content was not stored for this message.') as content,
         e.sent_at as timestamp,
         'sent' as type,
         e.tracking_id,
@@ -1580,6 +1581,7 @@ router.get('/complete-thread/:emailId', async (req, res) => {
         (SELECT MAX(opened_at) FROM email_opens WHERE tracking_id = e.tracking_id) as lastOpenedAt,
         (SELECT COUNT(*) > 0 FROM email_clicks WHERE link_id = e.tracking_id) as clicked
       FROM email_logs e
+      LEFT JOIN email_drafts d ON d.metadata LIKE '%' || e.to_email || '%' AND d.subject = e.subject
       WHERE e.to_email = ?
       ORDER BY e.sent_at ASC
     `;
@@ -1674,18 +1676,20 @@ router.get('/email-thread-by-recipient/:recipientEmail', async (req, res) => {
     console.log(`📧 [THREAD-BY-RECIPIENT] Fetching thread for ${recipientEmail}, user ${userId}`);
 
     // Get all sent emails to this recipient
+    // 🔥 FIX: Also try to get content from email_drafts as fallback for old emails
     const sentEmailsQuery = `
       SELECT
         e.id,
         'You' as "from",
         e.to_email as "to",
         e.subject,
-        e.body as content,
+        COALESCE(e.body, d.html) as content,
         e.sent_at as timestamp,
         'sent' as type,
         e.tracking_id,
         (SELECT COUNT(*) > 0 FROM email_opens WHERE tracking_id = e.tracking_id) as opened
       FROM email_logs e
+      LEFT JOIN email_drafts d ON d.metadata LIKE '%' || e.to_email || '%' AND d.subject = e.subject
       WHERE e.to_email = ?
       ORDER BY e.sent_at ASC
     `;
