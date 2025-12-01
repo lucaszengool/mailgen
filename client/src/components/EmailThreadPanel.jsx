@@ -44,7 +44,7 @@ export default function EmailThreadPanel({ emailId, onClose }) {
   const fetchEmailThread = async () => {
     try {
       setLoading(true)
-      const userId = user?.id || 'anonymous'
+      const userId = user?.id // Use actual user ID from Clerk authentication
 
       console.log('📧 Fetching complete email thread for ID:', emailId)
 
@@ -56,12 +56,13 @@ export default function EmailThreadPanel({ emailId, onClose }) {
 
       if (threadResult.success && threadResult.data) {
         const threadData = threadResult.data
+        const recipientEmail = threadData.prospect?.email
 
         // Set email data from the thread response
         setEmailData({
           id: threadData.originalEmail?.id,
           subject: threadData.originalEmail?.subject,
-          recipientEmail: threadData.prospect?.email,
+          recipientEmail: recipientEmail,
           sentAt: threadData.originalEmail?.sentAt,
           body: threadData.originalEmail?.content,
           openCount: threadData.stats?.openCount || 0,
@@ -72,7 +73,81 @@ export default function EmailThreadPanel({ emailId, onClose }) {
         setReplySubject(`Re: ${threadData.originalEmail?.subject}`)
 
         // Set thread history with all emails (sent + received) sorted chronologically
-        const allEmails = threadData.emails || []
+        let allEmails = threadData.emails || []
+
+        // 🔥 NEW: Check if any emails have missing content - if so, try to fetch from Gmail via IMAP
+        const hasMissingContent = allEmails.some(email => !email.content || email.content === 'Email content was not stored for this message.')
+
+        if (hasMissingContent && recipientEmail) {
+          console.log('📧 Some emails missing content, fetching from Gmail via IMAP...')
+          try {
+            const gmailResponse = await fetch(`/api/analytics/fetch-gmail-thread/${encodeURIComponent(recipientEmail)}?userId=${userId}`)
+            const gmailResult = await gmailResponse.json()
+
+            if (gmailResult.success && gmailResult.data && gmailResult.data.length > 0) {
+              console.log(`📧 Fetched ${gmailResult.data.length} emails from Gmail`)
+
+              // Merge Gmail content with existing emails or use Gmail emails directly
+              const gmailEmails = gmailResult.data
+
+              // Create a map of Gmail emails by subject+date for matching
+              const gmailContentMap = new Map()
+              gmailEmails.forEach(ge => {
+                // Use subject as key (normalized)
+                const key = (ge.subject || '').toLowerCase().replace(/^re:\s*/i, '').trim()
+                if (!gmailContentMap.has(key)) {
+                  gmailContentMap.set(key, [])
+                }
+                gmailContentMap.get(key).push(ge)
+              })
+
+              // Update allEmails with Gmail content where missing
+              allEmails = allEmails.map(email => {
+                if (!email.content || email.content === 'Email content was not stored for this message.') {
+                  const key = (email.subject || '').toLowerCase().replace(/^re:\s*/i, '').trim()
+                  const gmailMatches = gmailContentMap.get(key)
+                  if (gmailMatches && gmailMatches.length > 0) {
+                    // Find best match by date proximity
+                    const emailDate = new Date(email.timestamp || email.sentAt).getTime()
+                    let bestMatch = gmailMatches[0]
+                    let bestDiff = Math.abs(new Date(bestMatch.timestamp).getTime() - emailDate)
+
+                    gmailMatches.forEach(gm => {
+                      const diff = Math.abs(new Date(gm.timestamp).getTime() - emailDate)
+                      if (diff < bestDiff) {
+                        bestDiff = diff
+                        bestMatch = gm
+                      }
+                    })
+
+                    console.log(`📧 Matched Gmail content for: ${email.subject}`)
+                    return { ...email, content: bestMatch.content, body: bestMatch.content }
+                  }
+                }
+                return email
+              })
+
+              // If we still have emails without content but Gmail has more, add them
+              if (gmailEmails.length > allEmails.length) {
+                console.log(`📧 Gmail has more emails (${gmailEmails.length}) than database (${allEmails.length}), using Gmail data`)
+                allEmails = gmailEmails.map(ge => ({
+                  id: ge.id,
+                  from: ge.from,
+                  to: ge.to,
+                  subject: ge.subject,
+                  content: ge.content,
+                  body: ge.content,
+                  timestamp: ge.timestamp,
+                  type: ge.type,
+                  opened: false
+                }))
+              }
+            }
+          } catch (gmailError) {
+            console.warn('📧 Could not fetch from Gmail (IMAP may not be configured):', gmailError.message)
+          }
+        }
+
         setThreadHistory(allEmails)
 
         // Expand the most recent email by default
@@ -98,7 +173,26 @@ export default function EmailThreadPanel({ emailId, onClose }) {
           const historyResult = await historyResponse.json()
 
           if (historyResult.success) {
-            setThreadHistory(historyResult.data || [])
+            let historyEmails = historyResult.data || []
+
+            // 🔥 NEW: Also try Gmail IMAP for fallback data
+            const hasMissingContent = historyEmails.some(email => !email.content)
+            if (hasMissingContent && emailResult.data.recipientEmail) {
+              try {
+                const gmailResponse = await fetch(`/api/analytics/fetch-gmail-thread/${encodeURIComponent(emailResult.data.recipientEmail)}?userId=${userId}`)
+                const gmailResult = await gmailResponse.json()
+                if (gmailResult.success && gmailResult.data) {
+                  historyEmails = gmailResult.data.map(ge => ({
+                    ...ge,
+                    body: ge.content
+                  }))
+                }
+              } catch (e) {
+                console.warn('Gmail IMAP fallback failed:', e.message)
+              }
+            }
+
+            setThreadHistory(historyEmails)
           }
         } else {
           toast.error('Failed to load email details')
@@ -120,7 +214,7 @@ export default function EmailThreadPanel({ emailId, onClose }) {
 
     try {
       setSending(true)
-      const userId = user?.id || 'anonymous'
+      const userId = user?.id // Use actual user ID from Clerk authentication
 
       // 🔥 FIX: API expects 'html' or 'text', not 'body'
       const response = await fetch('/api/send-email/send', {

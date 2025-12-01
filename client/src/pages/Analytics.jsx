@@ -170,9 +170,8 @@ export default function Analytics({ onEmailClick }) {
     try {
       console.log('📊 Fetching analytics data...')
       setLoading(true)
-      // 🔥 CRITICAL FIX: Use 'demo' as fallback to match how emails are stored when not authenticated via Clerk
-      // The optionalAuth middleware on backend defaults to 'demo', so we need to match that here
-      const userId = user?.id || 'demo'
+      // Use actual user ID from Clerk authentication
+      const userId = user?.id
       console.log('📊 Using userId for analytics:', userId)
       const [metricsRes, campaignsRes, deliveryRes, trendsRes, recipientsRes, individualEmailsRes] = await Promise.all([
         fetch(`/api/analytics/email-metrics?timeRange=${timeRange}&campaign=${selectedCampaign}&userId=${userId}`),
