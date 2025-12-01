@@ -54,16 +54,21 @@ const requireAuth = (req, res, next) => {
 
 /**
  * Middleware to optionally allow authentication
- * Sets req.userId to 'demo' for unauthenticated users during development
+ * Sets req.userId from x-user-id header or 'demo' for unauthenticated users
  */
 const optionalAuth = (req, res, next) => {
-  // If no userId, set a demo userId for development
+  // If no userId from Clerk, check for x-user-id header
   if (!req.userId) {
-    // In production, you might want to reject these requests
-    // For now, we'll allow demo mode
-    req.userId = 'demo';
-    req.isDemo = true;
-    console.log('⚠️ Demo mode - Using demo userId');
+    const headerUserId = req.headers['x-user-id'];
+    if (headerUserId && headerUserId !== 'anonymous') {
+      req.userId = headerUserId;
+      console.log(`📧 Using x-user-id header: ${headerUserId}`);
+    } else {
+      // Fallback to demo mode
+      req.userId = 'demo';
+      req.isDemo = true;
+      console.log('⚠️ Demo mode - Using demo userId');
+    }
   }
   next();
 };
