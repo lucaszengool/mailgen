@@ -1796,6 +1796,67 @@ router.get('/email-thread-by-recipient/:recipientEmail', async (req, res) => {
   }
 });
 
+// 🔥 NEW: Fetch email thread from Gmail via IMAP
+router.get('/fetch-gmail-thread/:recipientEmail', async (req, res) => {
+  try {
+    const { recipientEmail } = req.params;
+    const { userId = 'demo' } = req.query;
+
+    console.log(`📧 [GMAIL THREAD] Fetching thread for ${recipientEmail}, user: ${userId}`);
+
+    // Get IMAP credentials from user_configs
+    const userConfigQuery = `SELECT smtp_config FROM user_configs WHERE user_id = ? LIMIT 1`;
+    const userConfig = await new Promise((resolve, reject) => {
+      db.db.get(userConfigQuery, [userId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    if (!userConfig || !userConfig.smtp_config) {
+      return res.status(400).json({
+        success: false,
+        error: 'IMAP not configured. Please configure your email settings.'
+      });
+    }
+
+    const smtpJson = JSON.parse(userConfig.smtp_config);
+
+    // For Gmail, IMAP uses same credentials as SMTP
+    const imapConfig = {
+      user: smtpJson.username,
+      password: smtpJson.password,
+      host: 'imap.gmail.com',
+      port: 993
+    };
+
+    // Fetch emails from Gmail
+    const IMAPEmailTracker = require('../services/IMAPEmailTracker');
+    const imapTracker = new IMAPEmailTracker();
+
+    const emails = await imapTracker.fetchEmailThread(decodeURIComponent(recipientEmail), imapConfig);
+
+    console.log(`📧 [GMAIL THREAD] Found ${emails.length} emails in thread`);
+
+    res.json({
+      success: true,
+      data: emails.map(e => ({
+        id: e.id,
+        from: e.from,
+        to: e.to,
+        subject: e.subject,
+        content: e.content || e.htmlContent || e.textContent,
+        timestamp: e.timestamp,
+        type: e.type
+      }))
+    });
+
+  } catch (error) {
+    console.error('❌ [GMAIL THREAD] Error:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // 🆕 Send reply from thread view
 router.post('/send-reply', async (req, res) => {
   try {

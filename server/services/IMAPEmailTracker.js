@@ -419,6 +419,226 @@ class IMAPEmailTracker {
     this.stopMonitoring();
     console.log('📬 IMAP disconnected');
   }
+
+  /**
+   * 🔥 NEW: Fetch email thread for a specific recipient from Gmail
+   * Searches both Sent and Inbox folders for all emails to/from the recipient
+   */
+  async fetchEmailThread(recipientEmail, imapConfig) {
+    console.log(`📧 [IMAP FETCH] Fetching email thread for: ${recipientEmail}`);
+
+    let imap = null;
+    const emails = [];
+
+    try {
+      // Connect to IMAP
+      imap = new Imap({
+        user: imapConfig.user || imapConfig.email || imapConfig.username,
+        password: imapConfig.password,
+        host: imapConfig.host || 'imap.gmail.com',
+        port: imapConfig.port || 993,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false }
+      });
+
+      await new Promise((resolve, reject) => {
+        imap.once('ready', resolve);
+        imap.once('error', reject);
+        imap.connect();
+      });
+
+      console.log('✅ [IMAP FETCH] Connected to Gmail');
+
+      // Search in Sent folder first
+      const sentEmails = await this.searchFolder(imap, '[Gmail]/Sent Mail', recipientEmail, 'TO');
+      emails.push(...sentEmails.map(e => ({ ...e, type: 'sent', from: 'You' })));
+      console.log(`📤 [IMAP FETCH] Found ${sentEmails.length} sent emails`);
+
+      // Search in Inbox for replies
+      const receivedEmails = await this.searchFolder(imap, 'INBOX', recipientEmail, 'FROM');
+      emails.push(...receivedEmails.map(e => ({ ...e, type: 'received', to: 'You' })));
+      console.log(`📥 [IMAP FETCH] Found ${receivedEmails.length} received emails`);
+
+      // Sort by date
+      emails.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      console.log(`📧 [IMAP FETCH] Total emails in thread: ${emails.length}`);
+
+      return emails;
+
+    } catch (error) {
+      console.error('❌ [IMAP FETCH] Error:', error.message);
+      throw error;
+    } finally {
+      if (imap) {
+        imap.end();
+      }
+    }
+  }
+
+  /**
+   * Search a specific folder for emails to/from a recipient
+   */
+  async searchFolder(imap, folderName, recipientEmail, searchType = 'TO') {
+    return new Promise((resolve, reject) => {
+      imap.openBox(folderName, true, (err, box) => {
+        if (err) {
+          console.log(`⚠️ [IMAP] Could not open ${folderName}:`, err.message);
+          resolve([]); // Don't reject, just return empty
+          return;
+        }
+
+        // Search for emails to/from the recipient
+        const searchCriteria = [[searchType, recipientEmail]];
+
+        imap.search(searchCriteria, (err, results) => {
+          if (err || !results || results.length === 0) {
+            resolve([]);
+            return;
+          }
+
+          // Limit to last 50 emails for performance
+          const limitedResults = results.slice(-50);
+          console.log(`🔍 [IMAP] Found ${results.length} emails in ${folderName}, fetching last ${limitedResults.length}`);
+
+          const emails = [];
+          const fetch = imap.fetch(limitedResults, {
+            bodies: '',
+            struct: true
+          });
+
+          fetch.on('message', (msg, seqno) => {
+            msg.on('body', (stream) => {
+              simpleParser(stream, (err, parsed) => {
+                if (err) {
+                  console.error('❌ Error parsing message:', err.message);
+                  return;
+                }
+
+                emails.push({
+                  id: parsed.messageId,
+                  subject: parsed.subject || '(No Subject)',
+                  from: parsed.from?.text || '',
+                  to: parsed.to?.text || '',
+                  date: parsed.date,
+                  timestamp: parsed.date?.toISOString(),
+                  content: parsed.html || parsed.text || '',
+                  textContent: parsed.text || '',
+                  htmlContent: parsed.html || ''
+                });
+              });
+            });
+          });
+
+          fetch.once('error', (err) => {
+            console.error('❌ Fetch error:', err.message);
+            resolve(emails); // Return what we have
+          });
+
+          fetch.once('end', () => {
+            resolve(emails);
+          });
+        });
+      });
+    });
+  }
+
+  /**
+   * 🔥 NEW: Fetch a single email by message ID
+   */
+  async fetchEmailByMessageId(messageId, imapConfig) {
+    console.log(`📧 [IMAP] Fetching email by messageId: ${messageId}`);
+
+    let imap = null;
+
+    try {
+      imap = new Imap({
+        user: imapConfig.user || imapConfig.email || imapConfig.username,
+        password: imapConfig.password,
+        host: imapConfig.host || 'imap.gmail.com',
+        port: imapConfig.port || 993,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false }
+      });
+
+      await new Promise((resolve, reject) => {
+        imap.once('ready', resolve);
+        imap.once('error', reject);
+        imap.connect();
+      });
+
+      // Search in Sent folder
+      const email = await this.findEmailByMessageId(imap, '[Gmail]/Sent Mail', messageId);
+
+      if (email) {
+        return email;
+      }
+
+      // If not found in Sent, try Inbox
+      return await this.findEmailByMessageId(imap, 'INBOX', messageId);
+
+    } catch (error) {
+      console.error('❌ [IMAP] Error fetching email:', error.message);
+      throw error;
+    } finally {
+      if (imap) {
+        imap.end();
+      }
+    }
+  }
+
+  /**
+   * Find email by message ID in a specific folder
+   */
+  async findEmailByMessageId(imap, folderName, messageId) {
+    return new Promise((resolve, reject) => {
+      imap.openBox(folderName, true, (err, box) => {
+        if (err) {
+          resolve(null);
+          return;
+        }
+
+        // Search by message ID header
+        imap.search([['HEADER', 'MESSAGE-ID', messageId]], (err, results) => {
+          if (err || !results || results.length === 0) {
+            resolve(null);
+            return;
+          }
+
+          const fetch = imap.fetch(results.slice(-1), {
+            bodies: '',
+            struct: true
+          });
+
+          let email = null;
+
+          fetch.on('message', (msg) => {
+            msg.on('body', (stream) => {
+              simpleParser(stream, (err, parsed) => {
+                if (!err) {
+                  email = {
+                    id: parsed.messageId,
+                    subject: parsed.subject || '(No Subject)',
+                    from: parsed.from?.text || '',
+                    to: parsed.to?.text || '',
+                    date: parsed.date,
+                    timestamp: parsed.date?.toISOString(),
+                    content: parsed.html || parsed.text || '',
+                    textContent: parsed.text || '',
+                    htmlContent: parsed.html || ''
+                  };
+                }
+              });
+            });
+          });
+
+          fetch.once('end', () => {
+            resolve(email);
+          });
+        });
+      });
+    });
+  }
 }
 
 module.exports = IMAPEmailTracker;
