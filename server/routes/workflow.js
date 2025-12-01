@@ -291,8 +291,9 @@ router.post('/start', strictAuth, async (req, res) => {
     });
 
     // 🎯 FIX: Reset template submission flag when workflow starts (per user AND campaign)
-    const campaignId = req.body.campaignId || 'default';
-    const templateKey = `${req.userId}_${campaignId}`;
+    // Note: campaignId already declared above on line 251
+    const templateCampaignId = campaignId || 'default';
+    const templateKey = `${req.userId}_${templateCampaignId}`;
     userCampaignTemplateSubmitted.set(templateKey, false);
     console.log(`🎯 [RESET] Template submitted flag cleared for: ${templateKey}`);
 
