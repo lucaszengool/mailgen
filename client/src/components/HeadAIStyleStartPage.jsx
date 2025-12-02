@@ -6,7 +6,6 @@ import WorkflowAnimation from './WorkflowAnimation';
 import JobRightProspectCard from './JobRightProspectCard';
 import FloatingTestimonials from './FloatingTestimonials';
 import AutoLanguageSelector from './AutoLanguageSelector';
-import LanguageSwitcher from './LanguageSwitcher';
 
 // CSS for scrolling animation
 const scrollingStyle = `
@@ -1540,8 +1539,10 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
         </div>
       </footer>
 
-      {/* Language Switcher - Available on all pages (top-right, below header) */}
-      <LanguageSwitcher position="top-right" />
+      {/* Language Selector - Google Translate (top-right, below header) */}
+      <div className="fixed top-20 right-6 z-[9999]">
+        <AutoLanguageSelector />
+      </div>
     </div>
   );
 };

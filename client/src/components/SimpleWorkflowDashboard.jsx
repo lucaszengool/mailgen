@@ -31,7 +31,7 @@ import MarketResearch from './MarketResearch';
 import AIAssistantChatbot from './AIAssistantChatbot';
 import QuotaBar from './QuotaBar';
 import EmailThreadPanel from './EmailThreadPanel';
-import LanguageSwitcher from './LanguageSwitcher';
+import AutoLanguageSelector from './AutoLanguageSelector';
 
 
 // Utility function for generating gradient patterns
@@ -7733,8 +7733,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         </button>
       )}
 
-      {/* Language Switcher - Available on all pages (top-right, below header) */}
-      <LanguageSwitcher position="top-right" />
+      {/* Language Selector - Google Translate (top-right, below header) */}
+      <div className="fixed top-20 right-6 z-[9999]">
+        <AutoLanguageSelector />
+      </div>
     </div>
   );
 };
