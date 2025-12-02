@@ -6,6 +6,7 @@
 
 const express = require('express');
 const LangGraphMarketingAgent = require('../agents/LangGraphMarketingAgent');
+const UserStorageService = require('../services/UserStorageService');
 
 const router = express.Router();
 
@@ -27,22 +28,22 @@ function getAgentAndWS(req) {
 router.post('/execute-campaign', async (req, res) => {
   try {
     console.log('🤖 LangGraph Campaign Execution Request:', req.body);
-    
+
     // 🔧 ENHANCED DEBUG: Check SMTP config and templateData from frontend
     console.log('🔍 ENHANCED FRONTEND REQUEST DEBUG:');
     console.log('   📋 emailTemplate:', req.body.emailTemplate);
-    console.log('   📧 selectedTemplate:', req.body.selectedTemplate);  
+    console.log('   📧 selectedTemplate:', req.body.selectedTemplate);
     console.log('   📝 templateData:', req.body.templateData ? Object.keys(req.body.templateData) : 'MISSING');
     console.log('   📧 smtpConfig:', req.body.smtpConfig ? Object.keys(req.body.smtpConfig) : 'MISSING');
     console.log('   🎯 All request keys:', Object.keys(req.body));
-    
+
     // 🔥 CRITICAL DEBUG: Log actual values
     if (req.body.templateData) {
       console.log('   📝 templateData values:', req.body.templateData);
     } else {
       console.log('   ❌ templateData is missing from frontend request!');
     }
-    
+
     if (req.body.smtpConfig) {
       console.log('   📧 smtpConfig values:', {
         senderName: req.body.smtpConfig.senderName,
@@ -52,7 +53,27 @@ router.post('/execute-campaign', async (req, res) => {
     } else {
       console.log('   ❌ smtpConfig is missing from frontend request!');
     }
-    
+
+    // 🔥 SAVE WEBSITE ANALYSIS TO USER STORAGE
+    const userId = req.userId || req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+    if (req.body.websiteAnalysis && userId !== 'anonymous') {
+      try {
+        const storage = new UserStorageService(userId);
+        let config = await storage.getConfig() || {};
+
+        // Save websiteAnalysis to user config
+        config.websiteAnalysis = req.body.websiteAnalysis;
+        config.targetWebsite = req.body.targetWebsite || config.targetWebsite;
+        config.businessType = req.body.businessType || config.businessType;
+        config.updatedAt = new Date().toISOString();
+
+        await storage.saveConfig(config);
+        console.log(`✅ [User: ${userId}] Website analysis saved to user storage`);
+      } catch (storageError) {
+        console.error(`⚠️ [User: ${userId}] Failed to save website analysis:`, storageError.message);
+      }
+    }
+
     const { agent, wsManager } = getAgentAndWS(req);
     
     // 启动工作流状态更新
