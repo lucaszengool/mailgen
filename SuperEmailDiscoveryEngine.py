@@ -14,6 +14,7 @@ import re
 import requests
 import os
 import hashlib
+import dns.resolver
 from datetime import datetime
 from urllib.parse import quote, urlencode
 from bs4 import BeautifulSoup
@@ -472,23 +473,111 @@ class SuperEmailDiscoveryEngine:
         """验证邮箱格式"""
         if not (5 < len(email) < 100 and email.count('@') == 1):
             return False
-        
+
         local, domain = email.split('@')
-        
+
         # 检查本地部分
         if not local or len(local) > 64:
             return False
-        
+
         # 检查域名部分
         if not domain or '.' not in domain or len(domain) < 4:
             return False
-        
+
         # 检查顶级域名
         tld = domain.split('.')[-1]
         if len(tld) < 2 or not tld.isalpha():
             return False
-        
+
         return True
+
+    def validate_email_deliverable(self, email):
+        """
+        验证邮箱是否可投递 (MX记录检查)
+        - 检查域名是否有MX记录
+        - 排除已知无效/垃圾域名
+        - 不发送实际邮件，仅验证域名
+        """
+        try:
+            if not email or '@' not in email:
+                return False, "Invalid email format"
+
+            domain = email.split('@')[1].lower()
+
+            # 已知无效/垃圾域名列表
+            invalid_domains = [
+                'example.com', 'test.com', 'domain.com', 'yoursite.com', 'company.com',
+                'email.com', 'mail.com', 'sample.com', 'demo.com', 'fake.com',
+                'placeholder.com', 'invalid.com', 'null.com', 'void.com',
+                'tempmail.com', 'throwaway.com', 'disposable.com',
+                'mailinator.com', 'guerrillamail.com', '10minutemail.com',
+                'yopmail.com', 'tempmail.net', 'trashmail.com'
+            ]
+
+            if domain in invalid_domains:
+                return False, f"Known invalid domain: {domain}"
+
+            # 检查MX记录 (域名是否可接收邮件)
+            try:
+                mx_records = dns.resolver.resolve(domain, 'MX')
+                if not mx_records:
+                    return False, f"No MX records for domain: {domain}"
+
+                # 获取MX记录的主机名
+                mx_hosts = [str(r.exchange).rstrip('.').lower() for r in mx_records]
+
+                # 检查MX记录是否指向已知垃圾邮件服务
+                spam_mx_patterns = ['localhost', 'null', 'void', 'invalid', 'example']
+                for mx_host in mx_hosts:
+                    if any(pattern in mx_host for pattern in spam_mx_patterns):
+                        return False, f"MX record points to invalid host: {mx_host}"
+
+                return True, f"Valid MX records found: {len(mx_records)}"
+
+            except dns.resolver.NXDOMAIN:
+                return False, f"Domain does not exist: {domain}"
+            except dns.resolver.NoAnswer:
+                return False, f"No MX records for domain: {domain}"
+            except dns.resolver.NoNameservers:
+                return False, f"No name servers for domain: {domain}"
+            except dns.exception.Timeout:
+                # DNS超时 - 可能是有效域名，但暂时无法验证
+                self.logger.warning(f"   ⏱️ DNS timeout for {domain}, assuming valid")
+                return True, "DNS timeout - assuming valid"
+            except Exception as e:
+                # DNS查询失败但不一定无效
+                self.logger.warning(f"   ⚠️ DNS query failed for {domain}: {e}")
+                return True, f"DNS query failed, assuming valid: {e}"
+
+        except Exception as e:
+            self.logger.error(f"   ❌ Email validation error: {e}")
+            return False, f"Validation error: {e}"
+
+    def validate_emails_batch(self, email_list):
+        """
+        批量验证邮箱列表，返回有效邮箱
+        """
+        if not email_list:
+            return []
+
+        valid_emails = []
+        invalid_count = 0
+
+        self.logger.info(f"🔍 验证 {len(email_list)} 个邮箱地址...")
+
+        for email_data in email_list:
+            email = email_data['email'] if isinstance(email_data, dict) else email_data
+
+            is_valid, reason = self.validate_email_deliverable(email)
+
+            if is_valid:
+                valid_emails.append(email_data)
+            else:
+                invalid_count += 1
+                self.logger.info(f"   ❌ 排除无效邮箱: {email} ({reason})")
+
+        self.logger.info(f"✅ 验证完成: {len(valid_emails)} 有效, {invalid_count} 无效")
+        return valid_emails
     
     def scrape_website_advanced(self, url):
         """高级网站爬取 - 专注联系信息，无时间限制 + 上下文提取"""
@@ -706,26 +795,38 @@ class SuperEmailDiscoveryEngine:
                 time.sleep(1)  # 减少轮次间隔
         
         # 整理最终结果
-        final_emails = all_emails[:target_count]
+        preliminary_emails = all_emails[:target_count + 10]  # Get extras in case some fail validation
         total_time = time.time() - start_time
+
+        # 🔥 NEW: Validate emails before returning (only for batch search, not quick search)
+        self.logger.info(f"\n🔍 验证邮箱有效性 (MX记录检查)...")
+        validated_emails = self.validate_emails_batch(preliminary_emails)
+        invalid_count = len(preliminary_emails) - len(validated_emails)
+        if invalid_count > 0:
+            self.logger.info(f"   🗑️ 排除了 {invalid_count} 个无效邮箱 (无MX记录或无效域名)")
+
+        # Take only the target count after validation
+        final_emails = validated_emails[:target_count]
 
         # 更新统计
         self.search_stats['emails_found'] = len(final_emails)
+        self.search_stats['invalid_emails_filtered'] = invalid_count
 
         # 🔥 FIX: Save newly returned emails to cache with session_id
         new_email_addresses = [e['email'] for e in final_emails]
         if new_email_addresses:
             self.save_returned_emails_cache(industry, new_email_addresses, session_id)
-            self.logger.info(f"   ✅ 已保存 {len(new_email_addresses)} 个新邮箱到缓存")
+            self.logger.info(f"   ✅ 已保存 {len(new_email_addresses)} 个验证后邮箱到缓存")
 
         self.logger.info(f"\n🎊 超级搜索完成！")
-        self.logger.info(f"   📧 最终邮箱: {len(final_emails)}个NEW邮箱 (全部为新发现)")
+        self.logger.info(f"   📧 最终邮箱: {len(final_emails)}个NEW邮箱 (全部验证有效)")
         self.logger.info(f"   🔄 搜索轮数: {round_num-1}")
         self.logger.info(f"   ⏱️ 总耗时: {total_time:.1f}秒")
         self.logger.info(f"   📊 成功率: {self.search_stats['successful_queries']}/{self.search_stats['total_queries']}")
         self.logger.info(f"   🌐 爬取网站: {self.search_stats['websites_scraped']}个")
         self.logger.info(f"   🏢 发现域名: {len(self.search_stats['unique_domains'])}个")
         self.logger.info(f"   🔄 总发现: {total_emails_found}个 (跳过{total_cached_skipped}个重复)")
+        self.logger.info(f"   🗑️ 无效过滤: {invalid_count}个 (无MX记录或无效域名)")
         self.logger.info(f"   🗂️ 缓存总数: {len(self.already_returned_emails)} 个历史邮箱")
 
         # 显示发现的邮箱
