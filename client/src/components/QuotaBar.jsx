@@ -124,18 +124,19 @@ const QuotaBar = () => {
           <TrendingUp className="w-3 h-3" style={{ color: '#00f5a0' }} />
           Campaign Stats
         </h3>
-        {isLimited && (
-          <span className="flex items-center gap-0.5 text-xs text-red-600 px-1.5 py-0.5 rounded-full border border-red-200 bg-red-50">
-            <AlertCircle className="w-2.5 h-2.5" />
-            {isProspectAtLimit && isEmailAtLimit ? 'Quotas Full' : isProspectAtLimit ? 'Prospects Full' : 'Emails Full'}
-          </span>
-        )}
-        {!isLimited && (isProspectNearLimit || isEmailNearLimit) && (
-          <span className="flex items-center gap-0.5 text-xs text-orange-600 px-1.5 py-0.5 rounded-full border border-orange-200 bg-orange-50">
-            <AlertCircle className="w-2.5 h-2.5" />
-            Near Limit
-          </span>
-        )}
+        <span>
+          {isLimited ? (
+            <span key="limited" className="flex items-center gap-0.5 text-xs text-red-600 px-1.5 py-0.5 rounded-full border border-red-200 bg-red-50">
+              <AlertCircle className="w-2.5 h-2.5" />
+              {isProspectAtLimit && isEmailAtLimit ? 'Quotas Full' : isProspectAtLimit ? 'Prospects Full' : 'Emails Full'}
+            </span>
+          ) : (isProspectNearLimit || isEmailNearLimit) ? (
+            <span key="near-limit" className="flex items-center gap-0.5 text-xs text-orange-600 px-1.5 py-0.5 rounded-full border border-orange-200 bg-orange-50">
+              <AlertCircle className="w-2.5 h-2.5" />
+              Near Limit
+            </span>
+          ) : null}
+        </span>
       </div>
 
       {/* Extra Compact Stats Grid */}
@@ -224,9 +225,9 @@ const QuotaBar = () => {
         </div>
       </div>
 
-      {/* Extra Compact Help Text */}
-      {isLimited && (
-        <div className="mt-1.5 p-1 bg-white border border-red-200 rounded">
+      {/* Help Text - Quota Status */}
+      {isLimited ? (
+        <div key="limited-msg" className="mt-1.5 p-1 bg-white border border-red-200 rounded">
           <p className="text-red-600" style={{ fontSize: '0.65rem' }}>
             {isProspectAtLimit && isEmailAtLimit
               ? 'Prospect and Email quotas reached. Resets in '
@@ -236,11 +237,8 @@ const QuotaBar = () => {
             {timeRemaining}.
           </p>
         </div>
-      )}
-
-      {/* Warning when near limit */}
-      {!isLimited && (isProspectNearLimit || isEmailNearLimit) && (
-        <div className="mt-1.5 p-1 bg-white border border-orange-200 rounded">
+      ) : (isProspectNearLimit || isEmailNearLimit) ? (
+        <div key="near-limit-msg" className="mt-1.5 p-1 bg-white border border-orange-200 rounded">
           <p className="text-orange-600" style={{ fontSize: '0.65rem' }}>
             {isProspectNearLimit && isEmailNearLimit
               ? 'Approaching quota limits'
@@ -249,7 +247,7 @@ const QuotaBar = () => {
               : 'Approaching email quota limit'}
           </p>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
