@@ -51,6 +51,7 @@ import CampaignSelector from './components/CampaignSelector';
 import CampaignOnboardingWizard from './components/CampaignOnboardingWizard';
 import ProcessNotificationsDemo from './components/ProcessNotificationsDemo';
 import BlogPost from './pages/BlogPost';
+import FeaturePage from './pages/FeaturePage';
 import AutoDetectLanguage from './components/AutoDetectLanguage';
 import TemplateSelectionHandler from './components/TemplateSelectionHandler';
 
@@ -485,6 +486,8 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/features/:slug" element={<FeaturePage />} />
+          <Route path="/tools/:slug" element={<FeaturePage />} />
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="/notifications-demo" element={<ProcessNotificationsDemo />} />
           {/* 🔐 Hidden Admin Dashboard */}
@@ -517,6 +520,8 @@ function App() {
           <Route path="/home" element={<Home />} /> {/* Action list at /home */}
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/features/:slug" element={<FeaturePage />} />
+          <Route path="/tools/:slug" element={<FeaturePage />} />
           <Route path="/ai-agent" element={<AIAgentPage />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/for-businesses" element={<ForBusinessesPage />} />
@@ -654,6 +659,8 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/features/:slug" element={<FeaturePage />} />
+          <Route path="/tools/:slug" element={<FeaturePage />} />
           <Route path="/partners" element={<PartnersPage />} />
           <Route path="/notifications-demo" element={<ProcessNotificationsDemo />} />
           {/* Legal Pages - Standalone without Layout */}

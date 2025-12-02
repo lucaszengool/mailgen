@@ -1493,12 +1493,12 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
             <div>
               <h3 className="text-base font-semibold text-black mb-4">Features</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">AI Email Generator</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Prospect Finder</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Smart Campaigns</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Analytics Dashboard</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">A/B Testing</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Lead Scoring</a></li>
+                <li><Link to="/features/ai-email-generator" className="text-black hover:text-gray-600 transition-colors text-sm">AI Email Generator</Link></li>
+                <li><Link to="/features/prospect-finder" className="text-black hover:text-gray-600 transition-colors text-sm">Prospect Finder</Link></li>
+                <li><Link to="/features/smart-campaigns" className="text-black hover:text-gray-600 transition-colors text-sm">Smart Campaigns</Link></li>
+                <li><Link to="/features/analytics-dashboard" className="text-black hover:text-gray-600 transition-colors text-sm">Analytics Dashboard</Link></li>
+                <li><Link to="/features/ab-testing" className="text-black hover:text-gray-600 transition-colors text-sm">A/B Testing</Link></li>
+                <li><Link to="/features/lead-scoring" className="text-black hover:text-gray-600 transition-colors text-sm">Lead Scoring</Link></li>
               </ul>
             </div>
 
@@ -1506,11 +1506,11 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
             <div>
               <h3 className="text-base font-semibold text-black mb-4">Blog</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Is MailGen Legit?</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Success Stories from MailGen Users</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">What Top AI Companies Are Looking For</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">MailGen AI Agent Launch</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">Top Email Marketing Strategies</a></li>
+                <li><Link to="/blog/is-mailgen-legit" className="text-black hover:text-gray-600 transition-colors text-sm">Is MailGen Legit?</Link></li>
+                <li><Link to="/blog/success-stories" className="text-black hover:text-gray-600 transition-colors text-sm">Success Stories from MailGen Users</Link></li>
+                <li><Link to="/blog/ai-companies-hiring" className="text-black hover:text-gray-600 transition-colors text-sm">What Top AI Companies Are Looking For</Link></li>
+                <li><Link to="/blog/ai-agent-launch" className="text-black hover:text-gray-600 transition-colors text-sm">MailGen AI Agent Launch</Link></li>
+                <li><Link to="/blog/top-email-strategies" className="text-black hover:text-gray-600 transition-colors text-sm">Top Email Marketing Strategies</Link></li>
               </ul>
             </div>
 
@@ -1518,10 +1518,10 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
             <div>
               <h3 className="text-base font-semibold text-black mb-4">Related Tools</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">AI Email Assistant</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">AI Subject Line Generator</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">AI Campaign Helper</a></li>
-                <li><a href="#" className="text-black hover:text-gray-600 transition-colors text-sm">AI Lead Tracker</a></li>
+                <li><Link to="/tools/ai-email-assistant" className="text-black hover:text-gray-600 transition-colors text-sm">AI Email Assistant</Link></li>
+                <li><Link to="/tools/ai-subject-line-generator" className="text-black hover:text-gray-600 transition-colors text-sm">AI Subject Line Generator</Link></li>
+                <li><Link to="/tools/ai-campaign-helper" className="text-black hover:text-gray-600 transition-colors text-sm">AI Campaign Helper</Link></li>
+                <li><Link to="/tools/ai-lead-tracker" className="text-black hover:text-gray-600 transition-colors text-sm">AI Lead Tracker</Link></li>
               </ul>
             </div>
 
