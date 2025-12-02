@@ -53,6 +53,7 @@ export default function CampaignSelector({ onSelectCampaign, onCreateCampaign })
       name: 'My First Campaign',
       createdAt: new Date().toISOString(),
       status: 'active',
+      setupComplete: false, // Mark as needing setup
       stats: {
         prospects: 0,
         emails: 0,
@@ -62,6 +63,15 @@ export default function CampaignSelector({ onSelectCampaign, onCreateCampaign })
     const newCampaigns = [firstCampaign];
     setCampaigns(newCampaigns);
     localStorage.setItem('campaigns', JSON.stringify(newCampaigns));
+
+    // Auto-trigger onboarding wizard for new users
+    console.log('🚀 First campaign created, triggering onboarding wizard');
+    if (onCreateCampaign) {
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        onCreateCampaign(firstCampaign);
+      }, 100);
+    }
   };
 
   const handleCreateCampaign = () => {
