@@ -87,18 +87,9 @@ function App() {
     currentCampaign: currentCampaign?.name || 'none'
   });
 
-  // Handle legal pages (Privacy/Terms) - these should always be accessible
+  // Store current path for legal pages check (after all hooks)
   const currentPath = window.location.pathname;
-  if (currentPath === '/privacy' || currentPath === '/terms') {
-    return (
-      <div className="App bg-white min-h-screen">
-        <Routes>
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-        </Routes>
-      </div>
-    );
-  }
+  const isLegalPage = currentPath === '/privacy' || currentPath === '/terms';
 
   useEffect(() => {
     console.log('App mounted, checking setup status...');
@@ -428,6 +419,18 @@ function App() {
       window.location.href = '/';
     }, 100);
   };
+
+  // Handle legal pages (Privacy/Terms) - these should always be accessible
+  if (isLegalPage) {
+    return (
+      <div className="App bg-white min-h-screen">
+        <Routes>
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+        </Routes>
+      </div>
+    );
+  }
 
   // Show setup wizard if setup is not complete AND not in website-analysis or dashboard view
   if (!isSetupComplete && currentView !== 'website-analysis' && currentView !== 'dashboard') {
