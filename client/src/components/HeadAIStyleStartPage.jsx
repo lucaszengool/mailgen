@@ -303,7 +303,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                       <div className="flex-1 flex flex-col justify-center space-y-4">
                         <h1 className="text-6xl xl:text-8xl font-bold leading-tight">
                           <span className="text-gray-900">The World's First</span><br/>
-                          <span className="bg-gradient-to-r from-[#00f5a0] to-[#00e090] bg-clip-text text-transparent animate-pulse">AI Marketer</span>
+                          <span className="text-black font-bold">AI Marketer</span>
                         </h1>
                         <p className="text-xl text-black mt-6 leading-relaxed max-w-md font-semibold">
                           [AI] 24/7 Autonomous Email Marketing
@@ -333,9 +333,9 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                         {/* Submit Button */}
                         <button
                           type="submit"
-                          className="w-full bg-gradient-to-r from-[#00f5a0] to-[#00e090] text-white font-bold py-4 px-8 rounded-2xl hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-2xl text-lg"
+                          className="w-full bg-gradient-to-r from-[#00f5a0] to-[#00e090] text-black font-bold py-4 px-8 rounded-2xl hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-2xl text-lg"
                         >
-                          Start AI Analysis →
+                          Start Your Email Agent →
                         </button>
                       </form>
                     </div>
