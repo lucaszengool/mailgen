@@ -180,7 +180,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
             {/* Left side - MailGen Logo */}
             <div className="flex items-center space-x-2">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors duration-300 ${
-                scrolled ? 'bg-[#00f0a0]' : 'bg-[#00f0a0]/80 backdrop-blur-sm'
+                scrolled ? 'bg-[#00f5a0]' : 'bg-[#00f5a0]/80 backdrop-blur-sm'
               }`}>
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l4-4m0 0l4 4m-4-4v11a3 3 0 003 3h4m0 0l-4 4m4-4l4-4" />
@@ -302,7 +302,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                       <div className="flex-1 flex flex-col justify-center space-y-4">
                         <h1 className="text-6xl xl:text-8xl font-bold leading-tight">
                           <span className="text-gray-900">The World's First</span><br/>
-                          <span className="bg-gradient-to-r from-[#00f0a0] to-[#00c98d] bg-clip-text text-transparent animate-pulse">AI Marketer</span>
+                          <span className="bg-gradient-to-r from-[#00f5a0] to-[#00e090] bg-clip-text text-transparent animate-pulse">AI Marketer</span>
                         </h1>
                         <p className="text-xl text-black mt-6 leading-relaxed max-w-md font-semibold">
                           [AI] 24/7 Autonomous Email Marketing
@@ -321,7 +321,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                             value={websiteUrl}
                             onChange={(e) => setWebsiteUrl(e.target.value)}
                             placeholder="Enter your target website URL..."
-                            className="w-full px-6 py-4 text-lg border-2 border-[#00f0a0] rounded-2xl focus:outline-none focus:ring-4 focus:ring-[#00f0a0]/20 bg-white/90 backdrop-blur-sm shadow-lg"
+                            className="w-full px-6 py-4 text-lg border-2 border-[#00f5a0] rounded-2xl focus:outline-none focus:ring-4 focus:ring-[#00f5a0]/20 bg-white/90 backdrop-blur-sm shadow-lg"
                             required
                           />
                         </div>
@@ -332,7 +332,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                         {/* Submit Button */}
                         <button
                           type="submit"
-                          className="w-full bg-gradient-to-r from-[#00f0a0] to-[#00c98d] text-white font-bold py-4 px-8 rounded-2xl hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-2xl text-lg"
+                          className="w-full bg-gradient-to-r from-[#00f5a0] to-[#00e090] text-white font-bold py-4 px-8 rounded-2xl hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-2xl text-lg"
                         >
                           Start AI Analysis →
                         </button>
@@ -442,7 +442,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                 {/* Nvidia */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-[#00f5a0] rounded-lg flex items-center justify-center">
                     <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12 12-5.383 12-12S18.617 0 12 0zm6.326 11.998c-.113-.564-.791-.79-2.235-.79h-.902v3.408h.902c1.444 0 2.122-.225 2.235-.79.113-.564.113-1.264 0-1.828zm-1.333 4.52h-2.104V7.482h2.104c1.782 0 2.895.339 3.234 1.468.226.677.226 1.807 0 2.598-.339 1.129-1.452 1.47-3.234 1.47zm-5.654-7.036h-2.55v7.036h.902v-2.825h1.648c1.217 0 1.782-.339 2.008-1.016.113-.339.113-.79 0-1.129-.226-.677-.791-1.066-2.008-1.066zm-.226 3.52h-1.421V8.547h1.421c.678 0 1.103.225 1.217.564.113.226.113.677 0 .903-.114.339-.539.564-1.217.564zm-4.523 3.516V7.482H5.688v7.036h.902z"/>
                     </svg>
@@ -494,7 +494,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                 {/* Shopify */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-green-700 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-[#00f5a0] rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M15.337 2.543s-.296.232-.79.618c-.114-.352-.296-.788-.556-1.195-.662-.982-1.632-1.519-2.802-1.519h-.043c-.088 0-.177.012-.265.024-.474-.618-.97-.866-1.283-.866-3.221 0-4.772 4.025-5.261 6.066-.947.296-1.612.503-1.686.525-.556.177-.571.189-.643.708C1.93 7.447 0 20.94 0 20.94L13.23 23.5l8.77-1.856S15.337 2.543 15.337 2.543zm-3.865.76c-.428.13-.902.281-1.407.44-.39-1.519-1.117-2.256-1.883-2.669.662.21 1.61 1.117 2.15 2.669zm-2.472.044c-.662.207-1.389.43-2.121.659.408-1.568 1.177-2.333 1.845-2.641.525-.238.966-.34 1.329-.366-.284.395-.61.984-.884 2.349zm-2.012-2.543c.13 0 .265.036.407.103-.637.314-1.303 1.117-1.692 2.82l-1.889.589c.556-1.778 1.611-3.459 3.174-3.512z"/>
                     </svg>
@@ -644,7 +644,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                 {/* Nvidia - Duplicate */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-[#00f5a0] rounded-lg flex items-center justify-center">
                     <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12 12-5.383 12-12S18.617 0 12 0zm6.326 11.998c-.113-.564-.791-.79-2.235-.79h-.902v3.408h.902c1.444 0 2.122-.225 2.235-.79.113-.564.113-1.264 0-1.828zm-1.333 4.52h-2.104V7.482h2.104c1.782 0 2.895.339 3.234 1.468.226.677.226 1.807 0 2.598-.339 1.129-1.452 1.47-3.234 1.47zm-5.654-7.036h-2.55v7.036h.902v-2.825h1.648c1.217 0 1.782-.339 2.008-1.016.113-.339.113-.79 0-1.129-.226-.677-.791-1.066-2.008-1.066zm-.226 3.52h-1.421V8.547h1.421c.678 0 1.103.225 1.217.564.113.226.113.677 0 .903-.114.339-.539.564-1.217.564zm-4.523 3.516V7.482H5.688v7.036h.902z"/>
                     </svg>
@@ -696,7 +696,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                 {/* Shopify - Duplicate */}
                 <div className="flex items-center space-x-4 px-8 flex-shrink-0">
-                  <div className="w-12 h-12 bg-green-700 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-[#00f5a0] rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M15.337 2.543s-.296.232-.79.618c-.114-.352-.296-.788-.556-1.195-.662-.982-1.632-1.519-2.802-1.519h-.043c-.088 0-.177.012-.265.024-.474-.618-.97-.866-1.283-.866-3.221 0-4.772 4.025-5.261 6.066-.947.296-1.612.503-1.686.525-.556.177-.571.189-.643.708C1.93 7.447 0 20.94 0 20.94L13.23 23.5l8.77-1.856S15.337 2.543 15.337 2.543zm-3.865.76c-.428.13-.902.281-1.407.44-.39-1.519-1.117-2.256-1.883-2.669.662.21 1.61 1.117 2.15 2.669zm-2.472.044c-.662.207-1.389.43-2.121.659.408-1.568 1.177-2.333 1.845-2.641.525-.238.966-.34 1.329-.366-.284.395-.61.984-.884 2.349zm-2.012-2.543c.13 0 .265.036.407.103-.637.314-1.303 1.117-1.692 2.82l-1.889.589c.556-1.778 1.611-3.459 3.174-3.512z"/>
                     </svg>
@@ -829,7 +829,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                     {/* Chat header - smaller sizing */}
                     <div className="flex items-center gap-3 px-6 py-4 bg-white rounded-t-3xl border-b border-gray-100">
-                      <div className="flex items-center justify-center rounded-full" style={{ width: '40px', height: '40px', backgroundColor: '#00f0a0' }}>
+                      <div className="flex items-center justify-center rounded-full" style={{ width: '40px', height: '40px', backgroundColor: '#00f5a0' }}>
                         <div className="w-2 h-2 bg-black rounded-full mr-0.5"></div>
                         <div className="w-2 h-2 bg-black rounded-full"></div>
                       </div>
@@ -843,7 +843,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                       {/* AI greeting message - smaller components */}
                       <div className="flex items-start gap-3 mb-6">
-                        <div className="flex items-center justify-center rounded-full" style={{ width: '32px', height: '32px', backgroundColor: '#00f0a0' }}>
+                        <div className="flex items-center justify-center rounded-full" style={{ width: '32px', height: '32px', backgroundColor: '#00f5a0' }}>
                           <div className="w-2 h-2 bg-black rounded-full mr-0.5"></div>
                           <div className="w-2 h-2 bg-black rounded-full"></div>
                         </div>
@@ -859,7 +859,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                       <div className="space-y-3" style={{ marginTop: '40px' }}>
                         <div className="flex justify-center">
                           <div className="rounded-2xl text-black shadow-sm" style={{
-                            backgroundColor: '#00f0a0',
+                            backgroundColor: '#00f5a0',
                             fontSize: '13px',
                             padding: '10px 16px'
                           }}>
@@ -869,7 +869,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
                         <div className="flex justify-end">
                           <div className="rounded-2xl text-black shadow-sm" style={{
-                            backgroundColor: '#00f0a0',
+                            backgroundColor: '#00f5a0',
                             fontSize: '13px',
                             padding: '10px 16px'
                           }}>
@@ -880,7 +880,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                         {/* This bubble extends outside container */}
                         <div className="flex justify-end">
                           <div className="rounded-2xl text-black shadow-sm whitespace-nowrap" style={{
-                            backgroundColor: '#00f0a0',
+                            backgroundColor: '#00f5a0',
                             fontSize: '13px',
                             padding: '10px 16px',
                             transform: 'translateX(70px)'
@@ -893,8 +893,8 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                       {/* Typing dots - smaller and repositioned */}
                       <div className="absolute" style={{ bottom: '10px', right: '24px' }}>
                         <div className="flex items-center space-x-1">
-                          <div className="rounded-full animate-pulse" style={{ width: '8px', height: '8px', backgroundColor: '#00f0a0' }}></div>
-                          <div className="rounded-full animate-pulse" style={{ width: '6px', height: '6px', backgroundColor: '#00f0a0', animationDelay: '0.2s' }}></div>
+                          <div className="rounded-full animate-pulse" style={{ width: '8px', height: '8px', backgroundColor: '#00f5a0' }}></div>
+                          <div className="rounded-full animate-pulse" style={{ width: '6px', height: '6px', backgroundColor: '#00f5a0', animationDelay: '0.2s' }}></div>
                         </div>
                       </div>
                     </div>
@@ -930,7 +930,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                     {/* Star icon and title - exact style from Desktop/prospect.png */}
                     <div className="flex items-start mb-8">
                       <div className="w-12 h-12 mr-4 flex items-center justify-center flex-shrink-0 mt-2">
-                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center transform rotate-45">
+                        <div className="w-8 h-8 bg-[#00f5a0] rounded-lg flex items-center justify-center transform rotate-45">
                           <div className="w-4 h-4 bg-white rounded-sm transform -rotate-45"></div>
                         </div>
                       </div>
@@ -1047,20 +1047,20 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                       <h4 className="text-lg font-bold text-black mb-4">Why This Is A Quality Prospect</h4>
                       <div className="space-y-2">
                         <div className="flex items-center">
-                          <div className="w-5 h-5 bg-green-400 rounded flex items-center justify-center mr-3">
+                          <div className="w-5 h-5 bg-[#00f5a0] rounded flex items-center justify-center mr-3">
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
-                          <span className="bg-green-400 text-black px-3 py-1 rounded-full text-sm font-medium">Decision Maker</span>
+                          <span className="bg-[#00f5a0] text-black px-3 py-1 rounded-full text-sm font-medium">Decision Maker</span>
                         </div>
                         <div className="flex items-center">
-                          <div className="w-5 h-5 bg-green-400 rounded flex items-center justify-center mr-3">
+                          <div className="w-5 h-5 bg-[#00f5a0] rounded flex items-center justify-center mr-3">
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
-                          <span className="bg-green-400 text-black px-3 py-1 rounded-full text-sm font-medium">Active Buyer</span>
+                          <span className="bg-[#00f5a0] text-black px-3 py-1 rounded-full text-sm font-medium">Active Buyer</span>
                         </div>
                         <div className="flex items-center">
                           <div className="w-5 h-5 bg-gray-300 rounded flex items-center justify-center mr-3">
@@ -1071,12 +1071,12 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                           <span className="text-gray-600 text-sm">Price Sensitive</span>
                         </div>
                         <div className="flex items-center">
-                          <div className="w-5 h-5 bg-green-400 rounded flex items-center justify-center mr-3">
+                          <div className="w-5 h-5 bg-[#00f5a0] rounded flex items-center justify-center mr-3">
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
-                          <span className="bg-green-400 text-black px-3 py-1 rounded-full text-sm font-medium">Growth Focused</span>
+                          <span className="bg-[#00f5a0] text-black px-3 py-1 rounded-full text-sm font-medium">Growth Focused</span>
                         </div>
                       </div>
                     </div>
@@ -1141,7 +1141,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                     <div className="mb-6">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="text-xl font-bold text-black">[WRITE] AI Email Composer</h4>
-                        <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Live</div>
+                        <div className="bg-[#00f5a0]/20 text-black px-3 py-1 rounded-full text-sm font-medium">Live</div>
                       </div>
                     </div>
 
@@ -1149,12 +1149,12 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                       {/* Composer Header with AI Indicators */}
                       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                          <div className="w-3 h-3 bg-[#00f5a0] rounded-full animate-pulse"></div>
                           <span className="text-sm font-medium text-black">AI Writing Assistant Active</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <div className="text-xs bg-black text-white px-3 py-1 rounded-full font-medium">95% Quality Score</div>
-                          <div className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">Personalized</div>
+                          <div className="text-xs bg-[#00f5a0]/20 text-black px-3 py-1 rounded-full font-medium">Personalized</div>
                         </div>
                       </div>
 
@@ -1179,7 +1179,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                             <span className="text-sm font-medium text-black">Partnership Opportunity - FruitAI</span>
                             <div className="flex items-center space-x-1">
                               <div className="text-xs bg-white border border-gray-300 text-gray-600 px-2 py-1 rounded">A/B Tested</div>
-                              <div className="text-xs bg-[#00f5a0]/10 text-[#00c98d] px-2 py-1 rounded">85% Open Rate</div>
+                              <div className="text-xs bg-[#00f5a0]/10 text-[#00e090] px-2 py-1 rounded">85% Open Rate</div>
                             </div>
                           </div>
                         </div>
@@ -1211,7 +1211,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
                             <span>Attach</span>
                           </button>
                         </div>
-                        <button className="text-xs bg-[#00f5a0] text-black px-3 py-1 rounded font-medium hover:bg-green-400 transition-colors flex items-center space-x-1">
+                        <button className="text-xs bg-[#00f5a0] text-black px-3 py-1 rounded font-medium hover:bg-[#00f5a0] transition-colors flex items-center space-x-1">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                           </svg>
@@ -1434,7 +1434,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
             {/* Left side - MailGen logo */}
             <div className="flex-shrink-0">
               <div className="flex items-center space-x-2">
-                <svg className="w-6 h-6 text-[#00f0a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-[#00f5a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l4-4m0 0l4 4m-4-4v11a3 3 0 003 3h4m0 0l-4 4m4-4l4-4" />
                 </svg>
                 <span className="text-xl font-bold text-black">MailGen</span>
