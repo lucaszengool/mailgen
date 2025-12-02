@@ -7733,8 +7733,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         </button>
       )}
 
-      {/* Language Switcher - Available on all pages */}
-      <LanguageSwitcher position="bottom-left" />
+      {/* Language Switcher - Available on all pages (top-right, below header) */}
+      <LanguageSwitcher position="top-right" />
     </div>
   );
 };

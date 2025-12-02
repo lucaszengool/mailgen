@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const LanguageSwitcher = ({ position = 'bottom-right' }) => {
+const LanguageSwitcher = ({ position = 'top-right' }) => {
   const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState(i18n.language);
@@ -48,8 +48,8 @@ const LanguageSwitcher = ({ position = 'bottom-right' }) => {
   const positionClasses = {
     'bottom-right': 'bottom-6 right-6',
     'bottom-left': 'bottom-6 left-6',
-    'top-right': 'top-6 right-6',
-    'top-left': 'top-6 left-6'
+    'top-right': 'top-20 right-6', // Positioned below header to avoid overlap
+    'top-left': 'top-20 left-6'
   };
 
   const dropdownPosition = position.includes('bottom') ? 'bottom-full mb-2' : 'top-full mt-2';
@@ -66,7 +66,7 @@ const LanguageSwitcher = ({ position = 'bottom-right' }) => {
             overflowY: 'auto'
           }}
         >
-          <div className="p-3 bg-gradient-to-r from-green-50 to-blue-50 border-b border-gray-200">
+          <div className="p-3 bg-gradient-to-r from-[#00f5a0]/10 to-gray-50 border-b border-gray-200">
             <h3 className="font-semibold text-gray-800 text-sm flex items-center">
               <Globe className="w-4 h-4 mr-2" />
               {t('common.selectLanguage')}
@@ -78,17 +78,17 @@ const LanguageSwitcher = ({ position = 'bottom-right' }) => {
                 key={lang.code}
                 onClick={() => handleLanguageChange(lang.code)}
                 className={`w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-center space-x-3 ${
-                  currentLang === lang.code ? 'bg-green-50' : ''
+                  currentLang === lang.code ? 'bg-[#00f5a0]/10' : ''
                 }`}
               >
                 <span className="text-2xl">{lang.flag}</span>
                 <span className={`text-sm ${
-                  currentLang === lang.code ? 'font-semibold text-green-600' : 'text-gray-700'
+                  currentLang === lang.code ? 'font-semibold text-[#00f5a0]' : 'text-gray-700'
                 }`}>
                   {lang.name}
                 </span>
                 {currentLang === lang.code && (
-                  <span className="ml-auto text-green-600 text-xs">✓</span>
+                  <span className="ml-auto text-[#00f5a0] text-xs">✓</span>
                 )}
               </button>
             ))}
@@ -103,7 +103,7 @@ const LanguageSwitcher = ({ position = 'bottom-right' }) => {
         style={{ minWidth: '50px', minHeight: '50px' }}
         title="Change Language"
       >
-        <Globe className="w-6 h-6" style={{ color: '#00f0a0' }} />
+        <Globe className="w-6 h-6" style={{ color: '#00f5a0' }} />
         {currentLang !== 'en' && (
           <span className="text-xs font-medium pr-1">
             {languages.find(l => l.code === currentLang)?.flag}
