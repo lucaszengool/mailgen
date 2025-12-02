@@ -7,7 +7,6 @@ import {
 
 const JobRightEmailCard = ({ email, index, onClick, onEdit, onSend, showFilters = false, selectedFilters = {}, onFilterChange }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showFullPreview, setShowFullPreview] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
   const [bestLogo, setBestLogo] = useState(null);
@@ -383,7 +382,7 @@ const JobRightEmailCard = ({ email, index, onClick, onEdit, onSend, showFilters 
         <div
           className="bg-white rounded-xl p-6 mb-4 hover:shadow-lg transition-all duration-200 cursor-pointer relative w-full h-72 flex"
           onClick={() => {
-            setShowFullPreview(true);
+            // Only call the onClick handler - don't show the old popup
             onClick && onClick(email);
           }}
         >
@@ -581,41 +580,6 @@ const JobRightEmailCard = ({ email, index, onClick, onEdit, onSend, showFilters 
         </div>
       </div>
 
-      {/* Email Preview Modal */}
-      {showFullPreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setShowFullPreview(false)}>
-          <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto p-6 m-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Email Preview</h2>
-              <button
-                onClick={() => setShowFullPreview(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="mb-4">
-                <div className="text-sm text-gray-600 mb-2">
-                  <strong>From:</strong> {email.from || 'MailGen'}
-                </div>
-                <div className="text-sm text-gray-600 mb-2">
-                  <strong>To:</strong> {email.to}
-                </div>
-                <div className="text-lg font-semibold mb-4">
-                  <strong>Subject:</strong> {email.subject || 'Email Campaign'}
-                </div>
-              </div>
-
-              <div
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: email.body || email.content || '<p>No content available</p>' }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
       </div>
     </>
   );
