@@ -42,7 +42,9 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
 
   useEffect(() => {
     // Check if the emailId is a client-generated ID (not from database)
-    const isClientGeneratedId = emailId && (emailId.startsWith('email_') || emailId.includes('_'))
+    // Convert to string first to handle number IDs
+    const emailIdStr = emailId ? String(emailId) : ''
+    const isClientGeneratedId = emailIdStr && (emailIdStr.startsWith('email_') || emailIdStr.includes('_'))
 
     if (initialEmailData && (isClientGeneratedId || !emailId)) {
       // For draft/generated emails with client IDs, use initial data and fetch by recipient
