@@ -31,6 +31,7 @@ import MarketResearch from './MarketResearch';
 import AIAssistantChatbot from './AIAssistantChatbot';
 import QuotaBar from './QuotaBar';
 import EmailThreadPanel from './EmailThreadPanel';
+import LanguageSwitcher from './LanguageSwitcher';
 
 
 // Utility function for generating gradient patterns
@@ -6525,8 +6526,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                         transition={{ duration: 0.6 }}
                         className="relative cursor-pointer"
                         onClick={() => {
-                          // Show full email preview modal
-                          setSelectedEmailPreview(microStep.email);
+                          // 🔥 Open email thread panel instead of old preview modal
+                          if (microStep.email) {
+                            setSelectedCampaignEmail(microStep.email);
+                          }
                         }}
                       >
                         <div className="absolute -left-6 top-4">
@@ -7240,65 +7243,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         </div>
       </div>
       
-      {/* Email Preview Modal */}
-      {selectedEmailPreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedEmailPreview(null)}>
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto shadow-2xl" 
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-xl font-bold">Full Email Preview</h2>
-              <button 
-                onClick={() => setSelectedEmailPreview(null)}
-                className="text-gray-700 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="p-6">
-              <div className="border-b pb-4 mb-4 space-y-2">
-                <div className="text-sm text-gray-900">
-                  <strong>To:</strong> {selectedEmailPreview.to}
-                </div>
-                <div className="text-sm text-gray-900">
-                  <strong>From:</strong> {selectedEmailPreview.from || 'Fruit AI'}
-                </div>
-                <div className="text-sm text-gray-900">
-                  <strong>Subject:</strong> {selectedEmailPreview.subject || `Strategic Collaboration with ${selectedEmailPreview.to?.split('@')[1]?.split('.')[0]}`}
-                </div>
-                <div className="text-sm text-gray-900">
-                  <strong>Quality Score:</strong> {selectedEmailPreview.quality || selectedEmailPreview.confidence || '85'}%
-                </div>
-              </div>
-              
-              <div className="prose max-w-none">
-                {selectedEmailPreview.body ? (
-                  <div dangerouslySetInnerHTML={{ __html: selectedEmailPreview.body }} />
-                ) : selectedEmailPreview.content ? (
-                  <div className="whitespace-pre-wrap">{selectedEmailPreview.content}</div>
-                ) : (
-                  <div className="text-gray-900">
-                    <p>Hi {selectedEmailPreview.to?.split('@')[0]},</p>
-                    <br />
-                    <p>I noticed your work in Food Technology and thought you'd be interested in our AI solution that could significantly benefit {selectedEmailPreview.to?.split('@')[1]?.split('.')[0]}.</p>
-                    <br />
-                    <p>Our AI platform has helped similar companies in your industry increase efficiency by 40% and reduce operational costs by 25%.</p>
-                    <br />
-                    <p>Would you be interested in a brief call to discuss how we could help {selectedEmailPreview.to?.split('@')[1]?.split('.')[0]} achieve similar results?</p>
-                    <br />
-                    <p>Best regards,<br />The Fruit AI Team</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
+      {/* 🔥 OLD Email Preview Modal - REMOVED - Now using EmailThreadPanel instead */}
 
       {/* Confirmation Modal for Destructive Actions */}
       <ConfirmationModal
@@ -7787,6 +7732,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           <MessageSquare className="w-6 h-6" />
         </button>
       )}
+
+      {/* Language Switcher - Available on all pages */}
+      <LanguageSwitcher position="bottom-left" />
     </div>
   );
 };
