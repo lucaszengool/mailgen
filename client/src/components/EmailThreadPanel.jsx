@@ -419,14 +419,15 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
       } else {
         // 🔥 Show helpful error message for SMTP issues
         let errorMsg = data.error || 'Failed to send reply'
-        if (errorMsg.includes('Missing credentials') || errorMsg.includes('PLAIN')) {
-          errorMsg = 'SMTP not configured. Please configure your email settings in Settings → SMTP Settings.'
+        if (errorMsg.includes('SMTP not configured') || errorMsg.includes('Missing credentials') || errorMsg.includes('PLAIN')) {
+          errorMsg = 'SMTP not configured. Please go to Settings → SMTP Settings to configure your email.'
         }
-        toast.error(errorMsg, { duration: 5000 })
+        toast.error(errorMsg, { duration: 6000 })
       }
     } catch (error) {
       console.error('Failed to send reply:', error)
-      toast.error('Failed to send reply. Please check your SMTP settings.')
+      // Handle network errors or JSON parse errors
+      toast.error('Failed to send reply. Please configure SMTP in Settings.', { duration: 6000 })
     } finally {
       setSending(false)
     }
