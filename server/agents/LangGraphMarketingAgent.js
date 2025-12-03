@@ -4932,10 +4932,27 @@ ${senderName || senderCompany}`;
       console.log('⏸️ Workflow paused, waiting for user decision...');
       console.log('🔔 NO TIMEOUT - Will wait indefinitely for user approval');
 
-      // Store campaign data and promise resolver
+      // Store campaign data and promise resolver (local to agent instance)
       this.state.workflowPaused = true;
       this.state.pausedCampaignData = campaignData;
       this.state.userDecisionPromise = resolve;
+
+      // 🔥 MULTI-USER FIX: Also store in workflow module's per-user storage
+      // This ensures data persists even if agent instance changes
+      try {
+        const workflowModule = require('../routes/workflow');
+        if (workflowModule.setPausedCampaignData && this.userId && campaignData.campaignId) {
+          workflowModule.setPausedCampaignData(this.userId, campaignData.campaignId, {
+            ...campaignData,
+            currentIndex: 1,  // First email already generated
+            userTemplate: this.state.userTemplate,
+            smtpConfig: this.state.smtpConfig
+          });
+          console.log(`💾 [MULTI-USER] Stored paused campaign data for user ${this.userId}, campaign ${campaignData.campaignId}`);
+        }
+      } catch (err) {
+        console.error('⚠️ Failed to store paused campaign data in workflow module:', err.message);
+      }
 
       // 🔥 FIX: REMOVED 15-minute timeout
       // Workflow will wait indefinitely for user to review and approve first email

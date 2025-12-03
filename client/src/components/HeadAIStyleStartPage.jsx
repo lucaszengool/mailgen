@@ -275,8 +275,8 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
         </div>
       </nav>
 
-      {/* Top Section with Gradient Background - Added top padding for floating nav */}
-      <div style={{ background: 'linear-gradient(to bottom, #7dd3fc 0%, #bae6fd 40%, #e0f2fe 70%, #ffffff 100%)', paddingTop: '70px' }}>
+      {/* Top Section with Gradient Background - JobRight.ai style light blue to light green */}
+      <div style={{ background: 'linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 20%, #b2f5ea 50%, #c6f6d5 80%, #f0fff4 100%)', paddingTop: '70px' }}>
         {/* Header - Empty to maintain spacing */}
         <header className="relative z-20 py-6 px-8">
           <div className="h-10"></div>

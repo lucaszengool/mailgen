@@ -6379,9 +6379,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                         transition={{ duration: 0.4 }}
                         className="flex items-start space-x-4"
                       >
-                        <div className="w-12 h-12 bg-white border-2 border-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
-                          <div className="w-2 h-2 bg-black rounded-full"></div>
-                          <div className="w-2 h-2 bg-black rounded-full ml-1"></div>
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#00f5a0' }}>
+                          <Bot className="w-6 h-6 text-black" />
                         </div>
                         <div className="flex flex-col">
                           <div className="text-lg font-bold text-black leading-tight">

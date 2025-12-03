@@ -25,8 +25,93 @@ const emailEditorService = new EmailEditorService();
 // User-specific workflow states (multi-tenant support)
 const userWorkflowStates = new Map(); // userId -> workflowState
 
-// Get the global LangGraphMarketingAgent instance from app.locals
-// This ensures we use the SAME instance across all routes
+// 🔥 MULTI-USER FIX: Store paused campaign data per user for workflow continuation
+const userPausedCampaignData = new Map(); // "userId_campaignId" -> pausedCampaignData
+
+// 🔥 MULTI-PROCESS: Store separate agent instances per user AND per campaign
+// This ensures complete isolation between different users and campaigns
+const userCampaignAgents = new Map(); // "userId_campaignId" -> LangGraphMarketingAgent instance
+
+/**
+ * 🔥 MULTI-PROCESS: Get or create a dedicated agent for a specific user+campaign
+ * Each user's campaign gets its own isolated agent instance
+ */
+function getOrCreateUserCampaignAgent(userId, campaignId, wsManager = null) {
+  const key = `${userId}_${campaignId}`;
+
+  if (!userCampaignAgents.has(key)) {
+    console.log(`\n${'🚀'.repeat(20)}`);
+    console.log(`🔥 [MULTI-PROCESS] Creating NEW agent instance`);
+    console.log(`   👤 User: ${userId}`);
+    console.log(`   📋 Campaign: ${campaignId}`);
+    console.log(`   🔑 Key: ${key}`);
+    console.log(`${'🚀'.repeat(20)}\n`);
+
+    const LangGraphMarketingAgent = require('../agents/LangGraphMarketingAgent');
+    const agent = new LangGraphMarketingAgent();
+    agent.userId = userId;
+    agent.campaignId = campaignId;
+
+    // Attach WebSocket manager if provided
+    if (wsManager) {
+      agent.wsManager = wsManager;
+    }
+
+    userCampaignAgents.set(key, agent);
+    console.log(`   ✅ Agent created and stored. Total active agents: ${userCampaignAgents.size}`);
+  } else {
+    console.log(`📦 [MULTI-PROCESS] Reusing existing agent for ${key}`);
+  }
+
+  return userCampaignAgents.get(key);
+}
+
+/**
+ * Get existing agent for user+campaign (without creating new one)
+ */
+function getUserCampaignAgent(userId, campaignId) {
+  const key = `${userId}_${campaignId}`;
+  const agent = userCampaignAgents.get(key);
+  if (agent) {
+    console.log(`📦 [MULTI-PROCESS] Found existing agent for ${key}`);
+  } else {
+    console.log(`⚠️ [MULTI-PROCESS] No agent found for ${key}`);
+  }
+  return agent;
+}
+
+/**
+ * Remove agent when campaign is completed or reset
+ */
+function removeUserCampaignAgent(userId, campaignId) {
+  const key = `${userId}_${campaignId}`;
+  if (userCampaignAgents.has(key)) {
+    const agent = userCampaignAgents.get(key);
+    // Clean up agent resources if needed
+    if (agent.cleanup) {
+      try {
+        agent.cleanup();
+      } catch (e) {
+        console.warn(`⚠️ Error cleaning up agent: ${e.message}`);
+      }
+    }
+    userCampaignAgents.delete(key);
+    console.log(`🗑️ [MULTI-PROCESS] Removed agent for ${key}. Remaining agents: ${userCampaignAgents.size}`);
+  }
+}
+
+/**
+ * List all active agents (for debugging)
+ */
+function listActiveAgents() {
+  console.log(`\n📊 [MULTI-PROCESS] Active agents: ${userCampaignAgents.size}`);
+  for (const [key, agent] of userCampaignAgents.entries()) {
+    console.log(`   - ${key}: paused=${agent.state?.workflowPaused || false}`);
+  }
+  return Array.from(userCampaignAgents.keys());
+}
+
+// Legacy function for backwards compatibility - uses global agent
 function getMarketingAgent(req) {
   // Use the agent from app.locals (set in server/index.js)
   if (req && req.app && req.app.locals && req.app.locals.langGraphAgent) {
@@ -302,19 +387,33 @@ router.post('/start', strictAuth, async (req, res) => {
     workflowState.lastUpdate = new Date().toISOString();
     workflowState.userId = req.userId; // Track which user owns this workflow
 
-    // Use global LangGraphMarketingAgent instance to maintain state
-    const agent = getMarketingAgent(req);
+    // 🔥 MULTI-PROCESS: Create dedicated agent for this user+campaign
+    // Each user's campaign gets its own isolated agent instance
+    const agent = getOrCreateUserCampaignAgent(
+      req.userId,
+      campaignId || 'default',
+      req.app.locals.wsManager
+    );
 
     // Pass workflow state reference to agent so it can update firstEmailGenerated
     agent.workflowState = workflowState;
+    agent.userId = req.userId;
+    agent.campaignId = campaignId;
 
     // Set WebSocket manager for real-time logging
     if (req.app.locals.wsManager) {
       agent.wsManager = req.app.locals.wsManager;
-      console.log('✅ WebSocket manager attached to LangGraphMarketingAgent');
+      console.log('✅ WebSocket manager attached to user-specific agent');
     } else {
       console.warn('⚠️ No WebSocket manager found in app.locals');
     }
+
+    // Log multi-process status
+    console.log(`🔥 [MULTI-PROCESS] Started workflow with dedicated agent`);
+    console.log(`   👤 User: ${req.userId}`);
+    console.log(`   📋 Campaign: ${campaignId}`);
+    console.log(`   📊 Total active agents: ${listActiveAgents().length}`);
+    listActiveAgents();
 
     // Load saved agent config to get websiteAnalysis (Railway-compatible: check app.locals first)
     let savedConfig = null;
@@ -2477,72 +2576,163 @@ router.post('/approve-email', async (req, res) => {
 });
 
 // Handle user decision from popup
-router.post('/user-decision', async (req, res) => {
+router.post('/user-decision', optionalAuth, async (req, res) => {
   try {
     const { decision, campaignId, userTemplate, smtpConfig } = req.body;
-    console.log(`👤 User decision received: ${decision} for campaign: ${campaignId}`);
-    console.log('🔍 DEBUG: userTemplate received:', !!userTemplate);
-    console.log('🔧 DEBUG: smtpConfig received:', !!smtpConfig);
-    if (userTemplate) {
-      console.log('🔍 DEBUG: userTemplate keys:', Object.keys(userTemplate));
-      console.log('🔍 DEBUG: userTemplate.components length:', userTemplate.components?.length || 0);
+    const userId = req.userId || 'anonymous';
+
+    console.log(`\n${'='.repeat(80)}`);
+    console.log(`👤 [MULTI-PROCESS] User decision received`);
+    console.log(`   User: ${userId}`);
+    console.log(`   Campaign: ${campaignId}`);
+    console.log(`   Decision: ${decision}`);
+    console.log(`   Template provided: ${!!userTemplate}`);
+    console.log(`   SMTP config provided: ${!!smtpConfig}`);
+    console.log(`${'='.repeat(80)}`);
+
+    // 🔥 MULTI-PROCESS: Get the user's dedicated agent instance
+    let agent = getUserCampaignAgent(userId, campaignId);
+
+    // If no dedicated agent exists, try to create one or use fallback
+    if (!agent) {
+      console.log(`⚠️ [MULTI-PROCESS] No dedicated agent found for ${userId}_${campaignId}, creating new one...`);
+      agent = getOrCreateUserCampaignAgent(userId, campaignId, req.app.locals.wsManager);
     }
 
-    // Get the LangGraph agent instance
-    const agent = req.app.locals.langGraphAgent;
     if (!agent) {
       return res.status(500).json({
         success: false,
-        error: 'LangGraph agent not available'
+        error: 'Could not get or create agent for this user/campaign'
       });
     }
 
-    // Resume the workflow with user decision and SMTP config
-    agent.resumeWorkflow(decision, userTemplate, smtpConfig);
+    // 🔥 MULTI-PROCESS: Check BOTH agent state AND stored paused data
+    const pausedData = getPausedCampaignData(userId, campaignId);
+    const agentPausedData = agent.state?.pausedCampaignData;
 
-    // 🎯 CRITICAL FIX: Actually trigger email generation for remaining prospects
-    if (decision === 'continue' && agent.state?.workflowPaused && agent.state?.pausedCampaignData) {
-      console.log('✅ User approved, continuing email generation for remaining prospects...');
+    // Also check the workflow state for waitingForUserApproval
+    const workflowState = getUserWorkflowState(userId);
 
-      // Get campaign data from paused state
-      const campaignData = agent.state.pausedCampaignData;
-      const actualCampaignId = campaignData.campaignId || campaignId;
+    console.log(`📊 [MULTI-PROCESS] Checking data sources:`);
+    console.log(`   Agent paused: ${agent.state?.workflowPaused || false}`);
+    console.log(`   Agent prospects: ${agentPausedData?.prospects?.length || 0}`);
+    console.log(`   Stored paused data: ${!!pausedData}`);
+    console.log(`   Stored prospects: ${pausedData?.prospects?.length || 0}`);
+    console.log(`   Workflow state waitingForUserApproval: ${workflowState.waitingForUserApproval}`);
+
+    // Clear the waiting state
+    if (workflowState.waitingForUserApproval) {
+      workflowState.waitingForUserApproval = false;
+      console.log(`   ✅ Cleared waitingForUserApproval for user ${userId}`);
+    }
+
+    // 🔥 MULTI-PROCESS: Prefer agent's live state, fallback to stored data
+    const effectivePausedData = agentPausedData || pausedData;
+
+    // 🎯 CRITICAL: Use the correct data source
+    if (decision === 'continue' && effectivePausedData && effectivePausedData.prospects && effectivePausedData.prospects.length > 0) {
+      console.log('✅ [MULTI-PROCESS] User approved, continuing email generation for remaining prospects...');
+
+      const actualCampaignId = effectivePausedData.campaignId || campaignId;
 
       console.log('📊 Campaign data:', {
         campaignId: actualCampaignId,
-        prospectsCount: campaignData.prospects?.length || 0,
-        currentIndex: campaignData.currentIndex || 0
+        prospectsCount: effectivePausedData.prospects.length,
+        currentIndex: effectivePausedData.currentIndex || 1,
+        dataSource: agentPausedData ? 'agent_state' : 'stored_data'
       });
 
-      // Continue from the next prospect (index 1, since first email was already generated)
-      if (campaignData.prospects && campaignData.prospects.length > 1) {
-        // Start email generation in background
+      // Get starting index (skip first email which was already generated)
+      const startIndex = effectivePausedData.currentIndex || 1;
+      const remainingProspects = effectivePausedData.prospects.length - startIndex;
+
+      // 🔥 MULTI-PROCESS: Resume the agent's workflow if it was paused
+      if (agent.state?.workflowPaused && agent.state?.userDecisionPromise) {
+        console.log(`🔄 [MULTI-PROCESS] Resuming paused agent workflow...`);
+        agent.resumeWorkflow(decision, userTemplate, smtpConfig);
+      }
+
+      if (remainingProspects > 0) {
+        console.log(`🔄 Will generate emails for ${remainingProspects} remaining prospects (starting from index ${startIndex})`);
+
+        // Start email generation in background - runs concurrently for each user/campaign
         setTimeout(async () => {
           try {
-            console.log('🔄 Starting email generation for remaining prospects in background...');
+            console.log(`🔄 [BACKGROUND ${userId}_${campaignId}] Starting email generation...`);
 
             const templateToUse = {
-              subject: userTemplate?.subject || 'Professional Email',
-              html: userTemplate?.html || '',
-              body: userTemplate?.html || '',
-              components: userTemplate?.components || []
+              subject: userTemplate?.subject || effectivePausedData.userTemplate?.subject || 'Professional Email',
+              html: userTemplate?.html || effectivePausedData.userTemplate?.html || '',
+              body: userTemplate?.html || effectivePausedData.userTemplate?.html || '',
+              components: userTemplate?.components || effectivePausedData.userTemplate?.components || []
             };
+
+            // Set agent userId for proper storage
+            agent.userId = userId;
 
             await agent.continueGeneratingEmails(
               actualCampaignId,
-              campaignData.prospects,
-              1,  // Start from second prospect
+              effectivePausedData.prospects,
+              startIndex,  // Start from stored index (usually 1)
               templateToUse,
-              smtpConfig,
-              campaignData.targetAudience,
+              smtpConfig || effectivePausedData.smtpConfig,
+              effectivePausedData.targetAudience || effectivePausedData.marketingStrategy,
               'user_template'
             );
 
-            console.log('✅ Email generation completed for remaining prospects');
+            console.log(`✅ [BACKGROUND ${userId}_${campaignId}] Email generation completed`);
+
+            // Clear paused data after successful completion
+            clearPausedCampaignData(userId, actualCampaignId);
+
           } catch (error) {
-            console.error('❌ Error generating remaining emails:', error);
+            console.error('❌ [BACKGROUND] Error generating remaining emails:', error);
           }
         }, 100);
+      } else {
+        console.log('ℹ️ No remaining prospects to generate emails for');
+      }
+    } else if (decision === 'continue') {
+      // No paused data found - try to get prospects from workflow results
+      console.log('⚠️ No paused campaign data found, trying to get prospects from workflow results...');
+
+      const workflowResults = await getLastWorkflowResults(userId, campaignId);
+      if (workflowResults && workflowResults.prospects && workflowResults.prospects.length > 0) {
+        const existingEmailCount = workflowResults.emailCampaign?.emails?.length || 0;
+        const prospectsWithoutEmails = workflowResults.prospects.length - existingEmailCount;
+
+        console.log(`📊 Found ${workflowResults.prospects.length} prospects, ${existingEmailCount} emails already generated`);
+
+        if (prospectsWithoutEmails > 0) {
+          console.log(`🔄 Will generate emails for ${prospectsWithoutEmails} remaining prospects`);
+
+          setTimeout(async () => {
+            try {
+              agent.userId = userId;
+
+              const templateToUse = {
+                subject: userTemplate?.subject || 'Professional Email',
+                html: userTemplate?.html || '',
+                body: userTemplate?.html || '',
+                components: userTemplate?.components || []
+              };
+
+              await agent.continueGeneratingEmails(
+                campaignId,
+                workflowResults.prospects,
+                existingEmailCount,  // Start from where we left off
+                templateToUse,
+                smtpConfig,
+                workflowResults.marketingStrategy,
+                'user_template'
+              );
+
+              console.log('✅ Email generation completed for remaining prospects (from workflow results)');
+            } catch (error) {
+              console.error('❌ Error generating remaining emails:', error);
+            }
+          }, 100);
+        }
       }
     }
 
@@ -2550,7 +2740,8 @@ router.post('/user-decision', async (req, res) => {
       success: true,
       message: `User decision processed: ${decision}`,
       decision,
-      campaignId
+      campaignId,
+      userId
     });
 
   } catch (error) {
@@ -2577,6 +2768,37 @@ function setUserWorkflowState(userId, updates) {
   const userWorkflowState = getUserWorkflowState(userId);
   Object.assign(userWorkflowState, updates);
   console.log(`🎯 [User: ${userId}] Workflow state updated:`, Object.keys(updates));
+}
+
+// 🔥 MULTI-USER FIX: Store paused campaign data for workflow continuation
+function setPausedCampaignData(userId, campaignId, data) {
+  const key = `${userId}_${campaignId}`;
+  userPausedCampaignData.set(key, {
+    ...data,
+    timestamp: new Date().toISOString()
+  });
+  console.log(`💾 [User: ${userId}] Paused campaign data stored for campaign: ${campaignId}`);
+  console.log(`   Prospects: ${data.prospects?.length || 0}, Template: ${!!data.userTemplate}`);
+}
+
+// 🔥 MULTI-USER FIX: Get paused campaign data for workflow continuation
+function getPausedCampaignData(userId, campaignId) {
+  const key = `${userId}_${campaignId}`;
+  const data = userPausedCampaignData.get(key);
+  if (data) {
+    console.log(`📦 [User: ${userId}] Retrieved paused campaign data for campaign: ${campaignId}`);
+    console.log(`   Prospects: ${data.prospects?.length || 0}, Stored at: ${data.timestamp}`);
+  }
+  return data;
+}
+
+// 🔥 MULTI-USER FIX: Clear paused campaign data after workflow completion
+function clearPausedCampaignData(userId, campaignId) {
+  const key = `${userId}_${campaignId}`;
+  if (userPausedCampaignData.has(key)) {
+    userPausedCampaignData.delete(key);
+    console.log(`🗑️ [User: ${userId}] Cleared paused campaign data for campaign: ${campaignId}`);
+  }
 }
 
 // 📊 Get workflow statistics for quota bar
@@ -2729,3 +2951,12 @@ module.exports.getLastWorkflowResults = getLastWorkflowResults;
 module.exports.addEmailToWorkflowResults = addEmailToWorkflowResults;
 module.exports.setTemplateSubmitted = setTemplateSubmitted;
 module.exports.setUserWorkflowState = setUserWorkflowState;
+// 🔥 MULTI-USER: Export paused campaign data functions for agent to use
+module.exports.setPausedCampaignData = setPausedCampaignData;
+module.exports.getPausedCampaignData = getPausedCampaignData;
+module.exports.clearPausedCampaignData = clearPausedCampaignData;
+// 🔥 MULTI-PROCESS: Export agent management functions
+module.exports.getOrCreateUserCampaignAgent = getOrCreateUserCampaignAgent;
+module.exports.getUserCampaignAgent = getUserCampaignAgent;
+module.exports.removeUserCampaignAgent = removeUserCampaignAgent;
+module.exports.listActiveAgents = listActiveAgents;
