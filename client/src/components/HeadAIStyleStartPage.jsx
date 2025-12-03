@@ -276,7 +276,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
       </nav>
 
       {/* Top Section with Gradient Background - Added top padding for floating nav */}
-      <div style={{ background: 'linear-gradient(to bottom, #22d3ee 0%, #a7f3d0 40%, #ffffff 80%, #ffffff 100%)', paddingTop: '70px' }}>
+      <div style={{ background: 'linear-gradient(to bottom, #7dd3fc 0%, #bae6fd 40%, #e0f2fe 70%, #ffffff 100%)', paddingTop: '70px' }}>
         {/* Header - Empty to maintain spacing */}
         <header className="relative z-20 py-6 px-8">
           <div className="h-10"></div>

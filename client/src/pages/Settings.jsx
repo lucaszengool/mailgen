@@ -86,10 +86,93 @@ export default function Settings() {
         setCampaignConfig(prev => ({ ...prev, ...campaignResponse.data }));
       }
 
-      // Load website analysis settings
+      // Load website analysis settings - try API first, then localStorage
       const websiteResponse = await apiGet('/api/settings/website-analysis');
+      let hasApiData = false;
+
       if (websiteResponse.success && websiteResponse.data) {
-        setWebsiteAnalysis(prev => ({ ...prev, ...websiteResponse.data }));
+        // Check if API data has meaningful content
+        const apiData = websiteResponse.data;
+        hasApiData = apiData.businessName || apiData.productType || apiData.businessIntro ||
+                     (apiData.sellingPoints && apiData.sellingPoints.length > 0) ||
+                     (apiData.audiences && apiData.audiences.length > 0);
+
+        if (hasApiData) {
+          setWebsiteAnalysis(prev => ({ ...prev, ...apiData }));
+        }
+      }
+
+      // If no API data, try loading from localStorage (where FirstCampaignSetup saves)
+      if (!hasApiData) {
+        // Try multiple localStorage keys where analysis might be stored
+        const localSources = [
+          'websiteAnalysis',
+          'agentSetupData',
+          'agentConfig'
+        ];
+
+        for (const key of localSources) {
+          try {
+            const localData = localStorage.getItem(key);
+            if (localData) {
+              const parsed = JSON.parse(localData);
+              // Handle nested websiteAnalysis in agentConfig
+              const analysisData = parsed.websiteAnalysis || parsed;
+
+              if (analysisData.businessName || analysisData.productType || analysisData.businessIntro) {
+                console.log(`📊 Loaded website analysis from localStorage (${key}):`, analysisData);
+                setWebsiteAnalysis(prev => ({
+                  ...prev,
+                  targetWebsite: analysisData.targetWebsite || analysisData.url || prev.targetWebsite,
+                  businessName: analysisData.businessName || analysisData.companyName || prev.businessName,
+                  logo: analysisData.logo || prev.logo,
+                  productType: analysisData.productType || analysisData.industry || prev.productType,
+                  benchmarkBrands: analysisData.benchmarkBrands || prev.benchmarkBrands,
+                  businessIntro: analysisData.businessIntro || analysisData.valueProposition || analysisData.businessIntroduction || prev.businessIntro,
+                  sellingPoints: analysisData.sellingPoints || analysisData.coreSellingPoints || prev.sellingPoints,
+                  audiences: analysisData.audiences || analysisData.targetAudiences || prev.audiences,
+                  social: analysisData.social || prev.social,
+                  techStack: analysisData.techStack || prev.techStack,
+                  contactInfo: analysisData.contactInfo || prev.contactInfo
+                }));
+                break; // Found data, stop searching
+              }
+            }
+          } catch (e) {
+            console.warn(`Failed to parse ${key} from localStorage:`, e);
+          }
+        }
+
+        // Also try loading from current campaign data
+        try {
+          const currentCampaignId = localStorage.getItem('currentCampaignId');
+          if (currentCampaignId) {
+            const campaignData = localStorage.getItem(`campaign_${currentCampaignId}_data`);
+            if (campaignData) {
+              const parsed = JSON.parse(campaignData);
+              const analysisData = parsed.websiteAnalysis || parsed;
+              if (analysisData.businessName || analysisData.productType) {
+                console.log(`📊 Loaded website analysis from campaign data:`, analysisData);
+                setWebsiteAnalysis(prev => ({
+                  ...prev,
+                  targetWebsite: analysisData.targetWebsite || prev.targetWebsite,
+                  businessName: analysisData.businessName || prev.businessName,
+                  logo: analysisData.logo || prev.logo,
+                  productType: analysisData.productType || prev.productType,
+                  benchmarkBrands: analysisData.benchmarkBrands || prev.benchmarkBrands,
+                  businessIntro: analysisData.businessIntro || prev.businessIntro,
+                  sellingPoints: analysisData.sellingPoints || prev.sellingPoints,
+                  audiences: analysisData.audiences || prev.audiences,
+                  social: analysisData.social || prev.social,
+                  techStack: analysisData.techStack || prev.techStack,
+                  contactInfo: analysisData.contactInfo || prev.contactInfo
+                }));
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to load campaign data:', e);
+        }
       }
     } catch (error) {
       console.error('Failed to load settings:', error);

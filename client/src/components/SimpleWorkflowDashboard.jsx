@@ -1937,7 +1937,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const { isSignedIn, isLoaded, user } = useUser();
 
   const [activeView, setActiveView] = useState('workflow');
-  const [showChatbot, setShowChatbot] = useState(true); // Always show on initial load
+  const [showChatbot, setShowChatbot] = useState(false); // Hidden by default, user can click to open
   const [chatbotExternalMessage, setChatbotExternalMessage] = useState(null);
   const [wsConnectionStatus, setWsConnectionStatus] = useState('connecting'); // 'connecting', 'connected', 'disconnected', 'error'
   const [campaignConfig, setCampaignConfig] = useState(null);
@@ -2031,15 +2031,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     }
   }, [campaign]);
 
-  // Open chatbot on component mount (first time landing on dashboard)
-  useEffect(() => {
-    // Check if this is first visit to dashboard in this session
-    const hasSeenChatbot = sessionStorage.getItem('mailgenChatbotSeen');
-    if (!hasSeenChatbot) {
-      setShowChatbot(true);
-      sessionStorage.setItem('mailgenChatbotSeen', 'true');
-    }
-  }, []);
+  // Chatbot is hidden by default - user can click the floating button to open it
+  // Removed auto-open on first visit to keep UI clean
   
   // Enhanced workflow history persistence system
   const [workflowHistory, setWorkflowHistory] = useState(() => {
@@ -3808,18 +3801,31 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     const listStr = String(listCampaignId || '');
     const currentStr = String(currentCampaignId || '');
 
-    if (listStr && currentStr && listStr !== currentStr) {
-      console.log(`🚫 [LIST] Skipping - different campaign`);
+    // 🔒 STRICT: Skip if no listCampaignId (prevents old/stale messages from mixing)
+    if (!listStr) {
+      console.log(`🚫 [LIST] Skipping - no campaignId in prospect_list message`);
+      return;
+    }
+
+    if (listStr !== currentStr) {
+      console.log(`🚫 [LIST] Skipping - different campaign (list=${listStr}, current=${currentStr})`);
       return;
     }
 
     const listProspects = data.prospects || [];
-    console.log(`📋 [LIST] Processing ${listProspects.length} prospects`);
+    console.log(`📋 [LIST] Processing ${listProspects.length} prospects for campaign ${currentStr}`);
 
     if (listProspects.length > 0) {
       setProspects(prev => {
         const existingEmails = new Set(prev.map(p => p.email));
-        const newProspects = listProspects.filter(p => p.email && !existingEmails.has(p.email));
+        // 🔒 CRITICAL: Ensure each prospect has campaignId before adding
+        const newProspects = listProspects
+          .filter(p => p.email && !existingEmails.has(p.email))
+          .map(p => ({
+            ...p,
+            campaignId: p.campaignId || currentStr,
+            campaign_id: p.campaign_id || currentStr
+          }));
         if (newProspects.length > 0) {
           console.log(`📋🚀 [LIST] Adding ${newProspects.length} prospects (${prev.length} → ${prev.length + newProspects.length})`);
           return [...prev, ...newProspects];
@@ -3834,26 +3840,40 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
   // 🔥 DEDICATED HANDLER: Process data_update with prospects
   const handleDataUpdateProspects = (data) => {
-    const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+    const currentCampaignId = localStorage.getItem('currentCampaignId') || campaign?.id;
     const updateCampaignId = data.campaignId || data.data?.campaignId;
 
     console.log(`📊 [DATA] Campaign check: update=${updateCampaignId}, current=${currentCampaignId}`);
 
-    // Campaign isolation check
-    if (updateCampaignId && currentCampaignId &&
-        updateCampaignId !== currentCampaignId &&
-        updateCampaignId !== String(currentCampaignId)) {
-      console.log(`🚫 [DATA] Skipping - different campaign`);
+    // 🔒 Campaign isolation check - normalize to strings for comparison
+    const updateStr = String(updateCampaignId || '');
+    const currentStr = String(currentCampaignId || '');
+
+    // 🔒 STRICT: Skip if no updateCampaignId (prevents old/stale messages from mixing)
+    if (!updateStr) {
+      console.log(`🚫 [DATA] Skipping - no campaignId in data_update message`);
+      return;
+    }
+
+    if (updateStr !== currentStr) {
+      console.log(`🚫 [DATA] Skipping - different campaign (update=${updateStr}, current=${currentStr})`);
       return;
     }
 
     const dataProspects = data.data?.prospects || [];
-    console.log(`📊 [DATA] Processing ${dataProspects.length} prospects`);
+    console.log(`📊 [DATA] Processing ${dataProspects.length} prospects for campaign ${currentStr}`);
 
     if (dataProspects.length > 0) {
       setProspects(prev => {
         const existingEmails = new Set(prev.map(p => p.email));
-        const newProspects = dataProspects.filter(p => p.email && !existingEmails.has(p.email));
+        // 🔒 CRITICAL: Ensure each prospect has campaignId before adding
+        const newProspects = dataProspects
+          .filter(p => p.email && !existingEmails.has(p.email))
+          .map(p => ({
+            ...p,
+            campaignId: p.campaignId || currentStr,
+            campaign_id: p.campaign_id || currentStr
+          }));
         if (newProspects.length > 0) {
           console.log(`📊🚀 [DATA] Adding ${newProspects.length} prospects (${prev.length} → ${prev.length + newProspects.length})`);
           return [...prev, ...newProspects];
@@ -5776,7 +5796,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
               if (dbProspects.length > 0 && !hasEmails) {
                 console.log('🎨🎨🎨 TRIGGERING TEMPLATE SELECTION POPUP - prospects exist but no emails');
-                setShowTemplateSelectionModal(true);
+                setShowTemplateSelection(true);
                 setWaitingForTemplate(true);
               }
             }, 1000);
