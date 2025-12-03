@@ -275,8 +275,11 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
         </div>
       </nav>
 
-      {/* Top Section with Gradient Background - JobRight.ai style light blue to light green */}
-      <div style={{ background: 'linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 20%, #b2f5ea 50%, #c6f6d5 80%, #f0fff4 100%)', paddingTop: '70px' }}>
+      {/* Top Section with Gradient Background - Smooth blend to white with blue-green tones */}
+      <div style={{
+        background: 'linear-gradient(180deg, #e0f7fa 0%, #c5f0f7 15%, #b8ece8 30%, #c6f6d5 50%, #e8fce8 70%, #f5fff5 85%, #ffffff 100%)',
+        paddingTop: '70px'
+      }}>
         {/* Header - Empty to maintain spacing */}
         <header className="relative z-20 py-6 px-8">
           <div className="h-10"></div>
@@ -352,8 +355,8 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
 
       </div>
 
-      {/* Companies Section - Exact replica of Desktop/com.png */}
-      <div className="relative z-10 px-8 bg-white">
+      {/* Companies Section - Seamless transition from gradient */}
+      <div className="relative z-10 px-8" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #ffffff 100%)' }}>
         <div className="max-w-[1200px] mx-auto">
           <div className="bg-gray-100 rounded-3xl p-12 mb-12" style={{ height: '380px' }}>
             <div className="flex items-center justify-between mb-8">

@@ -66,10 +66,24 @@ class OllamaQueue {
     console.log(`⏳ [${requestId}] Added to queue (position: ${this.queue.length + 1}, running: ${this.running.size})`);
     this.queue.push(queueItem);
 
-    // Return a promise that resolves when request is processed
+    // 🔥 CRITICAL FIX: Add queue timeout to prevent stuck requests
+    const QUEUE_TIMEOUT = 120000; // 2 minutes max wait in queue
+
+    // Return a promise that resolves when request is processed OR times out
     return new Promise((resolve, reject) => {
       queueItem.resolve = resolve;
       queueItem.reject = reject;
+
+      // Queue timeout - reject if waiting too long
+      queueItem.queueTimeout = setTimeout(() => {
+        // Remove from queue if still there
+        const index = this.queue.indexOf(queueItem);
+        if (index > -1) {
+          this.queue.splice(index, 1);
+          console.error(`⏰ [${requestId}] Queue timeout after ${QUEUE_TIMEOUT}ms - request removed from queue`);
+          reject(new Error(`Queue timeout: request waited more than ${QUEUE_TIMEOUT / 1000} seconds`));
+        }
+      }, QUEUE_TIMEOUT);
     });
   }
 
@@ -78,6 +92,12 @@ class OllamaQueue {
    */
   async executeRequest(queueItem) {
     const { requestId, userId, campaignId, model, prompt, options } = queueItem;
+
+    // 🔥 Clear queue timeout when starting execution
+    if (queueItem.queueTimeout) {
+      clearTimeout(queueItem.queueTimeout);
+      queueItem.queueTimeout = null;
+    }
 
     this.running.set(requestId, queueItem);
 

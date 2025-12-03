@@ -381,10 +381,33 @@ router.post('/batch-search', optionalAuth, async (req, res) => {
     // Generate unique search ID
     const searchId = `batch_${Date.now()}_${userId}_${campaignId || 'default'}`;
 
-    // Start background search (non-blocking)
+    // Start background search (non-blocking) - CONTINUOUS until limit reached
     setImmediate(async () => {
+      // 🔥 DYNAMIC LIMIT: Get user's limit from admin settings
+      let TARGET_LIMIT = 50; // Default target
+      let isUnlimited = false;
+
       try {
-        console.log(`📦 [${searchId}] Starting background batch search...`);
+        const userLimit = await db.getUserLimit(userId);
+        if (userLimit) {
+          isUnlimited = userLimit.isUnlimited;
+          TARGET_LIMIT = isUnlimited ? 500 : (userLimit.prospectsPerHour || 50);
+          console.log(`📊 [${searchId}] User limit from admin: ${isUnlimited ? 'UNLIMITED (max 500)' : TARGET_LIMIT + '/hour'}`);
+        }
+      } catch (limitError) {
+        console.warn(`⚠️ [${searchId}] Could not fetch user limit, using default (50):`, limitError.message);
+      }
+
+      const MAX_RETRIES = Math.max(10, Math.ceil(TARGET_LIMIT / 5)); // Scale retries based on target
+      const RETRY_DELAY = 5000; // 5 seconds between retries
+      const SINGLE_SEARCH_TIMEOUT = 60000; // 60 seconds per search attempt
+
+      let totalProspectsFound = 0;
+      let allProspects = [];
+      let retryCount = 0;
+
+      try {
+        console.log(`📦 [${searchId}] Starting CONTINUOUS batch search until ${TARGET_LIMIT} prospects found (max ${MAX_RETRIES} rounds)...`);
 
         // Construct search query combining industry, region, and keywords
         let searchQuery = industry || keywords;
@@ -397,9 +420,74 @@ router.post('/batch-search', optionalAuth, async (req, res) => {
 
         console.log(`🔍 [${searchId}] Search query: "${searchQuery}"`);
 
-        // Use EnhancedEmailSearchAgent to search for prospects
         const emailSearchAgent = new EnhancedEmailSearchAgent();
-        const result = await emailSearchAgent.searchEmails(searchQuery, 50, campaignId);
+
+        // 🔥 CONTINUOUS SEARCH LOOP - Keep searching until limit reached
+        while (totalProspectsFound < TARGET_LIMIT && retryCount < MAX_RETRIES) {
+          retryCount++;
+          console.log(`🔄 [${searchId}] Search round ${retryCount}/${MAX_RETRIES} (found: ${totalProspectsFound}/${TARGET_LIMIT})...`);
+
+          try {
+            // Single search with timeout
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Single search timeout')), SINGLE_SEARCH_TIMEOUT)
+            );
+
+            const result = await Promise.race([
+              emailSearchAgent.searchEmails(searchQuery, TARGET_LIMIT - totalProspectsFound, campaignId),
+              timeoutPromise
+            ]);
+
+            if (result.success && result.prospects && result.prospects.length > 0) {
+              // Filter out duplicates
+              const existingEmails = new Set(allProspects.map(p => p.email));
+              const newProspects = result.prospects.filter(p => !existingEmails.has(p.email));
+
+              if (newProspects.length > 0) {
+                allProspects = [...allProspects, ...newProspects];
+                totalProspectsFound = allProspects.length;
+                console.log(`✅ [${searchId}] Round ${retryCount}: Found ${newProspects.length} new prospects (total: ${totalProspectsFound})`);
+
+                // Broadcast progress update
+                const wsManager = req.app.locals.wsManager;
+                if (wsManager) {
+                  wsManager.broadcast({
+                    type: 'batch_search_progress',
+                    data: {
+                      searchId,
+                      round: retryCount,
+                      found: totalProspectsFound,
+                      target: TARGET_LIMIT,
+                      newInRound: newProspects.length
+                    }
+                  });
+                }
+              } else {
+                console.log(`⚠️ [${searchId}] Round ${retryCount}: No new unique prospects found`);
+              }
+            } else {
+              console.log(`⚠️ [${searchId}] Round ${retryCount}: Search returned no results`);
+            }
+          } catch (searchError) {
+            console.error(`❌ [${searchId}] Round ${retryCount} failed:`, searchError.message);
+            // Continue to next round even if this one failed
+          }
+
+          // Check if we've reached the target
+          if (totalProspectsFound >= TARGET_LIMIT) {
+            console.log(`🎯 [${searchId}] Target reached! Found ${totalProspectsFound} prospects`);
+            break;
+          }
+
+          // Wait before next round (unless we've reached target)
+          if (retryCount < MAX_RETRIES && totalProspectsFound < TARGET_LIMIT) {
+            console.log(`⏳ [${searchId}] Waiting ${RETRY_DELAY / 1000}s before next search round...`);
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+          }
+        }
+
+        // Use the accumulated results
+        const result = { success: allProspects.length > 0, prospects: allProspects };
 
         if (result.success && result.prospects && result.prospects.length > 0) {
           console.log(`✅ [${searchId}] Found ${result.prospects.length} prospects`);

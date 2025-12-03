@@ -28,7 +28,7 @@ class SuperEmailDiscoveryEngine:
         # SearxNG配置 - Railway兼容
         self.searxng_url = os.environ.get('SEARXNG_URL', 'http://localhost:8080')
 
-        # 网络会话配置 - 无超时限制
+        # 网络会话配置 - 🔥 设置合理超时防止卡住
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -37,8 +37,8 @@ class SuperEmailDiscoveryEngine:
             'Referer': 'https://www.google.com/',
             'Connection': 'keep-alive'
         })
-        # 设置无限超时
-        self.session.timeout = None
+        # 🔥 CRITICAL FIX: 设置15秒超时防止单个请求卡住整个流程
+        self.request_timeout = 15
 
         # 邮箱模式
         self.email_pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
@@ -227,8 +227,8 @@ class SuperEmailDiscoveryEngine:
             }
             
             start_time = time.time()
-            # 移除超时限制 - 让搜索有足够时间完成
-            response = self.session.get(f"{self.searxng_url}/search", params=params)
+            # 🔥 CRITICAL FIX: 添加超时防止卡住，但如果失败会继续尝试下一个搜索
+            response = self.session.get(f"{self.searxng_url}/search", params=params, timeout=self.request_timeout)
             duration = time.time() - start_time
             
             if response.status_code == 200:
@@ -586,8 +586,8 @@ class SuperEmailDiscoveryEngine:
             self.search_stats['websites_scraped'] += 1
 
             start_time = time.time()
-            # 移除超时限制 - 让爬取有充足时间
-            response = self.session.get(url)
+            # 🔥 CRITICAL FIX: 添加超时防止单个网站卡住整个流程
+            response = self.session.get(url, timeout=self.request_timeout)
             duration = time.time() - start_time
 
             if response.status_code != 200:

@@ -8,6 +8,7 @@ export default function AdminDashboard() {
   const [searchEmail, setSearchEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('users'); // 'users' or 'settings'
 
   // Check if already authenticated (stored in sessionStorage)
   useEffect(() => {
@@ -171,34 +172,136 @@ export default function AdminDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search bar */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={searchEmail}
-              onChange={(e) => setSearchEmail(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder="Search by user email..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={handleSearch}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-            >
-              Search
-            </button>
-            <button
-              onClick={() => {
-                setSearchEmail('');
-                fetchUsers();
-              }}
-              className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
-            >
-              Clear
-            </button>
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              <button
+                onClick={() => setActiveTab('users')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 ${
+                  activeTab === 'users'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                👥 User Limits
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 ${
+                  activeTab === 'settings'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                ⚙️ Workflow Settings
+              </button>
+            </nav>
           </div>
+
+          {/* Settings Tab Content */}
+          {activeTab === 'settings' && (
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Workflow Configuration</h3>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> These settings affect how the batch search and email generation workflows operate.
+                  User-specific limits are controlled in the User Limits tab above.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Batch Search Settings */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3">🔍 Batch Search</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Default Target Limit</label>
+                      <p className="text-sm text-gray-500">Set per-user in User Limits tab</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Max Search Rounds</label>
+                      <p className="text-sm font-mono bg-white px-2 py-1 rounded">Dynamic (limit ÷ 5, min 10)</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Retry Delay</label>
+                      <p className="text-sm font-mono bg-white px-2 py-1 rounded">5 seconds</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Single Search Timeout</label>
+                      <p className="text-sm font-mono bg-white px-2 py-1 rounded">60 seconds</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Email Generation Settings */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3">📧 Email Generation</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Batch Size</label>
+                      <p className="text-sm font-mono bg-white px-2 py-1 rounded">5 emails per batch</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Batch Delay</label>
+                      <p className="text-sm font-mono bg-white px-2 py-1 rounded">2 seconds</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Single Email Timeout</label>
+                      <p className="text-sm font-mono bg-white px-2 py-1 rounded">30 seconds</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Max Retries per Email</label>
+                      <p className="text-sm font-mono bg-white px-2 py-1 rounded">3 retries</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-medium text-green-800 mb-2">✅ How User Limits Work</h4>
+                <ul className="text-sm text-green-700 space-y-1">
+                  <li>• <strong>Limited users:</strong> Batch search stops when reaching their prospectsPerHour limit</li>
+                  <li>• <strong>Unlimited users:</strong> Batch search runs up to 500 prospects max</li>
+                  <li>• Email generation processes ALL prospects without emails</li>
+                  <li>• Workflows continue automatically until complete or limit reached</li>
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Users Tab - Search bar and table */}
+        {activeTab === 'users' && (
+          <>
+            {/* Search bar */}
+            <div className="bg-white rounded-lg shadow p-6 mb-6">
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="Search by user email..."
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleSearch}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Search
+                </button>
+                <button
+                  onClick={() => {
+                    setSearchEmail('');
+                    fetchUsers();
+                  }}
+                  className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
 
         {/* Users table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -326,6 +429,8 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
     </div>
   );

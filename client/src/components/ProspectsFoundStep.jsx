@@ -140,7 +140,7 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 relative overflow-hidden">
+    <div className="min-h-screen bg-white relative overflow-hidden">
       {/* Celebration confetti effect */}
       {showCelebration && (
         <div className="fixed inset-0 pointer-events-none z-50">
@@ -163,8 +163,8 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
         {/* Header */}
         <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg animate-fade-in">
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto rounded-xl bg-black flex items-center justify-center mb-4 shadow-md animate-scale-in">
-              <CheckCircle className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 mx-auto rounded-xl flex items-center justify-center mb-4 shadow-md animate-scale-in" style={{ backgroundColor: '#00f5a0' }}>
+              <CheckCircle className="w-8 h-8 text-black" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-3 animate-slide-up" style={{ animationDelay: '100ms' }}>
               Great News! We Found {prospects.length} Perfect Prospects
@@ -187,8 +187,8 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
               className="bg-white rounded-3xl p-6 text-center border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 animate-scale-in group"
               style={{ animationDelay: stat.delay }}
             >
-              <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                <stat.icon className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md" style={{ backgroundColor: '#00f5a0' }}>
+                <stat.icon className="w-6 h-6 text-black" />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
               <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
@@ -199,8 +199,8 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
         {/* Prospects Section */}
         <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style={{ animationDelay: '600ms' }}>
           <div className="flex items-center space-x-2 mb-6">
-            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-md">
-              <TrendingUp className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ backgroundColor: '#00f5a0' }}>
+              <TrendingUp className="w-5 h-5 text-black" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">Your Top Prospects</h2>
           </div>
@@ -232,8 +232,8 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
                         </div>
                       </div>
                       {/* Success badge */}
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-lg">
-                        <CheckCircle className="w-3 h-3 text-white" />
+                      <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: '#00f5a0' }}>
+                        <CheckCircle className="w-3 h-3 text-black" />
                       </div>
                     </div>
 
@@ -258,8 +258,8 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
 
                   {/* Match Score with Animation */}
                   <div className="text-right flex-shrink-0">
-                    <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black text-white font-bold text-lg shadow-md border-2 border-white">
-                      <Star className="w-4 h-4 fill-[#00f5a0]" />
+                    <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-black font-bold text-lg shadow-md border-2 border-gray-200" style={{ backgroundColor: '#00f5a0' }}>
+                      <Star className="w-4 h-4 fill-black" />
                       {prospect.score || 80}%
                     </div>
                   </div>
@@ -275,8 +275,8 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
           style={{ animationDelay: `${700 + prospects.length * 100}ms` }}
         >
           <div className="flex items-start gap-6">
-            <div className="w-14 h-14 rounded-xl bg-black flex items-center justify-center flex-shrink-0 shadow-md">
-              <Sparkles className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md" style={{ backgroundColor: '#00f5a0' }}>
+              <Sparkles className="w-7 h-7 text-black" />
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -286,8 +286,8 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
                 These prospects have been carefully selected based on your business profile and are ready to receive
                 personalized outreach emails. Continue to SMTP setup to configure your email sending.
               </p>
-              <div className="flex items-center gap-3 text-gray-700 bg-white rounded-xl px-4 py-3 border-2 border-gray-200">
-                <CheckCircle className="w-5 h-5 text-white flex-shrink-0" />
+              <div className="flex items-center gap-3 text-black rounded-xl px-4 py-3 border-2 border-gray-200" style={{ backgroundColor: '#00f5a0' }}>
+                <CheckCircle className="w-5 h-5 text-black flex-shrink-0" />
                 <span className="font-semibold">All email addresses verified and ready to use</span>
               </div>
             </div>
@@ -304,10 +304,11 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
           </button>
           <button
             onClick={handleContinue}
-            className="px-10 py-3 bg-black text-white font-bold rounded-xl hover:bg-gray-900 transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-xl flex items-center space-x-2"
+            className="px-10 py-3 text-black font-bold rounded-xl transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-xl flex items-center space-x-2"
+            style={{ backgroundColor: '#00f5a0' }}
           >
             <span>Continue to SMTP Setup</span>
-            <span className="text-white">→</span>
+            <span className="text-black">→</span>
           </button>
         </div>
       </div>

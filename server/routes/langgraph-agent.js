@@ -1075,6 +1075,163 @@ router.get('/continuous-mode/status', async (req, res) => {
   }
 });
 
+/**
+ * 🔥 CONTINUOUS EMAIL GENERATION - Generate emails for ALL prospects without emails
+ * This will keep checking and generating until all prospects have emails
+ */
+router.post('/generate-emails-continuous', async (req, res) => {
+  try {
+    const { campaignId, prospects, strategy, existingEmails = [] } = req.body;
+
+    console.log(`📧 [CONTINUOUS] Starting continuous email generation for campaign: ${campaignId}`);
+    console.log(`   Total prospects: ${prospects?.length || 0}`);
+    console.log(`   Existing emails: ${existingEmails?.length || 0}`);
+
+    if (!prospects || prospects.length === 0) {
+      return res.json({
+        success: true,
+        emails: [],
+        totalGenerated: 0,
+        message: 'No prospects to generate emails for'
+      });
+    }
+
+    const { agent, wsManager } = getAgentAndWS(req);
+
+    // Find prospects without emails
+    const existingEmailSet = new Set(existingEmails.map(e => e.recipient_email || e.to));
+    const prospectsWithoutEmails = prospects.filter(p => !existingEmailSet.has(p.email));
+
+    console.log(`   Prospects without emails: ${prospectsWithoutEmails.length}`);
+
+    if (prospectsWithoutEmails.length === 0) {
+      return res.json({
+        success: true,
+        emails: existingEmails,
+        totalGenerated: existingEmails.length,
+        message: 'All prospects already have emails generated'
+      });
+    }
+
+    // Return immediately with status, generate in background
+    res.json({
+      success: true,
+      message: `Starting continuous email generation for ${prospectsWithoutEmails.length} prospects`,
+      totalToGenerate: prospectsWithoutEmails.length,
+      existingCount: existingEmails.length
+    });
+
+    // 🔥 BACKGROUND CONTINUOUS GENERATION
+    setImmediate(async () => {
+      const BATCH_SIZE = 5; // Generate 5 emails at a time
+      const BATCH_DELAY = 2000; // 2 seconds between batches
+      const SINGLE_EMAIL_TIMEOUT = 30000; // 30 seconds per email
+      const MAX_RETRIES = 3; // Max retries per email
+
+      let generatedEmails = [...existingEmails];
+      let totalGenerated = 0;
+      let totalFailed = 0;
+
+      console.log(`🔄 [CONTINUOUS] Starting background email generation...`);
+
+      // Process in batches
+      for (let i = 0; i < prospectsWithoutEmails.length; i += BATCH_SIZE) {
+        const batch = prospectsWithoutEmails.slice(i, i + BATCH_SIZE);
+        const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+        const totalBatches = Math.ceil(prospectsWithoutEmails.length / BATCH_SIZE);
+
+        console.log(`📧 [CONTINUOUS] Processing batch ${batchNum}/${totalBatches} (${batch.length} prospects)`);
+
+        // Broadcast progress
+        if (wsManager) {
+          wsManager.broadcast({
+            type: 'email_generation_progress',
+            data: {
+              campaignId,
+              batch: batchNum,
+              totalBatches,
+              generated: totalGenerated,
+              total: prospectsWithoutEmails.length,
+              progress: Math.round((i / prospectsWithoutEmails.length) * 100)
+            }
+          });
+        }
+
+        // Generate emails for this batch
+        for (const prospect of batch) {
+          let retries = 0;
+          let success = false;
+
+          while (retries < MAX_RETRIES && !success) {
+            try {
+              // Generate with timeout
+              const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Email generation timeout')), SINGLE_EMAIL_TIMEOUT)
+              );
+
+              const emailResult = await Promise.race([
+                agent.executeEmailCampaignWithLearning(
+                  [prospect],
+                  strategy || {},
+                  campaignId,
+                  null, null, null, null, null
+                ),
+                timeoutPromise
+              ]);
+
+              if (emailResult?.emails?.length > 0) {
+                generatedEmails.push(...emailResult.emails);
+                totalGenerated++;
+                success = true;
+                console.log(`✅ [CONTINUOUS] Generated email for: ${prospect.email} (${totalGenerated}/${prospectsWithoutEmails.length})`);
+              } else {
+                retries++;
+                console.log(`⚠️ [CONTINUOUS] No email generated for: ${prospect.email}, retry ${retries}/${MAX_RETRIES}`);
+              }
+            } catch (error) {
+              retries++;
+              console.error(`❌ [CONTINUOUS] Error generating email for ${prospect.email}: ${error.message}, retry ${retries}/${MAX_RETRIES}`);
+            }
+          }
+
+          if (!success) {
+            totalFailed++;
+            console.error(`❌ [CONTINUOUS] Failed to generate email for ${prospect.email} after ${MAX_RETRIES} retries`);
+          }
+        }
+
+        // Wait between batches (except for last batch)
+        if (i + BATCH_SIZE < prospectsWithoutEmails.length) {
+          await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
+        }
+      }
+
+      // Final broadcast
+      if (wsManager) {
+        wsManager.broadcast({
+          type: 'email_generation_complete',
+          data: {
+            campaignId,
+            totalGenerated,
+            totalFailed,
+            emails: generatedEmails,
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+
+      console.log(`🎉 [CONTINUOUS] Email generation complete! Generated: ${totalGenerated}, Failed: ${totalFailed}`);
+    });
+
+  } catch (error) {
+    console.error('❌ Continuous email generation error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Send approved email after user review/editing
 router.post('/send-approved-email', async (req, res) => {
   try {

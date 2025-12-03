@@ -37,12 +37,18 @@ class EnhancedEmailSearchAgent {
       const sessionArg = sessionId ? ` "${sessionId}"` : '';
       const command = `SCRAPINGDOG_API_KEY=${this.apiKey} python3 "${this.pythonScriptPath}" "${industry}" ${targetCount}${sessionArg}`;
       console.log(`🔍 执行命令: ${command}`);
-      
-      // 不设置超时，让搜索有充足时间
-      const { stdout, stderr } = await execPromise(command, {
-        maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-        encoding: 'utf8'
-      });
+
+      // 🔥 CRITICAL FIX: Add 60 second timeout to prevent workflow from getting stuck
+      const SEARCH_TIMEOUT = 60000; // 60 seconds
+      const { stdout, stderr } = await Promise.race([
+        execPromise(command, {
+          maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+          encoding: 'utf8'
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Search timeout: Python script took longer than 60 seconds')), SEARCH_TIMEOUT)
+        )
+      ]);
 
       if (stderr) {
         console.warn(`⚠️ Python警告: ${stderr}`);
