@@ -364,340 +364,273 @@ const EnhancedSMTPSetup = ({ onNext, onBack, initialData = {} }) => {
 
   const selectedProviderData = emailProviders.find(p => p.id === selectedProvider);
 
+  // Auto-scroll to SMTP form when provider is selected
+  const smtpFormRef = React.useRef(null);
+
+  const scrollToForm = () => {
+    if (smtpFormRef.current) {
+      smtpFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Enhanced provider select with auto-scroll
+  const handleProviderSelectWithScroll = (providerId) => {
+    handleProviderSelect(providerId);
+    setTimeout(scrollToForm, 100);
+  };
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Main Content */}
-      <div className="flex flex-col">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 p-6 shadow-sm">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ backgroundColor: '#00f5a0' }}>
-                <Settings className="w-5 h-5 text-black" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900">Configure Email Service</h1>
+    <div className="h-screen bg-white overflow-hidden flex flex-col">
+      {/* Header - Compact */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
+              <Settings className="w-4 h-4 text-black" />
             </div>
-            <p className="text-gray-700">
-              Set up your SMTP email configuration to start sending automated marketing emails.
-              Choose your email provider and follow the guided setup process.
-            </p>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Configure Email Service</h1>
+              <p className="text-xs text-gray-500">Set up SMTP to start sending emails</p>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 p-6 overflow-y-auto bg-white">
-          <div className="max-w-5xl mx-auto space-y-6">
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-6xl mx-auto space-y-4">
 
-            {/* Provider Selection */}
-            <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg">
-              <div className="flex items-center space-x-2 mb-6">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ backgroundColor: '#00f5a0' }}>
-                  <Mail className="w-5 h-5 text-black" />
+            {/* Provider Selection - Compact */}
+            <div className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
+                  <Mail className="w-4 h-4 text-black" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  1. Choose Your Email Provider
-                </h2>
+                <h2 className="text-base font-bold text-gray-900">1. Choose Your Email Provider</h2>
               </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-5 gap-3">
                 {emailProviders.map((provider) => {
                   const isSelected = selectedProvider === provider.id;
 
                   return (
                     <div
                       key={provider.id}
+                      onClick={() => handleProviderSelectWithScroll(provider.id)}
                       className={`
-                        relative p-5 rounded-2xl border-2 transition-all duration-200
+                        relative p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer
                         ${isSelected
-                          ? 'border-white bg-white shadow-lg'
-                          : 'border-gray-200 hover:border-white hover:shadow-md'
+                          ? 'border-[#00f5a0] bg-[#f0fdf9]'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                         }
                       `}
                     >
                       {/* Selection Indicator */}
                       {isSelected && (
-                        <div className="absolute top-3 right-3">
-                          <CheckCircle className="w-5 h-5 text-black" style={{ color: '#00f5a0' }} />
+                        <div className="absolute top-2 right-2">
+                          <CheckCircle className="w-4 h-4" style={{ color: '#00f5a0' }} />
                         </div>
                       )}
 
-                      {/* Provider Info */}
-                      <div className="mb-3">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <span className="text-2xl">{provider.logo}</span>
-                          <div>
-                            <h3 className="font-semibold text-black">{provider.name}</h3>
-                            <p className="text-xs text-black">{provider.description}</p>
-                          </div>
-                        </div>
+                      {/* Provider Info - Compact */}
+                      <div className="text-center">
+                        <span className="text-2xl block mb-1">{provider.logo}</span>
+                        <h3 className="font-semibold text-black text-sm">{provider.name}</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">{provider.setupTime}</p>
+                        <span className={`text-xs font-medium ${
+                          provider.difficulty === 'Easy' ? 'text-green-600' :
+                          provider.difficulty === 'Medium' ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          {provider.difficulty}
+                        </span>
                       </div>
-
-                      {/* Stats */}
-                      <div className="flex justify-between text-sm mb-3">
-                        <div>
-                          <span className="text-gray-600">Difficulty:</span>
-                          <span className={`ml-1 font-medium ${
-                            provider.difficulty === 'Easy' ? 'text-green-600' :
-                            provider.difficulty === 'Medium' ? 'text-yellow-600' : 'text-red-600'
-                          }`}>
-                            {provider.difficulty}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Setup:</span>
-                          <span className="ml-1 text-gray-800">{provider.setupTime}</span>
-                        </div>
-                      </div>
-
-                      {/* Requirements */}
-                      <div className="text-xs text-gray-600 mb-3">
-                        <span className="font-medium text-gray-700">Requirements:</span>
-                        <ul className="mt-1 space-y-1">
-                          {provider.requirements.map((req, index) => (
-                            <li key={index} className="flex items-center">
-                              <div className="w-1 h-1 bg-gray-500 rounded-full mr-2"></div>
-                              {req}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* OAuth Login Button (for Gmail, Outlook, Yahoo) */}
-                      {['gmail', 'outlook', 'yahoo'].includes(provider.id) && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOAuthLogin(provider.id);
-                          }}
-                          className="w-full mb-2 py-2 px-4 text-black text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
-                          style={{ backgroundColor: '#00f5a0' }}
-                        >
-                          <Shield className="w-4 h-4" />
-                          <span>Connect with {provider.name}</span>
-                        </button>
-                      )}
-
-                      {/* Manual Setup Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleProviderSelect(provider.id);
-                        }}
-                        className={`w-full py-2 px-4 text-sm font-medium rounded-lg transition-colors ${
-                          ['gmail', 'outlook', 'yahoo'].includes(provider.id)
-                            ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                            : 'text-black'
-                        }`}
-                        style={!['gmail', 'outlook', 'yahoo'].includes(provider.id) ? { backgroundColor: '#00f5a0' } : {}}
-                      >
-                        {['gmail', 'outlook', 'yahoo'].includes(provider.id) ? 'Manual Setup' : 'Select Provider'}
-                      </button>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Tutorial Section */}
+            {/* Tutorial Section - Compact Inline */}
             {selectedProviderData && (
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    2. Setup Tutorial for {selectedProviderData.name}
-                  </h2>
-                  <button
-                    onClick={startTutorial}
-                    className="flex items-center space-x-2 px-4 py-2 text-black font-semibold rounded-lg transition-colors"
-                    style={{ backgroundColor: '#00f5a0' }}
-                  >
-                    <Play className="w-4 h-4" />
-                    <span>Start Tutorial</span>
-                  </button>
-                </div>
-
-                {/* Tutorial Steps Preview */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-                  <h3 className="font-medium text-gray-900 mb-3">Setup Steps:</h3>
-                  <div className="space-y-2">
-                    {selectedProviderData.tutorial.map((step, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <div className="w-6 h-6 rounded-full text-black flex items-center justify-center text-sm font-medium" style={{ backgroundColor: '#00f5a0' }}>
-                          {index + 1}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{step.title}</h4>
-                          <p className="text-sm text-gray-600">{step.description}</p>
-                        </div>
-                        {step.link && (
-                          <a
-                            href={step.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:opacity-80"
-                            style={{ color: '#00f5a0' }}
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        )}
-                      </div>
-                    ))}
+              <div className="bg-white border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
+                      <Book className="w-4 h-4 text-black" />
+                    </div>
+                    <h2 className="text-base font-bold text-gray-900">2. Quick Setup Guide</h2>
                   </div>
+                </div>
+                {/* Tutorial Steps - Horizontal */}
+                <div className="flex items-center space-x-4">
+                  {selectedProviderData.tutorial.map((step, index) => (
+                    <div key={index} className="flex items-center space-x-2 flex-1">
+                      <div className="w-5 h-5 rounded-full text-black flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ backgroundColor: '#00f5a0' }}>
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-gray-900 text-sm truncate">{step.title}</h4>
+                      </div>
+                      {step.link && (
+                        <a
+                          href={step.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-shrink-0 px-2 py-1 text-xs font-medium rounded text-black hover:opacity-80"
+                          style={{ backgroundColor: '#00f5a0' }}
+                        >
+                          Open →
+                        </a>
+                      )}
+                      {index < selectedProviderData.tutorial.length - 1 && (
+                        <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
-            {/* SMTP Configuration Form */}
+            {/* SMTP Configuration Form - Compact */}
             {selectedProvider && (
-              <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-lg">
-                <div className="flex items-center space-x-2 mb-6">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ backgroundColor: '#00f5a0' }}>
-                    <Shield className="w-5 h-5 text-black" />
+              <div ref={smtpFormRef} className="bg-white border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
+                    <Shield className="w-4 h-4 text-black" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    3. Enter SMTP Configuration
-                  </h2>
+                  <h2 className="text-base font-bold text-gray-900">3. Enter SMTP Configuration</h2>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* SMTP Host */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        SMTP Host <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={smtpConfig.host}
-                        onChange={(e) => handleConfigChange('host', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 font-medium focus:ring-2 focus:ring-white focus:border-white transition-all"
-                        placeholder="smtp.gmail.com"
-                      />
-                    </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {/* SMTP Host */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      SMTP Host <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={smtpConfig.host}
+                      onChange={(e) => handleConfigChange('host', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0]"
+                      placeholder="smtp.gmail.com"
+                    />
+                  </div>
 
-                    {/* SMTP Port */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Port <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={smtpConfig.port}
-                        onChange={(e) => handleConfigChange('port', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-white focus:border-transparent"
-                        placeholder="587"
-                      />
-                    </div>
+                  {/* SMTP Port */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Port <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={smtpConfig.port}
+                      onChange={(e) => handleConfigChange('port', parseInt(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0]"
+                      placeholder="587"
+                    />
+                  </div>
 
-                    {/* Email Address */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        value={smtpConfig.auth.user}
-                        onChange={(e) => handleConfigChange('auth.user', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-white focus:border-transparent"
-                        placeholder="your-email@gmail.com"
-                      />
-                    </div>
+                  {/* Email Address */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={smtpConfig.auth.user}
+                      onChange={(e) => handleConfigChange('auth.user', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0]"
+                      placeholder="your-email@gmail.com"
+                    />
+                  </div>
 
-                    {/* Sender Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Sender Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={smtpConfig.senderName}
-                        onChange={(e) => handleConfigChange('senderName', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0]"
-                        placeholder="Fruit AI"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        This name will appear as the sender in all outbound emails
-                      </p>
-                    </div>
+                  {/* Sender Name */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Sender Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={smtpConfig.senderName}
+                      onChange={(e) => handleConfigChange('senderName', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0]"
+                      placeholder="Your Company"
+                    />
+                  </div>
 
-                    {/* Password */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Password <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={smtpConfig.auth.pass}
-                          onChange={(e) => handleConfigChange('auth.pass', e.target.value)}
-                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0]"
-                          placeholder="•••••••••••••••••••"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
+                  {/* Password */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      App Password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={smtpConfig.auth.pass}
+                        onChange={(e) => handleConfigChange('auth.pass', e.target.value)}
+                        className="w-full px-3 py-2 pr-8 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-[#00f5a0] focus:border-[#00f5a0]"
+                        placeholder="••••••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
 
-                  {/* Security Settings */}
-                  <div className="mt-6">
-                    <label className="flex items-center space-x-3">
+                  {/* SSL/TLS Checkbox */}
+                  <div className="flex items-end pb-1">
+                    <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={smtpConfig.secure}
                         onChange={(e) => handleConfigChange('secure', e.target.checked)}
                         className="w-4 h-4 text-[#00f5a0] bg-gray-100 border-gray-300 rounded focus:ring-[#00f5a0]"
                       />
-                      <span className="text-sm text-gray-700">Use secure connection (SSL/TLS)</span>
+                      <span className="text-xs text-gray-600">SSL/TLS</span>
                     </label>
                   </div>
-
-                  {/* Validation Status */}
-                  {isFormValid && (
-                    <div className="mt-6 p-4 rounded-lg border-2 border-gray-200" style={{ backgroundColor: '#00f5a0' }}>
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="w-5 h-5 text-black" />
-                        <span className="text-sm font-medium text-black">
-                          Configuration looks good! Ready to test and save.
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </div>
+
+                {/* Validation Status */}
+                {isFormValid && (
+                  <div className="mt-3 p-2 rounded-lg flex items-center space-x-2" style={{ backgroundColor: '#e8fff5' }}>
+                    <CheckCircle className="w-4 h-4" style={{ color: '#00f5a0' }} />
+                    <span className="text-xs font-medium text-gray-700">Ready to test and save</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Navigation Footer */}
-        <div className="bg-white border-t border-gray-200 p-6 shadow-sm">
-          <div className="max-w-5xl mx-auto flex justify-between items-center">
-            <button
-              onClick={onBack}
-              className="px-8 py-3 bg-white border-2 border-black text-black font-bold rounded-xl hover:bg-gray-50 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
-            >
-              ← Back to Audience
-            </button>
+      {/* Navigation Footer - Compact */}
+      <div className="bg-white border-t border-gray-200 px-6 py-3 flex-shrink-0">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <button
+            onClick={onBack}
+            className="px-6 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all text-sm"
+          >
+            ← Back
+          </button>
 
-            <button
-              onClick={handleNext}
-              disabled={!isFormValid}
-              className={`
-                px-10 py-3 font-bold rounded-xl transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-xl flex items-center space-x-2
-                ${isFormValid
-                  ? 'text-black'
-                  : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                }
-              `}
-              style={isFormValid ? { backgroundColor: '#00f5a0' } : {}}
-            >
-              <span>Complete Setup</span>
-              <span className={isFormValid ? 'text-black' : 'text-gray-600'}>→</span>
-            </button>
-          </div>
+          <button
+            onClick={handleNext}
+            disabled={!isFormValid}
+            className={`
+              px-6 py-2 font-semibold rounded-lg transition-all flex items-center space-x-2 text-sm
+              ${isFormValid
+                ? 'text-black'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }
+            `}
+            style={isFormValid ? { backgroundColor: '#00f5a0' } : {}}
+          >
+            <span>Complete Setup</span>
+            <span className={isFormValid ? 'text-black' : 'text-gray-600'}>→</span>
+          </button>
         </div>
       </div>
 

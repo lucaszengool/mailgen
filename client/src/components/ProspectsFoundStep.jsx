@@ -140,15 +140,16 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    <div className="h-screen bg-white flex flex-col overflow-hidden">
       {/* Celebration confetti effect */}
       {showCelebration && (
         <div className="fixed inset-0 pointer-events-none z-50">
-          {[...Array(30)].map((_, i) => (
+          {[...Array(20)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-white rounded-full animate-ping"
+              className="absolute w-2 h-2 rounded-full animate-ping"
               style={{
+                backgroundColor: '#00f5a0',
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 1000}ms`,
@@ -159,108 +160,84 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg animate-fade-in">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto rounded-xl flex items-center justify-center mb-4 shadow-md animate-scale-in" style={{ backgroundColor: '#00f5a0' }}>
-              <CheckCircle className="w-8 h-8 text-black" />
+      {/* Header - Compact */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
+              <CheckCircle className="w-4 h-4 text-black" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-3 animate-slide-up" style={{ animationDelay: '100ms' }}>
-              Great News! We Found {prospects.length} Perfect Prospects
-            </h1>
-            <p className="text-gray-700 max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '200ms' }}>
-              Based on your business profile, we've identified these high-quality leads that match your ideal customer profile.
-            </p>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">Found {prospects.length} Perfect Prospects!</h1>
+              <p className="text-xs text-gray-500">High-quality leads matching your ideal customer profile</p>
+            </div>
+          </div>
+          {/* Inline Stats */}
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+              <Users className="w-4 h-4 text-gray-600" />
+              <span className="text-sm font-bold text-gray-900">{prospects.length}</span>
+              <span className="text-xs text-gray-500">Found</span>
+            </div>
+            <div className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+              <Star className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm font-bold text-gray-900">{Math.round(prospects.reduce((acc, p) => acc + (p.score || 75), 0) / Math.max(prospects.length, 1))}%</span>
+              <span className="text-xs text-gray-500">Avg Score</span>
+            </div>
+            <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#e8fff5' }}>
+              <CheckCircle className="w-4 h-4" style={{ color: '#00f5a0' }} />
+              <span className="text-xs font-medium text-gray-700">All Verified</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Stats Bar with Animation */}
-        <div className="grid grid-cols-3 gap-6 mb-6">
-          {[
-            { icon: Users, value: prospects.length, label: 'Prospects Found', delay: '300ms' },
-            { icon: Star, value: `${Math.round(prospects.reduce((acc, p) => acc + (p.score || 80), 0) / prospects.length)}%`, label: 'Avg Match Score', delay: '400ms' },
-            { icon: CheckCircle, value: '100%', label: 'Email Verified', delay: '500ms' }
-          ].map((stat, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-3xl p-6 text-center border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 animate-scale-in group"
-              style={{ animationDelay: stat.delay }}
-            >
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md" style={{ backgroundColor: '#00f5a0' }}>
-                <stat.icon className="w-6 h-6 text-black" />
-              </div>
-              <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-              <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
-            </div>
-          ))}
-        </div>
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-6xl mx-auto">
 
-        {/* Prospects Section */}
-        <div className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style={{ animationDelay: '600ms' }}>
-          <div className="flex items-center space-x-2 mb-6">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ backgroundColor: '#00f5a0' }}>
-              <TrendingUp className="w-5 h-5 text-black" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Your Top Prospects</h2>
-          </div>
-
-          {/* Prospects Grid with Staggered Animation */}
-          <div className="space-y-4">
+          {/* Prospects Grid - Compact Cards */}
+          <div className="grid grid-cols-2 gap-3">
             {prospects.map((prospect, index) => (
               <div
                 key={index}
-                className="bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-white transition-all duration-300 animate-slide-in group"
-                style={{ animationDelay: `${700 + index * 100}ms` }}
+                className="bg-white border border-gray-200 rounded-xl p-3 hover:border-[#00f5a0] transition-all duration-200 group"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
-                    {/* Company Favicon with Animation */}
-                    <div className="relative">
-                      <div className="w-14 h-14 rounded-xl border-2 border-gray-200 group-hover:border-white flex items-center justify-center flex-shrink-0 bg-white overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md">
-                        <img
-                          src={getFaviconUrl(prospect.email)}
-                          alt={prospect.company || 'Company'}
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
-                          }}
-                        />
-                        <div className="hidden w-full h-full items-center justify-center text-white text-lg font-bold">
-                          {prospect.name?.charAt(0) || 'P'}
-                        </div>
-                      </div>
-                      {/* Success badge */}
-                      <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: '#00f5a0' }}>
-                        <CheckCircle className="w-3 h-3 text-black" />
+                <div className="flex items-center gap-3">
+                  {/* Company Favicon */}
+                  <div className="relative flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center bg-white overflow-hidden">
+                      <img
+                        src={getFaviconUrl(prospect.email)}
+                        alt={prospect.company || 'Company'}
+                        className="w-8 h-8 object-contain"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className="hidden w-full h-full items-center justify-center text-gray-400 text-sm font-bold">
+                        {prospect.name?.charAt(0) || 'P'}
                       </div>
                     </div>
-
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-gray-900 mb-1">
-                        {prospect.name || 'Prospect ' + (index + 1)}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                        <Briefcase className="w-4 h-4 flex-shrink-0" />
-                        <span className="font-medium">{prospect.role || 'Business Professional'}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-900 mb-2">
-                        <Building2 className="w-4 h-4 flex-shrink-0" />
-                        <span className="font-semibold">{prospect.company || 'Company Name'}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Mail className="w-4 h-4 flex-shrink-0" />
-                        <span className="truncate font-medium">{prospect.email || 'email@company.com'}</span>
-                      </div>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
+                      <CheckCircle className="w-2.5 h-2.5 text-black" />
                     </div>
                   </div>
 
-                  {/* Match Score with Animation */}
-                  <div className="text-right flex-shrink-0">
-                    <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-black font-bold text-lg shadow-md border-2 border-gray-200" style={{ backgroundColor: '#00f5a0' }}>
-                      <Star className="w-4 h-4 fill-black" />
-                      {prospect.score || 80}%
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-bold text-gray-900 truncate">
+                      {prospect.name || prospect.company || 'Prospect'}
+                    </h3>
+                    <p className="text-xs text-gray-500 truncate">{prospect.role || 'Decision Maker'}</p>
+                    <p className="text-xs text-gray-600 truncate font-medium">{prospect.email}</p>
+                  </div>
+
+                  {/* Score */}
+                  <div className="flex-shrink-0">
+                    <div className="px-2 py-1 rounded-lg text-xs font-bold text-black" style={{ backgroundColor: '#00f5a0' }}>
+                      {prospect.score || 75}%
                     </div>
                   </div>
                 </div>
@@ -268,48 +245,28 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Success Message with Animation */}
-        <div
-          className="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up"
-          style={{ animationDelay: `${700 + prospects.length * 100}ms` }}
-        >
-          <div className="flex items-start gap-6">
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md" style={{ backgroundColor: '#00f5a0' }}>
-              <Sparkles className="w-7 h-7 text-black" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Ready to Start Your Campaign
-              </h3>
-              <p className="text-gray-700 mb-4 leading-relaxed">
-                These prospects have been carefully selected based on your business profile and are ready to receive
-                personalized outreach emails. Continue to SMTP setup to configure your email sending.
-              </p>
-              <div className="flex items-center gap-3 text-black rounded-xl px-4 py-3 border-2 border-gray-200" style={{ backgroundColor: '#00f5a0' }}>
-                <CheckCircle className="w-5 h-5 text-black flex-shrink-0" />
-                <span className="font-semibold">All email addresses verified and ready to use</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Buttons with Animation */}
-        <div className="flex justify-between items-center pt-6 border-t border-gray-200 mt-6 animate-slide-up" style={{ animationDelay: `${800 + prospects.length * 100}ms` }}>
+      {/* Footer - Compact */}
+      <div className="bg-white border-t border-gray-200 px-6 py-3 flex-shrink-0">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
           <button
             onClick={onBack}
-            className="px-8 py-3 bg-white border-2 border-black text-black font-bold rounded-xl hover:bg-gray-50 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+            className="px-6 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all text-sm"
           >
             ← Back
           </button>
-          <button
-            onClick={handleContinue}
-            className="px-10 py-3 text-black font-bold rounded-xl transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-xl flex items-center space-x-2"
-            style={{ backgroundColor: '#00f5a0' }}
-          >
-            <span>Continue to SMTP Setup</span>
-            <span className="text-black">→</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            <span className="text-xs text-gray-500">Ready to configure email sending</span>
+            <button
+              onClick={handleContinue}
+              className="px-6 py-2 text-black font-semibold rounded-lg transition-all text-sm flex items-center space-x-2"
+              style={{ backgroundColor: '#00f5a0' }}
+            >
+              <span>Continue to SMTP Setup</span>
+              <span>→</span>
+            </button>
+          </div>
         </div>
       </div>
 

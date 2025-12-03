@@ -275,9 +275,9 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
         </div>
       </nav>
 
-      {/* Top Section with Gradient Background - Smooth blend to white with blue-green tones */}
+      {/* Top Section with Gradient Background - JobRight.ai style: more blue, more white space */}
       <div style={{
-        background: 'linear-gradient(180deg, #e0f7fa 0%, #c5f0f7 15%, #b8ece8 30%, #c6f6d5 50%, #e8fce8 70%, #f5fff5 85%, #ffffff 100%)',
+        background: 'linear-gradient(180deg, #e3f6fc 0%, #d4f1fa 10%, #c5ecf7 20%, #b8e8f5 30%, #cff0f5 45%, #e8f9fb 60%, #f5fcfd 75%, #ffffff 90%, #ffffff 100%)',
         paddingTop: '70px'
       }}>
         {/* Header - Empty to maintain spacing */}
