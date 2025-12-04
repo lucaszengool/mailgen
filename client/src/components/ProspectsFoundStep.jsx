@@ -193,50 +193,50 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
       </div>
 
       {/* Content - Scrollable with centered cards */}
-      <div className="flex-1 overflow-y-auto p-4 flex items-start justify-center">
-        <div className="w-full max-w-3xl">
+      <div className="flex-1 overflow-y-auto p-6 flex items-center justify-center">
+        <div className="w-full max-w-2xl mx-auto">
 
-          {/* Prospects Grid - Centered Compact Cards */}
-          <div className="grid grid-cols-2 gap-3 justify-items-center">
+          {/* Prospects Grid - Centered Larger Cards */}
+          <div className="grid grid-cols-2 gap-4">
             {prospects.map((prospect, index) => (
               <div
                 key={index}
-                className="w-full bg-white border border-gray-200 rounded-xl p-3 hover:border-[#00f5a0] transition-all duration-200 group"
+                className="w-full bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] hover:shadow-lg transition-all duration-200 group"
               >
-                <div className="flex items-center gap-3">
-                  {/* Company Favicon */}
+                <div className="flex items-center gap-4">
+                  {/* Company Favicon - Larger */}
                   <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center bg-white overflow-hidden">
+                    <div className="w-14 h-14 rounded-xl border border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden">
                       <img
                         src={getFaviconUrl(prospect.email)}
                         alt={prospect.company || 'Company'}
-                        className="w-8 h-8 object-contain"
+                        className="w-10 h-10 object-contain"
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
                         }}
                       />
-                      <div className="hidden w-full h-full items-center justify-center text-gray-400 text-sm font-bold">
+                      <div className="hidden w-full h-full items-center justify-center text-gray-400 text-lg font-bold">
                         {prospect.name?.charAt(0) || 'P'}
                       </div>
                     </div>
-                    <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
-                      <CheckCircle className="w-2.5 h-2.5 text-black" />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
+                      <CheckCircle className="w-3 h-3 text-black" />
                     </div>
                   </div>
 
-                  {/* Info */}
+                  {/* Info - Larger text */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-gray-900 truncate">
+                    <h3 className="text-base font-bold text-gray-900 truncate">
                       {prospect.name || prospect.company || 'Prospect'}
                     </h3>
-                    <p className="text-xs text-gray-500 truncate">{prospect.role || 'Decision Maker'}</p>
-                    <p className="text-xs text-gray-600 truncate font-medium">{prospect.email}</p>
+                    <p className="text-sm text-gray-500 truncate mt-0.5">{prospect.role || 'Decision Maker'}</p>
+                    <p className="text-sm text-gray-700 truncate font-medium mt-1">{prospect.email}</p>
                   </div>
 
-                  {/* Score */}
+                  {/* Score - Larger */}
                   <div className="flex-shrink-0">
-                    <div className="px-2 py-1 rounded-lg text-xs font-bold text-black" style={{ backgroundColor: '#00f5a0' }}>
+                    <div className="px-3 py-2 rounded-xl text-sm font-bold text-black" style={{ backgroundColor: '#00f5a0' }}>
                       {prospect.score || 75}%
                     </div>
                   </div>
