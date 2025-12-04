@@ -192,16 +192,16 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
         </div>
       </div>
 
-      {/* Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-6xl mx-auto">
+      {/* Content - Scrollable with centered cards */}
+      <div className="flex-1 overflow-y-auto p-4 flex items-start justify-center">
+        <div className="w-full max-w-3xl">
 
-          {/* Prospects Grid - Compact Cards */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Prospects Grid - Centered Compact Cards */}
+          <div className="grid grid-cols-2 gap-3 justify-items-center">
             {prospects.map((prospect, index) => (
               <div
                 key={index}
-                className="bg-white border border-gray-200 rounded-xl p-3 hover:border-[#00f5a0] transition-all duration-200 group"
+                className="w-full bg-white border border-gray-200 rounded-xl p-3 hover:border-[#00f5a0] transition-all duration-200 group"
               >
                 <div className="flex items-center gap-3">
                   {/* Company Favicon */}
