@@ -258,9 +258,26 @@ router.post('/select', optionalAuth, async (req, res) => {
     // 🚀 CRITICAL: Resume workflow with selected template
     console.log('🚀 Resuming workflow with selected template:', templateId);
 
-    // Get the LangGraph agent and resume email generation
-    if (req.app.locals.langGraphAgent) {
-      const agent = req.app.locals.langGraphAgent;
+    // 🔥 CRITICAL FIX: Get the USER-SPECIFIC agent, not the global one
+    // (workflowRoute already imported above for setTemplateSubmitted)
+    const getUserCampaignAgentFn = workflowRoute.getUserCampaignAgent;
+
+    // Try to get user-specific agent first, then fall back to global
+    let agent = null;
+    if (getUserCampaignAgentFn && userId && campaignId) {
+      agent = getUserCampaignAgentFn(userId, campaignId);
+      if (agent) {
+        console.log(`✅ Using USER-SPECIFIC agent for ${userId}/${campaignId}`);
+      }
+    }
+
+    // Fall back to global agent if user-specific not found
+    if (!agent && req.app.locals.langGraphAgent) {
+      agent = req.app.locals.langGraphAgent;
+      console.log('⚠️ Using GLOBAL agent (user-specific not found)')
+    }
+
+    if (agent) {
 
       // 🔍 DEBUG: Check agent state
       console.log('🔍 DEBUG: Agent exists:', !!agent);
