@@ -2970,7 +2970,32 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const [templateRequest, setTemplateRequest] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [isSubmittingTemplate, setIsSubmittingTemplate] = useState(false);
-  const templateAlreadySubmittedRef = useRef(false); // 🔥 FIX: Use ref to persist across re-renders
+
+  // 🔥 FIX: Use both ref AND localStorage to persist template submitted status across page refreshes
+  const templateAlreadySubmittedRef = useRef(() => {
+    // Initialize from localStorage on component mount
+    const campaignId = localStorage.getItem('currentCampaignId');
+    if (campaignId) {
+      const submitted = localStorage.getItem(`templateSubmitted_${campaignId}`);
+      return submitted === 'true';
+    }
+    return false;
+  });
+
+  // Helper to check if template was already submitted for current campaign
+  const isTemplateSubmittedForCampaign = useCallback((campaignId) => {
+    if (!campaignId) return false;
+    const submitted = localStorage.getItem(`templateSubmitted_${campaignId}`);
+    return submitted === 'true';
+  }, []);
+
+  // Helper to mark template as submitted for a campaign
+  const markTemplateSubmitted = useCallback((campaignId) => {
+    if (!campaignId) return;
+    localStorage.setItem(`templateSubmitted_${campaignId}`, 'true');
+    templateAlreadySubmittedRef.current = true;
+    console.log(`🎯 [localStorage] Marked template as submitted for campaign: ${campaignId}`);
+  }, []);
   const [selectedFilters, setSelectedFilters] = useState(new Set());
 
   // 🚀 Email Generation Status Popup
@@ -3727,7 +3752,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       setSelectedTemplate(null);
       setTemplateRequest(null);
       templateAlreadySubmittedRef.current = true; // 🎯 CRITICAL: Prevent popup from appearing again
-      console.log('🎯 Template submission flag set - popup will not retrigger');
+
+      // 🔥 FIX: Also persist to localStorage so it survives page refresh
+      const currentCampaignId = templateRequest?.campaignId || localStorage.getItem('currentCampaignId');
+      if (currentCampaignId) {
+        markTemplateSubmitted(currentCampaignId);
+      }
+      console.log('🎯 Template submission flag set (ref + localStorage) - popup will not retrigger');
 
     } catch (error) {
       console.error('❌ Failed to confirm template selection:', error);
@@ -4358,7 +4389,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           }
 
           // Trigger template selection popup ONLY if not already submitted
-          if (!showTemplateSelection && !templateAlreadySubmittedRef.current) {
+          // 🔥 FIX: Check both ref AND localStorage for this specific campaign
+          const currentCampaignId = result.data.campaignId || localStorage.getItem('currentCampaignId');
+          const alreadySubmitted = templateAlreadySubmittedRef.current || isTemplateSubmittedForCampaign(currentCampaignId);
+
+          console.log(`🎨 Template already submitted check: ref=${templateAlreadySubmittedRef.current}, localStorage=${isTemplateSubmittedForCampaign(currentCampaignId)}`);
+
+          if (!showTemplateSelection && !alreadySubmitted) {
             console.log('🎨 Triggering template selection popup via HTTP polling');
             handleTemplateSelectionRequired({
               campaignId: result.data.campaignId,
@@ -4369,8 +4406,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               canProceed: false,
               status: 'waiting_for_template'
             });
-          } else if (templateAlreadySubmittedRef.current) {
-            console.log('🎨 Template already submitted - waiting for email generation to start...');
+          } else if (alreadySubmitted) {
+            console.log('🎨 Template already submitted (localStorage or ref) - waiting for email generation to start...');
           }
 
           // Don't process further until template is selected
@@ -5789,15 +5826,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               const workflowCheck = await fetchAndTriggerWorkflowSteps();
               const hasEmails = generatedEmails.length > 0 || emailCampaignStats.emails?.length > 0;
 
+              // 🔥 FIX: Check localStorage for template submission status
+              const currentCampaignId = localStorage.getItem('currentCampaignId');
+              const alreadySubmitted = isTemplateSubmittedForCampaign(currentCampaignId);
+
               console.log(`🎨 Template selection check after data load:`);
               console.log(`   Has prospects: ${dbProspects.length > 0}`);
               console.log(`   Has emails: ${hasEmails}`);
-              console.log(`   Should show popup: ${dbProspects.length > 0 && !hasEmails}`);
+              console.log(`   Already submitted (localStorage): ${alreadySubmitted}`);
+              console.log(`   Should show popup: ${dbProspects.length > 0 && !hasEmails && !alreadySubmitted}`);
 
-              if (dbProspects.length > 0 && !hasEmails) {
+              if (dbProspects.length > 0 && !hasEmails && !alreadySubmitted) {
                 console.log('🎨🎨🎨 TRIGGERING TEMPLATE SELECTION POPUP - prospects exist but no emails');
                 setShowTemplateSelection(true);
                 setWaitingForTemplate(true);
+              } else if (alreadySubmitted) {
+                console.log('🎨 Template already submitted for this campaign - skipping popup');
               }
             }, 1000);
           }
