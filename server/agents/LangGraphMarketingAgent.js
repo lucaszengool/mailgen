@@ -765,7 +765,23 @@ class LangGraphMarketingAgent {
     try {
       // Step 1: Find prospects (this may take time)
       console.log('🔍 Starting executeProspectSearchWithLearning...');
-      const prospects = await this.executeProspectSearchWithLearning(marketingStrategy, campaignId, userId);
+
+      // 🔥 TIMEOUT FIX: Add 5-minute timeout to prevent workflow from hanging forever
+      const PROSPECT_SEARCH_TIMEOUT = 300000; // 5 minutes max
+      const searchPromise = this.executeProspectSearchWithLearning(marketingStrategy, campaignId, userId);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Prospect search timeout after 5 minutes')), PROSPECT_SEARCH_TIMEOUT)
+      );
+
+      let prospects;
+      try {
+        prospects = await Promise.race([searchPromise, timeoutPromise]);
+      } catch (timeoutError) {
+        console.error('⏰ TIMEOUT: Prospect search took too long:', timeoutError.message);
+        // Return empty array on timeout but don't fail completely
+        prospects = this.foundProspects || [];
+        console.log(`⏰ Using ${prospects.length} cached prospects found before timeout`);
+      }
 
       console.log('📊 CRITICAL DEBUG - Prospect search returned:');
       console.log(`   Type: ${Array.isArray(prospects) ? 'Array' : typeof prospects}`);
@@ -1456,6 +1472,38 @@ class LangGraphMarketingAgent {
           console.log('✅ Returning prospects but workflow is PAUSED for template selection');
           // Mark workflow as waiting - this will prevent executeEmailCampaignWithLearning from running
           this.state.isWaitingForTemplate = true;
+
+          // 🔥 AUTO-CONTINUE FIX: Start a timeout to auto-continue with default template if user doesn't respond
+          const AUTO_CONTINUE_TIMEOUT = 120000; // 2 minutes timeout
+          const autoContTimeout = setTimeout(async () => {
+            // Check if still waiting for template (user hasn't responded)
+            if (this.state.isWaitingForTemplate && this.state.waitingForTemplateSelection) {
+              console.log('⏰ AUTO-CONTINUE: Template selection timeout - using default template...');
+
+              // Use default template (professional-outreach or first available)
+              const defaultTemplateId = 'professional-outreach';
+              console.log(`🎨 Auto-selecting default template: ${defaultTemplateId}`);
+
+              try {
+                // Call continueWithSelectedTemplate with default template
+                await this.continueWithSelectedTemplate(
+                  defaultTemplateId,
+                  this.state.waitingForTemplateSelection,
+                  null
+                );
+                console.log('✅ AUTO-CONTINUE: Email generation started with default template');
+              } catch (autoError) {
+                console.error('❌ AUTO-CONTINUE failed:', autoError.message);
+              }
+            } else {
+              console.log('⏰ AUTO-CONTINUE: User already selected template or workflow completed');
+            }
+          }, AUTO_CONTINUE_TIMEOUT);
+
+          // Store timeout reference so it can be cancelled if user selects template
+          this.state.autoContTimeoutId = autoContTimeout;
+          console.log(`⏰ AUTO-CONTINUE: Will auto-start email generation in ${AUTO_CONTINUE_TIMEOUT/1000}s if no template selected`);
+
           return prospects;
         }
       } else {
@@ -1493,6 +1541,13 @@ class LangGraphMarketingAgent {
       this.state.isWaitingForTemplate = false;
       this.state.waitingForTemplateSelection = null;
       console.log('✅ Cleared waiting flags');
+
+      // 🔥 Cancel auto-continue timeout since user selected a template
+      if (this.state.autoContTimeoutId) {
+        clearTimeout(this.state.autoContTimeoutId);
+        this.state.autoContTimeoutId = null;
+        console.log('✅ Cancelled auto-continue timeout - user selected template');
+      }
 
       // Get campaign information
       const campaignId = waitingState.campaignId || `template_campaign_${Date.now()}`;
