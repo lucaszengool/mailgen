@@ -2704,25 +2704,32 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               });
             } else {
               console.log(`📥 [AUTO-LOAD] No data found for campaign ${currentCampaignId} from API`);
-              // 🔥 CRITICAL FIX: ALWAYS clear when switching campaigns - prevents mixing!
-              // Old logic kept previous campaign's data which caused prospect/email mixing
-              console.log(`🧹 [AUTO-LOAD] Clearing all prospects and emails for clean campaign state`);
-              setProspects([]);
-              setGeneratedEmails([]);
-              // Only set to idle if not currently running
+              // 🔥 CRITICAL FIX: DON'T clear if workflow is running - WebSocket might have fresh data
               setWorkflowStatus(prevStatus => {
-                if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting') {
+                if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting' || prevStatus === 'finding_prospects') {
+                  console.log(`📥 [AUTO-LOAD] Workflow is ${prevStatus} - keeping WebSocket prospect data`);
                   return prevStatus;
                 }
+                // Only clear if truly idle (switching to a different idle campaign)
+                console.log(`🧹 [AUTO-LOAD] Workflow is idle - clearing for clean campaign state`);
+                setProspects([]);
+                setGeneratedEmails([]);
                 return 'idle';
               });
             }
           } catch (error) {
             console.error('❌ [AUTO-LOAD] Failed to load campaign data:', error);
-            // 🔥 CRITICAL FIX: Clear data on error when switching campaigns to prevent mixing
-            console.log('🧹 [AUTO-LOAD] Clearing state due to API error during campaign switch');
-            setProspects([]);
-            setGeneratedEmails([]);
+            // 🔥 FIX: Don't clear if workflow is running
+            setWorkflowStatus(prevStatus => {
+              if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting' || prevStatus === 'finding_prospects') {
+                console.log(`📥 [AUTO-LOAD] API error but workflow is ${prevStatus} - keeping WebSocket data`);
+                return prevStatus;
+              }
+              console.log('🧹 [AUTO-LOAD] API error and workflow idle - clearing stale data');
+              setProspects([]);
+              setGeneratedEmails([]);
+              return 'idle';
+            });
           }
         }, 500);
       }
@@ -2758,10 +2765,35 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
           console.log(`📥 [INITIAL LOAD] Found ${prospectsFromAPI?.length || 0} prospects, ${emailCampaign?.emails?.length || 0} emails for campaign ${campaignId}`);
 
-          // 🔥 CRITICAL FIX: ALWAYS set prospects, even if empty array
-          // This ensures switching to a campaign with no prospects will clear the old ones
-          setProspects(prospectsFromAPI || []);
-          setGeneratedEmails(emailCampaign?.emails || []);
+          // 🔥 CRITICAL FIX: MERGE prospects from API with existing WebSocket prospects
+          // This prevents WebSocket prospects from being overwritten by slower API response
+          if (prospectsFromAPI && prospectsFromAPI.length > 0) {
+            setProspects(prev => {
+              const existingEmails = new Set(prev.map(p => p.email));
+              // Add only NEW prospects from API (WebSocket might have more recent data)
+              const newFromAPI = prospectsFromAPI.filter(p => !existingEmails.has(p.email));
+              if (newFromAPI.length > 0 || prev.length === 0) {
+                console.log(`📥 [INITIAL LOAD] Merging ${newFromAPI.length} new API prospects with ${prev.length} existing WebSocket prospects`);
+                return prev.length === 0 ? prospectsFromAPI : [...prev, ...newFromAPI];
+              }
+              console.log(`📥 [INITIAL LOAD] No new prospects from API (${prev.length} already in state from WebSocket)`);
+              return prev;
+            });
+          }
+          // 🔥 ONLY clear if API returns no prospects AND we don't have WebSocket prospects
+          // This prevents the "flash" where WebSocket prospects are cleared
+
+          // 🔥 MERGE emails similarly - don't overwrite WebSocket data
+          if (emailCampaign?.emails && emailCampaign.emails.length > 0) {
+            setGeneratedEmails(prev => {
+              const existingIds = new Set(prev.map(e => e.id || e.to));
+              const newFromAPI = emailCampaign.emails.filter(e => !existingIds.has(e.id || e.to));
+              if (newFromAPI.length > 0 || prev.length === 0) {
+                return prev.length === 0 ? emailCampaign.emails : [...prev, ...newFromAPI];
+              }
+              return prev;
+            });
+          }
 
           if (prospectsFromAPI && prospectsFromAPI.length > 0) {
             console.log(`✅ [INITIAL LOAD] Loaded ${prospectsFromAPI.length} prospects for campaign ${campaignId}`);
@@ -2798,25 +2830,33 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           });
         } else {
           console.log(`📥 [INITIAL LOAD] No existing data for campaign ${campaignId} from API`);
-          // 🔥 CRITICAL FIX: ALWAYS clear when API returns no data for a campaign
-          // This prevents stale data from other campaigns being displayed
-          console.log(`🧹 [INITIAL LOAD] Clearing all prospects and emails - fresh campaign state`);
-          setProspects([]);
-          setGeneratedEmails([]);
-          // Only set to idle if not currently running
+          // 🔥 CRITICAL FIX: DON'T clear if workflow is running - WebSocket might have fresh data
+          // Only clear if we're truly idle and switching campaigns
           setWorkflowStatus(prevStatus => {
-            if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting') {
+            if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting' || prevStatus === 'finding_prospects') {
+              console.log(`📥 [INITIAL LOAD] Workflow is ${prevStatus} - keeping existing prospect data from WebSocket`);
               return prevStatus;
             }
+            // Only clear prospects if workflow is truly idle (no active workflow)
+            console.log(`🧹 [INITIAL LOAD] Workflow is idle - safe to clear stale data`);
+            setProspects([]);
+            setGeneratedEmails([]);
             return 'idle';
           });
         }
       } catch (error) {
         console.error('❌ [INITIAL LOAD] Failed to load campaign data:', error);
-        // 🔥 CRITICAL FIX: On error, clear all data to prevent stale data display
-        console.log('🧹 [INITIAL LOAD] Clearing all data due to error');
-        setProspects([]);
-        setGeneratedEmails([]);
+        // 🔥 FIX: Don't clear data on error if workflow is running - WebSocket has latest
+        setWorkflowStatus(prevStatus => {
+          if (prevStatus === 'running' || prevStatus === 'starting' || prevStatus === 'paused' || prevStatus === 'waiting' || prevStatus === 'finding_prospects') {
+            console.log(`📥 [INITIAL LOAD] API error but workflow is ${prevStatus} - keeping WebSocket data`);
+            return prevStatus;
+          }
+          console.log('🧹 [INITIAL LOAD] API error and workflow idle - clearing stale data');
+          setProspects([]);
+          setGeneratedEmails([]);
+          return 'idle';
+        });
       }
     };
 
@@ -3815,6 +3855,23 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
       // Toast notification
       toast.success(`🎯 Found ${batchProspects.length} prospects!`, { duration: 3000 });
+
+      // 🎨 TRIGGER TEMPLATE SELECTION POPUP if this is first batch and template not submitted
+      const alreadySubmitted = templateAlreadySubmittedRef.current || isTemplateSubmittedForCampaign(currentStr);
+      console.log(`📦 [BATCH] Template already submitted? ref=${templateAlreadySubmittedRef.current}, localStorage=${isTemplateSubmittedForCampaign(currentStr)}`);
+
+      if (!alreadySubmitted && !showTemplateSelection) {
+        console.log('🎨📦 [BATCH] Triggering template selection popup from batch update!');
+        handleTemplateSelectionRequired({
+          campaignId: currentStr,
+          prospectsCount: batchProspects.length,
+          prospectsFound: batchProspects.length,
+          sampleProspects: batchProspects.slice(0, 5),
+          message: `Found ${batchProspects.length} prospects! Please select an email template to continue.`,
+          canProceed: false,
+          status: 'waiting_for_template'
+        });
+      }
     } else {
       console.log(`📦 [BATCH] ⚠️ No prospects in batch data!`);
     }
