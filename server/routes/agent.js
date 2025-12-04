@@ -13,6 +13,36 @@ const { optionalAuth } = require('../middleware/userContext');
 let emailAgent = new ComprehensiveEmailAgent();
 let langGraphAgent = null; // Will be set from app.locals in middleware
 
+// 🔥 CRITICAL FIX: Helper to get user-specific agent
+function getUserSpecificAgent(req, userId = null, campaignId = null) {
+  const workflowRoute = require('./workflow');
+
+  const reqUserId = userId || req.userId || req.body?.userId || 'anonymous';
+  const reqCampaignId = campaignId || req.body?.campaignId;
+
+  // Try user-specific agent first
+  if (workflowRoute.getUserCampaignAgent && reqUserId && reqCampaignId) {
+    const userAgent = workflowRoute.getUserCampaignAgent(reqUserId, reqCampaignId);
+    if (userAgent) {
+      console.log(`✅ [agent.js] Using USER-SPECIFIC agent for ${reqUserId}/${reqCampaignId}`);
+      return userAgent;
+    }
+  }
+
+  // Fall back to global
+  if (langGraphAgent) {
+    console.log('⚠️ [agent.js] Using GLOBAL agent');
+    return langGraphAgent;
+  }
+
+  if (req.app.locals.langGraphAgent) {
+    console.log('⚠️ [agent.js] Using GLOBAL agent from app.locals');
+    return req.app.locals.langGraphAgent;
+  }
+
+  return null;
+}
+
 // Middleware to set langGraphAgent from app.locals
 router.use((req, res, next) => {
   if (!langGraphAgent && req.app.locals.langGraphAgent) {

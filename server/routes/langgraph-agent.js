@@ -11,14 +11,36 @@ const UserStorageService = require('../services/UserStorageService');
 const router = express.Router();
 
 // 获取代理和 WebSocket 管理器
-function getAgentAndWS(req) {
-  const agent = req.app.locals.langGraphAgent;
+// 🔥 CRITICAL FIX: Prefer user-specific agent over global agent
+function getAgentAndWS(req, userId = null, campaignId = null) {
   const wsManager = req.app.locals.wsManager;
-  
+
+  // Try to get user-specific agent first
+  let agent = null;
+  const workflowRoute = require('./workflow');
+
+  const reqUserId = userId || req.userId || req.body?.userId || 'anonymous';
+  const reqCampaignId = campaignId || req.body?.campaignId;
+
+  if (workflowRoute.getUserCampaignAgent && reqUserId && reqCampaignId) {
+    agent = workflowRoute.getUserCampaignAgent(reqUserId, reqCampaignId);
+    if (agent) {
+      console.log(`✅ Using USER-SPECIFIC agent for ${reqUserId}/${reqCampaignId}`);
+    }
+  }
+
+  // Fall back to global agent
+  if (!agent) {
+    agent = req.app.locals.langGraphAgent;
+    if (agent) {
+      console.log('⚠️ Using GLOBAL agent (user-specific not found)');
+    }
+  }
+
   if (!agent) {
     throw new Error('LangGraph agent not initialized');
   }
-  
+
   return { agent, wsManager };
 }
 

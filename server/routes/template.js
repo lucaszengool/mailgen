@@ -73,7 +73,19 @@ router.post('/preview', async (req, res) => {
     };
 
     // Generate preview content using Ollama
-    const agent = req.app.locals.langGraphAgent;
+    // 🔥 CRITICAL FIX: Try user-specific agent first
+    const workflowRoute = require('./workflow');
+    const userId = req.userId || 'anonymous';
+    const campaignId = req.body?.campaignId;
+
+    let agent = null;
+    if (workflowRoute.getUserCampaignAgent && userId && campaignId) {
+      agent = workflowRoute.getUserCampaignAgent(userId, campaignId);
+    }
+    if (!agent) {
+      agent = req.app.locals.langGraphAgent;
+    }
+
     if (agent) {
       try {
         // Create enhanced template with customizations

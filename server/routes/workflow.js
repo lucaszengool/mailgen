@@ -111,14 +111,28 @@ function listActiveAgents() {
   return Array.from(userCampaignAgents.keys());
 }
 
-// Legacy function for backwards compatibility - uses global agent
-function getMarketingAgent(req) {
-  // Use the agent from app.locals (set in server/index.js)
+// 🔥 CRITICAL FIX: Updated to prefer user-specific agents over global
+function getMarketingAgent(req, userId = null, campaignId = null) {
+  // Extract userId and campaignId from request if not provided
+  const reqUserId = userId || req?.userId || req?.body?.userId || 'anonymous';
+  const reqCampaignId = campaignId || req?.body?.campaignId || req?.query?.campaignId;
+
+  // 1. Try user-specific agent first
+  if (reqUserId && reqCampaignId) {
+    const userAgent = getUserCampaignAgent(reqUserId, reqCampaignId);
+    if (userAgent) {
+      console.log(`✅ [getMarketingAgent] Using USER-SPECIFIC agent for ${reqUserId}/${reqCampaignId}`);
+      return userAgent;
+    }
+  }
+
+  // 2. Fall back to global agent from app.locals
   if (req && req.app && req.app.locals && req.app.locals.langGraphAgent) {
+    console.log(`⚠️ [getMarketingAgent] Using GLOBAL agent (user-specific not found)`);
     return req.app.locals.langGraphAgent;
   }
 
-  // Fallback: This shouldn't happen but provides safety
+  // 3. Last resort fallback
   console.warn('⚠️ Warning: Could not get agent from app.locals, creating fallback instance');
   if (!global.__marketingAgentFallback) {
     const LangGraphMarketingAgent = require('../agents/LangGraphMarketingAgent');

@@ -75,10 +75,30 @@ router.post('/smtp', async (req, res) => {
     // 🔥 FIX: Clear SMTP transporter cache when config is updated
     // This ensures new credentials are used immediately
     try {
-      const agent = req.app.locals.langGraphAgent;
+      // 🔥 CRITICAL FIX: Try user-specific agent first, then global
+      const workflowRoute = require('./workflow');
+      let agent = null;
+
+      // Check for user-specific agents (all campaigns for this user)
+      const activeAgents = workflowRoute.listActiveAgents ? workflowRoute.listActiveAgents() : [];
+      const userAgents = activeAgents.filter(a => a.userId === userId);
+
+      if (userAgents.length > 0) {
+        // Clear SMTP cache on all user's agents
+        for (const agentInfo of userAgents) {
+          const userAgent = workflowRoute.getUserCampaignAgent(agentInfo.userId, agentInfo.campaignId);
+          if (userAgent && userAgent.clearSMTPCache) {
+            userAgent.clearSMTPCache();
+            console.log(`✅ [User: ${userId}] SMTP cache cleared on agent for campaign ${agentInfo.campaignId}`);
+          }
+        }
+      }
+
+      // Also clear on global agent for good measure
+      agent = req.app.locals.langGraphAgent;
       if (agent && agent.clearSMTPCache) {
         agent.clearSMTPCache();
-        console.log(`✅ [User: ${userId}] SMTP cache cleared - new config will be used`);
+        console.log(`✅ [User: ${userId}] SMTP cache cleared on global agent`);
       }
     } catch (cacheError) {
       console.error(`⚠️ [User: ${userId}] Failed to clear SMTP cache:`, cacheError.message);
