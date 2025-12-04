@@ -2765,34 +2765,71 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
           console.log(`📥 [INITIAL LOAD] Found ${prospectsFromAPI?.length || 0} prospects, ${emailCampaign?.emails?.length || 0} emails for campaign ${campaignId}`);
 
-          // 🔥 CRITICAL FIX: MERGE prospects from API with existing WebSocket prospects
-          // This prevents WebSocket prospects from being overwritten by slower API response
+          // 🔥 CAMPAIGN ISOLATION: Only keep prospects that belong to THIS campaign
+          // Filter out any prospects from previous campaigns, then merge with API data
           if (prospectsFromAPI && prospectsFromAPI.length > 0) {
             setProspects(prev => {
-              const existingEmails = new Set(prev.map(p => p.email));
-              // Add only NEW prospects from API (WebSocket might have more recent data)
+              // 🔒 First, filter to ONLY keep prospects from THIS campaign
+              const sameCurrentCampaignProspects = prev.filter(p => {
+                const prospectCampaignId = p.campaignId || p.campaign_id;
+                return !prospectCampaignId ||
+                       prospectCampaignId === campaignId ||
+                       String(prospectCampaignId) === String(campaignId);
+              });
+
+              console.log(`📥 [INITIAL LOAD] After campaign filter: ${sameCurrentCampaignProspects.length} existing prospects (from ${prev.length})`);
+
+              const existingEmails = new Set(sameCurrentCampaignProspects.map(p => p.email));
+              // Add only NEW prospects from API
               const newFromAPI = prospectsFromAPI.filter(p => !existingEmails.has(p.email));
-              if (newFromAPI.length > 0 || prev.length === 0) {
-                console.log(`📥 [INITIAL LOAD] Merging ${newFromAPI.length} new API prospects with ${prev.length} existing WebSocket prospects`);
-                return prev.length === 0 ? prospectsFromAPI : [...prev, ...newFromAPI];
+
+              if (newFromAPI.length > 0 || sameCurrentCampaignProspects.length === 0) {
+                console.log(`📥 [INITIAL LOAD] Setting ${prospectsFromAPI.length} API prospects + ${newFromAPI.length} new`);
+                return sameCurrentCampaignProspects.length === 0 ? prospectsFromAPI : [...sameCurrentCampaignProspects, ...newFromAPI];
               }
-              console.log(`📥 [INITIAL LOAD] No new prospects from API (${prev.length} already in state from WebSocket)`);
-              return prev;
+              console.log(`📥 [INITIAL LOAD] No new prospects from API (${sameCurrentCampaignProspects.length} already in state)`);
+              return sameCurrentCampaignProspects;
+            });
+          } else {
+            // 🔒 No API prospects - filter existing to only this campaign
+            setProspects(prev => {
+              const sameCurrentCampaignProspects = prev.filter(p => {
+                const prospectCampaignId = p.campaignId || p.campaign_id;
+                return !prospectCampaignId ||
+                       prospectCampaignId === campaignId ||
+                       String(prospectCampaignId) === String(campaignId);
+              });
+              console.log(`📥 [INITIAL LOAD] No API prospects - keeping ${sameCurrentCampaignProspects.length} existing same-campaign prospects`);
+              return sameCurrentCampaignProspects;
             });
           }
-          // 🔥 ONLY clear if API returns no prospects AND we don't have WebSocket prospects
-          // This prevents the "flash" where WebSocket prospects are cleared
 
-          // 🔥 MERGE emails similarly - don't overwrite WebSocket data
+          // 🔥 CAMPAIGN ISOLATION for emails too
           if (emailCampaign?.emails && emailCampaign.emails.length > 0) {
             setGeneratedEmails(prev => {
-              const existingIds = new Set(prev.map(e => e.id || e.to));
+              // Filter to only this campaign's emails
+              const sameCampaignEmails = prev.filter(e => {
+                const emailCampaignId = e.campaignId || e.campaign_id;
+                return !emailCampaignId ||
+                       emailCampaignId === campaignId ||
+                       String(emailCampaignId) === String(campaignId);
+              });
+
+              const existingIds = new Set(sameCampaignEmails.map(e => e.id || e.to));
               const newFromAPI = emailCampaign.emails.filter(e => !existingIds.has(e.id || e.to));
-              if (newFromAPI.length > 0 || prev.length === 0) {
-                return prev.length === 0 ? emailCampaign.emails : [...prev, ...newFromAPI];
+              if (newFromAPI.length > 0 || sameCampaignEmails.length === 0) {
+                return sameCampaignEmails.length === 0 ? emailCampaign.emails : [...sameCampaignEmails, ...newFromAPI];
               }
-              return prev;
+              return sameCampaignEmails;
             });
+          } else {
+            // Filter existing emails to only this campaign
+            setGeneratedEmails(prev => prev.filter(e => {
+              const emailCampaignId = e.campaignId || e.campaign_id;
+              return !emailCampaignId ||
+                     emailCampaignId === campaignId ||
+                     String(emailCampaignId) === String(campaignId);
+            }));
           }
 
           if (prospectsFromAPI && prospectsFromAPI.length > 0) {
@@ -3837,16 +3874,35 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
       setProspects(prev => {
         console.log(`📦 [BATCH] Inside setProspects: prev.length = ${prev.length}`);
-        const existingEmails = new Set(prev.map(p => p.email));
-        const newProspects = batchProspects.filter(p => p.email && !existingEmails.has(p.email));
+
+        // 🔒 CAMPAIGN ISOLATION: First filter existing to only same campaign
+        const sameCampaignProspects = prev.filter(p => {
+          const prospectCampaignId = p.campaignId || p.campaign_id;
+          return !prospectCampaignId ||
+                 prospectCampaignId === currentStr ||
+                 String(prospectCampaignId) === currentStr;
+        });
+
+        console.log(`📦 [BATCH] After campaign filter: ${sameCampaignProspects.length} existing (from ${prev.length})`);
+
+        const existingEmails = new Set(sameCampaignProspects.map(p => p.email));
+        // 🔒 Add campaignId to each new prospect to ensure isolation
+        const newProspects = batchProspects
+          .filter(p => p.email && !existingEmails.has(p.email))
+          .map(p => ({
+            ...p,
+            campaignId: p.campaignId || currentStr,
+            campaign_id: p.campaign_id || currentStr
+          }));
+
         if (newProspects.length > 0) {
-          console.log(`📦🚀 [BATCH] Adding ${newProspects.length} NEW prospects (${prev.length} → ${prev.length + newProspects.length})`);
-          const updated = [...prev, ...newProspects];
+          console.log(`📦🚀 [BATCH] Adding ${newProspects.length} NEW prospects (${sameCampaignProspects.length} → ${sameCampaignProspects.length + newProspects.length})`);
+          const updated = [...sameCampaignProspects, ...newProspects];
           console.log(`📦🚀 [BATCH] New array length: ${updated.length}`);
           return updated;
         }
         console.log(`📦 [BATCH] No new prospects to add (all ${batchProspects.length} are duplicates)`);
-        return prev;
+        return sameCampaignProspects;
       });
 
       // 🔥 CRITICAL: Force re-render by updating the key
@@ -3905,7 +3961,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
     if (listProspects.length > 0) {
       setProspects(prev => {
-        const existingEmails = new Set(prev.map(p => p.email));
+        // 🔒 CAMPAIGN ISOLATION: First filter existing to only same campaign
+        const sameCampaignProspects = prev.filter(p => {
+          const prospectCampaignId = p.campaignId || p.campaign_id;
+          return !prospectCampaignId ||
+                 prospectCampaignId === currentStr ||
+                 String(prospectCampaignId) === currentStr;
+        });
+
+        const existingEmails = new Set(sameCampaignProspects.map(p => p.email));
         // 🔒 CRITICAL: Ensure each prospect has campaignId before adding
         const newProspects = listProspects
           .filter(p => p.email && !existingEmails.has(p.email))
@@ -3915,10 +3979,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             campaign_id: p.campaign_id || currentStr
           }));
         if (newProspects.length > 0) {
-          console.log(`📋🚀 [LIST] Adding ${newProspects.length} prospects (${prev.length} → ${prev.length + newProspects.length})`);
-          return [...prev, ...newProspects];
+          console.log(`📋🚀 [LIST] Adding ${newProspects.length} prospects (${sameCampaignProspects.length} → ${sameCampaignProspects.length + newProspects.length})`);
+          return [...sameCampaignProspects, ...newProspects];
         }
-        return prev;
+        return sameCampaignProspects;
       });
 
       // Force re-render
@@ -3953,7 +4017,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
     if (dataProspects.length > 0) {
       setProspects(prev => {
-        const existingEmails = new Set(prev.map(p => p.email));
+        // 🔒 CAMPAIGN ISOLATION: First filter existing to only same campaign
+        const sameCampaignProspects = prev.filter(p => {
+          const prospectCampaignId = p.campaignId || p.campaign_id;
+          return !prospectCampaignId ||
+                 prospectCampaignId === currentStr ||
+                 String(prospectCampaignId) === currentStr;
+        });
+
+        const existingEmails = new Set(sameCampaignProspects.map(p => p.email));
         // 🔒 CRITICAL: Ensure each prospect has campaignId before adding
         const newProspects = dataProspects
           .filter(p => p.email && !existingEmails.has(p.email))
@@ -3963,10 +4035,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             campaign_id: p.campaign_id || currentStr
           }));
         if (newProspects.length > 0) {
-          console.log(`📊🚀 [DATA] Adding ${newProspects.length} prospects (${prev.length} → ${prev.length + newProspects.length})`);
-          return [...prev, ...newProspects];
+          console.log(`📊🚀 [DATA] Adding ${newProspects.length} prospects (${sameCampaignProspects.length} → ${sameCampaignProspects.length + newProspects.length})`);
+          return [...sameCampaignProspects, ...newProspects];
         }
-        return prev;
+        return sameCampaignProspects;
       });
 
       // Force re-render
