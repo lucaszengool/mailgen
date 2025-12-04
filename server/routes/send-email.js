@@ -6,6 +6,7 @@ const trackEmailSent = analyticsRoutes.trackEmailSent;
 const trackEmailDelivered = analyticsRoutes.trackEmailDelivered;
 const db = require('../models/database');
 const trackingService = require('../services/EmailTrackingService'); // 🔥 ADD: Import tracking service
+const { optionalAuth } = require('../middleware/userContext'); // 🔥 FIX: Add auth middleware
 
 // Initialize email service
 const emailService = new EmailService();
@@ -151,7 +152,8 @@ router.post('/', async (req, res) => {
 });
 
 // Send single email (/send route)
-router.post('/send', async (req, res) => {
+// 🔥 FIX: Add optionalAuth to get userId from Clerk auth
+router.post('/send', optionalAuth, async (req, res) => {
   const startTime = Date.now();
   console.log('\n' + '='.repeat(80));
   console.log('📧 [EMAIL SEND] New email send request');
@@ -166,8 +168,12 @@ router.post('/send', async (req, res) => {
       from,
       trackingEnabled = true,
       campaignId = 'manual',
-      userId
+      userId: bodyUserId
     } = req.body;
+
+    // 🔥 FIX: Prefer req.userId from auth middleware, fallback to body
+    const userId = req.userId || bodyUserId || 'anonymous';
+    console.log(`   🔑 Auth userId: ${req.userId}, Body userId: ${bodyUserId}, Using: ${userId}`);
 
     console.log('📋 [EMAIL SEND] Request Details:');
     console.log(`   To: ${to}`);
@@ -228,6 +234,7 @@ router.post('/send', async (req, res) => {
 
     // Send email (pass userId if available from auth middleware)
     console.log('\n📤 [SMTP] Sending email via email service...');
+    console.log(`   🔑 Sending with userId: ${userId}`);
     const smtpStart = Date.now();
     const result = await emailService.sendEmail({
       to,
@@ -236,7 +243,7 @@ router.post('/send', async (req, res) => {
       text,
       from,
       trackingId,
-      userId: req.userId || userId || 'anonymous' // Include userId for OAuth support
+      userId // 🔥 FIX: Use the already-resolved userId variable
     });
 
     console.log(`   ✅ Email sent successfully!`);
@@ -258,7 +265,7 @@ router.post('/send', async (req, res) => {
     console.log('\n💾 [DATABASE] Logging email to database...');
     try {
       const dbStart = Date.now();
-      const actualUserId = req.userId || userId || 'anonymous';
+      // 🔥 FIX: userId is already resolved above, just use it directly
 
       await db.logEmailSent({
         to,
@@ -269,12 +276,12 @@ router.post('/send', async (req, res) => {
         error: null,
         recipientIndex: 0,
         sentAt: result.sentAt,
-        userId: actualUserId,
+        userId: userId, // 🔥 FIX: Use resolved userId
         body: html || text // 🔥 NEW: Store email body for thread display
       });
 
       console.log(`   ✅ Email logged to database`);
-      console.log(`   User ID: ${actualUserId}`);
+      console.log(`   User ID: ${userId}`);
       console.log(`   Campaign ID: ${campaignId}`);
       console.log(`   ⏱️  Database insert took: ${Date.now() - dbStart}ms`);
     } catch (dbError) {
