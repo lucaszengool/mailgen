@@ -168,7 +168,7 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
   }
 
   return (
-    <div className="min-h-screen text-black relative overflow-hidden" style={{fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'}}>
+    <div className="min-h-screen text-black relative overflow-hidden bg-white" style={{fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'}}>
       {/* Fixed Top Navigation Bar - Dynamic transparent/solid style */}
       <nav className="fixed top-3 left-0 right-0 z-50 transition-all duration-300">
         <div className="flex justify-center px-4">
@@ -275,9 +275,9 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
         </div>
       </nav>
 
-      {/* Top Section with Gradient Background - JobRight.ai style: more blue, more white space */}
+      {/* Top Section with Gradient Background - JobRight.ai style: diagonal gradient from top-left white to bottom-right cyan */}
       <div style={{
-        background: 'linear-gradient(180deg, #e3f6fc 0%, #d4f1fa 10%, #c5ecf7 20%, #b8e8f5 30%, #cff0f5 45%, #e8f9fb 60%, #f5fcfd 75%, #ffffff 90%, #ffffff 100%)',
+        background: 'linear-gradient(135deg, #f8fafa 0%, #f5f8f8 25%, #e8f4f5 45%, #d0eff2 65%, #a8e6ec 85%, #7ddde6 100%)',
         paddingTop: '70px'
       }}>
         {/* Header - Empty to maintain spacing */}

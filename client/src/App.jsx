@@ -69,6 +69,11 @@ function App() {
   const [showCampaignOnboarding, setShowCampaignOnboarding] = useState(false);
   const [campaignBeingSetup, setCampaignBeingSetup] = useState(null);
 
+  // 🔝 Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   // Reset to campaign selector when navigating to /dashboard from elsewhere
   useEffect(() => {
     if (location.pathname === '/dashboard') {
