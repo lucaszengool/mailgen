@@ -275,9 +275,12 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
         </div>
       </nav>
 
-      {/* Top Section with Gradient Background - JobRight.ai style: diagonal gradient from top-left white to bottom-right cyan */}
+      {/* Top Section with Gradient Background - JobRight.ai style: strong cyan on right side, fading to white at bottom */}
       <div style={{
-        background: 'linear-gradient(135deg, #f8fafa 0%, #f5f8f8 25%, #e8f4f5 45%, #d0eff2 65%, #a8e6ec 85%, #7ddde6 100%)',
+        background: `
+          radial-gradient(ellipse 90% 120% at 100% 0%, #4dd9e6 0%, #5ee0eb 20%, #7de8ef 35%, #a8eff3 50%, #d0f5f7 65%, transparent 85%),
+          linear-gradient(180deg, #f5fafa 0%, #ffffff 100%)
+        `,
         paddingTop: '70px'
       }}>
         {/* Header - Empty to maintain spacing */}
