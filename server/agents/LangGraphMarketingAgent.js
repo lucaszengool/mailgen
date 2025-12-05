@@ -2715,10 +2715,13 @@ class LangGraphMarketingAgent {
 
           this.wsManager.broadcast({
             type: 'data_update',
+            userId: this.userId,  // 🔥 FIX: Add userId for filtering
+            campaignId: campaignId,  // 🔥 Add campaignId at top level
             data: {
-              campaignId: campaignId,  // 🔥 Add campaignId at top level
+              userId: this.userId,  // 🔥 FIX: Add userId inside data too
+              campaignId: campaignId,
               emailCampaign: {
-                campaignId: campaignId,  // 🔥 Also add inside
+                campaignId: campaignId,
                 emails: [emailWithCampaign],
                 emailsSent: [emailWithCampaign],
                 sent: 1,
@@ -2732,8 +2735,11 @@ class LangGraphMarketingAgent {
           // 🔥 NEW: Send instant email update with all required fields
           this.wsManager.broadcast({
             type: 'email_generated',
+            userId: this.userId,  // 🔥 FIX: Add userId
+            campaignId: campaignId,
             data: {
               ...emailWithCampaign,
+              userId: this.userId,  // 🔥 FIX: Add userId
               campaignId: campaignId,
               isInstant: true,  // Flag for instant display
               timestamp: new Date().toISOString()
@@ -2747,6 +2753,32 @@ class LangGraphMarketingAgent {
           });
 
           console.log(`📡 [INSTANT] Broadcasted email_generated for ${emailRecord.to} in campaign ${campaignId}`);
+        }
+
+        // 🔥 CRITICAL FIX: Save email draft directly to database for persistence
+        try {
+          const db = require('../models/database');
+          const emailKey = `email_${campaignId}_${prospect.email}_${Date.now()}`;
+          await db.saveEmailDraft({
+            emailKey: emailKey,
+            subject: emailContent.subject || 'No Subject',
+            preheader: emailContent.preheader || '',
+            components: emailRecord.components || [],
+            html: emailContent.body || emailContent.html || '',
+            metadata: {
+              recipient: prospect.email,
+              recipientName: prospect.name || '',
+              recipientCompany: prospect.company || '',
+              senderName: emailRecord.senderName || '',
+              companyName: emailRecord.companyName || '',
+              template: emailTemplate,
+              createdAt: new Date().toISOString(),
+              status: emailStatus
+            }
+          }, this.userId, campaignId);
+          console.log(`💾 [INSTANT DB] Saved email draft for ${prospect.email} to database`);
+        } catch (dbError) {
+          console.error(`⚠️ [INSTANT DB] Failed to save email draft:`, dbError.message);
         }
 
         // 存储邮件学习数据（包含发送状态）
