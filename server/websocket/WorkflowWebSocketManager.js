@@ -564,23 +564,30 @@ class WorkflowWebSocketManager extends EventEmitter {
     try {
       let prospects = null;
       let campaignId = null;
-      let userId = 'anonymous';
+      // 🔥 FIX: Extract userId from ALL possible locations in the message
+      let userId = data.userId || data.data?.userId || data.user_id || 'anonymous';
 
       // Extract prospects from various message types
       if (data.type === 'prospect_list' && data.prospects) {
         prospects = data.prospects;
         campaignId = data.campaignId;
+        userId = data.userId || userId;  // 🔥 FIX: Also check data.userId
       } else if (data.type === 'prospect_batch_update' && data.data?.prospects) {
         prospects = data.data.prospects;
         campaignId = data.data.campaignId || data.campaignId;
-        userId = data.data.userId || 'anonymous';
+        userId = data.data.userId || data.userId || userId;
       } else if (data.type === 'workflow_update' && data.stepData?.results?.prospects) {
         prospects = data.stepData.results.prospects;
         campaignId = data.campaignId;
+        userId = data.userId || data.stepData?.userId || userId;  // 🔥 FIX
       } else if (data.type === 'data_update' && data.data?.prospects) {
         prospects = data.data.prospects;
         campaignId = data.campaignId;
+        userId = data.data.userId || data.userId || userId;  // 🔥 FIX
       }
+
+      // 🔥 FIX: Log the userId being used for debugging
+      console.log(`💾 [WebSocket] autoSave using userId: ${userId}, campaignId: ${campaignId}`);
 
       // If we found prospects, save them to database
       if (prospects && prospects.length > 0 && campaignId) {

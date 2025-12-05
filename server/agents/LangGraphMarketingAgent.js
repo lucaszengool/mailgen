@@ -928,10 +928,11 @@ class LangGraphMarketingAgent {
             console.log('✅ Template selection broadcast completed!');
 
             // Also broadcast prospects data directly
-            // 🔥 CRITICAL: Include campaignId for proper isolation
+            // 🔥 CRITICAL: Include campaignId AND userId for proper isolation
             this.wsManager.broadcast({
               type: 'prospect_list',
               campaignId: campaignId,  // 🔥 CRITICAL for isolation
+              userId: this.userId,     // 🔥 FIX: Include userId for database save
               workflowId: campaignId,
               prospects: prospects,
               total: prospects.length,
@@ -1134,8 +1135,11 @@ class LangGraphMarketingAgent {
           // This ensures only the user who started this workflow sees these prospects
           if (userId && userId !== 'demo' && userId !== 'anonymous') {
             // Send batch update to specific user+campaign only
+            // 🔥 FIX: Include userId and campaignId in message for database auto-save
             this.wsManager.broadcastToUserCampaign(userId, campaignId, {
               type: 'prospect_batch_update',
+              userId: userId,           // 🔥 FIX: Include userId for database save
+              campaignId: campaignId,   // 🔥 FIX: Include campaignId
               batchNumber,
               prospects: prospectsWithCampaignId,
               totalSoFar,
@@ -1698,6 +1702,7 @@ class LangGraphMarketingAgent {
 
               this.wsManager.broadcast({
                 type: 'prospect_batch_update',
+                userId: userId,  // 🔥 FIX: Include userId at top level for auto-save
                 campaignId,  // 🔒 CRITICAL: Include campaignId at top level
                 data: {
                   userId,
