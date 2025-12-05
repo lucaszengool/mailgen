@@ -3,6 +3,7 @@ import WebsiteAnalysisStep from './WebsiteAnalysisStep';
 import ProspectsFoundStep from './ProspectsFoundStep';
 import EnhancedSMTPSetup from './EnhancedSMTPSetup';
 import { CheckCircle, Sparkles } from 'lucide-react';
+import { apiPost } from '../utils/apiClient';
 
 const CampaignSetupWizard = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -155,12 +156,9 @@ const CampaignSetupWizard = ({ onComplete }) => {
       // Now start the agent with the complete configuration
       console.log('🚀 Starting AI agent workflow...');
       console.log('📁 Campaign ID:', campaignId);
-      const startResponse = await fetch('/api/workflow/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+      try {
+        // 🔥 FIX: Use apiPost instead of raw fetch to include auth headers
+        const startResult = await apiPost('/api/workflow/start', {
           // 🔥 FIX: Include campaign ID for proper email isolation
           campaignId: campaignId,
           campaignName: campaignName,
@@ -179,14 +177,10 @@ const CampaignSetupWizard = ({ onComplete }) => {
             maxEmailsPerHour: 10,
             workingHours: { start: 9, end: 18 }
           }
-        })
-      });
-
-      if (!startResponse.ok) {
-        console.error('Failed to start agent, but configuration was saved');
-      } else {
-        const startResult = await startResponse.json();
+        });
         console.log('✅ Agent started successfully:', startResult);
+      } catch (error) {
+        console.error('Failed to start agent, but configuration was saved:', error);
       }
       
       // Call the completion callback with the saved configuration
