@@ -635,7 +635,73 @@ router.post('/select', optionalAuth, async (req, res) => {
         }
       }
     } else {
-      console.log('❌ LangGraph agent not available');
+      console.log('❌ LangGraph agent not available - attempting direct email generation...');
+
+      // 🔥 FALLBACK: If no agent, try to trigger email generation directly
+      const workflowRoute = require('./workflow');
+      if (workflowRoute.getLastWorkflowResults && workflowRoute.setLastWorkflowResults) {
+        const storedResults = await workflowRoute.getLastWorkflowResults(userId, campaignId);
+        if (storedResults && storedResults.prospects && storedResults.prospects.length > 0) {
+          console.log(`🔄 [FALLBACK] Found ${storedResults.prospects.length} prospects - attempting direct email generation`);
+
+          // Create a new LangGraph agent for this operation
+          const LangGraphMarketingAgent = require('../agents/LangGraphMarketingAgent');
+          const newAgent = new LangGraphMarketingAgent();
+
+          // Set up the agent with necessary data
+          newAgent.userId = userId;
+          newAgent.wsManager = req.app.locals.wsManager || router.wsManager;
+          newAgent.businessAnalysisData = storedResults.businessAnalysis;
+          newAgent.marketingStrategyData = storedResults.marketingStrategy;
+
+          // Create templateData for the agent
+          const fallbackTemplateData = {
+            templateId,
+            subject: subject || null,
+            greeting: greeting || null,
+            signature: signature || null,
+            html: userEditedHtml || template.html || null,
+            customizations: userCustomizations || {},
+            isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0),
+            templateMode: templateMode || 'ai',
+            manualContent: manualContent || null,
+            senderName: storedResults.smtpConfig?.senderName || process.env.SENDER_NAME || 'Team',
+            senderEmail: storedResults.smtpConfig?.auth?.user || process.env.SMTP_USER || 'noreply@example.com',
+            companyName: storedResults.smtpConfig?.companyName || process.env.COMPANY_NAME || 'Company'
+          };
+
+          const enhancedTemplate = {
+            ...template,
+            templateData: fallbackTemplateData,
+            customizations: userCustomizations || {},
+            isCustomized: fallbackTemplateData.isCustomized,
+            components: components || template.components || [],
+            userSelected: true
+          };
+
+          const waitingState = {
+            prospects: storedResults.prospects,
+            campaignId: campaignId,
+            businessAnalysis: storedResults.businessAnalysis,
+            marketingStrategy: storedResults.marketingStrategy,
+            smtpConfig: storedResults.smtpConfig
+          };
+
+          console.log(`🚀 [FALLBACK] Starting email generation for ${waitingState.prospects.length} prospects...`);
+
+          // Execute email generation in background (don't block response)
+          setTimeout(async () => {
+            try {
+              await newAgent.continueWithSelectedTemplate(templateId, waitingState, enhancedTemplate);
+              console.log('✅ [FALLBACK] Email generation completed successfully');
+            } catch (error) {
+              console.error('❌ [FALLBACK] Email generation failed:', error.message);
+            }
+          }, 100);
+        } else {
+          console.log('❌ [FALLBACK] No prospects found in stored results');
+        }
+      }
     }
 
     res.json({
