@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, FileText, Sparkles, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useUser } from '@clerk/clerk-react';
 import WebsiteAnalysisStep from './WebsiteAnalysisStep';
 import ProspectsFoundStep from './ProspectsFoundStep';
 import EnhancedSMTPSetup from './EnhancedSMTPSetup';
 import { apiPost } from '../utils/apiClient';
 
 const CampaignOnboardingWizard = ({ campaign, onComplete, onCancel }) => {
+  const { user } = useUser();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     campaignId: campaign.id,
@@ -314,12 +316,16 @@ const CampaignOnboardingWizard = ({ campaign, onComplete, onCancel }) => {
 
       // 🚀 CRITICAL: Start the AI agent workflow after campaign setup
       console.log('🚀 Starting AI agent workflow for campaign:', campaign.name);
+      console.log('👤 User ID from Clerk:', user?.id);
       try {
         // 🔥 FIX: Use apiPost instead of raw fetch to include auth headers
+        // 🔥 ALSO include userId in body as fallback
         const startResult = await apiPost('/api/workflow/start', {
           // Include campaign ID for tracking
           campaignId: campaign.id,
           campaignName: campaign.name,
+          // 🔥 FIX: Include userId as fallback in case headers don't work
+          userId: user?.id,
           // Include all configuration data
           targetWebsite: setupData.targetWebsite || finalData.targetWebsite,
           businessType: setupData.businessType || 'auto',

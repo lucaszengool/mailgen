@@ -117,8 +117,12 @@ const strictAuth = (req, res, next) => {
   // First try to get auth from Clerk
   const { userId } = req.auth || {};
   const headerUserId = req.headers['x-user-id'];
+  // 🔥 FIX: Also check request body for userId as fallback
+  const bodyUserId = req.body?.userId;
 
-  const effectiveUserId = userId || headerUserId;
+  const effectiveUserId = userId || headerUserId || bodyUserId;
+
+  console.log(`🔐 [strictAuth] Auth check: clerk=${userId}, header=${headerUserId}, body=${bodyUserId}, effective=${effectiveUserId}`);
 
   // Reject if no user or demo/anonymous
   if (!effectiveUserId || effectiveUserId === 'demo' || effectiveUserId === 'anonymous') {
