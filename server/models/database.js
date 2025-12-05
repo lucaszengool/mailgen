@@ -1481,6 +1481,35 @@ class Database {
   }
 
   /**
+   * Update workflow session state (waitingForUserApproval, firstEmailGenerated, etc.)
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   * @param {string} workflowStateJson - JSON string of workflow state
+   */
+  updateWorkflowSessionState(userId, campaignId, workflowStateJson) {
+    return new Promise((resolve, reject) => {
+      if (!userId || userId === 'demo' || userId === 'anonymous') {
+        return reject(new Error('Valid authenticated userId required'));
+      }
+
+      const now = new Date().toISOString();
+      this.db.run(
+        `UPDATE workflow_sessions SET workflow_state = ?, last_activity = ?, updated_at = ? WHERE user_id = ? AND campaign_id = ?`,
+        [workflowStateJson, now, now, userId, campaignId],
+        (err) => {
+          if (err) {
+            console.error('❌ [DATABASE] Failed to update workflow session state:', err);
+            reject(err);
+          } else {
+            console.log(`✅ [DATABASE] Workflow session state updated: ${userId}/${campaignId}`);
+            resolve({ success: true });
+          }
+        }
+      );
+    });
+  }
+
+  /**
    * Delete workflow session
    * @param {string} userId - User ID
    * @param {string} campaignId - Campaign ID

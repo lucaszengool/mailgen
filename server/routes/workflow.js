@@ -1020,13 +1020,40 @@ router.get('/results', optionalAuth, async (req, res) => {
       // 🎯 FIX: Add workflowState fields directly to processedResults at the correct level
       // The frontend expects these fields alongside prospects and campaignData
 
+      // 🔥 DATABASE FALLBACK: If in-memory doesn't have waitingForUserApproval, check database
+      let effectiveWorkflowState = workflowState;
+      if (!workflowState.waitingForUserApproval && campaignId) {
+        try {
+          const dbSession = await db.getWorkflowSession(userId, campaignId);
+          if (dbSession && dbSession.workflowState) {
+            console.log(`💾 [DB FALLBACK] Found workflow state in database for campaign ${campaignId}`);
+            console.log(`   waitingForUserApproval: ${dbSession.workflowState.waitingForUserApproval}`);
+            console.log(`   firstEmailGenerated: ${!!dbSession.workflowState.firstEmailGenerated}`);
+
+            // Merge database state with in-memory state
+            if (dbSession.workflowState.waitingForUserApproval || dbSession.workflowState.firstEmailGenerated) {
+              effectiveWorkflowState = {
+                ...workflowState,
+                waitingForUserApproval: dbSession.workflowState.waitingForUserApproval || workflowState.waitingForUserApproval,
+                firstEmailGenerated: dbSession.workflowState.firstEmailGenerated || workflowState.firstEmailGenerated
+              };
+
+              // Also update in-memory for future requests
+              Object.assign(workflowState, effectiveWorkflowState);
+            }
+          }
+        } catch (dbErr) {
+          console.error(`⚠️ [DB FALLBACK] Failed to read workflow state from DB:`, dbErr.message);
+        }
+      }
+
       // 🔥 CRITICAL FIX: Only include firstEmailGenerated if it belongs to THIS campaign
-      const firstEmailBelongsToThisCampaign = workflowState.firstEmailGenerated &&
-                                                workflowState.firstEmailGenerated.campaignId === campaignId;
+      const firstEmailBelongsToThisCampaign = effectiveWorkflowState.firstEmailGenerated &&
+                                                effectiveWorkflowState.firstEmailGenerated.campaignId === campaignId;
 
       console.log(`\n🔍 [FIRST EMAIL FILTER - STORED] Checking if first email belongs to this campaign:`);
-      console.log(`   📧 firstEmailGenerated exists: ${!!workflowState.firstEmailGenerated}`);
-      console.log(`   🆔 firstEmailGenerated.campaignId: ${workflowState.firstEmailGenerated?.campaignId || 'NOT SET'}`);
+      console.log(`   📧 firstEmailGenerated exists: ${!!effectiveWorkflowState.firstEmailGenerated}`);
+      console.log(`   🆔 firstEmailGenerated.campaignId: ${effectiveWorkflowState.firstEmailGenerated?.campaignId || 'NOT SET'}`);
       console.log(`   🆔 Requested campaignId: ${campaignId || 'NOT SET'}`);
       console.log(`   ✅ Match: ${firstEmailBelongsToThisCampaign ? 'YES' : 'NO'}`);
 
@@ -1037,14 +1064,14 @@ router.get('/results', optionalAuth, async (req, res) => {
           emailCampaign: processedResults.emailCampaign
         } : (processedResults.campaignData || {}),
         // Include workflow state fields that the frontend needs
-        workflowState: workflowState.currentStep,
-        lastUpdate: workflowState.lastUpdate,
+        workflowState: effectiveWorkflowState.currentStep,
+        lastUpdate: effectiveWorkflowState.lastUpdate,
         totalProspects: processedResults.prospects?.length || 0,
         isRealData: true,
         demoMode: false,
         // 🔥 CRITICAL FIX: Only show first email popup if it belongs to THIS campaign
-        waitingForUserApproval: firstEmailBelongsToThisCampaign ? workflowState.waitingForUserApproval : false,
-        firstEmailGenerated: firstEmailBelongsToThisCampaign ? workflowState.firstEmailGenerated : null,
+        waitingForUserApproval: firstEmailBelongsToThisCampaign ? effectiveWorkflowState.waitingForUserApproval : false,
+        firstEmailGenerated: firstEmailBelongsToThisCampaign ? effectiveWorkflowState.firstEmailGenerated : null,
         currentEmailIndex: 0,
         templateSelectionRequired: false,  // We already have emails
         status: 'emails_generated',
@@ -1256,13 +1283,35 @@ router.get('/results', optionalAuth, async (req, res) => {
       }
     }
 
+    // 🔥 DATABASE FALLBACK: If in-memory doesn't have waitingForUserApproval, check database
+    let effectiveWorkflowState2 = workflowState;
+    if (!workflowState.waitingForUserApproval && campaignId) {
+      try {
+        const dbSession = await db.getWorkflowSession(userId, campaignId);
+        if (dbSession && dbSession.workflowState) {
+          console.log(`💾 [DB FALLBACK-2] Found workflow state in database for campaign ${campaignId}`);
+
+          if (dbSession.workflowState.waitingForUserApproval || dbSession.workflowState.firstEmailGenerated) {
+            effectiveWorkflowState2 = {
+              ...workflowState,
+              waitingForUserApproval: dbSession.workflowState.waitingForUserApproval || workflowState.waitingForUserApproval,
+              firstEmailGenerated: dbSession.workflowState.firstEmailGenerated || workflowState.firstEmailGenerated
+            };
+            Object.assign(workflowState, effectiveWorkflowState2);
+          }
+        }
+      } catch (dbErr) {
+        console.error(`⚠️ [DB FALLBACK-2] Failed to read workflow state from DB:`, dbErr.message);
+      }
+    }
+
     // 🔥 CRITICAL FIX: Only include firstEmailGenerated if it belongs to THIS campaign
-    const firstEmailBelongsToThisCampaign = workflowState.firstEmailGenerated &&
-                                              workflowState.firstEmailGenerated.campaignId === campaignId;
+    const firstEmailBelongsToThisCampaign = effectiveWorkflowState2.firstEmailGenerated &&
+                                              effectiveWorkflowState2.firstEmailGenerated.campaignId === campaignId;
 
     console.log(`\n🔍 [FIRST EMAIL FILTER] Checking if first email belongs to this campaign:`);
-    console.log(`   📧 firstEmailGenerated exists: ${!!workflowState.firstEmailGenerated}`);
-    console.log(`   🆔 firstEmailGenerated.campaignId: ${workflowState.firstEmailGenerated?.campaignId || 'NOT SET'}`);
+    console.log(`   📧 firstEmailGenerated exists: ${!!effectiveWorkflowState2.firstEmailGenerated}`);
+    console.log(`   🆔 firstEmailGenerated.campaignId: ${effectiveWorkflowState2.firstEmailGenerated?.campaignId || 'NOT SET'}`);
     console.log(`   🆔 Requested campaignId: ${campaignId || 'NOT SET'}`);
     console.log(`   ✅ Match: ${firstEmailBelongsToThisCampaign ? 'YES' : 'NO'}`);
 
@@ -1271,14 +1320,14 @@ router.get('/results', optionalAuth, async (req, res) => {
       data: {
         prospects,
         campaignData,
-        workflowState: workflowState.currentStep,
-        lastUpdate: workflowState.lastUpdate,
+        workflowState: effectiveWorkflowState2.currentStep,
+        lastUpdate: effectiveWorkflowState2.lastUpdate,
         totalProspects: prospects.length,
         isRealData: hasRealResults,
         demoMode: !hasRealResults,
         // 🔥 CRITICAL FIX: Only show first email popup if it belongs to THIS campaign
-        waitingForUserApproval: firstEmailBelongsToThisCampaign ? workflowState.waitingForUserApproval : false,
-        firstEmailGenerated: firstEmailBelongsToThisCampaign ? workflowState.firstEmailGenerated : null,
+        waitingForUserApproval: firstEmailBelongsToThisCampaign ? effectiveWorkflowState2.waitingForUserApproval : false,
+        firstEmailGenerated: firstEmailBelongsToThisCampaign ? effectiveWorkflowState2.firstEmailGenerated : null,
         currentEmailIndex: currentEmailIndex, // Add current email index for display
         templateSelectionRequired: templateSelectionRequired,
         status: templateSelectionStatus,
@@ -2778,10 +2827,27 @@ function setTemplateSubmitted(value, userId = 'anonymous', campaignId = 'default
 }
 
 // 🎯 CRITICAL: Update user workflow state (for first email popup)
+// 🔥 FIX: Also persist to database so state survives frontend refresh
 function setUserWorkflowState(userId, updates) {
   const userWorkflowState = getUserWorkflowState(userId);
   Object.assign(userWorkflowState, updates);
   console.log(`🎯 [User: ${userId}] Workflow state updated:`, Object.keys(updates));
+
+  // 🔥 PERSIST: Save waitingForUserApproval and firstEmailGenerated to database
+  if (updates.campaignId && (updates.waitingForUserApproval !== undefined || updates.firstEmailGenerated)) {
+    const campaignId = updates.campaignId;
+    const workflowStateJson = JSON.stringify({
+      waitingForUserApproval: updates.waitingForUserApproval ?? userWorkflowState.waitingForUserApproval,
+      firstEmailGenerated: updates.firstEmailGenerated ?? userWorkflowState.firstEmailGenerated,
+      currentStep: userWorkflowState.currentStep
+    });
+
+    // Update workflow_sessions table with the state
+    db.updateWorkflowSessionState(userId, campaignId, workflowStateJson).catch(err => {
+      console.error(`⚠️ [User: ${userId}] Failed to persist workflow state to DB:`, err.message);
+    });
+    console.log(`💾 [User: ${userId}] Workflow state persisted to database for campaign ${campaignId}`);
+  }
 }
 
 // 🔥 MULTI-USER FIX: Store paused campaign data for workflow continuation
