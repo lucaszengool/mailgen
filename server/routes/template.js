@@ -634,8 +634,16 @@ router.post('/select', optionalAuth, async (req, res) => {
             console.log('🔄 [LAST RESORT] Attempting to get prospects from database directly...');
             try {
               const db = require('../models/database');
-              const dbProspects = await db.getContacts(userId, { campaignId }, 100);
-              console.log(`📊 [LAST RESORT] Database returned ${dbProspects?.length || 0} prospects for campaign ${campaignId}`);
+              // 🔥 FIX: Try user-specific first, then fallback to anonymous
+              let dbProspects = await db.getContacts(userId, { campaignId }, 100);
+              console.log(`📊 [LAST RESORT] Database returned ${dbProspects?.length || 0} prospects for user ${userId}, campaign ${campaignId}`);
+
+              // 🔥 FIX: If no contacts found for this user, try 'anonymous' (legacy data)
+              if ((!dbProspects || dbProspects.length === 0) && userId !== 'anonymous') {
+                console.log(`📊 [LAST RESORT] No contacts for user ${userId}, trying 'anonymous' fallback...`);
+                dbProspects = await db.getContacts('anonymous', { campaignId }, 100);
+                console.log(`📊 [LAST RESORT] Anonymous fallback returned ${dbProspects?.length || 0} prospects`);
+              }
 
               if (dbProspects && dbProspects.length > 0) {
                 console.log(`🚀 [LAST RESORT] Found ${dbProspects.length} prospects in database - triggering email generation`);
@@ -772,7 +780,80 @@ router.post('/select', optionalAuth, async (req, res) => {
             }
           }, 100);
         } else {
-          console.log('❌ [FALLBACK] No prospects found in stored results');
+          console.log('❌ [FALLBACK] No prospects found in stored results - trying database directly');
+
+          // 🔥 LAST RESORT for no-agent path: Query database directly
+          try {
+            const db = require('../models/database');
+            let dbProspects = await db.getContacts(userId, { campaignId }, 100);
+            console.log(`📊 [FALLBACK-DB] Database returned ${dbProspects?.length || 0} prospects for user ${userId}`);
+
+            // Try anonymous if no user-specific contacts
+            if ((!dbProspects || dbProspects.length === 0) && userId !== 'anonymous') {
+              dbProspects = await db.getContacts('anonymous', { campaignId }, 100);
+              console.log(`📊 [FALLBACK-DB] Anonymous fallback returned ${dbProspects?.length || 0} prospects`);
+            }
+
+            if (dbProspects && dbProspects.length > 0) {
+              console.log(`🚀 [FALLBACK-DB] Found ${dbProspects.length} prospects - creating new agent`);
+
+              const LangGraphMarketingAgent = require('../agents/LangGraphMarketingAgent');
+              const newAgent = new LangGraphMarketingAgent();
+              newAgent.userId = userId;
+              newAgent.wsManager = req.app.locals.wsManager || router.wsManager;
+
+              const dbFallbackTemplateData = {
+                templateId,
+                subject: subject || null,
+                greeting: greeting || null,
+                signature: signature || null,
+                html: userEditedHtml || template.html || null,
+                customizations: userCustomizations || {},
+                isCustomized: isCustomized !== undefined ? isCustomized : false,
+                templateMode: templateMode || 'ai',
+                manualContent: manualContent || null,
+                senderName: process.env.SENDER_NAME || 'Team',
+                senderEmail: process.env.SMTP_USER || 'noreply@example.com',
+                companyName: process.env.COMPANY_NAME || 'Company'
+              };
+
+              const dbEnhancedTemplate = {
+                ...template,
+                templateData: dbFallbackTemplateData,
+                customizations: userCustomizations || {},
+                isCustomized: dbFallbackTemplateData.isCustomized,
+                components: components || template.components || [],
+                userSelected: true
+              };
+
+              const dbWaitingState = {
+                prospects: dbProspects.map(p => ({
+                  email: p.email,
+                  name: p.name,
+                  company: p.company,
+                  position: p.position,
+                  industry: p.industry,
+                  campaignId: p.campaign_id || campaignId
+                })),
+                campaignId: campaignId,
+                businessAnalysis: null,
+                marketingStrategy: null,
+                smtpConfig: null
+              };
+
+              setTimeout(async () => {
+                try {
+                  console.log(`🚀 [FALLBACK-DB] Starting email generation for ${dbWaitingState.prospects.length} prospects...`);
+                  await newAgent.continueWithSelectedTemplate(templateId, dbWaitingState, dbEnhancedTemplate);
+                  console.log('✅ [FALLBACK-DB] Email generation completed');
+                } catch (error) {
+                  console.error('❌ [FALLBACK-DB] Email generation failed:', error.message);
+                }
+              }, 100);
+            }
+          } catch (dbError) {
+            console.error('❌ [FALLBACK-DB] Database query failed:', dbError.message);
+          }
         }
       }
     }
