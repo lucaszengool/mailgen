@@ -629,6 +629,79 @@ router.post('/select', optionalAuth, async (req, res) => {
               prospectsLength: storedResults?.prospects?.length,
               wsProspectsLength: wsProspects.length
             });
+
+            // 🔥 LAST RESORT: Try to get prospects from database directly
+            console.log('🔄 [LAST RESORT] Attempting to get prospects from database directly...');
+            try {
+              const db = require('../models/database');
+              const dbProspects = await db.getContacts(userId, { campaignId }, 100);
+              console.log(`📊 [LAST RESORT] Database returned ${dbProspects?.length || 0} prospects for campaign ${campaignId}`);
+
+              if (dbProspects && dbProspects.length > 0) {
+                console.log(`🚀 [LAST RESORT] Found ${dbProspects.length} prospects in database - triggering email generation`);
+
+                // Create a new LangGraph agent for this operation
+                const LangGraphMarketingAgent = require('../agents/LangGraphMarketingAgent');
+                const newAgent = new LangGraphMarketingAgent();
+
+                newAgent.userId = userId;
+                newAgent.wsManager = req.app.locals.wsManager || router.wsManager;
+
+                const fallbackTemplateData = {
+                  templateId,
+                  subject: subject || null,
+                  greeting: greeting || null,
+                  signature: signature || null,
+                  html: userEditedHtml || template.html || null,
+                  customizations: userCustomizations || {},
+                  isCustomized: isCustomized !== undefined ? isCustomized : !!(userCustomizations && Object.keys(userCustomizations).length > 0),
+                  templateMode: templateMode || 'ai',
+                  manualContent: manualContent || null,
+                  senderName: process.env.SENDER_NAME || 'Team',
+                  senderEmail: process.env.SMTP_USER || 'noreply@example.com',
+                  companyName: process.env.COMPANY_NAME || 'Company'
+                };
+
+                const enhancedTemplateLastResort = {
+                  ...template,
+                  templateData: fallbackTemplateData,
+                  customizations: userCustomizations || {},
+                  isCustomized: fallbackTemplateData.isCustomized,
+                  components: components || template.components || [],
+                  userSelected: true
+                };
+
+                const waitingStateLastResort = {
+                  prospects: dbProspects.map(p => ({
+                    email: p.email,
+                    name: p.name,
+                    company: p.company,
+                    position: p.position,
+                    industry: p.industry,
+                    campaignId: p.campaign_id || campaignId
+                  })),
+                  campaignId: campaignId,
+                  businessAnalysis: null,
+                  marketingStrategy: null,
+                  smtpConfig: null
+                };
+
+                setTimeout(async () => {
+                  try {
+                    console.log(`🚀 [LAST RESORT] Starting email generation for ${waitingStateLastResort.prospects.length} prospects...`);
+                    await newAgent.continueWithSelectedTemplate(templateId, waitingStateLastResort, enhancedTemplateLastResort);
+                    console.log('✅ [LAST RESORT] Email generation completed successfully');
+                  } catch (error) {
+                    console.error('❌ [LAST RESORT] Email generation failed:', error.message);
+                    console.error('❌ Error stack:', error.stack);
+                  }
+                }, 100);
+              } else {
+                console.log('❌ [LAST RESORT] No prospects found in database either');
+              }
+            } catch (dbError) {
+              console.error('❌ [LAST RESORT] Database query failed:', dbError.message);
+            }
           }
         } else {
           console.log('❌ getLastWorkflowResults function not available');
