@@ -18,6 +18,18 @@ import {
   PaperClipIcon
 } from '@heroicons/react/24/outline'
 
+// 🔥 FIX: Get correct API URL for production vs development
+const getApiUrl = () => {
+  // Production: Frontend on mailgen.org, Backend on honest-hope-production.up.railway.app
+  if (window.location.hostname === 'mailgen.org' ||
+      window.location.hostname === 'www.mailgen.org' ||
+      window.location.hostname.includes('powerful-contentment')) {
+    return 'https://honest-hope-production.up.railway.app';
+  }
+  // Development: Use relative path (Vite proxy handles it)
+  return '';
+};
+
 /**
  * Gmail-style Email Thread Panel Component
  * Displays email thread history and allows replying
@@ -100,7 +112,8 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
       console.log('📧 Fetching complete email thread for ID:', emailId)
 
       // 🔥 FIX: Use the complete thread endpoint that includes sent emails AND replies
-      const threadResponse = await fetch(`/api/analytics/complete-thread/${emailId}?userId=${userId}`)
+      const apiUrl = getApiUrl();
+      const threadResponse = await fetch(`${apiUrl}/api/analytics/complete-thread/${emailId}?userId=${userId}`)
       const threadResult = await threadResponse.json()
 
       console.log('📧 Complete thread response:', threadResult)
@@ -132,7 +145,8 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
         if (hasMissingContent && recipientEmail) {
           console.log('📧 Some emails missing content, fetching from Gmail via IMAP...')
           try {
-            const gmailResponse = await fetch(`/api/analytics/fetch-gmail-thread/${encodeURIComponent(recipientEmail)}?userId=${userId}`)
+            const gmailApiUrl = getApiUrl();
+            const gmailResponse = await fetch(`${gmailApiUrl}/api/analytics/fetch-gmail-thread/${encodeURIComponent(recipientEmail)}?userId=${userId}`)
             const gmailResult = await gmailResponse.json()
 
             if (gmailResult.success && gmailResult.data && gmailResult.data.length > 0) {
@@ -211,7 +225,8 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
       } else {
         // Fallback to original endpoint if complete-thread fails
         console.log('📧 Falling back to email-detail endpoint...')
-        const emailResponse = await fetch(`/api/analytics/email-detail/${emailId}?userId=${userId}`)
+        const detailApiUrl = getApiUrl();
+        const emailResponse = await fetch(`${detailApiUrl}/api/analytics/email-detail/${emailId}?userId=${userId}`)
         const emailResult = await emailResponse.json()
 
         if (emailResult.success && emailResult.data) {
@@ -220,7 +235,8 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
           setExpandedEmails(new Set([emailResult.data.id]))
 
           // Fetch thread history by recipient email
-          const historyResponse = await fetch(`/api/analytics/email-thread-by-recipient/${encodeURIComponent(emailResult.data.recipientEmail)}?userId=${userId}`)
+          const historyApiUrl = getApiUrl();
+          const historyResponse = await fetch(`${historyApiUrl}/api/analytics/email-thread-by-recipient/${encodeURIComponent(emailResult.data.recipientEmail)}?userId=${userId}`)
           const historyResult = await historyResponse.json()
 
           if (historyResult.success) {
@@ -230,7 +246,8 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
             const hasMissingContent = historyEmails.some(email => !email.content)
             if (hasMissingContent && emailResult.data.recipientEmail) {
               try {
-                const gmailResponse = await fetch(`/api/analytics/fetch-gmail-thread/${encodeURIComponent(emailResult.data.recipientEmail)}?userId=${userId}`)
+                const gmailFallbackUrl = getApiUrl();
+                const gmailResponse = await fetch(`${gmailFallbackUrl}/api/analytics/fetch-gmail-thread/${encodeURIComponent(emailResult.data.recipientEmail)}?userId=${userId}`)
                 const gmailResult = await gmailResponse.json()
                 if (gmailResult.success && gmailResult.data) {
                   historyEmails = gmailResult.data.map(ge => ({
@@ -272,7 +289,8 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
 
       // Try to fetch from Gmail via IMAP first
       try {
-        const gmailResponse = await fetch(`/api/analytics/fetch-gmail-thread/${encodeURIComponent(targetRecipient)}?userId=${userId}`)
+        const gmailDirectUrl = getApiUrl();
+        const gmailResponse = await fetch(`${gmailDirectUrl}/api/analytics/fetch-gmail-thread/${encodeURIComponent(targetRecipient)}?userId=${userId}`)
         const gmailResult = await gmailResponse.json()
 
         if (gmailResult.success && gmailResult.data && gmailResult.data.length > 0) {
@@ -389,7 +407,9 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
       const userId = user?.id // Use actual user ID from Clerk authentication
 
       // 🔥 FIX: API expects 'html' or 'text', not 'body'
-      const response = await fetch('/api/send-email/send', {
+      // 🔥 FIX: Use correct API URL for production
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/send-email/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
