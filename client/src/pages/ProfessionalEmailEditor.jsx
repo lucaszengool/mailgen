@@ -291,13 +291,23 @@ export default function ProfessionalEmailEditorPage() {
         // Try different paths where emails might be stored
         if (workflowData.success && workflowData.data) {
           console.log('   workflowData.success is true and data exists');
+          // 🔥 CRITICAL FIX: Backend sends emails at campaignData.emailCampaign.emails
+          console.log('   Checking campaignData.emailCampaign.emails:', workflowData.data.campaignData?.emailCampaign?.emails);
           console.log('   Checking emailCampaign.emails:', workflowData.data.emailCampaign?.emails);
-          if (workflowData.data.emailCampaign?.emails) {
+
+          // Priority 1: campaignData.emailCampaign.emails (backend's actual structure)
+          if (workflowData.data.campaignData?.emailCampaign?.emails) {
+            campaignEmails = workflowData.data.campaignData.emailCampaign.emails;
+            console.log('   ✅ Found emails in campaignData.emailCampaign.emails:', campaignEmails.length);
+          } else if (workflowData.data.emailCampaign?.emails) {
             campaignEmails = workflowData.data.emailCampaign.emails;
             console.log('   ✅ Found emails in emailCampaign.emails:', campaignEmails.length);
           } else if (workflowData.data.emailCampaign?.emailsSent) {
             campaignEmails = workflowData.data.emailCampaign.emailsSent;
             console.log('   ✅ Found emails in emailCampaign.emailsSent:', campaignEmails.length);
+          } else if (workflowData.data.campaignData?.emailCampaign?.emailsSent) {
+            campaignEmails = workflowData.data.campaignData.emailCampaign.emailsSent;
+            console.log('   ✅ Found emails in campaignData.emailCampaign.emailsSent:', campaignEmails.length);
           } else if (workflowData.data.emails) {
             campaignEmails = workflowData.data.emails;
             console.log('   ✅ Found emails in data.emails:', campaignEmails.length);

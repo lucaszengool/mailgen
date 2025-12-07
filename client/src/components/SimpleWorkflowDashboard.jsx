@@ -4692,7 +4692,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   // Fetch workflow stats
   const fetchWorkflowStats = async () => {
     try {
-      const result = await apiGet('/api/workflow/stats');
+      // 🔥 CRITICAL FIX: Pass campaignId to get stats for CURRENT campaign only
+      const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+      const url = currentCampaignId
+        ? `/api/workflow/stats?campaignId=${currentCampaignId}`
+        : '/api/workflow/stats';
+
+      const result = await apiGet(url);
       if (result && result.data) {
         setWorkflowStats(result.data);
       }
