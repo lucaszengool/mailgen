@@ -2804,32 +2804,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             });
           }
 
-          // 🔥 CAMPAIGN ISOLATION for emails too
+          // 🔥 FIX: Simply set API emails - no complex merging that loses data
           if (emailCampaign?.emails && emailCampaign.emails.length > 0) {
+            console.log(`📧 [INITIAL LOAD] Setting ${emailCampaign.emails.length} emails from API`);
+            setGeneratedEmails(emailCampaign.emails);
+          } else {
+            // No API emails - keep existing emails only if they're for this campaign
             setGeneratedEmails(prev => {
-              // Filter to only this campaign's emails
               const sameCampaignEmails = prev.filter(e => {
                 const emailCampaignId = e.campaignId || e.campaign_id;
                 return !emailCampaignId ||
                        emailCampaignId === campaignId ||
                        String(emailCampaignId) === String(campaignId);
               });
-
-              const existingIds = new Set(sameCampaignEmails.map(e => e.id || e.to));
-              const newFromAPI = emailCampaign.emails.filter(e => !existingIds.has(e.id || e.to));
-              if (newFromAPI.length > 0 || sameCampaignEmails.length === 0) {
-                return sameCampaignEmails.length === 0 ? emailCampaign.emails : [...sameCampaignEmails, ...newFromAPI];
-              }
+              console.log(`📧 [INITIAL LOAD] No API emails, keeping ${sameCampaignEmails.length} existing same-campaign emails`);
               return sameCampaignEmails;
             });
-          } else {
-            // Filter existing emails to only this campaign
-            setGeneratedEmails(prev => prev.filter(e => {
-              const emailCampaignId = e.campaignId || e.campaign_id;
-              return !emailCampaignId ||
-                     emailCampaignId === campaignId ||
-                     String(emailCampaignId) === String(campaignId);
-            }));
           }
 
           if (prospectsFromAPI && prospectsFromAPI.length > 0) {
