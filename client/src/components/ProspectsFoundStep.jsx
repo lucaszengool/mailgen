@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Users, CheckCircle, Sparkles, Mail, Briefcase, Building2, MapPin, Star, TrendingUp } from 'lucide-react';
+import { Users, CheckCircle, Sparkles, Mail, Briefcase, Building2, MapPin, Star, TrendingUp, ArrowLeft } from 'lucide-react';
+import ComprehensiveCompanyDetailPage from './ComprehensiveCompanyDetailPage';
 
 const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
   const [prospects, setProspects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  // 🔥 NEW: State for company detail view
+  const [selectedProspect, setSelectedProspect] = useState(null);
+  const [showCompanyDetail, setShowCompanyDetail] = useState(false);
+
+  // Handle prospect card click to show company details
+  const handleProspectClick = (prospect) => {
+    console.log('🏢 Opening company details for:', prospect.company || prospect.name);
+    setSelectedProspect(prospect);
+    setShowCompanyDetail(true);
+  };
 
   useEffect(() => {
     searchProspects();
@@ -139,6 +150,21 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
     return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
   };
 
+  // 🔥 Show company detail view if a prospect is selected
+  if (showCompanyDetail && selectedProspect) {
+    return (
+      <div className="h-screen bg-white flex flex-col overflow-hidden">
+        <ComprehensiveCompanyDetailPage
+          prospect={selectedProspect}
+          onBack={() => {
+            setShowCompanyDetail(false);
+            setSelectedProspect(null);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
       {/* Celebration confetti effect */}
@@ -201,7 +227,8 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
             {prospects.map((prospect, index) => (
               <div
                 key={index}
-                className="w-full bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] hover:shadow-lg transition-all duration-200 group"
+                onClick={() => handleProspectClick(prospect)}
+                className="w-full bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] hover:shadow-lg transition-all duration-200 group cursor-pointer"
               >
                 <div className="flex items-center gap-4">
                   {/* Company Favicon - Larger */}
