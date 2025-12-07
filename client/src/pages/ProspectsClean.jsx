@@ -30,9 +30,11 @@ const ProspectsPage = () => {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       let wsHost = window.location.host
 
-      // If we're on the frontend Railway service, use the backend service for WebSocket
-      if (window.location.host.includes('honest-hope') || window.location.host.includes('powerful-contentment')) {
-        wsHost = 'mailgen-production.up.railway.app'
+      // If we're on the frontend Railway service (or custom domain mailgen.org), use the backend service for WebSocket
+      if (window.location.host.includes('honest-hope') ||
+          window.location.host.includes('powerful-contentment') ||
+          window.location.host.includes('mailgen.org')) {
+        wsHost = 'honest-hope-production.up.railway.app'
       }
 
       const wsUrl = `${protocol}//${wsHost}/ws/workflow`

@@ -17,7 +17,14 @@ const UserActionReminder = ({ userId, onNavigate }) => {
   // 🔔 NEW: Listen for reminder_review_email WebSocket messages
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/workflow`;
+    let wsHost = window.location.host;
+    // If on frontend/production, redirect to backend service
+    if (window.location.host.includes('honest-hope') ||
+        window.location.host.includes('powerful-contentment') ||
+        window.location.host.includes('mailgen.org')) {
+      wsHost = 'honest-hope-production.up.railway.app';
+    }
+    const wsUrl = `${protocol}//${wsHost}/ws/workflow`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {

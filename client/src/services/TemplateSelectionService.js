@@ -22,10 +22,12 @@ class TemplateSelectionService {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       let wsHost = window.location.host;
 
-      // If we're on the frontend Railway service, use the backend service for WebSocket
-      if (window.location.host.includes('honest-hope') || window.location.host.includes('powerful-contentment')) {
-        wsHost = 'mailgen-production.up.railway.app';
-        console.log('🔄 TemplateSelection: Detected frontend service, redirecting WebSocket to backend:', wsHost);
+      // If we're on the frontend Railway service (or custom domain mailgen.org), use the backend service for WebSocket
+      if (window.location.host.includes('honest-hope') ||
+          window.location.host.includes('powerful-contentment') ||
+          window.location.host.includes('mailgen.org')) {
+        wsHost = 'honest-hope-production.up.railway.app';
+        console.log('🔄 TemplateSelection: Detected frontend/production, redirecting WebSocket to backend:', wsHost);
       }
 
       // 🔥 CRITICAL FIX: Connect to the correct WebSocket endpoint (/ws/workflow)
