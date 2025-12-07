@@ -5004,6 +5004,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
         const prospectCampaignId = prospect?.campaignId || prospect?.campaign_id || data.campaignId;
 
+        // 🔥 FIX: If we have a current campaign but prospect has no campaignId, REJECT it
+        if (currentCampaignId && !prospectCampaignId) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect with NO campaignId (Current: ${currentCampaignId})`);
+          return;
+        }
+
         if (prospectCampaignId && currentCampaignId &&
             prospectCampaignId !== currentCampaignId &&
             String(prospectCampaignId) !== String(currentCampaignId)) {
@@ -5016,8 +5022,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             // Check if prospect already exists
             const exists = prev.some(p => p.email === prospect.email);
             if (exists) return prev;
-            console.log(`✅ [INSTANT] Adding new prospect: ${prospect.email} (campaign: ${prospectCampaignId || currentCampaignId})`);
-            return [...prev, prospect];
+            // 🔥 FIX: Always tag prospect with campaignId
+            const taggedProspect = {
+              ...prospect,
+              campaignId: prospectCampaignId || currentCampaignId,
+              campaign_id: prospectCampaignId || currentCampaignId
+            };
+            console.log(`✅ [INSTANT] Adding new prospect: ${prospect.email} (campaign: ${taggedProspect.campaignId})`);
+            return [...prev, taggedProspect];
           });
         }
         return;
@@ -5031,6 +5043,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         // 🔒 CRITICAL: Campaign isolation check
         const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
         const emailCampaignId = email?.campaignId || email?.campaign_id || data.campaignId;
+
+        // 🔥 FIX: If we have a current campaign but email has no campaignId, REJECT it
+        if (currentCampaignId && !emailCampaignId) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email with NO campaignId (Current: ${currentCampaignId})`);
+          return;
+        }
 
         if (emailCampaignId && currentCampaignId &&
             emailCampaignId !== currentCampaignId &&
@@ -5050,8 +5068,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                 ((e.id && e.id === email.id) || (e.to && e.to === email.to)) ? { ...e, ...email } : e
               );
             }
-            console.log(`✅ [INSTANT] Adding new email: ${email.to} (campaign: ${emailCampaignId || currentCampaignId})`);
-            return [...prev, email];
+            // 🔥 FIX: Always tag email with campaignId
+            const taggedEmail = {
+              ...email,
+              campaignId: emailCampaignId || currentCampaignId,
+              campaign_id: emailCampaignId || currentCampaignId
+            };
+            console.log(`✅ [INSTANT] Adding new email: ${email.to} (campaign: ${taggedEmail.campaignId})`);
+            return [...prev, taggedEmail];
           });
         }
         return;
@@ -5691,7 +5715,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
         const updateCampaignId = data.data?.campaignId || data.campaignId;
 
-        if (updateCampaignId && currentCampaignId && updateCampaignId !== currentCampaignId && updateCampaignId !== String(currentCampaignId)) {
+        // 🔥 FIX: If we have a current campaign but update has no campaignId, REJECT it
+        // This prevents data from other campaigns leaking in
+        if (currentCampaignId && !updateCampaignId) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping data_update with NO campaignId (Current: ${currentCampaignId})`);
+          return;
+        }
+
+        if (updateCampaignId && currentCampaignId && updateCampaignId !== currentCampaignId && String(updateCampaignId) !== String(currentCampaignId)) {
           console.log(`🚫 [CAMPAIGN ISOLATION] Skipping data_update from different campaign (Update: ${updateCampaignId}, Current: ${currentCampaignId})`);
           return;
         }
