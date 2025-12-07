@@ -5025,12 +5025,24 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       if (data.type === 'prospect_found') {
         console.log(`📧 [INSTANT] Received single prospect:`, data.prospect?.email);
         const prospect = data.prospect;
+
+        // 🔒 CRITICAL: Campaign isolation check
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const prospectCampaignId = prospect?.campaignId || prospect?.campaign_id || data.campaignId;
+
+        if (prospectCampaignId && currentCampaignId &&
+            prospectCampaignId !== currentCampaignId &&
+            String(prospectCampaignId) !== String(currentCampaignId)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect from different campaign (Prospect: ${prospectCampaignId}, Current: ${currentCampaignId})`);
+          return;
+        }
+
         if (prospect && prospect.email) {
           setProspects(prev => {
             // Check if prospect already exists
             const exists = prev.some(p => p.email === prospect.email);
             if (exists) return prev;
-            console.log(`✅ [INSTANT] Adding new prospect: ${prospect.email}`);
+            console.log(`✅ [INSTANT] Adding new prospect: ${prospect.email} (campaign: ${prospectCampaignId || currentCampaignId})`);
             return [...prev, prospect];
           });
         }
@@ -5041,6 +5053,18 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       if (data.type === 'email_generated') {
         console.log(`✉️ [INSTANT] Received new email for:`, data.email?.to || data.to);
         const email = data.email || data;
+
+        // 🔒 CRITICAL: Campaign isolation check
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const emailCampaignId = email?.campaignId || email?.campaign_id || data.campaignId;
+
+        if (emailCampaignId && currentCampaignId &&
+            emailCampaignId !== currentCampaignId &&
+            String(emailCampaignId) !== String(currentCampaignId)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email from different campaign (Email: ${emailCampaignId}, Current: ${currentCampaignId})`);
+          return;
+        }
+
         if (email && (email.to || email.id)) {
           setGeneratedEmails(prev => {
             // Check if email already exists
@@ -5052,7 +5076,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                 ((e.id && e.id === email.id) || (e.to && e.to === email.to)) ? { ...e, ...email } : e
               );
             }
-            console.log(`✅ [INSTANT] Adding new email: ${email.to}`);
+            console.log(`✅ [INSTANT] Adding new email: ${email.to} (campaign: ${emailCampaignId || currentCampaignId})`);
             return [...prev, email];
           });
         }
@@ -5713,9 +5737,28 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           }
           if (data.data.prospects && data.data.prospects.length > 0) {
             console.log(`📦 Received data_update with ${data.data.prospects.length} prospects - merging`);
+
+            // 🔒 CRITICAL: Get current campaign ID for filtering
+            const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+            const dataCampaignId = data.data.campaignId || data.campaignId;
+
             setProspects(prev => {
               const existingEmails = new Set(prev.map(p => p.email));
-              const newProspects = data.data.prospects.filter(p => p.email && !existingEmails.has(p.email));
+              // 🔒 CAMPAIGN ISOLATION: Only add prospects that match current campaign
+              const newProspects = data.data.prospects.filter(p => {
+                if (!p.email || existingEmails.has(p.email)) return false;
+
+                // Check if prospect belongs to current campaign
+                const prospectCampaignId = p.campaignId || p.campaign_id || dataCampaignId;
+                if (prospectCampaignId && currentCampaignId &&
+                    prospectCampaignId !== currentCampaignId &&
+                    String(prospectCampaignId) !== String(currentCampaignId)) {
+                  console.log(`🚫 [CAMPAIGN ISOLATION] Filtering out prospect ${p.email} from campaign ${prospectCampaignId}`);
+                  return false;
+                }
+                return true;
+              });
+
               if (newProspects.length > 0) {
                 console.log(`📦🚀 [INSTANT] Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
                 return [...prev, ...newProspects];
@@ -5730,6 +5773,17 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         }
       } else if (data.type === 'email_batch') {
         // Handle batch email updates
+        // 🔒 CRITICAL: Campaign isolation check
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const batchCampaignId = data.campaignId;
+
+        if (batchCampaignId && currentCampaignId &&
+            batchCampaignId !== currentCampaignId &&
+            String(batchCampaignId) !== String(currentCampaignId)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email_batch from different campaign (Batch: ${batchCampaignId}, Current: ${currentCampaignId})`);
+          return;
+        }
+
         if (data.emails && data.emails.length > 0) {
           setGeneratedEmails(data.emails);
           setEmailCampaignStats(prev => ({
