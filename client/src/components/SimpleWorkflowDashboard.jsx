@@ -2767,40 +2767,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
           // 🔥 CAMPAIGN ISOLATION: Only keep prospects that belong to THIS campaign
           // Filter out any prospects from previous campaigns, then merge with API data
+          // 🔥 FIX: Simply set API prospects - no complex merging that causes mixing
           if (prospectsFromAPI && prospectsFromAPI.length > 0) {
-            setProspects(prev => {
-              // 🔒 First, filter to ONLY keep prospects from THIS campaign
-              const sameCurrentCampaignProspects = prev.filter(p => {
-                const prospectCampaignId = p.campaignId || p.campaign_id;
-                return !prospectCampaignId ||
-                       prospectCampaignId === campaignId ||
-                       String(prospectCampaignId) === String(campaignId);
-              });
-
-              console.log(`📥 [INITIAL LOAD] After campaign filter: ${sameCurrentCampaignProspects.length} existing prospects (from ${prev.length})`);
-
-              const existingEmails = new Set(sameCurrentCampaignProspects.map(p => p.email));
-              // Add only NEW prospects from API
-              const newFromAPI = prospectsFromAPI.filter(p => !existingEmails.has(p.email));
-
-              if (newFromAPI.length > 0 || sameCurrentCampaignProspects.length === 0) {
-                console.log(`📥 [INITIAL LOAD] Setting ${prospectsFromAPI.length} API prospects + ${newFromAPI.length} new`);
-                return sameCurrentCampaignProspects.length === 0 ? prospectsFromAPI : [...sameCurrentCampaignProspects, ...newFromAPI];
-              }
-              console.log(`📥 [INITIAL LOAD] No new prospects from API (${sameCurrentCampaignProspects.length} already in state)`);
-              return sameCurrentCampaignProspects;
-            });
+            console.log(`📥 [INITIAL LOAD] Setting ${prospectsFromAPI.length} prospects from API for campaign ${campaignId}`);
+            setProspects(prospectsFromAPI);
           } else {
-            // 🔒 No API prospects - filter existing to only this campaign
+            // No API prospects - keep ONLY prospects from THIS campaign
             setProspects(prev => {
-              const sameCurrentCampaignProspects = prev.filter(p => {
+              const sameCampaignProspects = prev.filter(p => {
                 const prospectCampaignId = p.campaignId || p.campaign_id;
-                return !prospectCampaignId ||
-                       prospectCampaignId === campaignId ||
-                       String(prospectCampaignId) === String(campaignId);
+                return prospectCampaignId &&
+                       (prospectCampaignId === campaignId ||
+                        String(prospectCampaignId) === String(campaignId));
               });
-              console.log(`📥 [INITIAL LOAD] No API prospects - keeping ${sameCurrentCampaignProspects.length} existing same-campaign prospects`);
-              return sameCurrentCampaignProspects;
+              console.log(`📥 [INITIAL LOAD] No API prospects - keeping ${sameCampaignProspects.length} existing same-campaign prospects`);
+              return sameCampaignProspects;
             });
           }
 
