@@ -1804,7 +1804,10 @@ router.get('/fetch-gmail-thread/:recipientEmail', async (req, res) => {
 
     console.log(`📧 [GMAIL THREAD] Fetching thread for ${recipientEmail}, user: ${userId}`);
 
-    // Get IMAP credentials from user_configs
+    // Get IMAP credentials from user_configs or smtp_configs
+    let smtpJson = null;
+
+    // Try user_configs first
     const userConfigQuery = `SELECT smtp_config FROM user_configs WHERE user_id = ? LIMIT 1`;
     const userConfig = await new Promise((resolve, reject) => {
       db.db.get(userConfigQuery, [userId], (err, row) => {
@@ -1813,14 +1816,52 @@ router.get('/fetch-gmail-thread/:recipientEmail', async (req, res) => {
       });
     });
 
-    if (!userConfig || !userConfig.smtp_config) {
+    if (userConfig && userConfig.smtp_config) {
+      try {
+        smtpJson = JSON.parse(userConfig.smtp_config);
+      } catch (parseErr) {
+        console.log('⚠️ [GMAIL THREAD] Failed to parse user_configs smtp_config');
+      }
+    }
+
+    // Try smtp_configs table if not found
+    if (!smtpJson) {
+      const smtpConfigQuery = `SELECT username, password FROM smtp_configs WHERE user_id = ? AND is_default = 1 LIMIT 1`;
+      const smtpConfig = await new Promise((resolve, reject) => {
+        db.db.get(smtpConfigQuery, [userId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (smtpConfig && smtpConfig.username && smtpConfig.password) {
+        smtpJson = smtpConfig;
+        console.log('📧 [GMAIL THREAD] Found SMTP in smtp_configs table');
+      }
+    }
+
+    // 🔥 RAILWAY FIX: Try Redis if database doesn't have SMTP
+    if (!smtpJson) {
+      try {
+        const RedisUserCache = require('../utils/RedisUserCache');
+        const redisCache = new RedisUserCache();
+        const redisSMTP = await redisCache.get(userId, 'smtp_config');
+
+        if (redisSMTP && redisSMTP.username && redisSMTP.password) {
+          smtpJson = redisSMTP;
+          console.log('📧 [GMAIL THREAD] Found SMTP in Redis');
+        }
+      } catch (redisErr) {
+        console.log('⚠️ [GMAIL THREAD] Redis lookup failed:', redisErr.message);
+      }
+    }
+
+    if (!smtpJson || !smtpJson.username || !smtpJson.password) {
       return res.status(400).json({
         success: false,
         error: 'IMAP not configured. Please configure your email settings.'
       });
     }
-
-    const smtpJson = JSON.parse(userConfig.smtp_config);
 
     // For Gmail, IMAP uses same credentials as SMTP
     const imapConfig = {
