@@ -1917,6 +1917,30 @@ router.post('/send-reply', async (req, res) => {
       }
     }
 
+    // 🔥 RAILWAY FIX: Check Redis if database doesn't have SMTP
+    if (!smtpCreds || !smtpCreds.username || !smtpCreds.password) {
+      try {
+        const RedisUserCache = require('../utils/RedisUserCache');
+        const redisCache = new RedisUserCache();
+        const redisSMTP = await redisCache.get(userId, 'smtp_config');
+
+        if (redisSMTP && redisSMTP.username && redisSMTP.password) {
+          console.log(`📧 [SEND-REPLY] Found SMTP in Redis for user: ${userId}`);
+          smtpCreds = redisSMTP;
+
+          // Restore to SQLite for future use
+          try {
+            await db.saveSMTPConfig(redisSMTP, userId);
+            console.log('✅ [SEND-REPLY] SMTP restored from Redis to SQLite');
+          } catch (restoreErr) {
+            console.log('⚠️ Could not restore SMTP to SQLite:', restoreErr.message);
+          }
+        }
+      } catch (redisErr) {
+        console.log('⚠️ [SEND-REPLY] Redis SMTP lookup failed:', redisErr.message);
+      }
+    }
+
     if (!smtpCreds || !smtpCreds.username || !smtpCreds.password) {
       return res.status(400).json({ success: false, error: 'SMTP not configured. Please configure your email settings in Settings → SMTP Settings.' });
     }

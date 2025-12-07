@@ -171,6 +171,44 @@ class EmailService {
         }
       }
 
+      // 🔥 RAILWAY FIX: Step 2.5 - Try Redis (persists across Railway deployments)
+      if (!transporter && userId && userId !== 'anonymous') {
+        try {
+          const RedisUserCache = require('../utils/RedisUserCache');
+          const redisCache = new RedisUserCache();
+          const redisSMTP = await redisCache.get(userId, 'smtp_config');
+
+          if (redisSMTP && redisSMTP.username && redisSMTP.password) {
+            console.log('✅ Using SMTP credentials from Redis:', redisSMTP.username);
+            console.log(`   Host: ${redisSMTP.host}, Port: ${redisSMTP.port}`);
+            transporter = nodemailer.createTransport({
+              host: redisSMTP.host || 'smtp.gmail.com',
+              port: parseInt(redisSMTP.port) || 587,
+              secure: redisSMTP.secure === true || redisSMTP.secure === 1 || redisSMTP.port === '465' || redisSMTP.port === 465,
+              auth: {
+                user: redisSMTP.username,
+                pass: redisSMTP.password
+              },
+              tls: { rejectUnauthorized: false }
+            });
+            senderEmail = redisSMTP.username;
+
+            // Also restore to SQLite database for faster future lookups
+            try {
+              const db = require('../models/database');
+              await db.saveSMTPConfig(redisSMTP, userId);
+              console.log('✅ SMTP config restored from Redis to SQLite');
+            } catch (restoreErr) {
+              console.log('⚠️ Could not restore SMTP to SQLite:', restoreErr.message);
+            }
+          } else {
+            console.log('⚠️ No SMTP credentials found in Redis');
+          }
+        } catch (redisError) {
+          console.log('⚠️ Error fetching SMTP from Redis:', redisError.message);
+        }
+      }
+
       // Step 3: Fall back to environment variables
       if (!transporter && process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD) {
         console.log('✅ Using SMTP credentials from environment variables');
