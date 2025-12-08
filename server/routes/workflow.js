@@ -396,6 +396,15 @@ router.post('/start', strictAuth, async (req, res) => {
     userCampaignTemplateSubmitted.set(templateKey, false);
     console.log(`🎯 [RESET] Template submitted flag cleared for: ${templateKey}`);
 
+    // 🔥 RAILWAY FIX: Also clear from Redis
+    try {
+      const redisCache = require('../utils/RedisUserCache');
+      await redisCache.delete(req.userId, `templateSubmitted_${templateCampaignId}`);
+      console.log(`🎯 [RESET] Template submitted flag cleared from Redis for: ${templateKey}`);
+    } catch (redisErr) {
+      console.log('⚠️ Could not clear Redis template submission:', redisErr.message);
+    }
+
     workflowState.currentStep = 'website_analysis';
     workflowState.isRunning = true;
     workflowState.lastUpdate = new Date().toISOString();
@@ -1201,7 +1210,24 @@ router.get('/results', optionalAuth, async (req, res) => {
     let templateSelectionRequired = false;
     let templateSelectionStatus = null;
     const templateKey = `${userId}_${campaignId || 'default'}`;
-    const templateSubmitted = userCampaignTemplateSubmitted.get(templateKey) || false;
+    let templateSubmitted = userCampaignTemplateSubmitted.get(templateKey) || false;
+
+    // 🔥 RAILWAY FIX: Also check Redis for persisted template submission status
+    if (!templateSubmitted) {
+      try {
+        const redisCache = require('../utils/RedisUserCache');
+        const redisSubmission = await redisCache.get(userId, `templateSubmitted_${campaignId}`);
+        if (redisSubmission && redisSubmission.submitted) {
+          templateSubmitted = true;
+          // Restore to in-memory cache
+          userCampaignTemplateSubmitted.set(templateKey, true);
+          console.log(`🎯 [Template Check] Restored from Redis: ${templateKey} = true`);
+        }
+      } catch (redisErr) {
+        console.log('⚠️ Could not check Redis for template submission:', redisErr.message);
+      }
+    }
+
     console.log(`🎯 [Template Check] Key: ${templateKey}, Submitted: ${templateSubmitted}`);
 
     if (prospects.length > 0 &&

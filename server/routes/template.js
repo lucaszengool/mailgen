@@ -267,6 +267,15 @@ router.post('/select', optionalAuth, async (req, res) => {
       console.log(`🎯 [User: ${userId}] Template submission flag set in workflow module for campaign: ${campaignId}`);
     }
 
+    // 🔥 RAILWAY FIX: Also persist to Redis so it survives server restarts
+    try {
+      const redisCache = require('../utils/RedisUserCache');
+      await redisCache.set(userId, `templateSubmitted_${campaignId}`, { submitted: true, timestamp: Date.now() }, 0);
+      console.log(`🎯 [User: ${userId}] Template submission persisted to Redis for campaign: ${campaignId}`);
+    } catch (redisErr) {
+      console.log('⚠️ Could not persist template submission to Redis:', redisErr.message);
+    }
+
     // 🚀 CRITICAL: Resume workflow with selected template
     console.log('🚀 Resuming workflow with selected template:', templateId);
 
