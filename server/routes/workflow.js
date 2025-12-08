@@ -1638,8 +1638,12 @@ async function startEmailGeneration() {
       step.endTime = new Date().toISOString();
       
       // Generate a sample first email for review
+      // 🔥 FIX: Include campaignId to prevent cross-campaign mixing
+      const currentCampaignId = workflowState.campaignId || campaignId || `campaign_${Date.now()}`;
       workflowState.firstEmailGenerated = {
         id: 'sample-email-001',
+        campaignId: currentCampaignId, // 🔒 CRITICAL: Always include campaignId
+        campaign_id: currentCampaignId, // Also snake_case version
         to: 'john@example.com',
         recipientName: 'John Smith',
         company: 'TechCorp',
