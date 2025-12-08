@@ -3410,6 +3410,8 @@ Write an email that demonstrates DEEP UNDERSTANDING of ${senderCompany}'s actual
 ✗ NEVER write "Best regards" more than once
 ✗ NEVER include meta-commentary or instructions
 ✗ NEVER use markdown formatting (**, __, *, etc.)
+✗ NEVER include inline URLs or hyperlinks like [text](url) or example.com - the CTA button handles all links
+✗ NEVER mention "website" with a link - just describe the product/service naturally
 
 === EMAIL FORMAT ===
 Subject: [Write ONE compelling, specific subject line referencing ${recipientCompany}]
@@ -5797,6 +5799,12 @@ Return ONLY the JSON object, no other text.`;
 
     // Remove common placeholder patterns
     let cleaned = text
+      // 🔥 FIX: Remove markdown-style links like [text](url) - keep just the text
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      // 🔥 FIX: Remove raw URLs and example.com references
+      .replace(/https?:\/\/example\.com[^\s]*/gi, '')
+      .replace(/\[here\]/gi, '')
+
       // Remove [Name], [Company], etc. in brackets
       .replace(/\[Name\]/gi, '')
       .replace(/\[Company\]/gi, '')
