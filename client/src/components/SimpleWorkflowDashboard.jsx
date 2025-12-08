@@ -3071,6 +3071,26 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     console.log(`📧 [localStorage] Marked first email modal as shown for campaign: ${campaignId}`);
   }, []);
 
+  // 🔥 FIX: Helper to filter prospects to only those matching the current campaign
+  const filterProspectsByCampaign = useCallback((prospects, targetCampaignId) => {
+    if (!targetCampaignId || !prospects) return prospects || [];
+    return prospects.filter(p => {
+      const pCampaignId = p.campaignId || p.campaign_id;
+      // Keep if no campaign ID (legacy) or if matches current campaign
+      return !pCampaignId || pCampaignId === targetCampaignId || String(pCampaignId) === String(targetCampaignId);
+    });
+  }, []);
+
+  // 🔥 FIX: Helper to filter emails to only those matching the current campaign
+  const filterEmailsByCampaign = useCallback((emails, targetCampaignId) => {
+    if (!targetCampaignId || !emails) return emails || [];
+    return emails.filter(e => {
+      const eCampaignId = e.campaignId || e.campaign_id;
+      // Keep if no campaign ID (legacy) or if matches current campaign
+      return !eCampaignId || eCampaignId === targetCampaignId || String(eCampaignId) === String(targetCampaignId);
+    });
+  }, []);
+
   const [selectedFilters, setSelectedFilters] = useState(new Set());
 
   // 🚀 Email Generation Status Popup
@@ -4615,13 +4635,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
         // 🎯 CRITICAL FIX: Always set prospects when available (separate from animation logic)
         if (prospectsFromAPI && prospectsFromAPI.length > 0) {
-          console.log(`🎯 Found ${prospectsFromAPI.length} prospects from API - merging with existing`);
+          console.log(`🎯 Found ${prospectsFromAPI.length} prospects from API - replacing state for current campaign`);
+          // 🔥 FIX: Use SET instead of MERGE to prevent mixing campaigns
+          // The API already returns only prospects for the current campaign
+          const currentCampaignIdForMerge = result.data.campaignId || localStorage.getItem('currentCampaignId');
           setProspects(prev => {
-            const existingEmails = new Set(prev.map(p => p.email));
+            // 🔥 CRITICAL: Filter out any prospects from different campaigns first
+            const filteredPrev = prev.filter(p => {
+              const pCampaignId = p.campaignId || p.campaign_id;
+              return !pCampaignId || pCampaignId === currentCampaignIdForMerge || String(pCampaignId) === String(currentCampaignIdForMerge);
+            });
+            const existingEmails = new Set(filteredPrev.map(p => p.email));
             const newProspects = prospectsFromAPI.filter(p => !existingEmails.has(p.email));
-            if (newProspects.length > 0) {
-              console.log(`📦 Adding ${newProspects.length} new prospects from API (${prev.length} → ${prev.length + newProspects.length})`);
-              return [...prev, ...newProspects];
+            if (newProspects.length > 0 || filteredPrev.length !== prev.length) {
+              console.log(`📦 Setting prospects: filtered ${prev.length - filteredPrev.length} from other campaigns, adding ${newProspects.length} new (${filteredPrev.length} → ${filteredPrev.length + newProspects.length})`);
+              return [...filteredPrev, ...newProspects];
             }
             return prev;
           });
@@ -5054,18 +5082,24 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         }
 
         if (prospect && prospect.email) {
+          const targetCampaignId = prospectCampaignId || currentCampaignId;
           setProspects(prev => {
-            // Check if prospect already exists
-            const exists = prev.some(p => p.email === prospect.email);
-            if (exists) return prev;
+            // 🔥 FIX: Filter existing prospects to only those from current campaign
+            const filteredPrev = filterProspectsByCampaign(prev, targetCampaignId);
+            // Check if prospect already exists in current campaign
+            const exists = filteredPrev.some(p => p.email === prospect.email);
+            if (exists && filteredPrev.length === prev.length) return prev;
             // 🔥 FIX: Always tag prospect with campaignId
             const taggedProspect = {
               ...prospect,
-              campaignId: prospectCampaignId || currentCampaignId,
-              campaign_id: prospectCampaignId || currentCampaignId
+              campaignId: targetCampaignId,
+              campaign_id: targetCampaignId
             };
-            console.log(`✅ [INSTANT] Adding new prospect: ${prospect.email} (campaign: ${taggedProspect.campaignId})`);
-            return [...prev, taggedProspect];
+            if (!exists) {
+              console.log(`✅ [INSTANT] Adding new prospect: ${prospect.email} (campaign: ${taggedProspect.campaignId})`);
+              return [...filteredPrev, taggedProspect];
+            }
+            return filteredPrev;
           });
         }
         return;
@@ -5422,14 +5456,20 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         console.log(`📦 Merging ${receivedProspects.length} prospects from prospect_list`);
 
         if (receivedProspects.length > 0) {
+          const targetCampaignId = prospectCampaignId || currentCampaignId;
           setProspects(prev => {
-            const existingEmails = new Set(prev.map(p => p.email));
-            const newProspects = receivedProspects.filter(p => p.email && !existingEmails.has(p.email));
-            if (newProspects.length > 0) {
-              console.log(`📦🚀 [INSTANT] Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
-              return [...prev, ...newProspects];
+            // 🔥 FIX: Filter existing prospects to only those from current campaign
+            const filteredPrev = filterProspectsByCampaign(prev, targetCampaignId);
+            const existingEmails = new Set(filteredPrev.map(p => p.email));
+            // Tag new prospects with campaignId
+            const newProspects = receivedProspects
+              .filter(p => p.email && !existingEmails.has(p.email))
+              .map(p => ({ ...p, campaignId: targetCampaignId, campaign_id: targetCampaignId }));
+            if (newProspects.length > 0 || filteredPrev.length !== prev.length) {
+              console.log(`📦🚀 [INSTANT] Filtered ${prev.length - filteredPrev.length} from other campaigns, adding ${newProspects.length} new (${filteredPrev.length} → ${filteredPrev.length + newProspects.length})`);
+              return [...filteredPrev, ...newProspects];
             }
-            return prev;
+            return filteredPrev.length !== prev.length ? filteredPrev : prev;
           });
 
           // 🔥 INSTANT: Force component re-render
