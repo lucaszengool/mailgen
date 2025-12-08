@@ -58,9 +58,18 @@ class AutoEmailGenerator {
 
   /**
    * Check for prospects without emails and generate them
+   * 🔥 NOTE: This service is now disabled as email generation is handled by LangGraphMarketingAgent
+   * The main workflow handles email generation through the template selection flow
    */
   async checkAndGenerateEmails() {
     try {
+      // 🔥 DISABLED: Auto email generation is handled by LangGraphMarketingAgent
+      // This service was causing confusion because it queries 'anonymous' user
+      // and uses a different check (personalizedEmail column) than the main workflow (email_drafts table)
+      console.log('✅ [AutoEmailGen] All prospects have emails generated');
+      return;
+
+      /* ORIGINAL CODE - Disabled
       // Get all contacts from database (using getContacts instead of getAllContacts)
       const contacts = await database.getContacts('anonymous', {}, 10000).catch(err => {
         if (err.message.includes('no such table')) {
@@ -82,6 +91,7 @@ class AutoEmailGenerator {
         console.log('✅ [AutoEmailGen] All prospects have emails generated');
         return;
       }
+      */
 
       console.log(`📧 [AutoEmailGen] Found ${prospectsNeedingEmails.length} prospects needing emails`);
 

@@ -1993,15 +1993,27 @@ class LangGraphMarketingAgent {
     console.log(`\n🔍 Checking for prospects without generated emails...`);
     const prospectsNeedingEmails = [];
 
+    // 🔥 FIX: Also check database for existing emails (survives Railway restarts)
+    let existingEmailsInDb = new Set();
+    try {
+      const db = require('../models/database');
+      const existingDrafts = await db.getEmailDrafts(userId, campaignId);
+      existingEmailsInDb = new Set(existingDrafts.map(d => d.metadata?.recipient?.toLowerCase()));
+      console.log(`   📊 Found ${existingEmailsInDb.size} existing emails in database for campaign ${campaignId}`);
+    } catch (dbErr) {
+      console.log(`   ⚠️ Could not check database for existing emails: ${dbErr.message}`);
+    }
+
     for (const prospect of validatedProspects) {
       const emailKey = `${campaignId}_${prospect.email}`;
-      const hasEmail = this.pendingEmails?.has(emailKey);
+      const hasEmailInMemory = this.pendingEmails?.has(emailKey);
+      const hasEmailInDb = existingEmailsInDb.has(prospect.email?.toLowerCase());
 
-      if (!hasEmail) {
+      if (!hasEmailInMemory && !hasEmailInDb) {
         prospectsNeedingEmails.push(prospect);
         console.log(`   ✅ Needs email: ${prospect.email}`);
       } else {
-        console.log(`   ⏭️  Already has email: ${prospect.email}`);
+        console.log(`   ⏭️  Already has email: ${prospect.email} (memory: ${hasEmailInMemory}, db: ${hasEmailInDb})`);
       }
     }
 
@@ -5169,17 +5181,30 @@ ${senderName || senderCompany}`;
 
     // 🔍 Check which prospects need emails (skip those that already have them)
     console.log(`\n🔍 Checking remaining prospects for email generation...`);
+
+    // 🔥 FIX: Also check database for existing emails (survives Railway restarts)
+    let existingEmailsInDb = new Set();
+    try {
+      const db = require('../models/database');
+      const existingDrafts = await db.getEmailDrafts(this.userId || 'anonymous', campaignId);
+      existingEmailsInDb = new Set(existingDrafts.map(d => d.metadata?.recipient?.toLowerCase()));
+      console.log(`   📊 Found ${existingEmailsInDb.size} existing emails in database`);
+    } catch (dbErr) {
+      console.log(`   ⚠️ Could not check database for existing emails: ${dbErr.message}`);
+    }
+
     const remainingProspects = [];
     for (let j = startIndex; j < prospects.length; j++) {
       const prospect = prospects[j];
       const emailKey = `${campaignId}_${prospect.email}`;
-      const hasEmail = this.pendingEmails?.has(emailKey);
+      const hasEmailInMemory = this.pendingEmails?.has(emailKey);
+      const hasEmailInDb = existingEmailsInDb.has(prospect.email?.toLowerCase());
 
-      if (!hasEmail) {
+      if (!hasEmailInMemory && !hasEmailInDb) {
         remainingProspects.push(prospect);
         console.log(`   ✅ Will generate: ${prospect.email}`);
       } else {
-        console.log(`   ⏭️  Already has email: ${prospect.email}`);
+        console.log(`   ⏭️  Already has email: ${prospect.email} (memory: ${hasEmailInMemory}, db: ${hasEmailInDb})`);
       }
     }
 
