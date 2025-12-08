@@ -67,7 +67,51 @@ class EmailService {
         }
       }
 
-      // Step 2: If no OAuth, try SMTP credentials from database (ALWAYS check this)
+      // 🔥 RAILWAY FIX: Step 2 - Check Redis FIRST (persists across Railway deployments)
+      // This is the primary storage for Railway since SQLite is ephemeral
+      if (!transporter) {
+        try {
+          const redisCache = require('../utils/RedisUserCache');
+          let redisSMTP = null;
+
+          // First try user-specific config
+          if (userId && userId !== 'anonymous') {
+            redisSMTP = await redisCache.get(userId, 'smtp_config');
+            if (redisSMTP && redisSMTP.username && redisSMTP.password) {
+              console.log('✅ Using SMTP credentials from Redis (user-specific):', redisSMTP.username);
+            }
+          }
+
+          // Fallback to 'default' user config (auto-restored from env vars)
+          if (!redisSMTP || !redisSMTP.username || !redisSMTP.password) {
+            redisSMTP = await redisCache.get('default', 'smtp_config');
+            if (redisSMTP && redisSMTP.username && redisSMTP.password) {
+              console.log('✅ Using SMTP credentials from Redis (default user):', redisSMTP.username);
+            }
+          }
+
+          if (redisSMTP && redisSMTP.username && redisSMTP.password) {
+            console.log(`   Host: ${redisSMTP.host}, Port: ${redisSMTP.port}`);
+            transporter = nodemailer.createTransport({
+              host: redisSMTP.host || 'smtp.gmail.com',
+              port: parseInt(redisSMTP.port) || 587,
+              secure: redisSMTP.secure === true || redisSMTP.secure === 1 || redisSMTP.port === '465' || redisSMTP.port === 465,
+              auth: {
+                user: redisSMTP.username,
+                pass: redisSMTP.password
+              },
+              tls: { rejectUnauthorized: false }
+            });
+            senderEmail = redisSMTP.username;
+          } else {
+            console.log('⚠️ No SMTP credentials found in Redis for user:', userId || 'anonymous');
+          }
+        } catch (redisError) {
+          console.log('⚠️ Error fetching SMTP from Redis:', redisError.message);
+        }
+      }
+
+      // Step 3: If no Redis config, try database (for local dev or legacy data)
       if (!transporter) {
         try {
           const db = require('../models/database');
@@ -86,7 +130,7 @@ class EmailService {
               );
             });
             if (smtpCreds) {
-              console.log(`📧 Found SMTP config for user: ${userId}`);
+              console.log(`📧 Found SMTP config in database for user: ${userId}`);
             }
           }
 
@@ -163,49 +207,22 @@ class EmailService {
               tls: { rejectUnauthorized: false }
             });
             senderEmail = smtpCreds.username;
+
+            // 🔥 AUTO-MIGRATE: If found in DB but not Redis, save to Redis for persistence
+            if (userId && userId !== 'anonymous') {
+              try {
+                const redisCache = require('../utils/RedisUserCache');
+                await redisCache.set(userId, 'smtp_config', smtpCreds, 0);
+                console.log('✅ [AUTO-MIGRATE] SMTP config copied from database to Redis');
+              } catch (redisErr) {
+                console.log('⚠️ Could not auto-migrate SMTP to Redis:', redisErr.message);
+              }
+            }
           } else {
             console.log('⚠️ No SMTP credentials found in database');
           }
         } catch (dbError) {
           console.log('⚠️ Error fetching SMTP credentials from DB:', dbError.message);
-        }
-      }
-
-      // 🔥 RAILWAY FIX: Step 2.5 - Try Redis (persists across Railway deployments)
-      if (!transporter && userId && userId !== 'anonymous') {
-        try {
-          // 🔥 FIX: RedisUserCache exports a singleton, don't use 'new'
-          const redisCache = require('../utils/RedisUserCache');
-          const redisSMTP = await redisCache.get(userId, 'smtp_config');
-
-          if (redisSMTP && redisSMTP.username && redisSMTP.password) {
-            console.log('✅ Using SMTP credentials from Redis:', redisSMTP.username);
-            console.log(`   Host: ${redisSMTP.host}, Port: ${redisSMTP.port}`);
-            transporter = nodemailer.createTransport({
-              host: redisSMTP.host || 'smtp.gmail.com',
-              port: parseInt(redisSMTP.port) || 587,
-              secure: redisSMTP.secure === true || redisSMTP.secure === 1 || redisSMTP.port === '465' || redisSMTP.port === 465,
-              auth: {
-                user: redisSMTP.username,
-                pass: redisSMTP.password
-              },
-              tls: { rejectUnauthorized: false }
-            });
-            senderEmail = redisSMTP.username;
-
-            // Also restore to SQLite database for faster future lookups
-            try {
-              const db = require('../models/database');
-              await db.saveSMTPConfig(redisSMTP, userId);
-              console.log('✅ SMTP config restored from Redis to SQLite');
-            } catch (restoreErr) {
-              console.log('⚠️ Could not restore SMTP to SQLite:', restoreErr.message);
-            }
-          } else {
-            console.log('⚠️ No SMTP credentials found in Redis');
-          }
-        } catch (redisError) {
-          console.log('⚠️ Error fetching SMTP from Redis:', redisError.message);
         }
       }
 

@@ -211,8 +211,71 @@ app.use((req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
+// 🔥 RAILWAY FIX: Auto-restore SMTP config from environment variables to Redis on startup
+async function restoreSMTPToRedis() {
+  try {
+    // Only run in production (Railway)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('⚠️ Skipping SMTP auto-restore (not in production mode)');
+      return;
+    }
+
+    const redisCache = require('./utils/RedisUserCache');
+
+    // Check if SMTP env vars are set
+    if (!process.env.SMTP_USERNAME || !process.env.SMTP_PASSWORD) {
+      console.log('⚠️ No SMTP environment variables found for auto-restore');
+      return;
+    }
+
+    // Get all unique user IDs that might need SMTP config
+    // We'll use 'default' as a fallback user for anonymous/env-based SMTP
+    const defaultUserId = 'default';
+
+    // Check if Redis already has config for this user
+    const existingConfig = await redisCache.get(defaultUserId, 'smtp_config');
+
+    if (existingConfig && existingConfig.username && existingConfig.password) {
+      console.log('✅ SMTP config already in Redis for default user:', existingConfig.username);
+      return;
+    }
+
+    // No config in Redis - restore from environment variables
+    const smtpConfig = {
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT) || 587,
+      username: process.env.SMTP_USERNAME,
+      password: process.env.SMTP_PASSWORD,
+      secure: process.env.SMTP_SECURE === 'true'
+    };
+
+    // Save to Redis for 'default' user
+    await redisCache.set(defaultUserId, 'smtp_config', smtpConfig, 0);
+    console.log('✅ [AUTO-RESTORE] SMTP config from env vars saved to Redis for default user');
+
+    // Also check if we have Railway user IDs that need config
+    // Try to restore for any known users from environment
+    if (process.env.KNOWN_USER_IDS) {
+      const userIds = process.env.KNOWN_USER_IDS.split(',');
+      for (const userId of userIds) {
+        const trimmedId = userId.trim();
+        if (trimmedId && trimmedId !== defaultUserId) {
+          const userConfig = await redisCache.get(trimmedId, 'smtp_config');
+          if (!userConfig || !userConfig.username) {
+            await redisCache.set(trimmedId, 'smtp_config', smtpConfig, 0);
+            console.log(`✅ [AUTO-RESTORE] SMTP config saved to Redis for user: ${trimmedId}`);
+          }
+        }
+      }
+    }
+
+  } catch (error) {
+    console.error('⚠️ Failed to auto-restore SMTP to Redis:', error.message);
+  }
+}
+
 // Start server immediately - don't wait for agent initialization
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 API Server: http://localhost:${PORT}`);
   console.log(`🔌 WebSocket Server: ws://localhost:${PORT}/ws/workflow (explicit path)`);
@@ -222,6 +285,9 @@ server.listen(PORT, () => {
 
   // Log WebSocket server status
   console.log(`✅ WebSocket manager initialized and ready`);
+
+  // 🔥 RAILWAY FIX: Auto-restore SMTP config to Redis from env vars
+  await restoreSMTPToRedis();
 
   // 🤖 Start Auto Email Generator service
   const autoEmailGenerator = require('./services/AutoEmailGenerator');
