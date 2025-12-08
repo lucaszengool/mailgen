@@ -218,7 +218,10 @@ class EmailService {
 
       // Step 4: Check if transporter is properly configured
       if (!transporter || !senderEmail) {
-        throw new Error('SMTP not configured. Please configure your email settings in Settings → SMTP Settings.');
+        console.error('❌ [SMTP ERROR] No SMTP configuration found!');
+        console.error(`   userId: ${userId}`);
+        console.error(`   Checked: Gmail OAuth, Database, Redis, Environment variables`);
+        throw new Error(`SMTP not configured for user ${userId || 'anonymous'}. Please go to Settings → SMTP Settings to configure your email.`);
       }
 
       // Add tracking pixel if trackingId provided
