@@ -41,7 +41,9 @@ router.get('/', (req, res) => {
 router.post('/smtp', async (req, res) => {
   try {
     const { smtpConfig, timestamp } = req.body;
-    const userId = req.user?.userId || req.headers['x-user-id'] || 'anonymous';
+    // 🔥 FIX: Use req.userId from extractUserContext middleware, or fallback to header/body
+    const userId = req.userId || req.headers['x-user-id'] || req.body?.userId || 'anonymous';
+    console.log(`📧 [SMTP SAVE] Extracted userId: ${userId} (req.userId=${req.userId}, header=${req.headers['x-user-id']}, body=${req.body?.userId})`);
 
     console.log(`📧 [User: ${userId}] 更新SMTP配置:`, smtpConfig);
 
@@ -80,6 +82,11 @@ router.post('/smtp', async (req, res) => {
       // Store with no expiration (0) so it persists indefinitely
       await redisCache.set(userId, 'smtp_config', smtpConfig, 0);
       console.log(`✅ [User: ${userId}] SMTP config saved to Redis for persistence`);
+
+      // 🔥 ALSO save as 'default' user so EmailService fallback works
+      // This ensures SMTP works even if userId extraction fails somewhere
+      await redisCache.set('default', 'smtp_config', smtpConfig, 0);
+      console.log(`✅ [User: ${userId}] SMTP config also saved to Redis as 'default' fallback`);
     } catch (redisError) {
       console.error(`❌ [User: ${userId}] Failed to save SMTP to Redis:`, redisError.message);
     }

@@ -74,19 +74,26 @@ class EmailService {
           const redisCache = require('../utils/RedisUserCache');
           let redisSMTP = null;
 
+          console.log(`📧 [SMTP LOOKUP] Checking Redis for userId: ${userId}`);
+
           // First try user-specific config
           if (userId && userId !== 'anonymous') {
             redisSMTP = await redisCache.get(userId, 'smtp_config');
             if (redisSMTP && redisSMTP.username && redisSMTP.password) {
               console.log('✅ Using SMTP credentials from Redis (user-specific):', redisSMTP.username);
+            } else {
+              console.log(`⚠️ No user-specific SMTP in Redis for: ${userId}`);
             }
           }
 
           // Fallback to 'default' user config (auto-restored from env vars)
           if (!redisSMTP || !redisSMTP.username || !redisSMTP.password) {
+            console.log('📧 [SMTP LOOKUP] Trying default user in Redis...');
             redisSMTP = await redisCache.get('default', 'smtp_config');
             if (redisSMTP && redisSMTP.username && redisSMTP.password) {
               console.log('✅ Using SMTP credentials from Redis (default user):', redisSMTP.username);
+            } else {
+              console.log('⚠️ No default SMTP in Redis either');
             }
           }
 
