@@ -7175,59 +7175,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   )}
                 </div>
 
-                {/* Show generating state if workflow is running and no emails yet */}
-                {(workflowStatus === 'generating_emails' || workflowStatus === 'running' || workflowStatus === 'analyzing_prospects' || workflowStatus === 'finding_prospects') && generatedEmails.length === 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-16 bg-white rounded-2xl"
-                  >
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Generating personalized emails</h3>
-                    <p className="text-sm text-gray-600 mb-6">Please wait while AI analyzes prospects and creates content</p>
-
-                    {/* Countdown Timer */}
-                    {generationTimeRemaining !== null && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-6"
-                      >
-                        <div className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full">
-                          <Clock className="w-5 h-5" />
-                          <span className="text-lg font-semibold">
-                            Wait {Math.floor(generationTimeRemaining / 60)}:{String(generationTimeRemaining % 60).padStart(2, '0')} minutes
-                          </span>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    <div className="flex items-center justify-center gap-2 mb-6">
-                      <motion.div
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
-                        className="w-3 h-3 rounded-full bg-[#00f5a0]"
-                      />
-                      <motion.div
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
-                        className="w-3 h-3 rounded-full bg-[#00f5a0]"
-                      />
-                      <motion.div
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
-                        className="w-3 h-3 rounded-full bg-[#00f5a0]"
-                      />
-                    </div>
-
-                    <div className="max-w-md mx-auto">
-                      <div className="bg-white/50 rounded-lg p-4">
-                        <p className="text-sm text-black/60">
-                          Our AI is analyzing each prospect's profile and crafting personalized email content tailored to their needs.
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
+                {/* 🔥 REMOVED: Duplicate generating state - now only shown in the email list section below */}
 
                 {/* Search Bar for Emails */}
                 {generatedEmails.length > 0 && workflowStatus !== 'generating_emails' && (
@@ -7278,50 +7226,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                         <p className="text-sm text-gray-600 mb-6">
                           Please wait while AI creates content for each prospect
                         </p>
-
-                        {/* Countdown Timer */}
-                        {generationTimeRemaining !== null && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mb-6"
-                          >
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-full text-sm">
-                              <Clock className="w-4 h-4" />
-                              <span className="font-medium">
-                                Wait {Math.floor(generationTimeRemaining / 60)}:{String(generationTimeRemaining % 60).padStart(2, '0')} minutes
-                              </span>
-                            </div>
-                          </motion.div>
-                        )}
-
-                        <div className="flex items-center justify-center gap-2">
-                          <motion.div
-                            animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
-                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
-                          />
-                          <motion.div
-                            animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
-                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
-                          />
-                          <motion.div
-                            animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
-                            className="w-2 h-2 rounded-full bg-[#00f5a0]"
-                          />
-                        </div>
-                      </motion.div>
-                    ) : workflowStatus !== 'stopped' && workflowStatus !== 'idle' && workflowStatus !== '' ? (
-                      // Show generating state if workflow is running but no emails yet
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="text-center py-16 bg-white rounded-2xl"
-                      >
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Generating personalized emails</h3>
-                        <p className="text-sm text-gray-600 mb-6">Please wait while AI finds prospects and creates content</p>
 
                         {/* Countdown Timer */}
                         {generationTimeRemaining !== null && (
