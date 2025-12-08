@@ -174,8 +174,8 @@ class EmailService {
       // 🔥 RAILWAY FIX: Step 2.5 - Try Redis (persists across Railway deployments)
       if (!transporter && userId && userId !== 'anonymous') {
         try {
-          const RedisUserCache = require('../utils/RedisUserCache');
-          const redisCache = new RedisUserCache();
+          // 🔥 FIX: RedisUserCache exports a singleton, don't use 'new'
+          const redisCache = require('../utils/RedisUserCache');
           const redisSMTP = await redisCache.get(userId, 'smtp_config');
 
           if (redisSMTP && redisSMTP.username && redisSMTP.password) {

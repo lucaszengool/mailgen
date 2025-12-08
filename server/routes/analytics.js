@@ -1843,8 +1843,8 @@ router.get('/fetch-gmail-thread/:recipientEmail', async (req, res) => {
     // 🔥 RAILWAY FIX: Try Redis if database doesn't have SMTP
     if (!smtpJson) {
       try {
-        const RedisUserCache = require('../utils/RedisUserCache');
-        const redisCache = new RedisUserCache();
+        // 🔥 FIX: RedisUserCache exports a singleton, don't use 'new'
+        const redisCache = require('../utils/RedisUserCache');
         const redisSMTP = await redisCache.get(userId, 'smtp_config');
 
         if (redisSMTP && redisSMTP.username && redisSMTP.password) {
@@ -1961,8 +1961,8 @@ router.post('/send-reply', async (req, res) => {
     // 🔥 RAILWAY FIX: Check Redis if database doesn't have SMTP
     if (!smtpCreds || !smtpCreds.username || !smtpCreds.password) {
       try {
-        const RedisUserCache = require('../utils/RedisUserCache');
-        const redisCache = new RedisUserCache();
+        // 🔥 FIX: RedisUserCache exports a singleton, don't use 'new'
+        const redisCache = require('../utils/RedisUserCache');
         const redisSMTP = await redisCache.get(userId, 'smtp_config');
 
         if (redisSMTP && redisSMTP.username && redisSMTP.password) {

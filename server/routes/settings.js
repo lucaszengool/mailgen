@@ -75,8 +75,8 @@ router.post('/smtp', async (req, res) => {
     // 🔥 RAILWAY FIX: Also save to Redis for persistence across deployments
     // SQLite is lost on Railway redeploy, but Redis persists
     try {
-      const RedisUserCache = require('../utils/RedisUserCache');
-      const redisCache = new RedisUserCache();
+      // 🔥 FIX: RedisUserCache exports a singleton, don't use 'new'
+      const redisCache = require('../utils/RedisUserCache');
       // Store with no expiration (0) so it persists indefinitely
       await redisCache.set(userId, 'smtp_config', smtpConfig, 0);
       console.log(`✅ [User: ${userId}] SMTP config saved to Redis for persistence`);
