@@ -1514,9 +1514,88 @@ router.get('/email-thread/:emailId', async (req, res) => {
     }
 
     // Combine and sort all emails chronologically
-    const allEmails = [...sentEmails, ...replies].sort((a, b) =>
+    let allEmails = [...sentEmails, ...replies].sort((a, b) =>
       new Date(a.timestamp) - new Date(b.timestamp)
     );
+
+    // 🔥 NEW: Also fetch from Gmail IMAP to get real reply content
+    // This syncs with the Campaign page EmailThreadPanel behavior
+    try {
+      // Get SMTP/IMAP credentials
+      let smtpJson = null;
+
+      // Try user_configs first
+      const userConfig = await new Promise((resolve, reject) => {
+        db.db.get('SELECT smtp_config FROM user_configs WHERE user_id = ? LIMIT 1', [userId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (userConfig && userConfig.smtp_config) {
+        try { smtpJson = JSON.parse(userConfig.smtp_config); } catch (e) {}
+      }
+
+      // Try Redis if not in database
+      if (!smtpJson) {
+        try {
+          const redisCache = require('../utils/RedisUserCache');
+          const redisSMTP = await redisCache.get(userId, 'smtp_config');
+          if (redisSMTP && redisSMTP.username && redisSMTP.password) {
+            smtpJson = redisSMTP;
+          }
+        } catch (redisErr) {
+          console.log('⚠️ Redis SMTP lookup failed:', redisErr.message);
+        }
+      }
+
+      // Fetch from Gmail IMAP if we have credentials
+      if (smtpJson && smtpJson.username && smtpJson.password) {
+        const imapConfig = {
+          user: smtpJson.username,
+          password: smtpJson.password,
+          host: 'imap.gmail.com',
+          port: 993
+        };
+
+        const IMAPEmailTracker = require('../services/IMAPEmailTracker');
+        const imapTracker = new IMAPEmailTracker();
+
+        const gmailEmails = await imapTracker.fetchEmailThread(originalEmail.to_email, imapConfig);
+
+        if (gmailEmails && gmailEmails.length > 0) {
+          console.log(`📧 [EMAIL-THREAD] Fetched ${gmailEmails.length} emails from Gmail IMAP`);
+
+          // Convert Gmail emails to match our format
+          const gmailFormatted = gmailEmails.map(ge => ({
+            id: ge.id || `gmail_${Date.now()}_${Math.random()}`,
+            to: ge.to,
+            from: ge.from,
+            subject: ge.subject,
+            content: ge.content || ge.htmlContent || ge.textContent,
+            timestamp: ge.timestamp,
+            type: ge.type || (ge.from?.includes(smtpJson.username) ? 'sent' : 'received'),
+            fromGmail: true
+          }));
+
+          // Merge with existing emails, avoiding duplicates
+          const existingSubjects = new Set(allEmails.map(e => e.subject?.toLowerCase()));
+          const newEmails = gmailFormatted.filter(ge =>
+            !existingSubjects.has(ge.subject?.toLowerCase())
+          );
+
+          if (newEmails.length > 0) {
+            allEmails = [...allEmails, ...newEmails].sort((a, b) =>
+              new Date(a.timestamp) - new Date(b.timestamp)
+            );
+            console.log(`📧 [EMAIL-THREAD] Added ${newEmails.length} new emails from Gmail`);
+          }
+        }
+      }
+    } catch (imapError) {
+      console.log('⚠️ [EMAIL-THREAD] Gmail IMAP fetch failed:', imapError.message);
+      // Continue with database-only data
+    }
 
     // Build response
     const threadData = {
