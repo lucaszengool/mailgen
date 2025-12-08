@@ -6445,6 +6445,8 @@ CRITICAL INSTRUCTIONS - READ CAREFULLY:
 - NO signatures like "Best regards", "Sincerely", "Thank you" - the template already has them
 - NO closing lines like "Looking forward to hearing from you"
 - NO sender name or company name at the end
+- NO URLs, links, or markdown like [text](url) - the CTA buttons handle all links
+- NO "visit our website" or "check out [link]" - describe the product naturally instead
 - ONLY write the main body paragraphs explaining the value proposition
 
 VERIFICATION CHECKLIST before you write:
@@ -6483,6 +6485,8 @@ Requirements:
 - NO signatures like "Best regards", "Sincerely", "Thank you" - the template already has them
 - NO closing lines like "Looking forward to hearing from you"
 - NO sender name or company name at the end
+- NO URLs, links, or markdown like [text](url) - the CTA buttons handle all links
+- NO "visit our website" or "check out [link]" - describe the product naturally instead
 - ONLY write the main body paragraphs explaining the value proposition
 
 Generate ONLY the email body paragraphs (no subject, no greeting, no signature). Make it feel like a real person wrote it for ${prospect.name || 'them'}.`;
@@ -8339,7 +8343,9 @@ Business: ${businessAnalysis?.companyName || 'Our Company'}
 Value Proposition: ${businessAnalysis?.valueProposition || 'AI-powered solutions'}
 Recipient Role: ${prospect.position || prospect.role || 'business professional'}
 
-Write 1-2 paragraphs that ${description.toLowerCase()}. Be specific, professional, and engaging. Output only the content text, no HTML tags.`;
+Write 1-2 paragraphs that ${description.toLowerCase()}. Be specific, professional, and engaging. Output only the content text, no HTML tags.
+
+IMPORTANT: Do NOT include any URLs, links, or markdown like [text](url). The email template has CTA buttons for links.`;
 
         try {
           const aiContent = await this.callOllamaAPI(prompt, 'qwen2.5:0.5b');
@@ -8365,7 +8371,9 @@ Write 2-3 paragraphs that:
 2. Explain how our AI marketing solution can help their specific business
 3. Include a clear call to action
 
-Keep the tone ${persona.communicationStyle || 'professional'} and engaging. Output only the email body text, no greetings or signatures.`;
+Keep the tone ${persona.communicationStyle || 'professional'} and engaging. Output only the email body text, no greetings or signatures.
+
+IMPORTANT: Do NOT include any URLs, links, or markdown like [text](url). The email template has CTA buttons for links.`;
 
         try {
           const aiContent = await this.callOllamaAPI(prompt, 'qwen2.5:0.5b');
@@ -8576,6 +8584,8 @@ CRITICAL REMINDERS:
 - DO NOT include subtitles or section headers like "Our partnership offers several benefits:"
 - DO NOT include bullet points with colons like "Shared Expertise:" or "Enhanced Collaboration:"
 - DO NOT include any meta-commentary or instructions to the reader
+- DO NOT include any URLs, links, or markdown like [text](url) - the CTA buttons handle all links
+- DO NOT write "visit our website" or "check out [link]" - describe the product naturally
 - Write as ONE flowing message, NOT separate disconnected sections
 
 Write the complete email now:`;
@@ -8610,6 +8620,8 @@ DO NOT include:
 - Subtitles or section headers like "Our partnership offers several benefits:"
 - Bullet points with colons like "Shared Expertise:" or "Enhanced Collaboration:"
 - Any meta-commentary or instructions to the reader
+- Any URLs, links, or markdown like [text](url) - the CTA buttons handle all links
+- "visit our website" or "check out [link]" text - describe the product naturally
 
 Write the complete email now as a simple, flowing message (without subject line or email headers):`;
     }
@@ -9146,7 +9158,8 @@ ${isLongContent ?
   '- Write 2-3 well-developed sentences\n- Be concise but compelling\n- Focus on partnership benefits'
 }
 - Output ONLY the content text, no greetings, signatures, notes, or instructions
-- DO NOT include subtitles, section headers, or bullet points with colons`;
+- DO NOT include subtitles, section headers, or bullet points with colons
+- DO NOT include any URLs, links, or markdown like [text](url) - the CTA buttons handle all links`;
 
           try {
             const aiContent = await this.callOllamaAPI(prompt, 'qwen2.5:0.5b');
