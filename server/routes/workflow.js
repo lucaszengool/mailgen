@@ -965,13 +965,10 @@ router.get('/results', optionalAuth, async (req, res) => {
           enrichedProspects = enrichedProspects.filter(p => {
             const prospectCampaignId = p.campaignId || p.campaign_id || p.campaign;
 
-            // If prospect has no campaignId, check if it matches current campaign
+            // 🔥 FIX: STRICT MATCHING - Always reject prospects without campaignId
+            // This prevents mixing from old prospects that didn't have campaignId set
             if (!prospectCampaignId) {
-              // If processedResults.campaignId matches requested campaignId, keep the prospect
-              if (processedResults.campaignId === campaignId || processedResults.campaignId === String(campaignId)) {
-                return true;
-              }
-              console.log(`   🗑️  [CAMPAIGN ISOLATION] Filtering out prospect WITHOUT campaignId: ${p.email}`);
+              console.log(`   🗑️  [CAMPAIGN ISOLATION] Filtering out prospect WITHOUT campaignId: ${p.email} (STRICT: must have campaignId)`);
               return false;
             }
 
