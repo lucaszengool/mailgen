@@ -4132,17 +4132,28 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
         console.log(`📦 [WORKFLOW] Campaign check: prospects=${prospectCampaignId}, current=${currentCampaignId}`);
 
-        if (prospectCampaignId && currentCampaignId &&
-            prospectCampaignId !== currentCampaignId &&
-            prospectCampaignId !== String(currentCampaignId)) {
-          console.log(`🚫 [WORKFLOW] Skipping prospects from different campaign`);
-          return; // Skip - different campaign
+        // 🔥 FIX: Require campaignId match - reject if missing or mismatched
+        if (currentCampaignId) {
+          if (!prospectCampaignId) {
+            console.log(`🚫 [WORKFLOW] Skipping prospects with NO campaignId (would cause mixing)`);
+            return;
+          }
+          if (prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
+            console.log(`🚫 [WORKFLOW] Skipping prospects from different campaign`);
+            return;
+          }
         }
 
         console.log(`📦 Received ${data.prospects.length} prospects via WebSocket - merging`);
         setProspects(prev => {
           const existingEmails = new Set(prev.map(p => p.email));
-          const newProspects = data.prospects.filter(p => !existingEmails.has(p.email));
+          // 🔥 FIX: Tag each prospect with campaignId to prevent future mixing
+          const taggedProspects = data.prospects.map(p => ({
+            ...p,
+            campaignId: prospectCampaignId || currentCampaignId,
+            campaign_id: prospectCampaignId || currentCampaignId
+          }));
+          const newProspects = taggedProspects.filter(p => !existingEmails.has(p.email));
           if (newProspects.length > 0) {
             console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
             return [...prev, ...newProspects];
@@ -5349,17 +5360,31 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
         console.log(`📦 [IMMEDIATE] Campaign check: prospects=${prospectCampaignId}, current=${currentCampaignId}`);
 
-        if (prospectCampaignId && currentCampaignId &&
-            prospectCampaignId !== currentCampaignId &&
-            prospectCampaignId !== String(currentCampaignId)) {
-          console.log(`🚫 [IMMEDIATE] Skipping prospects from different campaign`);
-        } else {
+        // 🔥 FIX: Require campaignId match - reject if missing or mismatched
+        let shouldProcess = true;
+        if (currentCampaignId) {
+          if (!prospectCampaignId) {
+            console.log(`🚫 [IMMEDIATE] Skipping prospects with NO campaignId (would cause mixing)`);
+            shouldProcess = false;
+          } else if (prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
+            console.log(`🚫 [IMMEDIATE] Skipping prospects from different campaign`);
+            shouldProcess = false;
+          }
+        }
+
+        if (shouldProcess) {
           console.log('🎯 FOUND PROSPECTS - triggering micro-steps immediately!');
           triggerProspectMicroSteps(data.prospects);
           console.log(`📦 Merging ${data.prospects.length} prospects from immediate check`);
           setProspects(prev => {
             const existingEmails = new Set(prev.map(p => p.email));
-            const newProspects = data.prospects.filter(p => !existingEmails.has(p.email));
+            // 🔥 FIX: Tag each prospect with campaignId
+            const taggedProspects = data.prospects.map(p => ({
+              ...p,
+              campaignId: prospectCampaignId || currentCampaignId,
+              campaign_id: prospectCampaignId || currentCampaignId
+            }));
+            const newProspects = taggedProspects.filter(p => !existingEmails.has(p.email));
             if (newProspects.length > 0) {
               console.log(`📦 Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
               return [...prev, ...newProspects];
@@ -5445,9 +5470,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
         console.log(`🔍 [CAMPAIGN CHECK] Prospect list campaign: ${prospectCampaignId}, Current campaign: ${currentCampaignId}`);
 
-        if (prospectCampaignId && currentCampaignId && prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
-          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_list from different campaign (List: ${prospectCampaignId}, Current: ${currentCampaignId})`);
-          return; // Skip - different campaign
+        // 🔥 FIX: Require campaignId match - reject if missing or mismatched
+        if (currentCampaignId) {
+          if (!prospectCampaignId) {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_list with NO campaignId (would cause mixing)`);
+            return;
+          }
+          if (prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_list from different campaign (List: ${prospectCampaignId}, Current: ${currentCampaignId})`);
+            return;
+          }
         }
 
         console.log(`✅ [CAMPAIGN MATCH] Processing prospect_list for campaign ${prospectCampaignId || currentCampaignId}`);
@@ -5492,9 +5524,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
         const prospectCampaignId = data.campaignId || data.data?.campaignId;
 
-        if (prospectCampaignId && currentCampaignId && prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
-          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_updated from different campaign`);
-          return;
+        // 🔥 FIX: Require campaignId match - reject if missing or mismatched
+        if (currentCampaignId) {
+          if (!prospectCampaignId) {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_updated with NO campaignId`);
+            return;
+          }
+          if (prospectCampaignId !== currentCampaignId && prospectCampaignId !== String(currentCampaignId)) {
+            console.log(`🚫 [CAMPAIGN ISOLATION] Skipping prospect_updated from different campaign`);
+            return;
+          }
         }
 
         if (data.data && data.data.prospect) {
@@ -5846,6 +5885,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
                 // Check if prospect belongs to current campaign
                 const prospectCampaignId = p.campaignId || p.campaign_id || dataCampaignId;
+
+                // 🔥 FIX: If we have a current campaign and prospect has NO campaignId, reject it
+                if (currentCampaignId && !prospectCampaignId) {
+                  console.log(`🚫 [CAMPAIGN ISOLATION] Filtering out prospect ${p.email} with NO campaignId`);
+                  return false;
+                }
+
                 if (prospectCampaignId && currentCampaignId &&
                     prospectCampaignId !== currentCampaignId &&
                     String(prospectCampaignId) !== String(currentCampaignId)) {
@@ -5853,7 +5899,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                   return false;
                 }
                 return true;
-              });
+              }).map(p => ({
+                // 🔥 FIX: Tag each prospect with campaignId
+                ...p,
+                campaignId: p.campaignId || p.campaign_id || dataCampaignId || currentCampaignId,
+                campaign_id: p.campaignId || p.campaign_id || dataCampaignId || currentCampaignId
+              }));
 
               if (newProspects.length > 0) {
                 console.log(`📦🚀 [INSTANT] Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
