@@ -2612,7 +2612,15 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const [ws, setWs] = useState(null);
   const [workflowStatus, setWorkflowStatus] = useState('idle');
   const [showEmailSendConfirmation, setShowEmailSendConfirmation] = useState(false);
-  const [hasShownFirstEmailModal, setHasShownFirstEmailModal] = useState(false);
+  // 🔥 FIX: Initialize from localStorage based on current campaign
+  const [hasShownFirstEmailModal, setHasShownFirstEmailModal] = useState(() => {
+    const campaignId = localStorage.getItem('currentCampaignId');
+    if (campaignId) {
+      const shown = localStorage.getItem(`firstEmailModalShown_${campaignId}`);
+      return shown === 'true';
+    }
+    return false;
+  });
   const [templateApproved, setTemplateApproved] = useState(false); // Track if user approved template usage
   const [approvedTemplate, setApprovedTemplate] = useState(null); // Store approved template data
 
@@ -2662,6 +2670,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         });
         setWorkflowStatus('idle');
         setHasShownProspectNotification(false); // 🔥 Reset notification flag for new campaign
+        // 🔥 FIX: Reset first email modal state based on localStorage for new campaign
+        const wasShownForNewCampaign = localStorage.getItem(`firstEmailModalShown_${currentCampaignId}`) === 'true';
+        setHasShownFirstEmailModal(wasShownForNewCampaign);
 
         // 🔥 AUTO-LOAD: Immediately fetch data for this campaign
         console.log('📥 [AUTO-LOAD] Loading data for campaign:', currentCampaignId);
@@ -3044,6 +3055,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     templateAlreadySubmittedRef.current = true;
     console.log(`🎯 [localStorage] Marked template as submitted for campaign: ${campaignId}`);
   }, []);
+
+  // 🔥 FIX: Helper to check if first email modal was already shown for current campaign
+  const isFirstEmailModalShownForCampaign = useCallback((campaignId) => {
+    if (!campaignId) return false;
+    const shown = localStorage.getItem(`firstEmailModalShown_${campaignId}`);
+    return shown === 'true';
+  }, []);
+
+  // 🔥 FIX: Helper to mark first email modal as shown for a campaign
+  const markFirstEmailModalShown = useCallback((campaignId) => {
+    if (!campaignId) return;
+    localStorage.setItem(`firstEmailModalShown_${campaignId}`, 'true');
+    setHasShownFirstEmailModal(true);
+    console.log(`📧 [localStorage] Marked first email modal as shown for campaign: ${campaignId}`);
+  }, []);
+
   const [selectedFilters, setSelectedFilters] = useState(new Set());
 
   // 🚀 Email Generation Status Popup
@@ -4516,26 +4543,34 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         }
 
         // 🐛 DEBUG: Log all values for first email popup check
+        // 🔥 FIX: Also check localStorage for this specific campaign
+        const currentCampaignId = result.data.campaignId || result.data.firstEmailGenerated?.campaignId || localStorage.getItem('currentCampaignId');
+        const alreadyShownInStorage = isFirstEmailModalShownForCampaign(currentCampaignId);
+        const shouldNotShow = hasShownFirstEmailModal || alreadyShownInStorage;
+
         console.log('🐛 DEBUG: Checking if first email popup should show:');
         console.log('🐛   waitingForUserApproval:', result.data.waitingForUserApproval);
         console.log('🐛   firstEmailGenerated:', result.data.firstEmailGenerated);
         console.log('🐛   firstEmailGenerated.subject:', result.data.firstEmailGenerated?.subject);
         console.log('🐛   firstEmailGenerated.body:', result.data.firstEmailGenerated?.body);
-        console.log('🐛   hasShownFirstEmailModal:', hasShownFirstEmailModal);
+        console.log('🐛   hasShownFirstEmailModal (state):', hasShownFirstEmailModal);
+        console.log('🐛   alreadyShownInStorage:', alreadyShownInStorage);
+        console.log('🐛   currentCampaignId:', currentCampaignId);
         console.log('🐛   ALL CONDITIONS MET:',
           result.data.waitingForUserApproval &&
           result.data.firstEmailGenerated &&
           result.data.firstEmailGenerated.subject &&
           result.data.firstEmailGenerated.body &&
-          !hasShownFirstEmailModal
+          !shouldNotShow
         );
 
         // Check for email review state - ONLY trigger for truly first email with complete content
+        // 🔥 FIX: Check both state AND localStorage to prevent showing on page refresh
         if (result.data.waitingForUserApproval &&
             result.data.firstEmailGenerated &&
             result.data.firstEmailGenerated.subject &&
             result.data.firstEmailGenerated.body &&
-            !hasShownFirstEmailModal) {
+            !shouldNotShow) {
           console.log('👀 FIRST Email review required!', result.data.firstEmailGenerated);
 
           // Send immediate pause signal to backend
@@ -4561,7 +4596,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           setEmailForReview(result.data.firstEmailGenerated);
           setShowEmailReview(true);
           console.log('🔥 POPUP STATE SET: showEmailReview = true');
-          setHasShownFirstEmailModal(true); // Mark first email modal as shown
+          // 🔥 FIX: Mark modal as shown in both state AND localStorage
+          markFirstEmailModalShown(currentCampaignId);
 
           // Stop all polling while waiting for user input
           setWorkflowStatus('paused_for_review');
@@ -5324,7 +5360,11 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           return;
         }
 
-        if (data.data.firstEmailGenerated && !hasShownFirstEmailModal) {
+        // 🔥 FIX: Also check localStorage for this specific campaign
+        const alreadyShownInStorage = isFirstEmailModalShownForCampaign(currentCampaignId);
+        const shouldNotShow = hasShownFirstEmailModal || alreadyShownInStorage;
+
+        if (data.data.firstEmailGenerated && !shouldNotShow) {
           console.log('👀 Immediately showing first email popup from WebSocket');
 
           // 🔥 CRITICAL: Clear any animation state that might interfere
@@ -5334,7 +5374,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           setEmailForReview(data.data.firstEmailGenerated);
           setShowEmailReview(true);
           console.log('🔥 POPUP STATE SET via WebSocket: showEmailReview = true');
-          setHasShownFirstEmailModal(true);
+          // 🔥 FIX: Mark modal as shown in both state AND localStorage
+          markFirstEmailModalShown(currentCampaignId);
           setWorkflowStatus('paused_for_review');
         }
       }
@@ -5484,7 +5525,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       } else if (data.type === 'email_awaiting_approval') {
         // Handle emails awaiting approval - trigger review modal ONLY for first email
         console.log('📧 Email awaiting approval:', data.data);
-        if (data.data && data.data.emailContent && !hasShownFirstEmailModal) {
+        // 🔥 FIX: Also check localStorage for this specific campaign
+        const awaitingCampaignId = data.data?.campaignId || localStorage.getItem('currentCampaignId');
+        const alreadyShownForAwaiting = isFirstEmailModalShownForCampaign(awaitingCampaignId);
+        const shouldNotShowAwaiting = hasShownFirstEmailModal || alreadyShownForAwaiting;
+
+        if (data.data && data.data.emailContent && !shouldNotShowAwaiting) {
           const email = {
             to: data.data.prospectId,
             subject: data.data.emailContent.subject,
@@ -5497,12 +5543,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             campaignId: data.data.campaignId,
             ...data.data.emailContent
           };
-          
+
           // Show review modal for the FIRST email awaiting approval only
           console.log('👀 Triggering first email review modal for approval:', email);
           setEmailForReview(email);
           setShowEmailReview(true);
-          setHasShownFirstEmailModal(true); // Prevent showing for subsequent emails
+          // 🔥 FIX: Mark modal as shown in both state AND localStorage
+          markFirstEmailModalShown(awaitingCampaignId);
           
           // Send acknowledgment to backend that we received the email and are pausing for review  
           if (ws && ws.readyState === WebSocket.OPEN) {
@@ -5582,9 +5629,13 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
           console.log('🔍 DEBUG: Setting emailForReview from email_preview_generated:', emailForReview);
           console.log('🔍 DEBUG: email_preview_generated campaignId:', data.data.campaignId);
-          
-          // If template is approved, automatically send the email without showing review modal
-          if (templateApproved && hasShownFirstEmailModal) {
+
+          // 🔥 FIX: Check localStorage for this specific campaign
+          const previewCampaignId = data.data.campaignId || localStorage.getItem('currentCampaignId');
+          const alreadyShownForPreview = isFirstEmailModalShownForCampaign(previewCampaignId);
+
+          // If template is approved AND first email modal was already shown, automatically send
+          if (templateApproved && (hasShownFirstEmailModal || alreadyShownForPreview)) {
             console.log('✅ Template approved - automatically sending email:', emailForReview.to);
             // Auto-send the email using the approved template
             autoSendEmailWithTemplate(emailForReview);
@@ -5593,7 +5644,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             console.log('👀 Triggering email review modal:', emailForReview);
             setEmailForReview(emailForReview);
             setShowEmailReview(true);
-            
+
             // Send additional pause signal when modal is shown
             if (ws && ws.readyState === WebSocket.OPEN) {
               console.log('🔄 Modal shown - sending additional pause signal');
@@ -5606,10 +5657,10 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                 }
               }));
             }
-            
-            // Only mark as first modal shown if this is truly the first email
-            if (!hasShownFirstEmailModal) {
-              setHasShownFirstEmailModal(true);
+
+            // 🔥 FIX: Only mark as first modal shown if not already shown (check both state and localStorage)
+            if (!hasShownFirstEmailModal && !alreadyShownForPreview) {
+              markFirstEmailModalShown(previewCampaignId);
             }
           }
           
