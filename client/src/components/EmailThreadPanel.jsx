@@ -412,7 +412,8 @@ export default function EmailThreadPanel({ emailId, recipientEmail, initialEmail
       const response = await fetch(`${apiUrl}/api/send-email/send`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'x-user-id': userId // 🔥 FIX: Send userId in header for auth middleware
         },
         body: JSON.stringify({
           userId,

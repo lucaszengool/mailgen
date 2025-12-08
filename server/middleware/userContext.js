@@ -92,13 +92,17 @@ const requireAuth = (req, res, next) => {
  * 🔥 CHANGED: No longer falls back to 'demo' - leaves userId as null if not authenticated
  */
 const optionalAuth = (req, res, next) => {
-  // If no userId from Clerk, check for x-user-id header
+  // If no userId from Clerk, check for x-user-id header or request body
   if (!req.userId) {
     const headerUserId = req.headers['x-user-id'];
-    if (headerUserId && headerUserId !== 'anonymous' && headerUserId !== 'demo') {
-      req.userId = headerUserId;
+    // 🔥 FIX: Also check request body for userId (sent by frontend)
+    const bodyUserId = req.body?.userId;
+    const effectiveUserId = headerUserId || bodyUserId;
+
+    if (effectiveUserId && effectiveUserId !== 'anonymous' && effectiveUserId !== 'demo') {
+      req.userId = effectiveUserId;
       req.isAuthenticated = true;
-      console.log(`📧 Using x-user-id header: ${headerUserId}`);
+      console.log(`📧 Using ${headerUserId ? 'x-user-id header' : 'body userId'}: ${effectiveUserId}`);
     } else {
       // 🔥 NO MORE DEMO FALLBACK - leave as null
       req.userId = null;

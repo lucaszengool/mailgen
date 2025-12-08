@@ -153,7 +153,7 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
   // 🔥 Show company detail view if a prospect is selected
   if (showCompanyDetail && selectedProspect) {
     return (
-      <div className="h-screen bg-white flex flex-col overflow-hidden">
+      <div className="h-screen bg-white overflow-y-auto">
         <ComprehensiveCompanyDetailPage
           prospect={selectedProspect}
           onBack={() => {
