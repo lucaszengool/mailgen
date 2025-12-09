@@ -2262,7 +2262,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const filterProspects = (prospects) => {
     if (!prospects) return [];
 
-    return prospects.filter(prospect => {
+    // 🔥 FIX: First filter by campaign ID to prevent mixing between campaigns
+    const currentCampaignId = localStorage.getItem('currentCampaignId');
+    let filteredProspects = prospects;
+
+    if (currentCampaignId) {
+      filteredProspects = prospects.filter(prospect => {
+        const prospectCampaignId = prospect.campaignId || prospect.campaign_id;
+        // Keep if: no campaignId (legacy), matches current campaign, or is string equal
+        return !prospectCampaignId ||
+               prospectCampaignId === currentCampaignId ||
+               String(prospectCampaignId) === String(currentCampaignId);
+      });
+    }
+
+    return filteredProspects.filter(prospect => {
       // Search by query
       if (prospectSearchQuery && prospectSearchQuery.trim()) {
         const query = prospectSearchQuery.toLowerCase().trim();
@@ -2291,7 +2305,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const filterEmails = (emails) => {
     if (!emails) return [];
 
-    return emails.filter(email => {
+    // 🔥 FIX: First filter by campaign ID to prevent mixing between campaigns
+    const currentCampaignId = localStorage.getItem('currentCampaignId');
+    let filteredEmails = emails;
+
+    if (currentCampaignId) {
+      filteredEmails = emails.filter(email => {
+        const emailCampaignId = email.campaignId || email.campaign_id;
+        // Keep if: no campaignId (legacy), matches current campaign, or is string equal
+        return !emailCampaignId ||
+               emailCampaignId === currentCampaignId ||
+               String(emailCampaignId) === String(currentCampaignId);
+      });
+    }
+
+    return filteredEmails.filter(email => {
       // Search by query
       if (emailSearchQuery && emailSearchQuery.trim()) {
         const query = emailSearchQuery.toLowerCase().trim();
