@@ -1245,7 +1245,21 @@ router.get('/email-detail/:emailId', async (req, res) => {
 
     console.log(`📧 [EMAIL-DETAIL] Fetching email ${emailId} for user ${userId}`);
 
-    // 🔥 FIX: First try to find by exact user_id match
+    // 🔥 FIX: Handle multiple ID formats:
+    // - Integer ID from email_logs table (e.g., "123")
+    // - Composite ID format: "campaignId_recipientEmail" (e.g., "1765276681444_bmcdowell@ift.org")
+    let recipientEmailFromId = null;
+    let campaignIdFromId = null;
+
+    // Check if emailId is a composite format (contains underscore and @ sign)
+    const underscoreIndex = emailId.indexOf('_');
+    if (underscoreIndex > 0 && emailId.includes('@')) {
+      // Extract campaignId and recipientEmail from composite ID
+      campaignIdFromId = emailId.substring(0, underscoreIndex);
+      recipientEmailFromId = emailId.substring(underscoreIndex + 1);
+      console.log(`📧 [EMAIL-DETAIL] Detected composite ID - Campaign: ${campaignIdFromId}, Email: ${recipientEmailFromId}`);
+    }
+
     // NOTE: email_logs now has body column
     const emailQueryByUser = `
       SELECT
@@ -1273,10 +1287,9 @@ router.get('/email-detail/:emailId', async (req, res) => {
       });
     });
 
-    // 🔥 FALLBACK: If not found by user_id, try searching by just id
-    // This handles cases where emails were saved with a different or anonymous user_id
+    // 🔥 FALLBACK 1: If not found by user_id, try searching by just id
     if (!email) {
-      console.log(`📧 [EMAIL-DETAIL] Not found for user ${userId}, trying fallback search...`);
+      console.log(`📧 [EMAIL-DETAIL] Not found for user ${userId}, trying fallback by ID...`);
 
       const emailQueryFallback = `
         SELECT
@@ -1305,12 +1318,119 @@ router.get('/email-detail/:emailId', async (req, res) => {
       });
 
       if (email) {
-        console.log(`📧 [EMAIL-DETAIL] Found email via fallback (saved user: ${email.userId})`);
+        console.log(`📧 [EMAIL-DETAIL] Found email via ID fallback (saved user: ${email.odUserId})`);
+      }
+    }
+
+    // 🔥 FALLBACK 2: Search by to_email and campaign_id if composite ID was detected
+    if (!email && recipientEmailFromId) {
+      console.log(`📧 [EMAIL-DETAIL] Not found by ID, trying by recipient email and campaign...`);
+      const emailQueryByRecipient = `
+        SELECT
+          e.id,
+          e.to_email as recipientEmail,
+          e.subject,
+          e.campaign_id as campaignId,
+          e.sent_at as sentAt,
+          e.status,
+          e.tracking_id as trackingId,
+          e.message_id as messageId,
+          e.user_id as odUserId,
+          e.body,
+          (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
+          (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
+          (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replyCount
+        FROM email_logs e
+        WHERE e.to_email = ? AND e.campaign_id = ?
+        ORDER BY e.sent_at DESC
+        LIMIT 1
+      `;
+
+      email = await new Promise((resolve, reject) => {
+        db.db.get(emailQueryByRecipient, [recipientEmailFromId, campaignIdFromId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (email) {
+        console.log(`📧 [EMAIL-DETAIL] Found email by recipient+campaign: ${email.id}`);
+      }
+    }
+
+    // 🔥 FALLBACK 3: Search by just to_email (most recent) if still not found
+    if (!email && recipientEmailFromId) {
+      console.log(`📧 [EMAIL-DETAIL] Not found by campaign, trying just by recipient email...`);
+      const emailQueryByEmailOnly = `
+        SELECT
+          e.id,
+          e.to_email as recipientEmail,
+          e.subject,
+          e.campaign_id as campaignId,
+          e.sent_at as sentAt,
+          e.status,
+          e.tracking_id as trackingId,
+          e.message_id as messageId,
+          e.user_id as odUserId,
+          e.body,
+          (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
+          (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
+          (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email AND r.campaign_id = e.campaign_id) as replyCount
+        FROM email_logs e
+        WHERE e.to_email = ?
+        ORDER BY e.sent_at DESC
+        LIMIT 1
+      `;
+
+      email = await new Promise((resolve, reject) => {
+        db.db.get(emailQueryByEmailOnly, [recipientEmailFromId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (email) {
+        console.log(`📧 [EMAIL-DETAIL] Found email by recipient only: ${email.id}`);
+      }
+    }
+
+    // 🔥 FALLBACK 4: Check email_drafts table if still not found (for unsent emails)
+    if (!email && recipientEmailFromId) {
+      console.log(`📧 [EMAIL-DETAIL] Checking email_drafts for unsent email...`);
+      const draftQuery = `
+        SELECT
+          d.id,
+          d.email_key as recipientEmail,
+          d.subject,
+          d.campaign_id as campaignId,
+          d.created_at as sentAt,
+          d.status,
+          NULL as trackingId,
+          NULL as messageId,
+          d.user_id as odUserId,
+          d.html as body,
+          0 as openCount,
+          0 as clickCount,
+          0 as replyCount
+        FROM email_drafts d
+        WHERE d.email_key = ? AND d.campaign_id = ?
+        LIMIT 1
+      `;
+
+      email = await new Promise((resolve, reject) => {
+        db.db.get(draftQuery, [recipientEmailFromId, campaignIdFromId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (email) {
+        console.log(`📧 [EMAIL-DETAIL] Found email in drafts: ${email.id}`);
       }
     }
 
     if (!email) {
-      console.log(`📧 [EMAIL-DETAIL] Email ${emailId} not found in database`);
+      console.log(`📧 [EMAIL-DETAIL] Email ${emailId} not found in any format (checked email_logs and email_drafts)`);
       return res.status(404).json({ success: false, error: 'Email not found' });
     }
 
@@ -1646,6 +1766,23 @@ router.get('/complete-thread/:emailId', async (req, res) => {
     console.log(`📧 [COMPLETE-THREAD] Fetching complete thread for email ${emailId}, user ${userId}`);
 
     // Step 1: Get the original email
+    // 🔥 FIX: Handle multiple ID formats:
+    // - Integer ID from email_logs table (e.g., "123")
+    // - Composite ID format: "campaignId_recipientEmail" (e.g., "1765276681444_bmcdowell@ift.org")
+
+    let originalEmail = null;
+    let recipientEmailFromId = null;
+    let campaignIdFromId = null;
+
+    // Check if emailId is a composite format (contains underscore and @ sign)
+    const underscoreIndex = emailId.indexOf('_');
+    if (underscoreIndex > 0 && emailId.includes('@')) {
+      // Extract campaignId and recipientEmail from composite ID
+      campaignIdFromId = emailId.substring(0, underscoreIndex);
+      recipientEmailFromId = emailId.substring(underscoreIndex + 1);
+      console.log(`📧 [COMPLETE-THREAD] Detected composite ID - Campaign: ${campaignIdFromId}, Email: ${recipientEmailFromId}`);
+    }
+
     const emailQuery = `
       SELECT
         e.id,
@@ -1665,16 +1802,126 @@ router.get('/complete-thread/:emailId', async (req, res) => {
       WHERE e.id = ?
     `;
 
-    let originalEmail = await new Promise((resolve, reject) => {
+    // First try: search by direct ID (integer)
+    originalEmail = await new Promise((resolve, reject) => {
       db.db.get(emailQuery, [emailId], (err, row) => {
         if (err) reject(err);
         else resolve(row);
       });
     });
 
-    // If not found, try without user filter (for backward compatibility)
+    // 🔥 FIX: Second try - search by to_email and campaign_id if composite ID was detected
+    if (!originalEmail && recipientEmailFromId) {
+      console.log(`📧 [COMPLETE-THREAD] Not found by ID, trying by recipient email and campaign...`);
+      const emailQueryByRecipient = `
+        SELECT
+          e.id,
+          e.to_email,
+          e.subject,
+          e.body,
+          e.campaign_id,
+          e.sent_at,
+          e.tracking_id,
+          e.message_id,
+          e.user_id,
+          (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
+          (SELECT MAX(o.opened_at) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as lastOpenedAt,
+          (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
+          (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email) as replyCount
+        FROM email_logs e
+        WHERE e.to_email = ? AND e.campaign_id = ?
+        ORDER BY e.sent_at DESC
+        LIMIT 1
+      `;
+
+      originalEmail = await new Promise((resolve, reject) => {
+        db.db.get(emailQueryByRecipient, [recipientEmailFromId, campaignIdFromId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (originalEmail) {
+        console.log(`📧 [COMPLETE-THREAD] Found email by recipient+campaign: ${originalEmail.id}`);
+      }
+    }
+
+    // 🔥 FIX: Third try - search by just to_email (most recent) if still not found
+    if (!originalEmail && recipientEmailFromId) {
+      console.log(`📧 [COMPLETE-THREAD] Not found by campaign, trying just by recipient email...`);
+      const emailQueryByEmailOnly = `
+        SELECT
+          e.id,
+          e.to_email,
+          e.subject,
+          e.body,
+          e.campaign_id,
+          e.sent_at,
+          e.tracking_id,
+          e.message_id,
+          e.user_id,
+          (SELECT COUNT(*) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as openCount,
+          (SELECT MAX(o.opened_at) FROM email_opens o WHERE o.tracking_id = e.tracking_id) as lastOpenedAt,
+          (SELECT COUNT(*) FROM email_clicks c WHERE c.link_id = e.tracking_id) as clickCount,
+          (SELECT COUNT(*) FROM email_replies r WHERE r.recipient_email = e.to_email) as replyCount
+        FROM email_logs e
+        WHERE e.to_email = ?
+        ORDER BY e.sent_at DESC
+        LIMIT 1
+      `;
+
+      originalEmail = await new Promise((resolve, reject) => {
+        db.db.get(emailQueryByEmailOnly, [recipientEmailFromId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (originalEmail) {
+        console.log(`📧 [COMPLETE-THREAD] Found email by recipient only: ${originalEmail.id}`);
+      }
+    }
+
+    // 🔥 FIX: Fourth try - check email_drafts table for unsent emails
+    let isFromDraft = false;
+    if (!originalEmail && recipientEmailFromId) {
+      console.log(`📧 [COMPLETE-THREAD] Not found in email_logs, checking email_drafts...`);
+      const draftQuery = `
+        SELECT
+          d.id,
+          d.email_key as to_email,
+          d.subject,
+          d.html as body,
+          d.campaign_id,
+          d.created_at as sent_at,
+          NULL as tracking_id,
+          NULL as message_id,
+          d.user_id,
+          0 as openCount,
+          NULL as lastOpenedAt,
+          0 as clickCount,
+          0 as replyCount
+        FROM email_drafts d
+        WHERE d.email_key = ? AND d.campaign_id = ?
+        LIMIT 1
+      `;
+
+      originalEmail = await new Promise((resolve, reject) => {
+        db.db.get(draftQuery, [recipientEmailFromId, campaignIdFromId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (originalEmail) {
+        isFromDraft = true;
+        console.log(`📧 [COMPLETE-THREAD] Found email in drafts: ${originalEmail.id}`);
+      }
+    }
+
+    // If still not found, return 404
     if (!originalEmail) {
-      console.log(`📧 [COMPLETE-THREAD] Email ${emailId} not found, trying fallback...`);
+      console.log(`📧 [COMPLETE-THREAD] Email ${emailId} not found in any format (checked email_logs and email_drafts)`);
       return res.status(404).json({ success: false, error: 'Email not found' });
     }
 
