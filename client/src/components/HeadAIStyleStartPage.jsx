@@ -177,13 +177,15 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
               ? 'bg-white shadow-lg border border-gray-200'
               : 'bg-transparent'
           }`}>
-            {/* Left side - MailGen Logo */}
+            {/* Left side - MailGen Logo - Green Mail Icon */}
             <div className="flex items-center space-x-2">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors duration-300 ${
-                scrolled ? 'bg-[#00f5a0]' : 'bg-[#00f5a0]/80 backdrop-blur-sm'
-              }`}>
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l4-4m0 0l4 4m-4-4v11a3 3 0 003 3h4m0 0l-4 4m4-4l4-4" />
+              <div className="w-8 h-8 flex items-center justify-center">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 9C4 8.44772 4.44772 8 5 8H27C27.5523 8 28 8.44772 28 9V23C28 23.5523 27.5523 24 27 24H5C4.44772 24 4 23.5523 4 23V9Z" fill="#00f5a0"/>
+                  <rect x="4" y="8" width="24" height="16" rx="1" stroke="#000000" strokeWidth="2" fill="none"/>
+                  <path d="M4 9L16 17L28 9" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M4 24L12 16" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M28 24L20 16" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </div>
               <span className="text-base font-bold text-black">MailGen</span>
@@ -1437,11 +1439,15 @@ const HeadAIStyleStartPage = ({ onWebsiteSubmit, config, onComplete }) => {
       <footer className="relative z-10 bg-white py-12 px-8">
         <div className="max-w-[1000px] mx-auto">
           <div className="flex justify-between items-start">
-            {/* Left side - MailGen logo */}
+            {/* Left side - MailGen logo - Green Mail Icon */}
             <div className="flex-shrink-0">
               <div className="flex items-center space-x-2">
-                <svg className="w-6 h-6 text-[#00f5a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l4-4m0 0l4 4m-4-4v11a3 3 0 003 3h4m0 0l-4 4m4-4l4-4" />
+                <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 9C4 8.44772 4.44772 8 5 8H27C27.5523 8 28 8.44772 28 9V23C28 23.5523 27.5523 24 27 24H5C4.44772 24 4 23.5523 4 23V9Z" fill="#00f5a0"/>
+                  <rect x="4" y="8" width="24" height="16" rx="1" stroke="#000000" strokeWidth="2" fill="none"/>
+                  <path d="M4 9L16 17L28 9" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M4 24L12 16" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M28 24L20 16" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
                 <span className="text-xl font-bold text-black">MailGen</span>
               </div>

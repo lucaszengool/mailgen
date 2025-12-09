@@ -6399,15 +6399,22 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     <div className="h-screen bg-white flex overflow-hidden">
       {/* Left sidebar */}
       <div className="w-64 bg-white flex flex-col">
-        {/* Logo */}
+        {/* Logo - Green Mail Icon */}
         <div className="flex items-center px-6 py-6">
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{background: 'linear-gradient(135deg, #00f0a0 0%, #00c98d 100%)'}}>
-              <Activity className="w-6 h-6 text-white" />
+            <div className="flex items-center justify-center w-10 h-10">
+              {/* Green Mail SVG Icon */}
+              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 9C4 8.44772 4.44772 8 5 8H27C27.5523 8 28 8.44772 28 9V23C28 23.5523 27.5523 24 27 24H5C4.44772 24 4 23.5523 4 23V9Z" fill="#00f5a0"/>
+                <rect x="4" y="8" width="24" height="16" rx="1" stroke="#000000" strokeWidth="2" fill="none"/>
+                <path d="M4 9L16 17L28 9" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M4 24L12 16" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M28 24L20 16" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
             </div>
             <div className="ml-3">
-              <h1 className="text-xl font-bold" style={{color: '#000000'}}>AI Agent</h1>
-              <p className="text-sm" style={{color: '#000000'}}>Smart Workflow Platform</p>
+              <h1 className="text-xl font-bold" style={{color: '#000000'}}>MailGen</h1>
+              <p className="text-sm" style={{color: '#000000'}}>AI Email Agent</p>
             </div>
           </div>
         </div>
