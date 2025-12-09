@@ -218,6 +218,39 @@ class RedisUserCache {
   }
 
   /**
+   * Get ALL key-value pairs for a user
+   * Returns an object with all keys and their values
+   */
+  async getAll(userId) {
+    try {
+      await this.connect();
+      const pattern = this.getUserKey(userId, '*');
+      const keys = await this.client.keys(pattern);
+
+      if (keys.length === 0) {
+        return {};
+      }
+
+      // Get all values
+      const result = {};
+      for (const fullKey of keys) {
+        const cleanKey = fullKey.replace(`user:${userId}:`, '');
+        try {
+          const value = await this.client.get(fullKey);
+          result[cleanKey] = value ? JSON.parse(value) : null;
+        } catch (parseErr) {
+          result[cleanKey] = null;
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error(`❌ Redis getAll error for user ${userId}:`, error.message);
+      return {};
+    }
+  }
+
+  /**
    * Increment a counter for a user
    */
   async increment(userId, key, amount = 1) {

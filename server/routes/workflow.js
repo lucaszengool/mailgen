@@ -1210,15 +1210,50 @@ router.get('/results', optionalAuth, async (req, res) => {
     let templateSubmitted = userCampaignTemplateSubmitted.get(templateKey) || false;
 
     // 🔥 RAILWAY FIX: Also check Redis for persisted template submission status
+    // 🔥 FIX: Check multiple possible keys since campaignId might be null/undefined/LATEST
     if (!templateSubmitted) {
       try {
         const redisCache = require('../utils/RedisUserCache');
-        const redisSubmission = await redisCache.get(userId, `templateSubmitted_${campaignId}`);
-        if (redisSubmission && redisSubmission.submitted) {
-          templateSubmitted = true;
-          // Restore to in-memory cache
-          userCampaignTemplateSubmitted.set(templateKey, true);
-          console.log(`🎯 [Template Check] Restored from Redis: ${templateKey} = true`);
+
+        // List of possible keys to check (in order of priority)
+        const possibleKeys = [
+          `templateSubmitted_${campaignId}`,  // Exact match
+          `templateSubmitted_default`,        // Default fallback
+          `templateSubmitted_null`,           // Null campaign
+          `templateSubmitted_undefined`,      // Undefined campaign
+          `templateSubmitted_LATEST`,         // LATEST campaign
+        ];
+
+        // Also check any key that starts with templateSubmitted_ for this user
+        for (const key of possibleKeys) {
+          const redisSubmission = await redisCache.get(userId, key);
+          if (redisSubmission && redisSubmission.submitted) {
+            templateSubmitted = true;
+            // Restore to in-memory cache
+            userCampaignTemplateSubmitted.set(templateKey, true);
+            console.log(`🎯 [Template Check] Restored from Redis key "${key}": ${templateKey} = true`);
+            break;
+          }
+        }
+
+        // 🔥 FINAL FALLBACK: Check if ANY template submission exists for this user (scan pattern)
+        if (!templateSubmitted) {
+          try {
+            // Get all keys for this user that start with templateSubmitted_
+            const allKeys = await redisCache.getAll(userId);
+            if (allKeys && typeof allKeys === 'object') {
+              for (const [key, value] of Object.entries(allKeys)) {
+                if (key.startsWith('templateSubmitted_') && value && value.submitted) {
+                  templateSubmitted = true;
+                  userCampaignTemplateSubmitted.set(templateKey, true);
+                  console.log(`🎯 [Template Check] Found via scan "${key}": ${templateKey} = true`);
+                  break;
+                }
+              }
+            }
+          } catch (scanErr) {
+            console.log('⚠️ Redis scan failed:', scanErr.message);
+          }
         }
       } catch (redisErr) {
         console.log('⚠️ Could not check Redis for template submission:', redisErr.message);
