@@ -359,29 +359,27 @@ const WorkflowAnimation = () => {
 
     return (
       <div className="p-6 space-y-6">
-        {/* Progress Header */}
-        <div className="flex items-center justify-between mb-4 p-3 bg-green-50 rounded-xl">
+        {/* Progress Header - Transparent/Minimal Style */}
+        <div className="flex items-center justify-between mb-4 p-3 bg-transparent">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{
-              background: 'linear-gradient(135deg, #00f0a0 0%, #00c98d 100%)' }}>
-              {title.includes('Website') ? <Globe className="w-4 h-4 text-white" /> :
-               title.includes('Marketing') ? <Brain className="w-4 h-4 text-white" /> :
-               title.includes('Email Search') ? <Search className="w-4 h-4 text-white" /> :
-               title.includes('Email Generation') ? <Mail className="w-4 h-4 text-white" /> :
-               <Target className="w-4 h-4 text-white" />}
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent">
+              {title.includes('Website') ? <Globe className="w-4 h-4 text-gray-500" /> :
+               title.includes('Marketing') ? <Brain className="w-4 h-4 text-gray-500" /> :
+               title.includes('Email Search') ? <Search className="w-4 h-4 text-gray-500" /> :
+               title.includes('Email Generation') ? <Mail className="w-4 h-4 text-gray-500" /> :
+               <Target className="w-4 h-4 text-gray-500" />}
             </div>
-            <h4 className="text-lg font-bold text-gray-900">Progress</h4>
+            <h4 className="text-lg font-medium text-gray-600">Progress</h4>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="text-xl font-bold text-green-600">
+            <div className="text-xl font-medium text-gray-600">
               {localAnimationState === 'completed' ? '100%' : `${Math.min(Math.round(((localStep + 1) / getSteps().length) * 100), 100)}%`}
             </div>
-            <Gauge className="w-4 h-4 text-green-500" />
           </div>
         </div>
 
-        {/* Processing Steps */}
-        <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-green-300 scrollbar-track-green-50">
+        {/* Processing Steps - Transparent/Minimal Style */}
+        <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           {getSteps().map((step, index) => (
             <motion.div
               key={index}
@@ -391,28 +389,22 @@ const WorkflowAnimation = () => {
                 opacity: localStep >= index ? 1 : 0.3,
                 scale: localStep === index ? 1.02 : 1
               }}
-              className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 ${
-                localStep >= index
-                  ? 'bg-green-100'
-                  : 'bg-green-50'
-              }`}
+              className="flex items-center space-x-3 p-3 bg-transparent transition-all duration-300"
             >
-              <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${
-                localStep >= index ? 'bg-green-500' : 'bg-gray-300'
-              }`}>
-                <step.icon className={`w-3 h-3 ${localStep >= index ? 'text-white' : 'text-gray-700'}`} />
+              <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-transparent">
+                <step.icon className={`w-3 h-3 ${localStep >= index ? 'text-gray-700' : 'text-gray-400'}`} />
               </div>
               <span className={`font-medium text-sm flex-1 leading-tight ${
-                localStep >= index ? 'text-gray-900' : 'text-gray-700'
+                localStep >= index ? 'text-gray-700' : 'text-gray-400'
               }`}>
                 {step.title}
               </span>
               <div className="flex-shrink-0">
                 {localStep === index && localAnimationState !== 'completed' && (
-                  <Loader className="w-3 h-3 text-green-500 animate-spin" />
+                  <Loader className="w-3 h-3 text-gray-500 animate-spin" />
                 )}
                 {localStep > index && (
-                  <CheckCircle className="w-3 h-3 text-green-500" />
+                  <CheckCircle className="w-3 h-3 text-gray-500" />
                 )}
               </div>
             </motion.div>
@@ -534,14 +526,14 @@ const WorkflowAnimation = () => {
                 )}
               </div>
             ) : (
-              // Default results for other workflow types
-              <div className="bg-green-50 rounded-xl p-4">
-                <h5 className="text-sm font-bold text-gray-900 mb-3">Results</h5>
+              // Default results for other workflow types - Transparent Style
+              <div className="bg-transparent p-4">
+                <h5 className="text-sm font-medium text-gray-600 mb-3">Results</h5>
                 <div className="space-y-2">
                   {Object.entries(content || {}).map(([key, value], index) => (
                     <div key={index} className="flex items-start space-x-2">
-                      <span className="text-xs font-medium text-gray-700 min-w-[100px]">{key}:</span>
-                      <span className="text-xs text-gray-900">{value}</span>
+                      <span className="text-xs font-medium text-gray-500 min-w-[100px]">{key}:</span>
+                      <span className="text-xs text-gray-600">{value}</span>
                     </div>
                   ))}
                 </div>
@@ -716,7 +708,7 @@ const WorkflowAnimation = () => {
             </motion.div>
           </div>
 
-          {/* Website Analysis Dashboard */}
+          {/* Website Analysis Dashboard - Transparent Style */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -725,23 +717,18 @@ const WorkflowAnimation = () => {
           >
             <div className="px-5 py-3 mb-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900">
-                  <Zap className="inline w-5 h-5 text-green-600 mr-2" />
+                <h3 className="text-lg font-medium text-gray-600">
+                  <Zap className="inline w-5 h-5 text-gray-400 mr-2" />
                   Website Analysis Engine
                 </h3>
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Live</span>
+                <span className="px-3 py-1 bg-transparent text-gray-500 text-xs font-medium">Live</span>
               </div>
             </div>
             <AnimatedWorkflowWindow
               content={{
                 website: 'https://fruitai.org/',
-                timestamp: '2025-09-13T15:04:04.173Z',
                 companyName: 'FruitAI',
-                industry: 'Food Technology',
-                status: 'Ultra-fast analysis mode',
-                cacheStatus: 'Using cached results',
-                analysisTime: '< 2 seconds',
-                businessProfile: 'Industry analysis complete'
+                industry: 'Food Technology'
               }}
               title="Website Analysis"
             />
@@ -774,7 +761,7 @@ const WorkflowAnimation = () => {
             </motion.div>
           </div>
 
-          {/* Marketing Strategy Dashboard */}
+          {/* Marketing Strategy Dashboard - Transparent Style */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -783,20 +770,17 @@ const WorkflowAnimation = () => {
           >
             <div className="px-5 py-3 mb-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900">
-                  <Brain className="inline w-5 h-5 text-green-600 mr-2" />
+                <h3 className="text-lg font-medium text-gray-600">
+                  <Brain className="inline w-5 h-5 text-gray-400 mr-2" />
                   AI Marketing Strategy Generator
                 </h3>
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Live</span>
+                <span className="px-3 py-1 bg-transparent text-gray-500 text-xs font-medium">Live</span>
               </div>
             </div>
             <AnimatedWorkflowWindow
               content={{
                 aiEngine: 'Ollama qwen2.5:0.5b',
-                optimization: 'Real-time market intelligence',
-                personalization: 'Industry-specific targeting',
-                targetAudience: 'B2B Food Technology',
-                status: 'Strategy generation complete'
+                optimization: 'Real-time market intelligence'
               }}
               title="Marketing Strategy"
             />
