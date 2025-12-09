@@ -280,8 +280,12 @@ class EmailService {
         attachments: attachments
       };
 
+      console.log(`📤 Attempting to send email to ${to}...`);
+      console.log(`   From: ${mailOptions.from}`);
+      console.log(`   Subject: ${mailOptions.subject}`);
+
       const info = await transporter.sendMail(mailOptions);
-      
+
       console.log(`✅ Email sent successfully to ${to}`);
       console.log(`📬 Message ID: ${info.messageId}`);
       
@@ -294,6 +298,10 @@ class EmailService {
 
     } catch (error) {
       console.error(`❌ Failed to send email to ${options.to}:`, error.message);
+      console.error(`   Error code: ${error.code || 'N/A'}`);
+      console.error(`   Error response: ${error.response || 'N/A'}`);
+      console.error(`   Error responseCode: ${error.responseCode || 'N/A'}`);
+      console.error(`   Full error:`, JSON.stringify(error, null, 2));
       throw error;
     }
   }
