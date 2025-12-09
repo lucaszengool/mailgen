@@ -2080,16 +2080,50 @@ async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
   console.log(`💾 [DATABASE FALLBACK] Reconstructing from DB - User: ${userId}, Campaign: ${campaignId || 'LATEST'}`);
 
   try {
-    // Get prospects from database
-    const dbFilter = campaignId ? { campaignId } : {};
+    // 🔥 FIX: Handle "LATEST", "latest", "current" as special values - don't pass to database filter
+    const isLatestRequest = !campaignId ||
+                            campaignId === 'LATEST' ||
+                            campaignId === 'latest' ||
+                            campaignId === 'current' ||
+                            campaignId === 'null' ||
+                            campaignId === 'undefined';
+
+    // If requesting "LATEST", first get the most recent campaign ID from the database
+    let effectiveDbCampaignId = null;
+    if (isLatestRequest) {
+      // Query for the most recent campaign ID
+      const recentCampaignQuery = await new Promise((resolve, reject) => {
+        db.db.get(
+          `SELECT DISTINCT campaign_id FROM contacts WHERE user_id = ? AND campaign_id IS NOT NULL ORDER BY created_at DESC LIMIT 1`,
+          [userId],
+          (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+          }
+        );
+      });
+
+      if (recentCampaignQuery && recentCampaignQuery.campaign_id) {
+        effectiveDbCampaignId = recentCampaignQuery.campaign_id;
+        console.log(`🎯 [DB FALLBACK] Resolved LATEST to actual campaign: ${effectiveDbCampaignId}`);
+      } else {
+        console.log(`⚠️  [DB FALLBACK] No campaigns found in database for user ${userId}`);
+      }
+    } else {
+      effectiveDbCampaignId = campaignId;
+    }
+
+    // Get prospects from database with actual campaign ID (not "LATEST")
+    const dbFilter = effectiveDbCampaignId ? { campaignId: effectiveDbCampaignId } : {};
     const prospects = await db.getContacts(userId, dbFilter, 10000);
 
-    // Get emails from database
-    const emails = await db.getEmailDrafts(userId, campaignId);
+    // Get emails from database with actual campaign ID
+    const emails = await db.getEmailDrafts(userId, effectiveDbCampaignId);
 
     if (prospects.length > 0 || emails.length > 0) {
       // Reconstruct workflow results from database
-      const effectiveCampaignId = campaignId || prospects[0]?.campaign_id || prospects[0]?.campaignId || 'reconstructed';
+      // 🔥 FIX: Use the actual resolved campaignId, not the "LATEST" request value
+      const effectiveCampaignId = effectiveDbCampaignId || prospects[0]?.campaign_id || prospects[0]?.campaignId || 'reconstructed';
       const reconstructed = {
         campaignId: effectiveCampaignId,
         prospects: prospects.map(p => ({
@@ -2105,8 +2139,8 @@ async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
         })),
         emailCampaign: {
           emails: emails.map(e => {
-            // 🔒 CRITICAL: Only use email's campaignId if it exists, otherwise use requested campaignId
-            const emailCampaignId = e.campaignId || campaignId;
+            // 🔒 CRITICAL: Only use email's campaignId if it exists, otherwise use the ACTUAL resolved campaignId
+            const emailCampaignId = e.campaignId || effectiveDbCampaignId || effectiveCampaignId;
 
             return {
               to: e.metadata?.recipient || '',
@@ -2116,12 +2150,12 @@ async function getLastWorkflowResults(userId = 'anonymous', campaignId = null) {
               recipientName: e.metadata?.recipientName,
               recipientCompany: e.metadata?.recipientCompany,
               status: e.status || 'generated',
-              campaignId: emailCampaignId // 🔒 Always has a valid campaignId
+              campaignId: emailCampaignId // 🔒 Always has a valid campaignId (never "LATEST")
             };
           }).filter(e => {
-            // 🔒 CRITICAL: Only include emails that match the requested campaignId
-            if (campaignId && e.campaignId !== campaignId && e.campaignId !== String(campaignId)) {
-              console.log(`   🗑️  [DB RECONSTRUCTION] Filtering out email from campaign ${e.campaignId} (requested: ${campaignId})`);
+            // 🔒 CRITICAL: Only include emails that match the ACTUAL resolved campaignId (not "LATEST")
+            if (effectiveDbCampaignId && e.campaignId !== effectiveDbCampaignId && e.campaignId !== String(effectiveDbCampaignId)) {
+              console.log(`   🗑️  [DB RECONSTRUCTION] Filtering out email from campaign ${e.campaignId} (resolved: ${effectiveDbCampaignId})`);
               return false;
             }
             return true;
