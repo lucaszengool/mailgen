@@ -126,81 +126,103 @@ const WorkflowAnimation = () => {
 
       } catch (error) {
         console.error('❌ Error fetching real data:', error);
-        // Use fallback demo data to ensure animation works
-        setRealProspects([
-          {
-            id: 1,
-            name: 'Alex Chen',
-            email: 'alex@techcorp.com',
-            company: 'TechCorp',
-            confidence: 0.95,
-            persona: {
-              type: 'decision_maker',
-              job_title: 'CTO',
-              communicationStyle: 'professional',
-              primaryPainPoints: ['efficiency', 'scaling'],
-              primaryMotivations: ['growth', 'innovation'],
-              decisionLevel: 'High',
-              size: 'Medium'
-            }
-          },
-          {
-            id: 2,
-            name: 'Sarah Johnson',
-            email: 'sarah@innovate.io',
-            company: 'Innovate Solutions',
-            confidence: 0.88,
-            persona: {
-              type: 'influencer',
-              job_title: 'Product Manager',
-              communicationStyle: 'friendly',
-              primaryPainPoints: ['productivity', 'automation'],
-              primaryMotivations: ['efficiency', 'results'],
-              decisionLevel: 'Medium',
-              size: 'Large'
-            }
-          }
-        ]);
-
-        setRealEmails([
-          {
-            id: 1,
-            to: 'alex@techcorp.com',
-            from: 'Fruit AI',
-            subject: 'AI Solutions for TechCorp',
-            body: 'Hi Alex, I noticed TechCorp could benefit from our AI automation platform...',
-            quality_score: 92,
-            status: 'generated'
-          },
-          {
-            id: 2,
-            to: 'sarah@innovate.io',
-            from: 'Fruit AI',
-            subject: 'Boost Productivity at Innovate Solutions',
-            body: 'Hi Sarah, Our AI tools could help streamline your product development...',
-            quality_score: 88,
-            status: 'generated'
-          },
-          {
-            id: 3,
-            to: 'david@startup.co',
-            from: 'Fruit AI',
-            subject: 'Scale Your Startup with AI',
-            body: 'Hi David, Startups like yours are perfect for our AI automation solutions...',
-            quality_score: 90,
-            status: 'generated'
-          },
-          {
-            id: 4,
-            to: 'lisa@enterprise.com',
-            from: 'Fruit AI',
-            subject: 'Enterprise AI Integration',
-            body: 'Hi Lisa, Your enterprise could achieve 40% efficiency gains with our AI platform...',
-            quality_score: 94,
-            status: 'generated'
-          }
-        ]);
       } finally {
+        // 🔥 ALWAYS use demo data for the animation to ensure it's never empty
+        // This runs regardless of API success/failure
+        if (realProspects.length === 0) {
+          setRealProspects([
+            {
+              id: 1,
+              name: 'Alex Chen',
+              email: 'alex@techcorp.com',
+              company: 'TechCorp',
+              confidence: 0.95,
+              persona: {
+                type: 'decision_maker',
+                job_title: 'CTO',
+                communicationStyle: 'professional',
+                primaryPainPoints: ['efficiency', 'scaling'],
+                primaryMotivations: ['growth', 'innovation'],
+                decisionLevel: 'High',
+                size: 'Medium'
+              }
+            },
+            {
+              id: 2,
+              name: 'Sarah Johnson',
+              email: 'sarah@innovate.io',
+              company: 'Innovate Solutions',
+              confidence: 0.88,
+              persona: {
+                type: 'influencer',
+                job_title: 'Product Manager',
+                communicationStyle: 'friendly',
+                primaryPainPoints: ['productivity', 'automation'],
+                primaryMotivations: ['efficiency', 'results'],
+                decisionLevel: 'Medium',
+                size: 'Large'
+              }
+            },
+            {
+              id: 3,
+              name: 'Michael Wang',
+              email: 'michael@startup.io',
+              company: 'StartupCo',
+              confidence: 0.91,
+              persona: {
+                type: 'economic_buyer',
+                job_title: 'CEO',
+                communicationStyle: 'direct',
+                primaryPainPoints: ['revenue growth', 'market expansion'],
+                primaryMotivations: ['ROI', 'competitive advantage'],
+                decisionLevel: 'High',
+                size: 'Small'
+              }
+            }
+          ]);
+        }
+
+        // Also ensure emails are populated
+        if (realEmails.length === 0) {
+          setRealEmails([
+            {
+              id: 1,
+              to: 'alex@techcorp.com',
+              from: 'Fruit AI',
+              subject: 'AI Solutions for TechCorp',
+              body: 'Hi Alex, I noticed TechCorp could benefit from our AI automation platform...',
+              quality_score: 92,
+              status: 'generated'
+            },
+            {
+              id: 2,
+              to: 'sarah@innovate.io',
+              from: 'Fruit AI',
+              subject: 'Boost Productivity at Innovate Solutions',
+              body: 'Hi Sarah, Our AI tools could help streamline your product development...',
+              quality_score: 88,
+              status: 'generated'
+            },
+            {
+              id: 3,
+              to: 'david@startup.co',
+              from: 'Fruit AI',
+              subject: 'Scale Your Startup with AI',
+              body: 'Hi David, Startups like yours are perfect for our AI automation solutions...',
+              quality_score: 90,
+              status: 'generated'
+            },
+            {
+              id: 4,
+              to: 'lisa@enterprise.com',
+              from: 'Fruit AI',
+              subject: 'Enterprise AI Integration',
+              body: 'Hi Lisa, Your enterprise could achieve 40% efficiency gains with our AI platform...',
+              quality_score: 94,
+              status: 'generated'
+            }
+          ]);
+        }
         setLoading(false);
       }
     };
@@ -424,11 +446,11 @@ const WorkflowAnimation = () => {
                 <h5 className="text-sm font-bold text-gray-900 mb-3 px-4">
                   {title.includes('Email Search') ? 'Qualified Prospects Found:' : 'Generated Emails:'}
                 </h5>
-                <div className="space-y-3 px-4 max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-green-300 scrollbar-track-green-50">
+                <div className="space-y-3 px-4 max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                   {loading ? (
                     // Loading state
                     <div className="flex items-center justify-center py-8">
-                      <Loader className="w-6 h-6 text-green-500 animate-spin mr-2" />
+                      <Loader className="w-6 h-6 text-gray-500 animate-spin mr-2" />
                       <span className="text-gray-600">Loading {title.includes('Email Search') ? 'prospects' : 'emails'}...</span>
                     </div>
                   ) : title.includes('Email Search') ? (
@@ -511,7 +533,7 @@ const WorkflowAnimation = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 2.0 }}
-                    className="text-gray-600 text-sm mt-3 px-4 text-center bg-green-50 rounded-lg py-2"
+                    className="text-gray-600 text-sm mt-3 px-4 text-center bg-transparent py-2"
                   >
                     {title.includes('Email Search') ? (
                       realProspects.length > 3 ?
@@ -599,82 +621,72 @@ const WorkflowAnimation = () => {
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">Campaign Workflow</h3>
+                <h3 className="text-lg font-bold text-gray-700">Campaign Workflow</h3>
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Live</span>
+                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-gray-500 font-medium">Live</span>
                   </div>
-                  <button className="px-4 py-2 bg-[#00f5a0] text-black rounded-lg text-sm font-medium hover:bg-[#00e090] transition-colors">
+                  <button className="px-4 py-2 bg-transparent text-gray-600 text-sm font-medium">
                     START CAMPAIGN
                   </button>
-                  <button className="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                  <button className="px-3 py-2 bg-transparent text-gray-500 text-sm font-medium">
                     RESET
                   </button>
                 </div>
               </div>
 
-              {/* Campaign Status Cards */}
+              {/* Campaign Status Cards - Transparent */}
               <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="text-center p-3 bg-green-100 rounded-lg">
-                  <div className="text-lg font-bold text-green-800">Ready</div>
-                  <div className="text-xs text-gray-700">Status</div>
+                <div className="text-center p-3 bg-transparent">
+                  <div className="text-lg font-bold text-gray-700">Ready</div>
+                  <div className="text-xs text-gray-500">Status</div>
                 </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-lg font-bold text-green-800">0/5</div>
-                  <div className="text-xs text-gray-700">Progress</div>
+                <div className="text-center p-3 bg-transparent">
+                  <div className="text-lg font-bold text-gray-700">0/5</div>
+                  <div className="text-xs text-gray-500">Progress</div>
                 </div>
-                <div className="text-center p-3 bg-green-100 rounded-lg">
-                  <div className="text-lg font-bold text-green-800">Auto</div>
-                  <div className="text-xs text-gray-700">Mode</div>
+                <div className="text-center p-3 bg-transparent">
+                  <div className="text-lg font-bold text-gray-700">Auto</div>
+                  <div className="text-xs text-gray-500">Mode</div>
                 </div>
               </div>
 
-              {/* Workflow Steps Preview */}
+              {/* Workflow Steps Preview - Transparent */}
               <div className="space-y-2">
-                <h4 className="font-semibold text-gray-900 text-sm mb-2">Workflow Steps:</h4>
+                <h4 className="font-semibold text-gray-700 text-sm mb-2">Workflow Steps:</h4>
                 <div className="space-y-1">
-                  <div className="flex items-center space-x-3 p-2 bg-green-50 rounded-lg">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <Zap className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-xs text-gray-900">Website Analysis & Business Profiling</span>
-                    <div className="ml-auto text-xs text-green-700 font-medium">Ready</div>
+                  <div className="flex items-center space-x-3 p-2 bg-transparent">
+                    <Zap className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs text-gray-700">Website Analysis & Business Profiling</span>
+                    <div className="ml-auto text-xs text-gray-500 font-medium">Ready</div>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-green-50 rounded-lg">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <Brain className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-xs text-gray-900">AI Marketing Strategy Generation</span>
-                    <div className="ml-auto text-xs text-green-700 font-medium">Ready</div>
+                  <div className="flex items-center space-x-3 p-2 bg-transparent">
+                    <Brain className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs text-gray-700">AI Marketing Strategy Generation</span>
+                    <div className="ml-auto text-xs text-gray-500 font-medium">Ready</div>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-green-50 rounded-lg">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <Search className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-xs text-gray-900">Prospect Discovery & Qualification</span>
-                    <div className="ml-auto text-xs text-green-700 font-medium">Ready</div>
+                  <div className="flex items-center space-x-3 p-2 bg-transparent">
+                    <Search className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs text-gray-700">Prospect Discovery & Qualification</span>
+                    <div className="ml-auto text-xs text-gray-500 font-medium">Ready</div>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-green-50 rounded-lg">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <Mail className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-xs text-gray-900">Personalized Email Generation</span>
-                    <div className="ml-auto text-xs text-green-700 font-medium">Ready</div>
+                  <div className="flex items-center space-x-3 p-2 bg-transparent">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs text-gray-700">Personalized Email Generation</span>
+                    <div className="ml-auto text-xs text-gray-500 font-medium">Ready</div>
                   </div>
-                  <div className="flex items-center space-x-3 p-2 bg-green-50 rounded-lg">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <BarChart className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-xs text-gray-900">Performance Analytics & Optimization</span>
-                    <div className="ml-auto text-xs text-green-700 font-medium">Ready</div>
+                  <div className="flex items-center space-x-3 p-2 bg-transparent">
+                    <BarChart className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs text-gray-700">Performance Analytics & Optimization</span>
+                    <div className="ml-auto text-xs text-gray-500 font-medium">Ready</div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-green-100 p-3 rounded-lg">
-                <p className="text-gray-800 text-sm">
-                  <Sparkles className="inline w-4 h-4 text-green-600 mr-1" />
+              <div className="bg-transparent p-3">
+                <p className="text-gray-600 text-sm">
+                  <Sparkles className="inline w-4 h-4 text-gray-500 mr-1" />
                   AI-powered marketing automation
                 </p>
               </div>
@@ -985,58 +997,58 @@ const WorkflowAnimation = () => {
             className="flex-1 p-6"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">[ANALYZE] Campaign Performance Dashboard</h3>
+              <h3 className="text-lg font-bold text-gray-700">[ANALYZE] Campaign Performance Dashboard</h3>
               <div className="flex items-center space-x-2">
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Live Data</span>
+                <span className="text-xs text-gray-500 font-medium">Live Data</span>
               </div>
             </div>
 
-            {/* Analytics Grid */}
+            {/* Analytics Grid - Transparent */}
             <div className="grid grid-cols-4 gap-3 mb-4">
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-xl font-bold text-green-600">94%</div>
-                <div className="text-xs text-gray-600">Delivery</div>
+              <div className="text-center p-3 bg-transparent">
+                <div className="text-xl font-bold text-gray-700">94%</div>
+                <div className="text-xs text-gray-500">Delivery</div>
               </div>
-              <div className="text-center p-3 bg-green-100 rounded-lg">
-                <div className="text-xl font-bold text-green-700">47%</div>
-                <div className="text-xs text-gray-700">Open Rate</div>
+              <div className="text-center p-3 bg-transparent">
+                <div className="text-xl font-bold text-gray-700">47%</div>
+                <div className="text-xs text-gray-500">Open Rate</div>
               </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-xl font-bold text-green-700">12%</div>
-                <div className="text-xs text-gray-700">Response</div>
+              <div className="text-center p-3 bg-transparent">
+                <div className="text-xl font-bold text-gray-700">12%</div>
+                <div className="text-xs text-gray-500">Response</div>
               </div>
-              <div className="text-center p-3 bg-green-100 rounded-lg">
-                <div className="text-xl font-bold text-green-700">247</div>
-                <div className="text-xs text-gray-700">Prospects</div>
+              <div className="text-center p-3 bg-transparent">
+                <div className="text-xl font-bold text-gray-700">247</div>
+                <div className="text-xs text-gray-500">Prospects</div>
               </div>
             </div>
 
-            <h4 className="font-semibold text-gray-900 mb-3">Recent Activity:</h4>
+            <h4 className="font-semibold text-gray-700 mb-3">Recent Activity:</h4>
             <div className="space-y-2">
-              <div className="flex justify-between items-center text-sm p-2 bg-green-100 rounded">
+              <div className="flex justify-between items-center text-sm p-2 bg-transparent">
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span className="text-black">Email sent to Mike Rodriguez</span>
+                  <CheckCircle className="w-4 h-4 text-gray-500" />
+                  <span className="text-gray-700">Email sent to Mike Rodriguez</span>
                 </div>
-                <span className="text-gray-600">2 min ago</span>
+                <span className="text-gray-500">2 min ago</span>
               </div>
-              <div className="flex justify-between items-center text-sm p-2 bg-green-50 rounded">
+              <div className="flex justify-between items-center text-sm p-2 bg-transparent">
                 <div className="flex items-center space-x-2">
-                  <Eye className="w-4 h-4 text-green-600" />
-                  <span className="text-black">Sarah Chen opened email</span>
+                  <Eye className="w-4 h-4 text-gray-500" />
+                  <span className="text-gray-700">Sarah Chen opened email</span>
                 </div>
-                <span className="text-gray-600">5 min ago</span>
+                <span className="text-gray-500">5 min ago</span>
               </div>
-              <div className="flex justify-between items-center text-sm p-2 bg-green-100 rounded">
+              <div className="flex justify-between items-center text-sm p-2 bg-transparent">
                 <div className="flex items-center space-x-2">
-                  <Target className="w-4 h-4 text-green-600" />
-                  <span className="text-black">New prospect discovered</span>
+                  <Target className="w-4 h-4 text-gray-500" />
+                  <span className="text-gray-700">New prospect discovered</span>
                 </div>
-                <span className="text-gray-600">8 min ago</span>
+                <span className="text-gray-500">8 min ago</span>
               </div>
             </div>
 
-            <p className="text-gray-600 text-sm mt-3">Real-time campaign analytics and performance tracking</p>
+            <p className="text-gray-500 text-sm mt-3">Real-time campaign analytics and performance tracking</p>
           </motion.div>
         </div>
       )

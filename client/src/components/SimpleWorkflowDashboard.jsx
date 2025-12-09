@@ -4521,16 +4521,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         const emailCampaign = campaignData?.emailCampaign;
 
         // 🎨 NEW: Check for template selection required (HTTP polling fallback)
-        // This triggers when prospectsFromAPI are found but no template is selected yet
-        if (result.data.status === 'waiting_for_template' ||
-            result.data.canProceed === false ||
-            (prospectsFromAPI && prospectsFromAPI.length > 0 && result.data.templateSelectionRequired)) {
-          console.log('🎨🎨🎨 TEMPLATE SELECTION REQUIRED (via HTTP polling)! 🎨🎨🎨');
+        // 🔥 CRITICAL FIX: ONLY trust backend's templateSelectionRequired value
+        // Backend checks Redis, which is the source of truth for template submission status
+        if (result.data.templateSelectionRequired === true) {
+          console.log('🎨🎨🎨 TEMPLATE SELECTION REQUIRED (backend says so)! 🎨🎨🎨');
           console.log('🎨 Prospects found:', prospectsFromAPI?.length || 0);
           console.log('🎨 Status:', result.data.status);
           console.log('🎨 Can proceed:', result.data.canProceed);
           console.log('🎨 Template selection required:', result.data.templateSelectionRequired);
-          console.log('🎨 Template already submitted?', templateAlreadySubmittedRef.current);
 
           // 🎯 CRITICAL FIX: Set prospectsFromAPI BEFORE triggering template selection
           if (prospectsFromAPI && prospectsFromAPI.length > 0) {
@@ -4546,14 +4544,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             });
           }
 
-          // Trigger template selection popup ONLY if not already submitted
-          // 🔥 FIX: Check both ref AND localStorage for this specific campaign
-          const currentCampaignId = result.data.campaignId || localStorage.getItem('currentCampaignId');
-          const alreadySubmitted = templateAlreadySubmittedRef.current || isTemplateSubmittedForCampaign(currentCampaignId);
-
-          console.log(`🎨 Template already submitted check: ref=${templateAlreadySubmittedRef.current}, localStorage=${isTemplateSubmittedForCampaign(currentCampaignId)}`);
-
-          if (!showTemplateSelection && !alreadySubmitted) {
+          // 🔥 Only show popup if backend says templateSelectionRequired === true
+          if (!showTemplateSelection) {
             console.log('🎨 Triggering template selection popup via HTTP polling');
             handleTemplateSelectionRequired({
               campaignId: result.data.campaignId,
@@ -4564,13 +4556,19 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               canProceed: false,
               status: 'waiting_for_template'
             });
-          } else if (alreadySubmitted) {
-            console.log('🎨 Template already submitted (localStorage or ref) - waiting for email generation to start...');
           }
 
           // Don't process further until template is selected
           setIsProcessingWorkflowResults(false);
           return;
+        } else if (result.data.status === 'generating_emails') {
+          // 🔥 Backend says template was already submitted - sync localStorage
+          const currentCampaignId = result.data.campaignId || localStorage.getItem('currentCampaignId');
+          if (currentCampaignId) {
+            markTemplateSubmitted(currentCampaignId);
+            templateAlreadySubmittedRef.current = true;
+            console.log('🎨 Synced: Backend says template submitted, updated localStorage');
+          }
         }
 
         // 🐛 DEBUG: Log all values for first email popup check
@@ -6158,26 +6156,47 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
             // Wait a bit to check if emails are also loaded
             setTimeout(async () => {
-              // Fetch workflow results to check if emails exist
-              const workflowCheck = await fetchAndTriggerWorkflowSteps();
-              const hasEmails = generatedEmails.length > 0 || emailCampaignStats.emails?.length > 0;
+              // 🔥 FIX: ALWAYS trust the backend response for templateSelectionRequired
+              // Fetch workflow results which includes templateSelectionRequired from backend (which checks Redis)
+              try {
+                const currentCampaignId = localStorage.getItem('currentCampaignId');
+                const url = currentCampaignId
+                  ? `/api/workflow/results?campaignId=${currentCampaignId}`
+                  : '/api/workflow/results';
+                const response = await fetch(url);
+                const result = await response.json();
 
-              // 🔥 FIX: Check localStorage for template submission status
-              const currentCampaignId = localStorage.getItem('currentCampaignId');
-              const alreadySubmitted = isTemplateSubmittedForCampaign(currentCampaignId);
+                console.log(`🎨 Template selection check from backend:`);
+                console.log(`   Backend templateSelectionRequired: ${result.data?.templateSelectionRequired}`);
+                console.log(`   Backend status: ${result.data?.status}`);
+                console.log(`   Backend canProceed: ${result.data?.canProceed}`);
 
-              console.log(`🎨 Template selection check after data load:`);
-              console.log(`   Has prospects: ${dbProspects.length > 0}`);
-              console.log(`   Has emails: ${hasEmails}`);
-              console.log(`   Already submitted (localStorage): ${alreadySubmitted}`);
-              console.log(`   Should show popup: ${dbProspects.length > 0 && !hasEmails && !alreadySubmitted}`);
+                // 🔥 CRITICAL: Trust the backend's templateSelectionRequired value
+                // Backend checks Redis for template submission status
+                if (result.data?.templateSelectionRequired === true) {
+                  console.log('🎨🎨🎨 TRIGGERING TEMPLATE SELECTION POPUP - backend says required');
+                  setShowTemplateSelection(true);
+                  setWaitingForTemplate(true);
+                } else {
+                  console.log('🎨 Template NOT required - backend says templateSelectionRequired=false');
+                  // 🔥 Sync localStorage from backend - if backend says template was submitted, mark it locally too
+                  if (currentCampaignId && result.data?.status === 'generating_emails') {
+                    markTemplateSubmitted(currentCampaignId);
+                    console.log('🎨 Synced localStorage: marked template as submitted');
+                  }
+                }
+              } catch (err) {
+                console.error('🎨 Error checking template status from backend:', err);
+                // Fallback to localStorage check
+                const hasEmails = generatedEmails.length > 0 || emailCampaignStats.emails?.length > 0;
+                const currentCampaignId = localStorage.getItem('currentCampaignId');
+                const alreadySubmitted = isTemplateSubmittedForCampaign(currentCampaignId);
 
-              if (dbProspects.length > 0 && !hasEmails && !alreadySubmitted) {
-                console.log('🎨🎨🎨 TRIGGERING TEMPLATE SELECTION POPUP - prospects exist but no emails');
-                setShowTemplateSelection(true);
-                setWaitingForTemplate(true);
-              } else if (alreadySubmitted) {
-                console.log('🎨 Template already submitted for this campaign - skipping popup');
+                if (dbProspects.length > 0 && !hasEmails && !alreadySubmitted) {
+                  console.log('🎨 Fallback: Triggering popup based on localStorage');
+                  setShowTemplateSelection(true);
+                  setWaitingForTemplate(true);
+                }
               }
             }, 1000);
           }
