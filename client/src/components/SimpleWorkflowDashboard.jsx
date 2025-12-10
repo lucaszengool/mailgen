@@ -7902,8 +7902,8 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         }}
       />
 
-      {/* 🔔 Process Notifications - Shows workflow stage popups */}
-      {showProcessNotification && notificationStage && (
+      {/* 🔔 Process Notifications - DISABLED per user request */}
+      {/* {showProcessNotification && notificationStage && (
         <ProcessNotifications
           workflowStatus={notificationStage}
           prospectCount={prospects.length}
@@ -7951,7 +7951,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
             }
           }}
         />
-      )}
+      )} */}
 
       {/* 🔔 Agent Status Notification - Shows backend process status */}
       {agentStatus && (
