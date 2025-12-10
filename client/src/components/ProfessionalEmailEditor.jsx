@@ -6629,12 +6629,6 @@ export default function ProfessionalEmailEditor(props) {
               <div className="flex flex-col gap-3">
                 <div className="flex justify-center space-x-3">
                   <button
-                    onClick={() => handleTemplateConfirmation(false)}
-                    className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-white font-medium transition-colors border border-gray-700"
-                  >
-                    Send Single Email
-                  </button>
-                  <button
                     onClick={() => handleTemplateConfirmation(true)}
                     className="px-10 py-3 bg-black hover:bg-gray-900 border-2 border-[#00f5a0] rounded-lg text-[#00f5a0] font-semibold transition-colors"
                   >
