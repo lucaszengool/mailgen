@@ -2600,7 +2600,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     if (backgroundWorkflowRunning && microSteps.length <= 2) { // If stuck with minimal progress
       const pollInterval = setInterval(async () => {
         try {
-          const statusResponse = await fetch('/api/workflow/status');
+          // 🔥 FIX: Always include campaignId in status requests
+          const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+          const statusUrl = currentCampaignId
+            ? `/api/workflow/status?campaignId=${currentCampaignId}`
+            : '/api/workflow/status';
+          const statusResponse = await fetch(statusUrl);
           const statusData = await statusResponse.json();
 
           if (statusData.success && statusData.data) {

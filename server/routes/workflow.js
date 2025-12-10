@@ -1054,12 +1054,15 @@ router.get('/results', optionalAuth, async (req, res) => {
       }
 
       // 🔥 CRITICAL FIX: Only include firstEmailGenerated if it belongs to THIS campaign
-      const firstEmailBelongsToThisCampaign = effectiveWorkflowState.firstEmailGenerated &&
-                                                effectiveWorkflowState.firstEmailGenerated.campaignId === campaignId;
+      // 🔒 STRICT: Both campaignId must exist AND match - never show if either is null
+      const firstEmailCampaignId = effectiveWorkflowState.firstEmailGenerated?.campaignId;
+      const firstEmailBelongsToThisCampaign = campaignId &&
+                                                firstEmailCampaignId &&
+                                                String(firstEmailCampaignId) === String(campaignId);
 
       console.log(`\n🔍 [FIRST EMAIL FILTER - STORED] Checking if first email belongs to this campaign:`);
       console.log(`   📧 firstEmailGenerated exists: ${!!effectiveWorkflowState.firstEmailGenerated}`);
-      console.log(`   🆔 firstEmailGenerated.campaignId: ${effectiveWorkflowState.firstEmailGenerated?.campaignId || 'NOT SET'}`);
+      console.log(`   🆔 firstEmailGenerated.campaignId: ${firstEmailCampaignId || 'NOT SET'}`);
       console.log(`   🆔 Requested campaignId: ${campaignId || 'NOT SET'}`);
       console.log(`   ✅ Match: ${firstEmailBelongsToThisCampaign ? 'YES' : 'NO'}`);
 
@@ -1364,12 +1367,15 @@ router.get('/results', optionalAuth, async (req, res) => {
     }
 
     // 🔥 CRITICAL FIX: Only include firstEmailGenerated if it belongs to THIS campaign
-    const firstEmailBelongsToThisCampaign = effectiveWorkflowState2.firstEmailGenerated &&
-                                              effectiveWorkflowState2.firstEmailGenerated.campaignId === campaignId;
+    // 🔒 STRICT: Both campaignId must exist AND match - never show if either is null
+    const firstEmail2CampaignId = effectiveWorkflowState2.firstEmailGenerated?.campaignId;
+    const firstEmailBelongsToThisCampaign = campaignId &&
+                                              firstEmail2CampaignId &&
+                                              String(firstEmail2CampaignId) === String(campaignId);
 
     console.log(`\n🔍 [FIRST EMAIL FILTER] Checking if first email belongs to this campaign:`);
     console.log(`   📧 firstEmailGenerated exists: ${!!effectiveWorkflowState2.firstEmailGenerated}`);
-    console.log(`   🆔 firstEmailGenerated.campaignId: ${effectiveWorkflowState2.firstEmailGenerated?.campaignId || 'NOT SET'}`);
+    console.log(`   🆔 firstEmailGenerated.campaignId: ${firstEmail2CampaignId || 'NOT SET'}`);
     console.log(`   🆔 Requested campaignId: ${campaignId || 'NOT SET'}`);
     console.log(`   ✅ Match: ${firstEmailBelongsToThisCampaign ? 'YES' : 'NO'}`);
 
