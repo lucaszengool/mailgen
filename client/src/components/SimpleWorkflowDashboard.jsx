@@ -4663,28 +4663,40 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         // 🐛 DEBUG: Log all values for first email popup check
         // 🔥 FIX: Also check localStorage for this specific campaign
         const currentCampaignId = result.data.campaignId || result.data.firstEmailGenerated?.campaignId || localStorage.getItem('currentCampaignId');
-        const alreadyShownInStorage = isFirstEmailModalShownForCampaign(currentCampaignId);
-        const shouldNotShow = hasShownFirstEmailModal || alreadyShownInStorage;
+        const firstEmailCampaignId = result.data.firstEmailGenerated?.campaignId;
+        const activeCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
 
-        console.log('🐛 DEBUG: Checking if first email popup should show:');
-        console.log('🐛   waitingForUserApproval:', result.data.waitingForUserApproval);
-        console.log('🐛   firstEmailGenerated:', result.data.firstEmailGenerated);
-        console.log('🐛   firstEmailGenerated.subject:', result.data.firstEmailGenerated?.subject);
-        console.log('🐛   firstEmailGenerated.body:', result.data.firstEmailGenerated?.body);
-        console.log('🐛   hasShownFirstEmailModal (state):', hasShownFirstEmailModal);
-        console.log('🐛   alreadyShownInStorage:', alreadyShownInStorage);
-        console.log('🐛   currentCampaignId:', currentCampaignId);
-        console.log('🐛   ALL CONDITIONS MET:',
-          result.data.waitingForUserApproval &&
-          result.data.firstEmailGenerated &&
-          result.data.firstEmailGenerated.subject &&
-          result.data.firstEmailGenerated.body &&
-          !shouldNotShow
-        );
+        // 🔒 CRITICAL: Campaign isolation check FIRST
+        console.log(`🔍 [CAMPAIGN CHECK] HTTP polling - Email campaign: ${firstEmailCampaignId}, Current: ${activeCampaignId}`);
 
-        // Check for email review state - ONLY trigger for truly first email with complete content
-        // 🔥 FIX: Check both state AND localStorage to prevent showing on page refresh
-        if (result.data.waitingForUserApproval &&
+        // 🔥 STRICT: Skip if campaignId doesn't match
+        if (activeCampaignId && firstEmailCampaignId &&
+            String(firstEmailCampaignId) !== String(activeCampaignId)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping first email popup from different campaign`);
+          // Don't return - still process other results, just skip the popup
+        } else {
+          const alreadyShownInStorage = isFirstEmailModalShownForCampaign(currentCampaignId);
+          const shouldNotShow = hasShownFirstEmailModal || alreadyShownInStorage;
+
+          console.log('🐛 DEBUG: Checking if first email popup should show:');
+          console.log('🐛   waitingForUserApproval:', result.data.waitingForUserApproval);
+          console.log('🐛   firstEmailGenerated:', result.data.firstEmailGenerated);
+          console.log('🐛   firstEmailGenerated.subject:', result.data.firstEmailGenerated?.subject);
+          console.log('🐛   firstEmailGenerated.body:', result.data.firstEmailGenerated?.body);
+          console.log('🐛   hasShownFirstEmailModal (state):', hasShownFirstEmailModal);
+          console.log('🐛   alreadyShownInStorage:', alreadyShownInStorage);
+          console.log('🐛   currentCampaignId:', currentCampaignId);
+          console.log('🐛   ALL CONDITIONS MET:',
+            result.data.waitingForUserApproval &&
+            result.data.firstEmailGenerated &&
+            result.data.firstEmailGenerated.subject &&
+            result.data.firstEmailGenerated.body &&
+            !shouldNotShow
+          );
+
+          // Check for email review state - ONLY trigger for truly first email with complete content
+          // 🔥 FIX: Check both state AND localStorage to prevent showing on page refresh
+          if (result.data.waitingForUserApproval &&
             result.data.firstEmailGenerated &&
             result.data.firstEmailGenerated.subject &&
             result.data.firstEmailGenerated.body &&
@@ -4720,8 +4732,9 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           // Stop all polling while waiting for user input
           setWorkflowStatus('paused_for_review');
           return; // Don't process other results while waiting for approval
-        }
-        
+          }
+        } // End of campaign isolation else block
+
         // 🎯 CRITICAL FIX: Set emails in state whenever they're available
         if (emailCampaign && emailCampaign.emails && emailCampaign.emails.length > 0) {
           console.log(`🎯 Setting ${emailCampaign.emails.length} emails in state`);
@@ -5702,9 +5715,21 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
       } else if (data.type === 'email_awaiting_approval') {
         // Handle emails awaiting approval - trigger review modal ONLY for first email
         console.log('📧 Email awaiting approval:', data.data);
-        // 🔥 FIX: Also check localStorage for this specific campaign
-        const awaitingCampaignId = data.data?.campaignId || localStorage.getItem('currentCampaignId');
-        const alreadyShownForAwaiting = isFirstEmailModalShownForCampaign(awaitingCampaignId);
+
+        // 🔒 CRITICAL: Campaign isolation check FIRST before showing any popup
+        const currentCampaignId = campaign?.id || localStorage.getItem('currentCampaignId');
+        const awaitingCampaignId = data.data?.campaignId;
+
+        console.log(`🔍 [CAMPAIGN CHECK] email_awaiting_approval - Email campaign: ${awaitingCampaignId}, Current: ${currentCampaignId}`);
+
+        // 🔥 STRICT: Skip if campaignId doesn't match (or missing)
+        if (currentCampaignId && awaitingCampaignId &&
+            String(awaitingCampaignId) !== String(currentCampaignId)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email_awaiting_approval popup from different campaign`);
+          return;
+        }
+
+        const alreadyShownForAwaiting = isFirstEmailModalShownForCampaign(awaitingCampaignId || currentCampaignId);
         const shouldNotShowAwaiting = hasShownFirstEmailModal || alreadyShownForAwaiting;
 
         if (data.data && data.data.emailContent && !shouldNotShowAwaiting) {
@@ -5793,6 +5818,20 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
         
         // Handle email preview updates - trigger review modal for first email or when using template
         console.log('📧 Email preview received for review:', data.data);
+
+        // 🔒 CRITICAL: Campaign isolation check FIRST before showing any popup
+        const currentCampaignIdForPreview = campaign?.id || localStorage.getItem('currentCampaignId');
+        const previewEmailCampaignId = data.data?.campaignId;
+
+        console.log(`🔍 [CAMPAIGN CHECK] email_preview_generated - Preview campaign: ${previewEmailCampaignId}, Current: ${currentCampaignIdForPreview}`);
+
+        // 🔥 STRICT: Skip if campaignId doesn't match
+        if (currentCampaignIdForPreview && previewEmailCampaignId &&
+            String(previewEmailCampaignId) !== String(currentCampaignIdForPreview)) {
+          console.log(`🚫 [CAMPAIGN ISOLATION] Skipping email_preview_generated popup from different campaign`);
+          return;
+        }
+
         if (data.data && data.data.preview) {
           const emailForReview = {
             to: data.data.prospectId,
