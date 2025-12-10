@@ -2269,9 +2269,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     if (currentCampaignId) {
       filteredProspects = prospects.filter(prospect => {
         const prospectCampaignId = prospect.campaignId || prospect.campaign_id;
-        // Keep if: no campaignId (legacy), matches current campaign, or is string equal
-        return !prospectCampaignId ||
-               prospectCampaignId === currentCampaignId ||
+        // 🔥 STRICT: REJECT prospects without campaignId to prevent mixing
+        if (!prospectCampaignId) {
+          console.log(`🗑️ [RENDER FILTER] Rejecting prospect without campaignId: ${prospect.email}`);
+          return false;
+        }
+        return prospectCampaignId === currentCampaignId ||
                String(prospectCampaignId) === String(currentCampaignId);
       });
     }
@@ -2312,9 +2315,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     if (currentCampaignId) {
       filteredEmails = emails.filter(email => {
         const emailCampaignId = email.campaignId || email.campaign_id;
-        // Keep if: no campaignId (legacy), matches current campaign, or is string equal
-        return !emailCampaignId ||
-               emailCampaignId === currentCampaignId ||
+        // 🔥 STRICT: REJECT emails without campaignId to prevent mixing
+        if (!emailCampaignId) {
+          console.log(`🗑️ [RENDER FILTER] Rejecting email without campaignId: ${email.to || email.recipient_email}`);
+          return false;
+        }
+        return emailCampaignId === currentCampaignId ||
                String(emailCampaignId) === String(currentCampaignId);
       });
     }
