@@ -165,11 +165,31 @@ class LangGraphMarketingAgent {
 
   /**
    * Check if user has saved template preference and auto-apply it
-   * Returns true if template was auto-applied, false if user needs to select
+   * Returns true if template was auto-applied OR already submitted, false if user needs to select
    */
   async checkAndApplySavedTemplate(userId, campaignId) {
     try {
       console.log(`🔍 [Campaign: ${campaignId}] Checking if user ${userId} has saved template...`);
+
+      // 🔥 CRITICAL FIX: First check if template was already submitted for this campaign
+      // This prevents the popup from re-appearing after user already selected a template
+      try {
+        const redisCache = require('../utils/RedisUserCache');
+        const templateSubmittedFlag = await redisCache.get(userId, `templateSubmitted_${campaignId}`);
+        if (templateSubmittedFlag && templateSubmittedFlag.submitted) {
+          console.log(`✅ [Campaign: ${campaignId}] Template already submitted (Redis flag) - skipping popup`);
+          return true; // Template already submitted, don't show popup
+        }
+        // Also check LATEST and default flags
+        const latestFlag = await redisCache.get(userId, `templateSubmitted_LATEST`);
+        if (latestFlag && latestFlag.submitted) {
+          console.log(`✅ [Campaign: ${campaignId}] Template already submitted (LATEST flag) - skipping popup`);
+          return true;
+        }
+      } catch (redisErr) {
+        console.log('⚠️ Could not check Redis for template submission:', redisErr.message);
+        // Continue to check saved template preference
+      }
 
       const userStorage = new UserStorageService(userId);
       const savedTemplate = await userStorage.getSelectedTemplate();
@@ -1369,7 +1389,22 @@ class LangGraphMarketingAgent {
 
         // 🔥 IMMEDIATE: Trigger template selection popup as soon as prospects found
         // This shows the popup right after prospects are discovered, not after full search
-        if (this.wsManager && !this.campaignConfig?.emailTemplate) {
+        // 🔥 FIX: Check Redis first to prevent re-triggering if template already submitted
+        let templateAlreadySubmitted = false;
+        try {
+          const redisCache = require('../utils/RedisUserCache');
+          const userId = this.userId || 'anonymous';
+          const submittedFlag = await redisCache.get(userId, `templateSubmitted_${localCampaignId}`);
+          const latestFlag = await redisCache.get(userId, `templateSubmitted_LATEST`);
+          templateAlreadySubmitted = (submittedFlag && submittedFlag.submitted) || (latestFlag && latestFlag.submitted);
+          if (templateAlreadySubmitted) {
+            console.log(`✅ [IMMEDIATE CHECK] Template already submitted for campaign ${localCampaignId} - skipping immediate popup`);
+          }
+        } catch (e) {
+          console.log('⚠️ Could not check Redis for immediate template check:', e.message);
+        }
+
+        if (this.wsManager && !this.campaignConfig?.emailTemplate && !templateAlreadySubmitted) {
           console.log('🎨🎨🎨 IMMEDIATE TEMPLATE SELECTION - BROADCASTING NOW! 🎨🎨🎨');
           const TemplatePromptService = require('../services/TemplatePromptService');
           this.wsManager.broadcast({
