@@ -2720,14 +2720,33 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
               console.log(`📥 [AUTO-LOAD] Loaded ${prospectsFromAPI?.length || 0} prospects, ${emailCampaign?.emails?.length || 0} emails for campaign ${currentCampaignId}`);
 
+              // 🔥 CRITICAL FIX: Filter by campaignId to prevent mixing
+              const filteredProspects = (prospectsFromAPI || []).filter(p => {
+                const pCampaignId = p.campaignId || p.campaign_id;
+                if (!pCampaignId) {
+                  console.log(`🗑️ [AUTO-LOAD FILTER] Rejecting prospect without campaignId: ${p.email}`);
+                  return false;
+                }
+                return pCampaignId === currentCampaignId || String(pCampaignId) === String(currentCampaignId);
+              });
+              const filteredEmails = (emailCampaign?.emails || []).filter(e => {
+                const eCampaignId = e.campaignId || e.campaign_id;
+                if (!eCampaignId) {
+                  console.log(`🗑️ [AUTO-LOAD FILTER] Rejecting email without campaignId: ${e.to}`);
+                  return false;
+                }
+                return eCampaignId === currentCampaignId || String(eCampaignId) === String(currentCampaignId);
+              });
+              console.log(`📥 [AUTO-LOAD] After filtering: ${filteredProspects.length} prospects, ${filteredEmails.length} emails for campaign ${currentCampaignId}`);
+
               // 🔥 CRITICAL FIX: ALWAYS update state, even with empty arrays
-              setProspects(prospectsFromAPI || []);
-              setGeneratedEmails(emailCampaign?.emails || []);
+              setProspects(filteredProspects);
+              setGeneratedEmails(filteredEmails);
 
               // Update workflow status based on data
               setWorkflowStatus(prevStatus => {
-                // If we have prospects or emails, mark as completed (workflow finished)
-                if ((prospectsFromAPI && prospectsFromAPI.length > 0) || (emailCampaign?.emails && emailCampaign.emails.length > 0)) {
+                // If we have prospects or emails (filtered), mark as completed (workflow finished)
+                if (filteredProspects.length > 0 || filteredEmails.length > 0) {
                   return 'completed';
                 }
                 // If starting/waiting for template, keep that status
@@ -3104,8 +3123,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     if (!targetCampaignId || !prospects) return prospects || [];
     return prospects.filter(p => {
       const pCampaignId = p.campaignId || p.campaign_id;
-      // Keep if no campaign ID (legacy) or if matches current campaign
-      return !pCampaignId || pCampaignId === targetCampaignId || String(pCampaignId) === String(targetCampaignId);
+      // 🔥 STRICT: REJECT prospects without campaignId to prevent mixing between campaigns
+      if (!pCampaignId) {
+        console.log(`🗑️ [CAMPAIGN FILTER] Rejecting prospect without campaignId: ${p.email}`);
+        return false;
+      }
+      return pCampaignId === targetCampaignId || String(pCampaignId) === String(targetCampaignId);
     });
   }, []);
 
@@ -3114,8 +3137,12 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     if (!targetCampaignId || !emails) return emails || [];
     return emails.filter(e => {
       const eCampaignId = e.campaignId || e.campaign_id;
-      // Keep if no campaign ID (legacy) or if matches current campaign
-      return !eCampaignId || eCampaignId === targetCampaignId || String(eCampaignId) === String(targetCampaignId);
+      // 🔥 STRICT: REJECT emails without campaignId to prevent mixing between campaigns
+      if (!eCampaignId) {
+        console.log(`🗑️ [CAMPAIGN FILTER] Rejecting email without campaignId: ${e.to || e.recipient_email}`);
+        return false;
+      }
+      return eCampaignId === targetCampaignId || String(eCampaignId) === String(targetCampaignId);
     });
   }, []);
 
@@ -3686,25 +3713,42 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     console.log('🎨 Set workflowStatus to waiting');
 
     // 🔥 CRITICAL FIX: Immediately show sample prospects from WebSocket message
+    // 🔒 CAMPAIGN ISOLATION: Tag prospects with campaignId
+    const targetCampaignId = data.campaignId || localStorage.getItem('currentCampaignId');
+    const currentCampaignId = localStorage.getItem('currentCampaignId');
+
+    // 🔒 STRICT: Only process if campaignId matches current campaign
+    if (targetCampaignId && currentCampaignId && String(targetCampaignId) !== String(currentCampaignId)) {
+      console.log(`🚫 [TEMPLATE POPUP] Skipping - different campaign (data: ${targetCampaignId}, current: ${currentCampaignId})`);
+      return;
+    }
+
     if (data.sampleProspects && data.sampleProspects.length > 0) {
       console.log(`📦 [TEMPLATE POPUP] Adding ${data.sampleProspects.length} sample prospects from WebSocket immediately`);
       setProspects(prev => {
-        const existingEmails = new Set(prev.map(p => p.email));
-        const newProspects = data.sampleProspects.filter(p => !existingEmails.has(p.email));
+        // 🔒 FIRST: Filter out prospects from other campaigns
+        const filteredPrev = prev.filter(p => {
+          const pCampaignId = p.campaignId || p.campaign_id;
+          return !pCampaignId || String(pCampaignId) === String(targetCampaignId);
+        });
+        const existingEmails = new Set(filteredPrev.map(p => p.email));
+        // 🔒 TAG: Add campaignId to new prospects
+        const newProspects = data.sampleProspects
+          .filter(p => !existingEmails.has(p.email))
+          .map(p => ({ ...p, campaignId: targetCampaignId, campaign_id: targetCampaignId }));
         if (newProspects.length > 0) {
-          console.log(`📦 [TEMPLATE POPUP] Adding ${newProspects.length} sample prospects (${prev.length} → ${prev.length + newProspects.length})`);
-          return [...prev, ...newProspects];
+          console.log(`📦 [TEMPLATE POPUP] Adding ${newProspects.length} sample prospects (${filteredPrev.length} → ${filteredPrev.length + newProspects.length})`);
+          return [...filteredPrev, ...newProspects];
         }
-        return prev;
+        return filteredPrev.length !== prev.length ? filteredPrev : prev;
       });
     }
 
     // 🔥 CRITICAL FIX: Then fetch and display ALL prospects for the campaign
-    const campaignId = data.campaignId || localStorage.getItem('currentCampaignId');
-    if (campaignId) {
-      console.log(`📥 [TEMPLATE POPUP] Fetching ALL prospects for campaign ${campaignId} to display immediately`);
+    if (targetCampaignId) {
+      console.log(`📥 [TEMPLATE POPUP] Fetching ALL prospects for campaign ${targetCampaignId} to display immediately`);
       try {
-        const url = `/api/workflow/results?campaignId=${campaignId}`;
+        const url = `/api/workflow/results?campaignId=${targetCampaignId}`;
         const result = await apiGet(url);
 
         if (result.success && result.data?.prospects) {
@@ -3713,13 +3757,24 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
 
           // Merge with existing prospects
           setProspects(prev => {
-            const existingEmails = new Set(prev.map(p => p.email));
-            const newProspects = allProspects.filter(p => !existingEmails.has(p.email));
+            // 🔒 FIRST: Filter out prospects from other campaigns
+            const filteredPrev = prev.filter(p => {
+              const pCampaignId = p.campaignId || p.campaign_id;
+              return !pCampaignId || String(pCampaignId) === String(targetCampaignId);
+            });
+            const existingEmails = new Set(filteredPrev.map(p => p.email));
+            // 🔒 Only add prospects that have matching campaignId
+            const newProspects = allProspects
+              .filter(p => {
+                const pCampaignId = p.campaignId || p.campaign_id;
+                return pCampaignId && String(pCampaignId) === String(targetCampaignId) && !existingEmails.has(p.email);
+              })
+              .map(p => ({ ...p, campaignId: targetCampaignId, campaign_id: targetCampaignId }));
             if (newProspects.length > 0) {
-              console.log(`📦 [TEMPLATE POPUP] Adding ${newProspects.length} new prospects (${prev.length} → ${prev.length + newProspects.length})`);
-              return [...prev, ...newProspects];
+              console.log(`📦 [TEMPLATE POPUP] Adding ${newProspects.length} new prospects (${filteredPrev.length} → ${filteredPrev.length + newProspects.length})`);
+              return [...filteredPrev, ...newProspects];
             }
-            return prev;
+            return filteredPrev.length !== prev.length ? filteredPrev : prev;
           });
         }
       } catch (error) {
@@ -5333,16 +5388,27 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           console.log('🎨 Calling handleTemplateSelectionRequired...');
 
           // 🔥 CRITICAL: Also add prospects immediately from the message
+          // 🔒 CAMPAIGN ISOLATION: Tag with campaignId and filter
           if (data.data?.sampleProspects && data.data.sampleProspects.length > 0) {
-            console.log(`📦 [TEMPLATE WS] Adding ${data.data.sampleProspects.length} prospects IMMEDIATELY`);
+            const targetCampaignId = templateCampaignId || currentCampaignId;
+            console.log(`📦 [TEMPLATE WS] Adding ${data.data.sampleProspects.length} prospects IMMEDIATELY for campaign ${targetCampaignId}`);
             setProspects(prev => {
-              const existingEmails = new Set(prev.map(p => p.email));
-              const newProspects = data.data.sampleProspects.filter(p => p.email && !existingEmails.has(p.email));
+              // 🔒 FIRST: Filter out prospects from other campaigns
+              const filteredPrev = prev.filter(p => {
+                const pCampaignId = p.campaignId || p.campaign_id;
+                if (!pCampaignId) return false; // Reject prospects without campaignId
+                return String(pCampaignId) === String(targetCampaignId);
+              });
+              const existingEmails = new Set(filteredPrev.map(p => p.email));
+              // 🔒 TAG: Add campaignId to new prospects
+              const newProspects = data.data.sampleProspects
+                .filter(p => p.email && !existingEmails.has(p.email))
+                .map(p => ({ ...p, campaignId: targetCampaignId, campaign_id: targetCampaignId }));
               if (newProspects.length > 0) {
-                console.log(`📦 [TEMPLATE WS] Added ${newProspects.length} new prospects`);
-                return [...prev, ...newProspects];
+                console.log(`📦 [TEMPLATE WS] Added ${newProspects.length} new prospects (filtered ${prev.length - filteredPrev.length} from other campaigns)`);
+                return [...filteredPrev, ...newProspects];
               }
-              return prev;
+              return filteredPrev.length !== prev.length ? filteredPrev : prev;
             });
             // Force re-render
             setProspectForceUpdateKey(k => k + 1);
