@@ -818,31 +818,41 @@ router.get('/step/:stepId', optionalAuth, (req, res) => {
 router.get('/results', optionalAuth, async (req, res) => {
   try {
     const userId = req.userId;
-    const campaignId = req.query.campaignId || null;  // 🔥 PRODUCTION: Campaign filter
+    const requestedCampaignId = req.query.campaignId || null;  // 🔥 PRODUCTION: Campaign filter
     console.log(`\n${'='.repeat(80)}`);
     console.log(`🔍 [WORKFLOW RESULTS] Fetching results for User: ${userId}`);
-    console.log(`📋 Campaign ID requested: ${campaignId || 'LATEST (most recent)'}`);
+    console.log(`📋 Campaign ID requested: ${requestedCampaignId || 'LATEST (most recent)'}`);
     console.log(`🌐 Request URL: ${req.url}`);
     console.log(`📦 Query params:`, req.query);
     console.log(`${'='.repeat(80)}`);
 
     // Get user-specific workflow state and results
     const workflowState = getUserWorkflowState(userId);
-    const lastWorkflowResults = await getLastWorkflowResults(userId, campaignId);
+    const lastWorkflowResults = await getLastWorkflowResults(userId, requestedCampaignId);
+
+    // 🔥 CRITICAL FIX: Define campaignId at top level - use effective campaignId from results if not specified
+    // This ensures filtering works correctly when "LATEST" is requested
+    let campaignId = requestedCampaignId || lastWorkflowResults?.campaignId || null;
 
     // First check if we have stored results from the last campaign
     // 🎯 FIX: Also check for emails, not just prospects
     if (lastWorkflowResults &&
         (lastWorkflowResults.prospects?.length > 0 || lastWorkflowResults.emailCampaign?.emails?.length > 0)) {
+
+      // 🔥 CRITICAL FIX: Use the EFFECTIVE campaignId - either requested or from results
+      // This ensures filtering works correctly when "LATEST" is requested
+      campaignId = requestedCampaignId || lastWorkflowResults.campaignId;
+
       console.log(`\n✅ [RESULTS FOUND] Stored workflow results located:`);
       console.log(`   📊 Prospects: ${lastWorkflowResults.prospects?.length || 0}`);
       console.log(`   📧 Emails: ${lastWorkflowResults.emailCampaign?.emails?.length || 0}`);
       console.log(`   🆔 Campaign ID in results: ${lastWorkflowResults.campaignId || 'NOT SET'}`);
-      console.log(`   🆔 Campaign ID requested: ${campaignId || 'LATEST'}`);
+      console.log(`   🆔 Campaign ID requested: ${requestedCampaignId || 'LATEST'}`);
+      console.log(`   🆔 Effective Campaign ID for filtering: ${campaignId}`);
       console.log(`   ✅ Campaign ID match: ${lastWorkflowResults.campaignId === campaignId ? 'YES' : 'NO'}`);
       console.log(`   📅 Last update: ${lastWorkflowResults.timestamp || 'unknown'}`);
       console.log('\n🔧 [TEMPLATE PROCESSING] Starting template variable replacement...');
-      
+
       // CRITICAL FIX: Replace template variables in email campaign data before returning
       const processedResults = JSON.parse(JSON.stringify(lastWorkflowResults)); // Deep clone
       console.log('🔧 DEBUG: Email campaign exists:', !!processedResults.emailCampaign);

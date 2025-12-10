@@ -1,16 +1,40 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Zap, Target, BarChart3, TestTube, Award, Mail, Sparkles, FileText, Radar, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Zap, Target, BarChart3, TestTube, Award, Mail, Sparkles, FileText, Radar, CheckCircle, Bot, Rocket, MapPin, Lightbulb } from 'lucide-react';
 
 const FeaturePage = () => {
   const { slug } = useParams();
+
+  // Icon mapping for clean display
+  const iconComponents = {
+    mail: Mail,
+    target: Target,
+    rocket: Rocket,
+    barchart: BarChart3,
+    testtube: TestTube,
+    award: Award,
+    bot: Bot,
+    filetext: FileText,
+    lightbulb: Lightbulb,
+    mappin: MapPin,
+    sparkles: Sparkles
+  };
+
+  // Helper to render icon
+  const renderIcon = (iconName, size = 'w-16 h-16') => {
+    const IconComponent = iconComponents[iconName];
+    if (IconComponent) {
+      return <IconComponent className={`${size}`} style={{ color: '#00f5a0' }} />;
+    }
+    return <Mail className={`${size}`} style={{ color: '#00f5a0' }} />;
+  };
 
   // Features data
   const features = {
     'ai-email-generator': {
       title: 'AI Email Generator',
       subtitle: 'Create personalized, high-converting emails in seconds',
-      icon: '✉️',
+      icon: 'mail',
       category: 'Core Feature',
       description: 'Our AI Email Generator uses advanced language models to create personalized, compelling emails that resonate with your prospects and drive responses.',
       content: `
@@ -63,7 +87,7 @@ const FeaturePage = () => {
     'prospect-finder': {
       title: 'Prospect Finder',
       subtitle: 'Discover and qualify leads automatically',
-      icon: '🎯',
+      icon: 'target',
       category: 'Core Feature',
       description: 'Access our database of 80M+ verified prospects and use AI to find your ideal customers automatically.',
       content: `
@@ -112,7 +136,7 @@ const FeaturePage = () => {
     'smart-campaigns': {
       title: 'Smart Campaigns',
       subtitle: 'Automated email sequences that adapt and optimize',
-      icon: '🚀',
+      icon: 'rocket',
       category: 'Core Feature',
       description: 'Create intelligent email campaigns that automatically adjust timing, content, and follow-ups based on prospect behavior.',
       content: `
@@ -166,7 +190,7 @@ const FeaturePage = () => {
     'analytics-dashboard': {
       title: 'Analytics Dashboard',
       subtitle: 'Real-time insights to optimize your campaigns',
-      icon: '📊',
+      icon: 'barchart',
       category: 'Core Feature',
       description: 'Comprehensive analytics dashboard that tracks every metric, identifies trends, and provides actionable recommendations.',
       content: `
@@ -220,7 +244,7 @@ const FeaturePage = () => {
     'ab-testing': {
       title: 'A/B Testing',
       subtitle: 'Test everything to maximize performance',
-      icon: '🧪',
+      icon: 'testtube',
       category: 'Core Feature',
       description: 'Comprehensive A/B testing for subject lines, email content, send times, and more. Let data drive your optimization.',
       content: `
@@ -275,7 +299,7 @@ const FeaturePage = () => {
     'lead-scoring': {
       title: 'Lead Scoring',
       subtitle: 'Prioritize your best opportunities automatically',
-      icon: '⭐',
+      icon: 'award',
       category: 'Core Feature',
       description: 'AI-powered lead scoring that identifies your most valuable prospects and helps you focus on the deals most likely to close.',
       content: `
@@ -332,7 +356,7 @@ const FeaturePage = () => {
     'ai-email-assistant': {
       title: 'AI Email Assistant',
       subtitle: 'Your intelligent email writing companion',
-      icon: '🤖',
+      icon: 'bot',
       category: 'Related Tool',
       description: 'An AI-powered assistant that helps you write better emails, suggests improvements, and ensures your messaging resonates.',
       content: `
@@ -385,7 +409,7 @@ const FeaturePage = () => {
     'ai-subject-line-generator': {
       title: 'AI Subject Line Generator',
       subtitle: 'Create subject lines that get opened',
-      icon: '📝',
+      icon: 'filetext',
       category: 'Related Tool',
       description: 'Generate high-converting subject lines using AI trained on millions of successful emails.',
       content: `
@@ -439,7 +463,7 @@ const FeaturePage = () => {
     'ai-campaign-helper': {
       title: 'AI Campaign Helper',
       subtitle: 'Plan and optimize campaigns with AI guidance',
-      icon: '💡',
+      icon: 'lightbulb',
       category: 'Related Tool',
       description: 'Get AI-powered recommendations for campaign strategy, timing, targeting, and optimization.',
       content: `
@@ -494,7 +518,7 @@ const FeaturePage = () => {
     'ai-lead-tracker': {
       title: 'AI Lead Tracker',
       subtitle: 'Never lose track of a potential customer',
-      icon: '📍',
+      icon: 'mappin',
       category: 'Related Tool',
       description: 'Intelligent lead tracking that monitors engagement, predicts behavior, and ensures no opportunity falls through the cracks.',
       content: `
@@ -563,52 +587,57 @@ const FeaturePage = () => {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-      {/* Header */}
-      <div className="border-b" style={{ borderColor: '#f0f0f0' }}>
-        <div className="max-w-4xl mx-auto px-12 py-6">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium transition-colors"
-                style={{ color: 'rgba(0, 0, 0, 0.65)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#00f5a0'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0, 0, 0, 0.65)'}>
+      {/* Hero Section with gradient background */}
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #001529 0%, #003d33 100%)' }}>
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-20 w-72 h-72 rounded-full" style={{ background: 'radial-gradient(circle, #00f5a0 0%, transparent 70%)' }} />
+          <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full" style={{ background: 'radial-gradient(circle, #00f5a0 0%, transparent 70%)' }} />
+        </div>
+
+        {/* Header */}
+        <div className="relative max-w-4xl mx-auto px-6 md:px-12 pt-8 pb-16">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium transition-all hover:gap-3 mb-12"
+                style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
+
+          {/* Category Badge */}
+          <div className="mb-6">
+            <span className="px-4 py-2 rounded-full text-sm font-semibold"
+                  style={{ backgroundColor: 'rgba(0, 245, 160, 0.2)', color: '#00f5a0' }}>
+              {feature.category}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight text-white"
+              style={{ fontWeight: 700 }}>
+            {feature.title}
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-xl mb-6" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+            {feature.subtitle}
+          </p>
+
+          {/* Description */}
+          <p className="text-lg max-w-2xl" style={{ color: 'rgba(255, 255, 255, 0.6)', lineHeight: '1.8' }}>
+            {feature.description}
+          </p>
+
+          {/* Icon badge */}
+          <div className="mt-10 flex justify-center">
+            <div className="w-24 h-24 rounded-2xl flex items-center justify-center shadow-2xl" style={{ background: 'linear-gradient(135deg, #00f5a0 0%, #00c98d 100%)' }}>
+              {renderIcon(feature.icon, 'w-12 h-12')}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Article */}
-      <article className="max-w-4xl mx-auto px-12 py-12">
-        {/* Category Badge */}
-        <div className="mb-6">
-          <span className="px-4 py-2 rounded-full text-sm font-semibold"
-                style={{ backgroundColor: 'rgba(0, 245, 160, 0.1)', color: '#00f5a0' }}>
-            {feature.category}
-          </span>
-        </div>
-
-        {/* Title */}
-        <h1 className="text-5xl font-bold mb-4 leading-tight"
-            style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 700 }}>
-          {feature.title}
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-xl mb-8" style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
-          {feature.subtitle}
-        </p>
-
-        {/* Description */}
-        <div className="mb-8 pb-8 border-b" style={{ borderColor: '#f0f0f0' }}>
-          <p className="text-lg" style={{ color: 'rgba(0, 0, 0, 0.88)', lineHeight: '1.8' }}>
-            {feature.description}
-          </p>
-        </div>
-
-        {/* Featured Image Placeholder */}
-        <div className="mb-12 p-20 rounded-2xl flex items-center justify-center text-9xl"
-             style={{ backgroundColor: '#f5f5f5' }}>
-          {feature.icon}
-        </div>
+      <article className="max-w-4xl mx-auto px-6 md:px-12 py-12">
 
         {/* Article Content */}
         <div className="prose prose-lg max-w-none"
@@ -707,7 +736,9 @@ const FeaturePage = () => {
                 <Link key={key} to={`/features/${key}`} className="block">
                   <div className="rounded-xl p-6 transition-all hover:shadow-lg"
                        style={{ backgroundColor: 'white', border: '1px solid #f0f0f0' }}>
-                    <div className="text-4xl mb-4">{f.icon}</div>
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: 'rgba(0, 245, 160, 0.1)' }}>
+                      {renderIcon(f.icon, 'w-6 h-6')}
+                    </div>
                     <h3 className="text-xl font-semibold mb-2" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
                       {f.title}
                     </h3>

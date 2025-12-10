@@ -1,9 +1,32 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, Clock, User, ArrowLeft, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Calendar, Clock, User, ArrowLeft, Share2, Facebook, Twitter, Linkedin, Bot, Star, Gem, Target, Rocket, Zap, FileText, TrendingUp, Shield, Sparkles } from 'lucide-react';
 
 const BlogPost = () => {
   const { slug } = useParams();
+
+  // Icon mapping for clean display
+  const iconComponents = {
+    bot: Bot,
+    star: Star,
+    gem: Gem,
+    target: Target,
+    rocket: Rocket,
+    zap: Zap,
+    filetext: FileText,
+    trending: TrendingUp,
+    shield: Shield,
+    sparkles: Sparkles
+  };
+
+  // Helper to render icon
+  const renderIcon = (iconName, size = 'w-16 h-16') => {
+    const IconComponent = iconComponents[iconName];
+    if (IconComponent) {
+      return <IconComponent className={`${size}`} style={{ color: '#00f0a0' }} />;
+    }
+    return <Bot className={`${size}`} style={{ color: '#00f0a0' }} />;
+  };
 
   // Blog post data
   const posts = {
@@ -14,7 +37,7 @@ const BlogPost = () => {
       date: 'January 15, 2025',
       readTime: '8 min read',
       category: 'AI & Automation',
-      image: '🤖',
+      icon: 'bot',
       content: `
         <p>Artificial Intelligence has fundamentally transformed how businesses approach cold email outreach. In 2025, AI-powered email marketing tools are helping marketers achieve response rates of 40% or higher through advanced personalization and timing optimization.</p>
 
@@ -90,7 +113,7 @@ const BlogPost = () => {
       date: 'January 12, 2025',
       readTime: '6 min read',
       category: 'Product Updates',
-      image: '🌟',
+      icon: 'star',
       content: `
         <p>If you're researching MailGen, you're probably wondering: is this platform legitimate? Can it really deliver the results it promises? In this comprehensive review, we'll examine MailGen's features, pricing, user testimonials, and overall value.</p>
 
@@ -175,7 +198,7 @@ const BlogPost = () => {
       date: 'January 10, 2025',
       readTime: '10 min read',
       category: 'Case Studies',
-      image: '💎',
+      icon: 'gem',
       content: `
         <p>Real results from real customers. In this comprehensive case study collection, we examine how companies across different industries are using MailGen to triple their response rates and generate millions in new pipeline.</p>
 
@@ -283,7 +306,7 @@ const BlogPost = () => {
       date: 'January 8, 2025',
       readTime: '12 min read',
       category: 'AI & Automation',
-      image: '🎯',
+      icon: 'target',
       content: `
         <p>The AI industry is experiencing unprecedented growth, with leading companies competing fiercely for top talent. Understanding what AI companies prioritize when building their teams is essential for tech professionals looking to advance their careers.</p>
 
@@ -431,7 +454,7 @@ const BlogPost = () => {
       date: 'January 5, 2025',
       readTime: '4 min read',
       category: 'Product Updates',
-      image: '🚀',
+      icon: 'rocket',
       content: `
         <p>Today, we're excited to announce the launch of the MailGen AI Agent—a revolutionary advancement in email marketing automation that handles prospecting, email generation, and follow-ups completely automatically.</p>
 
@@ -543,7 +566,7 @@ const BlogPost = () => {
       date: 'January 3, 2025',
       readTime: '7 min read',
       category: 'Email Marketing',
-      image: '⚡',
+      icon: 'zap',
       content: `
         <p>Learn the proven strategies from top-performing marketing teams that drive 40%+ response rates and consistent revenue growth. These tactics have been battle-tested across thousands of campaigns.</p>
 
@@ -613,7 +636,7 @@ const BlogPost = () => {
       date: 'December 30, 2024',
       readTime: '6 min read',
       category: 'Email Marketing',
-      image: '📋',
+      icon: 'filetext',
       content: `
         <p>These proven templates are used by top-performing sales teams to book more meetings and close more deals. All templates are copy-paste ready and can be customized for your specific use case.</p>
 
@@ -659,7 +682,7 @@ const BlogPost = () => {
       date: 'December 28, 2024',
       readTime: '10 min read',
       category: 'Case Studies',
-      image: '📈',
+      icon: 'trending',
       content: `
         <p>A deep dive into how TechCorp, a B2B SaaS company, used AI-powered outreach to transform their sales process and generate $2M in new business pipeline in just 90 days.</p>
 
@@ -751,7 +774,7 @@ const BlogPost = () => {
       date: 'December 25, 2024',
       readTime: '12 min read',
       category: 'Email Marketing',
-      image: '🔐',
+      icon: 'shield',
       content: `
         <p>Everything you need to know about landing in the inbox, avoiding spam filters, and maintaining sender reputation for maximum deliverability. This comprehensive guide covers technical setup, best practices, and troubleshooting.</p>
 
@@ -873,7 +896,7 @@ const BlogPost = () => {
       date: 'December 22, 2024',
       readTime: '9 min read',
       category: 'AI & Automation',
-      image: '🤖',
+      icon: 'sparkles',
       content: `
         <p>Learn how modern AI personalizes emails using company signals, recent news, and behavioral data to create truly personalized outreach that goes far beyond simple mail merge tokens.</p>
 
@@ -1021,57 +1044,65 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-      {/* Header */}
-      <div className="border-b" style={{ borderColor: '#f0f0f0' }}>
-        <div className="max-w-4xl mx-auto px-12 py-6">
-          <Link to="/blog" className="inline-flex items-center gap-2 text-sm font-medium transition-colors"
-                style={{ color: 'rgba(0, 0, 0, 0.65)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#00f0a0'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0, 0, 0, 0.65)'}>
+      {/* Hero Section with gradient background */}
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #001529 0%, #003d33 100%)' }}>
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-20 w-72 h-72 rounded-full" style={{ background: 'radial-gradient(circle, #00f5a0 0%, transparent 70%)' }} />
+          <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full" style={{ background: 'radial-gradient(circle, #00f5a0 0%, transparent 70%)' }} />
+        </div>
+
+        {/* Header */}
+        <div className="relative max-w-4xl mx-auto px-6 md:px-12 pt-8 pb-16">
+          <Link to="/blog" className="inline-flex items-center gap-2 text-sm font-medium transition-all hover:gap-3 mb-12"
+                style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
             <ArrowLeft className="w-4 h-4" />
             Back to Blog
           </Link>
+
+          {/* Category Badge */}
+          <div className="mb-6">
+            <span className="px-4 py-2 rounded-full text-sm font-semibold"
+                  style={{ backgroundColor: 'rgba(0, 245, 160, 0.2)', color: '#00f5a0' }}>
+              {post.category}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-white"
+              style={{ fontWeight: 700 }}>
+            {post.title}
+          </h1>
+
+          {/* Meta Info */}
+          <div className="flex flex-wrap items-center gap-6" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                <User className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-medium">{post.author}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm">{post.date}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm">{post.readTime}</span>
+            </div>
+          </div>
+
+          {/* Icon badge */}
+          <div className="mt-10 flex justify-center">
+            <div className="w-24 h-24 rounded-2xl flex items-center justify-center shadow-2xl" style={{ background: 'linear-gradient(135deg, #00f5a0 0%, #00c98d 100%)' }}>
+              {renderIcon(post.icon, 'w-12 h-12')}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Article */}
-      <article className="max-w-4xl mx-auto px-12 py-12">
-        {/* Category Badge */}
-        <div className="mb-6">
-          <span className="px-4 py-2 rounded-full text-sm font-semibold"
-                style={{ backgroundColor: 'rgba(0, 240, 160, 0.1)', color: '#00c98d' }}>
-            {post.category}
-          </span>
-        </div>
-
-        {/* Title */}
-        <h1 className="text-5xl font-bold mb-6 leading-tight"
-            style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 700 }}>
-          {post.title}
-        </h1>
-
-        {/* Meta Info */}
-        <div className="flex flex-wrap items-center gap-6 mb-8 pb-8 border-b"
-             style={{ borderColor: '#f0f0f0', color: 'rgba(0, 0, 0, 0.45)' }}>
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4" />
-            <span className="text-sm">{post.author}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span className="text-sm">{post.date}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            <span className="text-sm">{post.readTime}</span>
-          </div>
-        </div>
-
-        {/* Featured Image Placeholder */}
-        <div className="mb-12 p-20 rounded-2xl flex items-center justify-center text-9xl"
-             style={{ backgroundColor: '#f5f5f5' }}>
-          {post.image}
-        </div>
+      <article className="max-w-4xl mx-auto px-6 md:px-12 py-12">
 
         {/* Article Content */}
         <div className="prose prose-lg max-w-none"

@@ -1,11 +1,25 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Calendar, Clock, ArrowRight } from 'lucide-react';
+import { Search, Calendar, Clock, ArrowRight, Bot, Star, Gem, Target, Rocket, Zap, FileText, TrendingUp, Shield, Sparkles } from 'lucide-react';
 
 const BlogPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const categories = ['All', 'AI & Automation', 'Email Marketing', 'Lead Generation', 'Case Studies', 'Product Updates'];
+
+  // Icon mapping for clean display
+  const iconComponents = {
+    bot: Bot,
+    star: Star,
+    gem: Gem,
+    target: Target,
+    rocket: Rocket,
+    zap: Zap,
+    filetext: FileText,
+    trending: TrendingUp,
+    shield: Shield,
+    sparkles: Sparkles
+  };
 
   const featuredPost = {
     title: 'How AI is Revolutionizing Cold Email Outreach in 2025',
@@ -13,7 +27,7 @@ const BlogPage = () => {
     category: 'AI & Automation',
     date: 'Jan 15, 2025',
     readTime: '8 min read',
-    image: '🤖',
+    icon: 'bot',
     author: 'Sarah Chen',
     authorRole: 'Head of AI',
     slug: 'ai-revolutionizing-cold-email-2025'
@@ -26,7 +40,7 @@ const BlogPage = () => {
       category: 'Product Updates',
       date: 'Jan 12, 2025',
       readTime: '6 min read',
-      image: '🌟',
+      icon: 'star',
       author: 'Michael Torres',
       slug: 'is-mailgen-legit'
     },
@@ -36,7 +50,7 @@ const BlogPage = () => {
       category: 'Case Studies',
       date: 'Jan 10, 2025',
       readTime: '10 min read',
-      image: '💎',
+      icon: 'gem',
       author: 'Emily Rodriguez',
       slug: 'success-stories'
     },
@@ -46,7 +60,7 @@ const BlogPage = () => {
       category: 'AI & Automation',
       date: 'Jan 8, 2025',
       readTime: '12 min read',
-      image: '🎯',
+      icon: 'target',
       author: 'David Park',
       slug: 'ai-companies-hiring'
     },
@@ -56,7 +70,7 @@ const BlogPage = () => {
       category: 'Product Updates',
       date: 'Jan 5, 2025',
       readTime: '4 min read',
-      image: '🚀',
+      icon: 'rocket',
       author: 'Lisa Chen',
       slug: 'ai-agent-launch'
     },
@@ -66,7 +80,7 @@ const BlogPage = () => {
       category: 'Email Marketing',
       date: 'Jan 3, 2025',
       readTime: '7 min read',
-      image: '⚡',
+      icon: 'zap',
       author: 'James Wilson',
       slug: 'top-email-strategies'
     },
@@ -76,7 +90,7 @@ const BlogPage = () => {
       category: 'Email Marketing',
       date: 'Dec 30, 2024',
       readTime: '6 min read',
-      image: '📋',
+      icon: 'filetext',
       author: 'Michael Torres',
       slug: 'email-templates-convert'
     },
@@ -86,7 +100,7 @@ const BlogPage = () => {
       category: 'Case Studies',
       date: 'Dec 28, 2024',
       readTime: '10 min read',
-      image: '📈',
+      icon: 'trending',
       author: 'Emily Rodriguez',
       slug: 'techcorp-case-study'
     },
@@ -96,7 +110,7 @@ const BlogPage = () => {
       category: 'Email Marketing',
       date: 'Dec 25, 2024',
       readTime: '12 min read',
-      image: '🔐',
+      icon: 'shield',
       author: 'David Park',
       slug: 'email-deliverability-guide'
     },
@@ -106,11 +120,20 @@ const BlogPage = () => {
       category: 'AI & Automation',
       date: 'Dec 22, 2024',
       readTime: '9 min read',
-      image: '🤖',
+      icon: 'sparkles',
       author: 'Sarah Chen',
       slug: 'ai-personalization'
     }
   ];
+
+  // Helper to render icon
+  const renderIcon = (iconName, size = 'w-12 h-12') => {
+    const IconComponent = iconComponents[iconName];
+    if (IconComponent) {
+      return <IconComponent className={`${size} text-white`} />;
+    }
+    return <Bot className={`${size} text-white`} />;
+  };
 
   const filteredPosts = selectedCategory === 'All'
     ? posts
@@ -222,7 +245,9 @@ const BlogPage = () => {
               </Link>
             </div>
             <div className="flex items-center justify-center">
-              <div className="text-9xl">{featuredPost.image}</div>
+              <div className="w-32 h-32 rounded-2xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}>
+                {renderIcon(featuredPost.icon, 'w-16 h-16')}
+              </div>
             </div>
           </div>
         </div>
@@ -274,9 +299,11 @@ const BlogPage = () => {
                     </div>
                   </div>
 
-                  {/* Emoji Icon */}
+                  {/* Icon */}
                   <div className="flex items-center justify-between">
-                    <div className="text-5xl">{post.image}</div>
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}>
+                      {renderIcon(post.icon, 'w-7 h-7')}
+                    </div>
                     <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1"
                                 style={{ color: 'white' }} />
                   </div>
