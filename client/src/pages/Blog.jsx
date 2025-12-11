@@ -1,9 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Calendar, Clock, ArrowRight, Bot, Star, Gem, Target, Rocket, Zap, FileText, TrendingUp, Shield, Sparkles } from 'lucide-react';
+import { Search, Calendar, Clock, ArrowRight, Bot, Star, Gem, Target, Rocket, Zap, FileText, TrendingUp, Shield, Sparkles, ChevronRight } from 'lucide-react';
+
+// Animation hook for scroll reveal
+const useScrollReveal = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, isVisible];
+};
+
+// Animated blog card component
+const BlogCard = ({ post, index, renderIcon }) => {
+  const [ref, isVisible] = useScrollReveal();
+
+  return (
+    <Link
+      ref={ref}
+      to={`/blog/${post.slug}`}
+      className="block rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 cursor-pointer group"
+      style={{
+        backgroundColor: 'white',
+        border: '1px solid rgba(0, 0, 0, 0.06)',
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+        transitionDelay: `${index * 80}ms`
+      }}
+    >
+      {/* Card Header with gradient */}
+      <div className="h-3" style={{ background: 'linear-gradient(90deg, #00f5a0 0%, #00c98d 100%)' }} />
+
+      <div className="p-7">
+        {/* Category Badge */}
+        <div className="inline-flex px-3 py-1.5 rounded-full text-xs font-semibold mb-4 transition-all duration-300 group-hover:scale-105"
+             style={{ backgroundColor: 'rgba(0, 240, 160, 0.1)', color: '#00a86b' }}>
+          {post.category}
+        </div>
+
+        {/* Title */}
+        <h3 className="text-xl font-bold mb-3 leading-tight transition-colors duration-300 group-hover:text-[#00c98d]"
+            style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+          {post.title}
+        </h3>
+
+        {/* Excerpt */}
+        <p className="mb-5 leading-relaxed line-clamp-3"
+           style={{ color: 'rgba(0, 0, 0, 0.6)', fontSize: '15px', lineHeight: '1.7' }}>
+          {post.excerpt}
+        </p>
+
+        {/* Meta Info */}
+        <div className="flex items-center gap-5 mb-5 text-sm"
+             style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-4 h-4" />
+            <span>{post.date}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-4 h-4" />
+            <span>{post.readTime}</span>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-5" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.06)' }}>
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+               style={{ background: 'linear-gradient(135deg, rgba(0, 240, 160, 0.15) 0%, rgba(0, 200, 140, 0.1) 100%)' }}>
+            {renderIcon(post.icon, 'w-6 h-6')}
+          </div>
+          <span className="flex items-center gap-1 text-sm font-medium transition-all duration-300 group-hover:gap-2"
+                style={{ color: '#00c98d' }}>
+            Read More
+            <ArrowRight className="w-4 h-4" />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+};
 
 const BlogPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [heroRef, heroVisible] = useScrollReveal();
 
   const categories = ['All', 'AI & Automation', 'Email Marketing', 'Lead Generation', 'Case Studies', 'Product Updates'];
 
@@ -130,9 +225,9 @@ const BlogPage = () => {
   const renderIcon = (iconName, size = 'w-12 h-12') => {
     const IconComponent = iconComponents[iconName];
     if (IconComponent) {
-      return <IconComponent className={`${size} text-white`} />;
+      return <IconComponent className={`${size}`} style={{ color: '#00c98d' }} />;
     }
-    return <Bot className={`${size} text-white`} />;
+    return <Bot className={`${size}`} style={{ color: '#00c98d' }} />;
   };
 
   const filteredPosts = selectedCategory === 'All'
@@ -141,33 +236,74 @@ const BlogPage = () => {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.05); }
+        }
+        .pulse-glow {
+          animation: pulse-glow 4s ease-in-out infinite;
+        }
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
+
       {/* Hero Section */}
-      <div className="py-20" style={{ backgroundColor: 'white' }}>
-        <div className="max-w-7xl mx-auto px-12">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h1 className="text-5xl font-semibold mb-6"
-                style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
+      <div className="relative overflow-hidden" style={{ backgroundColor: '#fafafa' }}>
+        {/* Animated background orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 right-1/4 w-96 h-96 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 240, 160, 0.2) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 200, 140, 0.15) 0%, transparent 70%)', animationDelay: '2s' }} />
+        </div>
+
+        <div className="relative py-20 max-w-7xl mx-auto px-6 lg:px-12">
+          <div
+            ref={heroRef}
+            className="text-center max-w-3xl mx-auto mb-12 transition-all duration-1000"
+            style={{
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? 'translateY(0)' : 'translateY(30px)'
+            }}
+          >
+            {/* Badge */}
+            <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mb-6"
+                 style={{ backgroundColor: 'rgba(0, 240, 160, 0.1)', color: '#00a86b' }}>
+              <Sparkles className="w-4 h-4 mr-2" />
+              Latest Insights
+            </div>
+
+            <h1 className="text-5xl lg:text-6xl font-bold mb-5"
+                style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
               MailGen Blog
             </h1>
-            <p className="text-lg mb-8"
-               style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '18px' }}>
+            <p className="text-xl mb-10"
+               style={{ color: 'rgba(0, 0, 0, 0.6)' }}>
               Learn about AI, email marketing, lead generation, and how to scale your outreach
             </p>
+
             {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto">
+            <div className="relative max-w-xl mx-auto">
               <input
                 type="text"
                 placeholder="Search articles..."
-                className="w-full px-6 py-4 pl-14 rounded-lg text-lg transition-all"
+                className="w-full px-6 py-4 pl-14 rounded-2xl text-lg transition-all duration-300 focus:shadow-lg"
                 style={{
-                  border: '1px solid #d9d9d9',
-                  outline: 'none'
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                  outline: 'none',
+                  backgroundColor: 'white'
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = '#00f0a0'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#d9d9d9'}
+                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)'}
               />
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6"
-                      style={{ color: 'rgba(0, 0, 0, 0.45)' }} />
+              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                      style={{ color: 'rgba(0, 0, 0, 0.35)' }} />
             </div>
           </div>
 
@@ -177,22 +313,13 @@ const BlogPage = () => {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className="px-6 py-2 rounded-lg font-medium transition-all"
+                className="px-5 py-2.5 rounded-xl font-medium transition-all duration-300 hover:scale-105"
                 style={{
                   backgroundColor: selectedCategory === category ? '#00f0a0' : 'white',
                   color: selectedCategory === category ? '#001529' : 'rgba(0, 0, 0, 0.65)',
                   border: '1px solid',
-                  borderColor: selectedCategory === category ? '#00f0a0' : '#d9d9d9'
-                }}
-                onMouseEnter={(e) => {
-                  if (selectedCategory !== category) {
-                    e.currentTarget.style.borderColor = '#00f0a0';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedCategory !== category) {
-                    e.currentTarget.style.borderColor = '#d9d9d9';
-                  }
+                  borderColor: selectedCategory === category ? '#00f0a0' : 'rgba(0, 0, 0, 0.1)',
+                  boxShadow: selectedCategory === category ? '0 4px 12px rgba(0, 240, 160, 0.3)' : 'none'
                 }}
               >
                 {category}
@@ -203,28 +330,29 @@ const BlogPage = () => {
       </div>
 
       {/* Featured Post */}
-      <div className="max-w-7xl mx-auto px-12 pb-12" style={{ backgroundColor: 'white' }}>
-        <div className="rounded-2xl overflow-hidden"
-             style={{
-               background: 'linear-gradient(135deg, #001529 0%, #00c98d 100%)',
-               boxShadow: '0 6px 16px rgba(0, 0, 0, 0.08)'
-             }}>
-          <div className="grid md:grid-cols-2 gap-8 items-center p-12">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pb-16 -mt-4">
+        <Link
+          to={`/blog/${featuredPost.slug}`}
+          className="block rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-2xl group"
+          style={{
+            background: 'linear-gradient(135deg, #001529 0%, #00332b 100%)',
+          }}
+        >
+          <div className="grid md:grid-cols-2 gap-8 items-center p-10 lg:p-14">
             <div>
-              <div className="inline-flex px-4 py-2 rounded-full text-sm font-semibold mb-4"
-                   style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}>
+              <div className="inline-flex px-4 py-2 rounded-full text-sm font-semibold mb-5"
+                   style={{ backgroundColor: 'rgba(0, 245, 160, 0.2)', color: '#00f5a0' }}>
                 Featured Article
               </div>
-              <h2 className="text-4xl font-semibold mb-4 leading-tight"
-                  style={{ color: 'white', fontWeight: 600 }}>
+              <h2 className="text-3xl lg:text-4xl font-bold mb-5 leading-tight text-white">
                 {featuredPost.title}
               </h2>
               <p className="text-lg mb-6 leading-relaxed"
-                 style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                 style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 {featuredPost.excerpt}
               </p>
-              <div className="flex items-center gap-6 mb-6 text-sm"
-                   style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+              <div className="flex items-center gap-6 mb-8 text-sm"
+                   style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>{featuredPost.date}</span>
@@ -234,144 +362,97 @@ const BlogPage = () => {
                   <span>{featuredPost.readTime}</span>
                 </div>
               </div>
-              <Link
-                to={`/blog/${featuredPost.slug}`}
-                className="px-8 py-3 font-semibold rounded-lg inline-flex items-center gap-2 transition-all"
+              <span
+                className="inline-flex items-center gap-2 px-6 py-3 font-semibold rounded-xl transition-all duration-300 group-hover:gap-3"
                 style={{ backgroundColor: 'white', color: '#001529' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
               >
-                Read Article <ArrowRight className="w-5 h-5" />
-              </Link>
+                Read Article
+                <ArrowRight className="w-5 h-5" />
+              </span>
             </div>
             <div className="flex items-center justify-center">
-              <div className="w-32 h-32 rounded-2xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}>
-                {renderIcon(featuredPost.icon, 'w-16 h-16')}
+              <div className="w-40 h-40 rounded-3xl flex items-center justify-center transition-all duration-500 group-hover:scale-110"
+                   style={{ background: 'linear-gradient(135deg, rgba(0, 245, 160, 0.2) 0%, rgba(0, 200, 140, 0.1) 100%)' }}>
+                {renderIcon(featuredPost.icon, 'w-20 h-20')}
               </div>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Blog Grid */}
-      <div className="py-20" style={{ backgroundColor: '#f5f5f5' }}>
-        <div className="max-w-7xl mx-auto px-12">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="py-16" style={{ backgroundColor: '#fafafa' }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          {/* Section Header */}
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="text-2xl font-bold" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+              {selectedCategory === 'All' ? 'All Articles' : selectedCategory}
+            </h2>
+            <span className="text-sm" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+              {filteredPosts.length} article{filteredPosts.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
             {filteredPosts.map((post, index) => (
-              <Link
-                key={index}
-                to={`/blog/${post.slug}`}
-                className="block rounded-2xl overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
-                style={{
-                  background: 'linear-gradient(135deg, #001529 0%, #00c98d 100%)',
-                  boxShadow: '0 6px 16px rgba(0, 0, 0, 0.08)'
-                }}
-              >
-                <div className="p-8">
-                  {/* Category Badge */}
-                  <div className="inline-flex px-3 py-1 rounded-full text-xs font-semibold mb-3"
-                       style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}>
-                    {post.category}
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-2xl font-semibold mb-3 leading-tight"
-                      style={{ color: 'white', fontWeight: 600 }}>
-                    {post.title}
-                  </h3>
-
-                  {/* Excerpt */}
-                  <p className="mb-4 leading-relaxed"
-                     style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '15px', lineHeight: '1.6' }}>
-                    {post.excerpt}
-                  </p>
-
-                  {/* Meta Info */}
-                  <div className="flex items-center gap-4 mb-4 text-sm"
-                       style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{post.date}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{post.readTime}</span>
-                    </div>
-                  </div>
-
-                  {/* Icon */}
-                  <div className="flex items-center justify-between">
-                    <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}>
-                      {renderIcon(post.icon, 'w-7 h-7')}
-                    </div>
-                    <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1"
-                                style={{ color: 'white' }} />
-                  </div>
-                </div>
-              </Link>
+              <BlogCard key={index} post={post} index={index} renderIcon={renderIcon} />
             ))}
           </div>
 
           {/* Load More */}
-          <div className="text-center mt-12">
+          <div className="text-center mt-14">
             <button
-              className="px-10 py-4 font-semibold rounded-lg transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
               style={{
-                border: '1px solid #d9d9d9',
-                color: 'rgba(0, 0, 0, 0.65)',
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                color: 'rgba(0, 0, 0, 0.7)',
                 backgroundColor: 'white'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#00f0a0';
-                e.currentTarget.style.color = '#00c98d';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#d9d9d9';
-                e.currentTarget.style.color = 'rgba(0, 0, 0, 0.65)';
               }}
             >
               Load More Articles
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Newsletter Signup */}
-      <div className="py-20" style={{ backgroundColor: 'white' }}>
-        <div className="max-w-4xl mx-auto px-12 text-center">
-          <div className="rounded-2xl p-12"
+      <div className="py-24" style={{ backgroundColor: 'white' }}>
+        <div className="max-w-3xl mx-auto px-6 lg:px-12 text-center">
+          <div className="rounded-3xl p-10 lg:p-14 relative overflow-hidden"
                style={{
-                 backgroundColor: 'white',
-                 border: '1px solid #f0f0f0',
-                 boxShadow: '0 6px 16px rgba(0, 0, 0, 0.08)'
+                 background: 'linear-gradient(135deg, #001529 0%, #00332b 100%)',
                }}>
-            <h2 className="text-4xl font-semibold mb-4"
-                style={{ color: 'rgba(0, 0, 0, 0.88)', fontWeight: 600 }}>
-              Never Miss an Update
-            </h2>
-            <p className="text-lg mb-8"
-               style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
-              Get the latest articles, guides, and product updates delivered to your inbox
-            </p>
-            <div className="flex gap-4 max-w-2xl mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-6 py-4 rounded-lg text-lg"
-                style={{ border: '1px solid #d9d9d9' }}
-              />
-              <button
-                className="px-8 py-4 font-semibold rounded-lg transition-all"
-                style={{ backgroundColor: '#00f0a0', color: '#001529' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#28fcaf'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#00f0a0'}
-              >
-                Subscribe
-              </button>
+            {/* Background orbs */}
+            <div className="absolute top-0 right-0 w-64 h-64 rounded-full pulse-glow"
+                 style={{ background: 'radial-gradient(circle, rgba(0, 245, 160, 0.2) 0%, transparent 70%)', transform: 'translate(30%, -30%)' }} />
+
+            <div className="relative">
+              <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-white">
+                Never Miss an Update
+              </h2>
+              <p className="text-lg mb-8"
+                 style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                Get the latest articles, guides, and product updates delivered to your inbox
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-6 py-4 rounded-xl text-lg"
+                  style={{ border: 'none', outline: 'none' }}
+                />
+                <button
+                  className="px-8 py-4 font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg whitespace-nowrap"
+                  style={{ backgroundColor: '#00f0a0', color: '#001529' }}
+                >
+                  Subscribe
+                </button>
+              </div>
+              <p className="text-sm mt-5" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+                Join 50,000+ marketers. Unsubscribe anytime.
+              </p>
             </div>
-            <p className="text-sm mt-4" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-              Join 50,000+ marketers. Unsubscribe anytime.
-            </p>
           </div>
         </div>
       </div>

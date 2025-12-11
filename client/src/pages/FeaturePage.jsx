@@ -1,9 +1,74 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Zap, Target, BarChart3, TestTube, Award, Mail, Sparkles, FileText, Radar, CheckCircle, Bot, Rocket, MapPin, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Zap, Target, BarChart3, TestTube, Award, Mail, Sparkles, FileText, Radar, CheckCircle, Bot, Rocket, MapPin, Lightbulb, ChevronRight, TrendingUp, Users, ArrowRight } from 'lucide-react';
+
+// Animation hook for scroll reveal
+const useScrollReveal = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, isVisible];
+};
+
+// Animated stat card
+const StatCard = ({ value, label, delay = 0 }) => {
+  const [ref, isVisible] = useScrollReveal();
+  const [count, setCount] = useState(0);
+  const numValue = parseInt(value.replace(/[^0-9]/g, ''));
+  const suffix = value.replace(/[0-9]/g, '');
+
+  useEffect(() => {
+    if (!isVisible) return;
+    let startTime;
+    const duration = 1500;
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * numValue));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [isVisible, numValue]);
+
+  return (
+    <div
+      ref={ref}
+      className="text-center p-6 rounded-2xl transition-all duration-700"
+      style={{
+        backgroundColor: 'rgba(0, 245, 160, 0.1)',
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transitionDelay: `${delay}ms`
+      }}
+    >
+      <div className="text-4xl font-bold mb-2" style={{ color: '#00c98d' }}>
+        {count}{suffix}
+      </div>
+      <div className="text-sm" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>{label}</div>
+    </div>
+  );
+};
 
 const FeaturePage = () => {
   const { slug } = useParams();
+  const [heroRef, heroVisible] = useScrollReveal();
 
   // Icon mapping for clean display
   const iconComponents = {
@@ -24,12 +89,12 @@ const FeaturePage = () => {
   const renderIcon = (iconName, size = 'w-16 h-16') => {
     const IconComponent = iconComponents[iconName];
     if (IconComponent) {
-      return <IconComponent className={`${size}`} style={{ color: '#00f5a0' }} />;
+      return <IconComponent className={`${size}`} style={{ color: 'white' }} />;
     }
-    return <Mail className={`${size}`} style={{ color: '#00f5a0' }} />;
+    return <Mail className={`${size}`} style={{ color: 'white' }} />;
   };
 
-  // Features data
+  // Features data with stats
   const features = {
     'ai-email-generator': {
       title: 'AI Email Generator',
@@ -37,6 +102,11 @@ const FeaturePage = () => {
       icon: 'mail',
       category: 'Core Feature',
       description: 'Our AI Email Generator uses advanced language models to create personalized, compelling emails that resonate with your prospects and drive responses.',
+      stats: [
+        { value: '3x', label: 'Higher Response Rates' },
+        { value: '90%', label: 'Time Savings' },
+        { value: '27%', label: 'Avg Reply Rate' }
+      ],
       content: `
         <h2>Transform Your Email Outreach with AI</h2>
         <p>The MailGen AI Email Generator is the most advanced email creation tool on the market. Powered by state-of-the-art language models, it creates personalized emails that sound human-written and drive real results.</p>
@@ -90,6 +160,11 @@ const FeaturePage = () => {
       icon: 'target',
       category: 'Core Feature',
       description: 'Access our database of 80M+ verified prospects and use AI to find your ideal customers automatically.',
+      stats: [
+        { value: '80M+', label: 'Verified Prospects' },
+        { value: '95%', label: 'Data Accuracy' },
+        { value: '20h', label: 'Weekly Time Saved' }
+      ],
       content: `
         <h2>Find Your Ideal Customers Automatically</h2>
         <p>The MailGen Prospect Finder gives you access to over 80 million verified business contacts. Our AI analyzes your ideal customer profile and automatically discovers prospects that match your criteria.</p>
@@ -139,6 +214,11 @@ const FeaturePage = () => {
       icon: 'rocket',
       category: 'Core Feature',
       description: 'Create intelligent email campaigns that automatically adjust timing, content, and follow-ups based on prospect behavior.',
+      stats: [
+        { value: '180%', label: 'More Meetings' },
+        { value: '24/7', label: 'Automation' },
+        { value: '5x', label: 'ROI Increase' }
+      ],
       content: `
         <h2>Email Campaigns That Think for Themselves</h2>
         <p>Smart Campaigns go beyond simple automation. Using AI and machine learning, they continuously optimize your outreach based on real-time performance data.</p>
@@ -193,6 +273,11 @@ const FeaturePage = () => {
       icon: 'barchart',
       category: 'Core Feature',
       description: 'Comprehensive analytics dashboard that tracks every metric, identifies trends, and provides actionable recommendations.',
+      stats: [
+        { value: '100+', label: 'Metrics Tracked' },
+        { value: 'Real-time', label: 'Data Updates' },
+        { value: '360', label: 'Degree View' }
+      ],
       content: `
         <h2>Data-Driven Email Marketing</h2>
         <p>The MailGen Analytics Dashboard gives you complete visibility into your email marketing performance. Track every metric, identify what's working, and get AI-powered recommendations to improve.</p>
@@ -247,6 +332,11 @@ const FeaturePage = () => {
       icon: 'testtube',
       category: 'Core Feature',
       description: 'Comprehensive A/B testing for subject lines, email content, send times, and more. Let data drive your optimization.',
+      stats: [
+        { value: '45%', label: 'Open Rate Increase' },
+        { value: '99%', label: 'Statistical Confidence' },
+        { value: 'Auto', label: 'Winner Selection' }
+      ],
       content: `
         <h2>Optimize Every Element of Your Emails</h2>
         <p>MailGen's A/B Testing feature lets you test every aspect of your email campaigns - from subject lines to send times - and automatically applies winning variations.</p>
@@ -302,6 +392,11 @@ const FeaturePage = () => {
       icon: 'award',
       category: 'Core Feature',
       description: 'AI-powered lead scoring that identifies your most valuable prospects and helps you focus on the deals most likely to close.',
+      stats: [
+        { value: '40%', label: 'More Deals Closed' },
+        { value: 'AI', label: 'Powered Scoring' },
+        { value: '4x', label: 'Better Prioritization' }
+      ],
       content: `
         <h2>Focus on the Leads That Matter</h2>
         <p>Not all leads are created equal. MailGen's Lead Scoring uses AI to analyze dozens of signals and automatically prioritize prospects most likely to convert.</p>
@@ -359,6 +454,11 @@ const FeaturePage = () => {
       icon: 'bot',
       category: 'Related Tool',
       description: 'An AI-powered assistant that helps you write better emails, suggests improvements, and ensures your messaging resonates.',
+      stats: [
+        { value: '24/7', label: 'Available' },
+        { value: 'Real-time', label: 'Suggestions' },
+        { value: '10x', label: 'Faster Writing' }
+      ],
       content: `
         <h2>Your Personal Email Writing Expert</h2>
         <p>The AI Email Assistant is like having an expert copywriter available 24/7. It helps you craft compelling emails, suggests improvements, and ensures your messaging hits the mark every time.</p>
@@ -412,6 +512,11 @@ const FeaturePage = () => {
       icon: 'filetext',
       category: 'Related Tool',
       description: 'Generate high-converting subject lines using AI trained on millions of successful emails.',
+      stats: [
+        { value: '35%', label: 'Open Rate Boost' },
+        { value: '80%', label: 'Win Rate vs Manual' },
+        { value: 'M+', label: 'Lines Analyzed' }
+      ],
       content: `
         <h2>Subject Lines That Get Opened</h2>
         <p>Your subject line determines whether your email gets opened or ignored. Our AI Subject Line Generator creates compelling subject lines based on what actually works.</p>
@@ -466,6 +571,11 @@ const FeaturePage = () => {
       icon: 'lightbulb',
       category: 'Related Tool',
       description: 'Get AI-powered recommendations for campaign strategy, timing, targeting, and optimization.',
+      stats: [
+        { value: '60%', label: 'Response Increase' },
+        { value: 'AI', label: 'Strategy Advisor' },
+        { value: '24/7', label: 'Recommendations' }
+      ],
       content: `
         <h2>Your AI Campaign Strategist</h2>
         <p>The AI Campaign Helper provides intelligent guidance at every stage of your email campaign - from planning to optimization.</p>
@@ -521,6 +631,11 @@ const FeaturePage = () => {
       icon: 'mappin',
       category: 'Related Tool',
       description: 'Intelligent lead tracking that monitors engagement, predicts behavior, and ensures no opportunity falls through the cracks.',
+      stats: [
+        { value: '$500K', label: 'Deals Recovered' },
+        { value: '360', label: 'Degree View' },
+        { value: 'Zero', label: 'Missed Leads' }
+      ],
       content: `
         <h2>Complete Visibility Into Every Lead</h2>
         <p>The AI Lead Tracker gives you a 360-degree view of every prospect's journey - from first touch to closed deal. Never miss an opportunity again.</p>
@@ -587,167 +702,294 @@ const FeaturePage = () => {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-      {/* Hero Section with gradient background */}
-      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #001529 0%, #003d33 100%)' }}>
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 rounded-full" style={{ background: 'radial-gradient(circle, #00f5a0 0%, transparent 70%)' }} />
-          <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full" style={{ background: 'radial-gradient(circle, #00f5a0 0%, transparent 70%)' }} />
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.1); }
+        }
+        @keyframes float-icon {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        .pulse-glow {
+          animation: pulse-glow 4s ease-in-out infinite;
+        }
+        .float-icon {
+          animation: float-icon 4s ease-in-out infinite;
+        }
+        .prose h2 {
+          font-size: 28px;
+          font-weight: 700;
+          color: rgba(0, 0, 0, 0.88);
+          margin-top: 48px;
+          margin-bottom: 20px;
+          line-height: 1.3;
+          position: relative;
+          padding-left: 20px;
+          border-left: 4px solid #00f5a0;
+        }
+        .prose h3 {
+          font-size: 20px;
+          font-weight: 600;
+          color: rgba(0, 0, 0, 0.88);
+          margin-top: 32px;
+          margin-bottom: 14px;
+        }
+        .prose p {
+          margin-bottom: 20px;
+          color: rgba(0, 0, 0, 0.7);
+          line-height: 1.8;
+          font-size: 17px;
+        }
+        .prose ul, .prose ol {
+          margin-bottom: 24px;
+          padding-left: 0;
+          list-style: none;
+        }
+        .prose li {
+          margin-bottom: 12px;
+          color: rgba(0, 0, 0, 0.7);
+          line-height: 1.7;
+          font-size: 16px;
+          padding-left: 28px;
+          position: relative;
+        }
+        .prose li::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 10px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #00f5a0 0%, #00c98d 100%);
+        }
+        .prose ol li::before {
+          content: counter(list-item);
+          counter-increment: list-item;
+          background: linear-gradient(135deg, #00f5a0 0%, #00c98d 100%);
+          color: #001529;
+          font-size: 12px;
+          font-weight: 600;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          top: 4px;
+        }
+        .prose ol {
+          counter-reset: list-item;
+        }
+        .prose blockquote {
+          border-left: none;
+          padding: 32px;
+          margin: 40px 0;
+          background: linear-gradient(135deg, rgba(0, 245, 160, 0.08) 0%, rgba(0, 200, 140, 0.05) 100%);
+          border-radius: 16px;
+          position: relative;
+        }
+        .prose blockquote::before {
+          content: '"';
+          position: absolute;
+          top: 16px;
+          left: 24px;
+          font-size: 60px;
+          color: #00f5a0;
+          opacity: 0.3;
+          font-family: Georgia, serif;
+          line-height: 1;
+        }
+        .prose blockquote p {
+          font-style: italic;
+          font-size: 18px;
+          color: rgba(0, 0, 0, 0.75);
+          margin-bottom: 16px;
+          position: relative;
+          z-index: 1;
+        }
+        .prose blockquote cite {
+          display: block;
+          font-size: 14px;
+          color: rgba(0, 0, 0, 0.5);
+          font-style: normal;
+          font-weight: 500;
+        }
+        .prose strong {
+          font-weight: 600;
+          color: rgba(0, 0, 0, 0.88);
+        }
+        .prose a {
+          color: #00c98d;
+          text-decoration: none;
+          transition: all 0.2s;
+        }
+        .prose a:hover {
+          color: #00a86b;
+        }
+      `}</style>
+
+      {/* Hero Section with animated gradient */}
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #001529 0%, #00332b 100%)' }}>
+        {/* Animated background orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 245, 160, 0.4) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 200, 140, 0.3) 0%, transparent 70%)', animationDelay: '2s' }} />
+          <div className="absolute top-1/3 right-1/4 w-64 h-64 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 245, 160, 0.2) 0%, transparent 70%)', animationDelay: '4s' }} />
         </div>
 
         {/* Header */}
-        <div className="relative max-w-4xl mx-auto px-6 md:px-12 pt-8 pb-16">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium transition-all hover:gap-3 mb-12"
-                style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-            <ArrowLeft className="w-4 h-4" />
+        <div
+          ref={heroRef}
+          className="relative max-w-5xl mx-auto px-6 md:px-12 pt-10 pb-20 transition-all duration-1000"
+          style={{
+            opacity: heroVisible ? 1 : 0,
+            transform: heroVisible ? 'translateY(0)' : 'translateY(30px)'
+          }}
+        >
+          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 hover:gap-3 mb-12 group"
+                style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Back to Home
           </Link>
 
           {/* Category Badge */}
           <div className="mb-6">
-            <span className="px-4 py-2 rounded-full text-sm font-semibold"
-                  style={{ backgroundColor: 'rgba(0, 245, 160, 0.2)', color: '#00f5a0' }}>
+            <span className="px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-2"
+                  style={{ backgroundColor: 'rgba(0, 245, 160, 0.15)', color: '#00f5a0', border: '1px solid rgba(0, 245, 160, 0.3)' }}>
+              <Sparkles className="w-4 h-4" />
               {feature.category}
             </span>
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight text-white"
-              style={{ fontWeight: 700 }}>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-5 leading-tight text-white">
             {feature.title}
           </h1>
 
           {/* Subtitle */}
-          <p className="text-xl mb-6" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+          <p className="text-xl md:text-2xl mb-6" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
             {feature.subtitle}
           </p>
 
           {/* Description */}
-          <p className="text-lg max-w-2xl" style={{ color: 'rgba(255, 255, 255, 0.6)', lineHeight: '1.8' }}>
+          <p className="text-lg max-w-3xl mb-10" style={{ color: 'rgba(255, 255, 255, 0.55)', lineHeight: '1.8' }}>
             {feature.description}
           </p>
 
-          {/* Icon badge */}
-          <div className="mt-10 flex justify-center">
-            <div className="w-24 h-24 rounded-2xl flex items-center justify-center shadow-2xl" style={{ background: 'linear-gradient(135deg, #00f5a0 0%, #00c98d 100%)' }}>
-              {renderIcon(feature.icon, 'w-12 h-12')}
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap gap-4 mb-12">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl group"
+              style={{ backgroundColor: '#00f5a0', color: '#001529' }}
+            >
+              Get Started Free
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <button
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: 'white', border: '1px solid rgba(255, 255, 255, 0.2)' }}
+            >
+              Watch Demo
+            </button>
+          </div>
+
+          {/* Stats Grid */}
+          {feature.stats && (
+            <div className="grid grid-cols-3 gap-4 max-w-2xl">
+              {feature.stats.map((stat, i) => (
+                <StatCard key={i} value={stat.value} label={stat.label} delay={i * 100} />
+              ))}
+            </div>
+          )}
+
+          {/* Floating Icon */}
+          <div className="absolute right-12 top-1/2 transform -translate-y-1/2 hidden lg:block float-icon">
+            <div className="w-32 h-32 rounded-3xl flex items-center justify-center shadow-2xl"
+                 style={{ background: 'linear-gradient(135deg, #00f5a0 0%, #00c98d 100%)' }}>
+              {renderIcon(feature.icon, 'w-16 h-16')}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Article */}
-      <article className="max-w-4xl mx-auto px-6 md:px-12 py-12">
-
-        {/* Article Content */}
+      {/* Article Content */}
+      <article className="max-w-4xl mx-auto px-6 md:px-12 py-16">
         <div className="prose prose-lg max-w-none"
-             style={{
-               color: 'rgba(0, 0, 0, 0.88)',
-               fontSize: '19px',
-               lineHeight: '34px'
-             }}>
-          <style>{`
-            .prose h2 {
-              font-size: 31px;
-              font-weight: 700;
-              color: rgba(0, 0, 0, 0.88);
-              margin-top: 48px;
-              margin-bottom: 24px;
-              line-height: 1.25;
-            }
-            .prose h3 {
-              font-size: 23px;
-              font-weight: 700;
-              color: rgba(0, 0, 0, 0.88);
-              margin-top: 32px;
-              margin-bottom: 16px;
-            }
-            .prose p {
-              margin-bottom: 24px;
-              color: rgba(0, 0, 0, 0.88);
-              line-height: 34px;
-            }
-            .prose ul, .prose ol {
-              margin-bottom: 24px;
-              padding-left: 24px;
-            }
-            .prose li {
-              margin-bottom: 12px;
-              color: rgba(0, 0, 0, 0.88);
-              line-height: 34px;
-            }
-            .prose blockquote {
-              border-left: 5px solid #00f5a0;
-              padding-left: 24px;
-              margin: 32px 0;
-              font-style: italic;
-              color: rgba(0, 0, 0, 0.65);
-            }
-            .prose blockquote cite {
-              display: block;
-              margin-top: 12px;
-              font-size: 16px;
-              color: rgba(0, 0, 0, 0.45);
-              font-style: normal;
-            }
-            .prose strong {
-              font-weight: 600;
-              color: rgba(0, 0, 0, 0.88);
-            }
-            .prose a {
-              color: #00f5a0;
-              text-decoration: none;
-            }
-            .prose a:hover {
-              text-decoration: underline;
-            }
-          `}</style>
-          <div dangerouslySetInnerHTML={{ __html: feature.content }} />
-        </div>
+             dangerouslySetInnerHTML={{ __html: feature.content }} />
 
         {/* CTA Section */}
-        <div className="mt-16 p-8 rounded-2xl text-center" style={{ backgroundColor: 'rgba(0, 245, 160, 0.1)' }}>
-          <h2 className="text-2xl font-bold mb-4" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+        <div className="mt-20 p-10 rounded-3xl text-center relative overflow-hidden"
+             style={{ background: 'linear-gradient(135deg, rgba(0, 245, 160, 0.1) 0%, rgba(0, 200, 140, 0.05) 100%)' }}>
+          <div className="absolute top-0 right-0 w-40 h-40 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 245, 160, 0.2) 0%, transparent 70%)', transform: 'translate(50%, -50%)' }} />
+          <h2 className="text-3xl font-bold mb-4" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
             Ready to Get Started?
           </h2>
-          <p className="mb-6" style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+          <p className="mb-8 text-lg" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>
             Start your free 14-day trial and experience the power of AI-driven email marketing.
           </p>
           <Link to="/dashboard"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-black transition-all hover:scale-105"
-                style={{ backgroundColor: '#00f5a0' }}>
-            <Sparkles className="w-5 h-5" />
+                className="inline-flex items-center gap-2 px-10 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg group"
+                style={{ backgroundColor: '#00f5a0', color: '#001529' }}>
             Start Free Trial
+            <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       </article>
 
       {/* Related Features */}
-      <div className="py-20" style={{ backgroundColor: '#f5f5f5' }}>
-        <div className="max-w-4xl mx-auto px-12">
-          <h2 className="text-3xl font-bold mb-8" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+      <div className="py-20" style={{ backgroundColor: '#fafafa' }}>
+        <div className="max-w-5xl mx-auto px-6 md:px-12">
+          <h2 className="text-3xl font-bold mb-10" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
             Explore More Features
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             {Object.entries(features)
               .filter(([key]) => key !== slug)
               .slice(0, 4)
-              .map(([key, f]) => (
-                <Link key={key} to={`/features/${key}`} className="block">
-                  <div className="rounded-xl p-6 transition-all hover:shadow-lg"
-                       style={{ backgroundColor: 'white', border: '1px solid #f0f0f0' }}>
-                    <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: 'rgba(0, 245, 160, 0.1)' }}>
-                      {renderIcon(f.icon, 'w-6 h-6')}
+              .map(([key, f], index) => {
+                const [cardRef, cardVisible] = useScrollReveal();
+                return (
+                  <Link
+                    key={key}
+                    to={`/features/${key}`}
+                    ref={cardRef}
+                    className="block rounded-2xl p-6 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+                    style={{
+                      backgroundColor: 'white',
+                      border: '1px solid rgba(0, 0, 0, 0.06)',
+                      opacity: cardVisible ? 1 : 0,
+                      transform: cardVisible ? 'translateY(0)' : 'translateY(20px)',
+                      transitionDelay: `${index * 100}ms`
+                    }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110"
+                           style={{ background: 'linear-gradient(135deg, rgba(0, 245, 160, 0.15) 0%, rgba(0, 200, 140, 0.1) 100%)' }}>
+                        {renderIcon(f.icon, 'w-7 h-7')}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold mb-1 transition-colors duration-300 group-hover:text-[#00c98d]"
+                            style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+                          {f.title}
+                        </h3>
+                        <p style={{ color: 'rgba(0, 0, 0, 0.55)', fontSize: '14px', lineHeight: '1.6' }}>
+                          {f.subtitle}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 flex-shrink-0 transition-all duration-300 group-hover:translate-x-1"
+                                    style={{ color: 'rgba(0, 0, 0, 0.3)' }} />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
-                      {f.title}
-                    </h3>
-                    <p style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '15px' }}>
-                      {f.subtitle}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
           </div>
         </div>
       </div>

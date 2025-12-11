@@ -2538,24 +2538,27 @@ class LangGraphMarketingAgent {
               });
               
               if (userDecisionData.decision === 'edit') {
-                console.log('👤 User chose to edit emails - pausing workflow');
+                console.log('👤 User chose to edit emails - but workflow will continue in background');
 
-                // Send message indicating workflow is paused for editing
+                // Send message indicating workflow continues in background
                 this.wsManager.broadcast({
-                  type: 'workflow_paused_for_editing',
+                  type: 'workflow_continuing_background',
                   data: {
-                    message: 'Workflow paused for email editing. You can now go to the Email Editor to review and modify your emails.',
+                    message: 'Email generation continuing in background. You can edit emails in the Email Editor while more are being generated.',
                     campaignId: campaignId,
                     emailsGenerated: 1,
                     totalProspects: prospectsNeedingEmails.length
                   }
                 });
 
-                // Return here and wait for workflow to be resumed via /send-email endpoint
-                console.log('⏸️ Workflow paused - will resume after first email is sent');
+                // 🔥 BACKGROUND FIX: Don't return early - continue generating emails
+                // User can edit emails in Email Editor while workflow continues
+                console.log('🔄 Workflow continuing in background - user can edit emails anytime');
+                // Fall through to continue with remaining emails
+              }
 
-                return emailCampaign;
-              } else {
+              // Handle 'continue' decision or after 'edit' (workflow continues either way)
+              if (userDecisionData.decision === 'continue' || userDecisionData.decision === 'edit') {
                 console.log('👤 User chose to continue with current content');
 
                 // ✨ CRITICAL FIX: Store user template immediately before continuing
@@ -5067,11 +5070,12 @@ ${senderName || senderCompany}`;
 
   /**
    * Wait for user decision after popup
+   * 🔥 BACKGROUND MODE: Now auto-continues after short timeout to keep workflow running
    */
   async waitForUserDecision(campaignData) {
     return new Promise((resolve) => {
-      console.log('⏸️ Workflow paused, waiting for user decision...');
-      console.log('🔔 NO TIMEOUT - Will wait indefinitely for user approval');
+      console.log('⏸️ Workflow showing first email for user review...');
+      console.log('🔄 BACKGROUND MODE: Will auto-continue after 10 seconds to keep workflow running');
 
       // Store campaign data and promise resolver (local to agent instance)
       this.state.workflowPaused = true;
@@ -5095,32 +5099,38 @@ ${senderName || senderCompany}`;
         console.error('⚠️ Failed to store paused campaign data in workflow module:', err.message);
       }
 
-      // 🔥 FIX: REMOVED 15-minute timeout
-      // Workflow will wait indefinitely for user to review and approve first email
+      // 🔥 BACKGROUND MODE FIX: Auto-continue after 10 seconds
+      // This ensures workflow keeps running even if user doesn't interact
+      // User can still edit/review emails in the Email Editor at any time
+      const AUTO_CONTINUE_TIMEOUT = 10000; // 10 seconds
+      const autoContinueTimeout = setTimeout(() => {
+        if (this.state.workflowPaused) {
+          console.log('🔄 AUTO-CONTINUE: Timeout reached, continuing workflow in background...');
+          console.log('📧 User can review/edit emails in Email Editor while more are being generated');
 
-      // 🔔 Set up reminder popup (every 5 minutes)
-      const reminderInterval = setInterval(() => {
-        if (this.state.workflowPaused && this.wsManager) {
-          console.log('🔔 Sending reminder to user to review first email...');
-          this.wsManager.broadcast({
-            type: 'reminder_review_email',
-            data: {
-              message: '⏳ Please review and approve the first email to continue generating emails for remaining prospects',
-              campaignId: campaignData.campaignId,
-              action: 'review_and_send',
-              reminderCount: (this.state.reminderCount || 0) + 1,
-              timestamp: new Date().toISOString()
-            }
-          });
-          this.state.reminderCount = (this.state.reminderCount || 0) + 1;
-        } else {
-          // User made decision, clear interval
-          clearInterval(reminderInterval);
+          // Clear the paused state
+          this.state.workflowPaused = false;
+
+          // Notify frontend that workflow is continuing in background
+          if (this.wsManager) {
+            this.wsManager.broadcast({
+              type: 'workflow_continuing_background',
+              data: {
+                message: 'Email generation continuing in background. You can review and edit emails in the Email Editor.',
+                campaignId: campaignData.campaignId,
+                totalProspects: campaignData.prospects?.length || 0,
+                timestamp: new Date().toISOString()
+              }
+            });
+          }
+
+          // Resolve with 'continue' to keep generating emails
+          resolve({ decision: 'continue', userTemplate: this.state.userTemplate });
         }
-      }, 300000); // 5 minutes
+      }, AUTO_CONTINUE_TIMEOUT);
 
-      // Store interval ID so we can clear it when decision is made
-      this.state.reminderIntervalId = reminderInterval;
+      // Store timeout ID so we can clear it if user makes decision
+      this.state.autoContinueTimeoutId = autoContinueTimeout;
     });
   }
 
@@ -5134,6 +5144,13 @@ ${senderName || senderCompany}`;
     }
 
     console.log(`▶️ Resuming workflow with decision: ${decision}`);
+
+    // 🔥 FIX: Clear auto-continue timeout since user made a decision
+    if (this.state.autoContinueTimeoutId) {
+      clearTimeout(this.state.autoContinueTimeoutId);
+      this.state.autoContinueTimeoutId = null;
+      console.log('✅ Cleared auto-continue timeout - user made decision');
+    }
 
     // 🔥 FIX: Clear reminder interval
     if (this.state.reminderIntervalId) {

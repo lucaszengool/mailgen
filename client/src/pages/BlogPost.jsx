@@ -1,9 +1,36 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, Clock, User, ArrowLeft, Share2, Facebook, Twitter, Linkedin, Bot, Star, Gem, Target, Rocket, Zap, FileText, TrendingUp, Shield, Sparkles } from 'lucide-react';
+import { Calendar, Clock, User, ArrowLeft, Share2, Facebook, Twitter, Linkedin, Bot, Star, Gem, Target, Rocket, Zap, FileText, TrendingUp, Shield, Sparkles, ChevronRight } from 'lucide-react';
+
+// Animation hook for scroll reveal
+const useScrollReveal = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, isVisible];
+};
 
 const BlogPost = () => {
   const { slug } = useParams();
+  const [heroRef, heroVisible] = useScrollReveal();
+  const [articleRef, articleVisible] = useScrollReveal();
 
   // Icon mapping for clean display
   const iconComponents = {
@@ -1033,8 +1060,9 @@ const BlogPost = () => {
     return (
       <div className="min-h-screen bg-white py-20">
         <div className="max-w-4xl mx-auto px-12 text-center">
-          <h1 className="text-4xl font-bold mb-4">Post Not Found</h1>
-          <Link to="/blog" className="text-blue-600 hover:underline">
+          <h1 className="text-4xl font-bold mb-4" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>Post Not Found</h1>
+          <Link to="/blog" className="inline-flex items-center gap-2 font-medium transition-colors" style={{ color: '#00c98d' }}>
+            <ArrowLeft className="w-4 h-4" />
             Back to Blog
           </Link>
         </div>
@@ -1044,43 +1072,76 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-      {/* Hero Section with gradient background */}
-      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #001529 0%, #003d33 100%)' }}>
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 rounded-full" style={{ background: 'radial-gradient(circle, #00f5a0 0%, transparent 70%)' }} />
-          <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full" style={{ background: 'radial-gradient(circle, #00f5a0 0%, transparent 70%)' }} />
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.05); }
+        }
+        @keyframes float-icon {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        .pulse-glow {
+          animation: pulse-glow 4s ease-in-out infinite;
+        }
+        .float-icon {
+          animation: float-icon 4s ease-in-out infinite;
+        }
+      `}</style>
+
+      {/* Hero Section with animated gradient background */}
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #001529 0%, #00332b 100%)' }}>
+        {/* Animated background orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 245, 160, 0.4) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 200, 140, 0.3) 0%, transparent 70%)', animationDelay: '2s' }} />
+          <div className="absolute top-1/3 right-1/4 w-64 h-64 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 245, 160, 0.2) 0%, transparent 70%)', animationDelay: '4s' }} />
         </div>
 
         {/* Header */}
-        <div className="relative max-w-4xl mx-auto px-6 md:px-12 pt-8 pb-16">
-          <Link to="/blog" className="inline-flex items-center gap-2 text-sm font-medium transition-all hover:gap-3 mb-12"
-                style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-            <ArrowLeft className="w-4 h-4" />
+        <div
+          ref={heroRef}
+          className="relative max-w-4xl mx-auto px-6 md:px-12 pt-10 pb-20 transition-all duration-1000"
+          style={{
+            opacity: heroVisible ? 1 : 0,
+            transform: heroVisible ? 'translateY(0)' : 'translateY(30px)'
+          }}
+        >
+          <Link to="/blog" className="inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 hover:gap-3 mb-12 group"
+                style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Back to Blog
           </Link>
 
           {/* Category Badge */}
           <div className="mb-6">
-            <span className="px-4 py-2 rounded-full text-sm font-semibold"
-                  style={{ backgroundColor: 'rgba(0, 245, 160, 0.2)', color: '#00f5a0' }}>
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+                  style={{ backgroundColor: 'rgba(0, 245, 160, 0.15)', color: '#00f5a0', border: '1px solid rgba(0, 245, 160, 0.3)' }}>
+              <Sparkles className="w-4 h-4" />
               {post.category}
             </span>
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-white"
-              style={{ fontWeight: 700 }}>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight text-white"
+              style={{ fontWeight: 700, lineHeight: 1.15 }}>
             {post.title}
           </h1>
 
           {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-6" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
-                <User className="w-4 h-4" />
+          <div className="flex flex-wrap items-center gap-8" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                <User className="w-5 h-5" style={{ color: '#00f5a0' }} />
               </div>
-              <span className="text-sm font-medium">{post.author}</span>
+              <div>
+                <span className="text-sm font-medium block text-white">{post.author}</span>
+                {post.authorRole && <span className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>{post.authorRole}</span>}
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
@@ -1092,132 +1153,257 @@ const BlogPost = () => {
             </div>
           </div>
 
-          {/* Icon badge */}
-          <div className="mt-10 flex justify-center">
-            <div className="w-24 h-24 rounded-2xl flex items-center justify-center shadow-2xl" style={{ background: 'linear-gradient(135deg, #00f5a0 0%, #00c98d 100%)' }}>
-              {renderIcon(post.icon, 'w-12 h-12')}
+          {/* Icon badge - floating animation */}
+          <div className="mt-12 flex justify-center float-icon">
+            <div className="w-28 h-28 rounded-3xl flex items-center justify-center shadow-2xl" style={{ background: 'linear-gradient(135deg, #00f5a0 0%, #00c98d 100%)' }}>
+              {renderIcon(post.icon, 'w-14 h-14')}
             </div>
           </div>
         </div>
       </div>
 
       {/* Article */}
-      <article className="max-w-4xl mx-auto px-6 md:px-12 py-12">
+      <article
+        ref={articleRef}
+        className="max-w-4xl mx-auto px-6 md:px-12 py-16 transition-all duration-1000"
+        style={{
+          opacity: articleVisible ? 1 : 0,
+          transform: articleVisible ? 'translateY(0)' : 'translateY(20px)'
+        }}
+      >
 
         {/* Article Content */}
         <div className="prose prose-lg max-w-none"
              style={{
-               color: 'rgba(0, 0, 0, 0.88)',
-               fontSize: '19px',
-               lineHeight: '34px'
+               color: 'rgba(0, 0, 0, 0.75)',
+               fontSize: '18px',
+               lineHeight: '1.85'
              }}>
           <style>{`
             .prose h2 {
-              font-size: 31px;
+              font-size: 28px;
               font-weight: 700;
               color: rgba(0, 0, 0, 0.88);
-              margin-top: 48px;
-              margin-bottom: 24px;
-              line-height: 1.25;
+              margin-top: 56px;
+              margin-bottom: 20px;
+              line-height: 1.3;
+              padding-left: 20px;
+              border-left: 4px solid #00f5a0;
+              position: relative;
             }
             .prose h3 {
-              font-size: 23px;
-              font-weight: 700;
+              font-size: 21px;
+              font-weight: 600;
               color: rgba(0, 0, 0, 0.88);
-              margin-top: 32px;
-              margin-bottom: 16px;
+              margin-top: 36px;
+              margin-bottom: 14px;
             }
             .prose p {
               margin-bottom: 24px;
-              color: rgba(0, 0, 0, 0.88);
-              line-height: 34px;
+              color: rgba(0, 0, 0, 0.7);
+              line-height: 1.85;
+              font-size: 17px;
             }
             .prose ul, .prose ol {
-              margin-bottom: 24px;
-              padding-left: 24px;
+              margin-bottom: 28px;
+              padding-left: 0;
+              list-style: none;
             }
             .prose li {
-              margin-bottom: 12px;
-              color: rgba(0, 0, 0, 0.88);
-              line-height: 34px;
+              margin-bottom: 14px;
+              color: rgba(0, 0, 0, 0.7);
+              line-height: 1.8;
+              font-size: 17px;
+              padding-left: 32px;
+              position: relative;
+            }
+            .prose li::before {
+              content: '';
+              position: absolute;
+              left: 0;
+              top: 11px;
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, #00f5a0 0%, #00c98d 100%);
+            }
+            .prose ol li::before {
+              content: counter(list-item);
+              counter-increment: list-item;
+              background: linear-gradient(135deg, #00f5a0 0%, #00c98d 100%);
+              color: #001529;
+              font-size: 12px;
+              font-weight: 600;
+              width: 22px;
+              height: 22px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              top: 6px;
+            }
+            .prose ol {
+              counter-reset: list-item;
             }
             .prose blockquote {
-              border-left: 5px solid #00f0a0;
-              padding-left: 24px;
-              margin: 32px 0;
+              border-left: none;
+              padding: 32px;
+              margin: 48px 0;
+              background: linear-gradient(135deg, rgba(0, 245, 160, 0.08) 0%, rgba(0, 200, 140, 0.05) 100%);
+              border-radius: 20px;
+              position: relative;
+            }
+            .prose blockquote::before {
+              content: '"';
+              position: absolute;
+              top: 16px;
+              left: 24px;
+              font-size: 60px;
+              color: #00f5a0;
+              opacity: 0.3;
+              font-family: Georgia, serif;
+              line-height: 1;
+            }
+            .prose blockquote p {
               font-style: italic;
-              color: rgba(0, 0, 0, 0.65);
+              font-size: 19px;
+              color: rgba(0, 0, 0, 0.75);
+              margin-bottom: 16px;
+              position: relative;
+              z-index: 1;
             }
             .prose blockquote cite {
               display: block;
-              margin-top: 12px;
-              font-size: 16px;
-              color: rgba(0, 0, 0, 0.45);
+              font-size: 14px;
+              color: rgba(0, 0, 0, 0.5);
               font-style: normal;
+              font-weight: 500;
             }
             .prose strong {
               font-weight: 600;
               color: rgba(0, 0, 0, 0.88);
             }
             .prose a {
-              color: #00f0a0;
+              color: #00c98d;
               text-decoration: none;
+              transition: all 0.2s;
             }
             .prose a:hover {
-              text-decoration: underline;
+              color: #00a86b;
             }
           `}</style>
           <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
         {/* Share Section */}
-        <div className="mt-16 pt-8 border-t" style={{ borderColor: '#f0f0f0' }}>
-          <div className="flex items-center gap-4">
+        <div className="mt-20 pt-10 border-t" style={{ borderColor: 'rgba(0, 0, 0, 0.06)' }}>
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <span className="text-sm font-semibold" style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
               Share this article:
             </span>
             <div className="flex gap-3">
-              <button className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-                      style={{ backgroundColor: '#f5f5f5', color: 'rgba(0, 0, 0, 0.65)' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#00f0a0'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}>
+              <button className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
+                      style={{ backgroundColor: 'rgba(0, 0, 0, 0.04)', color: 'rgba(0, 0, 0, 0.65)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#00f0a0'; e.currentTarget.style.color = '#001529'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.04)'; e.currentTarget.style.color = 'rgba(0, 0, 0, 0.65)'; }}>
                 <Twitter className="w-5 h-5" />
               </button>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-                      style={{ backgroundColor: '#f5f5f5', color: 'rgba(0, 0, 0, 0.65)' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#00f0a0'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}>
+              <button className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
+                      style={{ backgroundColor: 'rgba(0, 0, 0, 0.04)', color: 'rgba(0, 0, 0, 0.65)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#00f0a0'; e.currentTarget.style.color = '#001529'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.04)'; e.currentTarget.style.color = 'rgba(0, 0, 0, 0.65)'; }}>
                 <Facebook className="w-5 h-5" />
               </button>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-                      style={{ backgroundColor: '#f5f5f5', color: 'rgba(0, 0, 0, 0.65)' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#00f0a0'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}>
+              <button className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
+                      style={{ backgroundColor: 'rgba(0, 0, 0, 0.04)', color: 'rgba(0, 0, 0, 0.65)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#00f0a0'; e.currentTarget.style.color = '#001529'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.04)'; e.currentTarget.style.color = 'rgba(0, 0, 0, 0.65)'; }}>
                 <Linkedin className="w-5 h-5" />
               </button>
             </div>
           </div>
         </div>
+
+        {/* CTA Section */}
+        <div className="mt-16 p-10 rounded-3xl text-center relative overflow-hidden"
+             style={{ background: 'linear-gradient(135deg, rgba(0, 245, 160, 0.1) 0%, rgba(0, 200, 140, 0.05) 100%)' }}>
+          <div className="absolute top-0 right-0 w-40 h-40 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 245, 160, 0.2) 0%, transparent 70%)', transform: 'translate(50%, -50%)' }} />
+          <h2 className="text-2xl font-bold mb-4 relative" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+            Ready to Get Started?
+          </h2>
+          <p className="mb-8 relative" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>
+            Start your free 14-day trial and experience the power of AI-driven email marketing.
+          </p>
+          <Link to="/dashboard"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg group relative"
+                style={{ backgroundColor: '#00f5a0', color: '#001529' }}>
+            Start Free Trial
+            <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
       </article>
 
       {/* Related Posts */}
-      <div className="py-20" style={{ backgroundColor: '#f5f5f5' }}>
-        <div className="max-w-4xl mx-auto px-12">
-          <h2 className="text-3xl font-bold mb-8" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+      <div className="py-24" style={{ backgroundColor: '#fafafa' }}>
+        <div className="max-w-4xl mx-auto px-6 md:px-12">
+          <h2 className="text-3xl font-bold mb-10" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
             Related Articles
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <Link to="/blog" className="block">
-              <div className="rounded-xl p-6 transition-all hover:shadow-lg"
-                   style={{ backgroundColor: 'white', border: '1px solid #f0f0f0' }}>
-                <h3 className="text-xl font-semibold mb-2" style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
-                  More Articles Coming Soon
+            <Link to="/blog" className="block group">
+              <div className="rounded-2xl p-7 transition-all duration-500 hover:shadow-xl hover:-translate-y-1"
+                   style={{ backgroundColor: 'white', border: '1px solid rgba(0, 0, 0, 0.06)' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110"
+                     style={{ background: 'linear-gradient(135deg, rgba(0, 240, 160, 0.15) 0%, rgba(0, 200, 140, 0.1) 100%)' }}>
+                  <Sparkles className="w-6 h-6" style={{ color: '#00c98d' }} />
+                </div>
+                <h3 className="text-xl font-semibold mb-2 transition-colors duration-300 group-hover:text-[#00c98d]"
+                    style={{ color: 'rgba(0, 0, 0, 0.88)' }}>
+                  Explore More Articles
                 </h3>
-                <p style={{ color: 'rgba(0, 0, 0, 0.65)', fontSize: '15px' }}>
-                  Check back for more insights on email marketing and AI.
+                <p className="mb-4" style={{ color: 'rgba(0, 0, 0, 0.6)', fontSize: '15px', lineHeight: '1.6' }}>
+                  Check out our blog for more insights on email marketing, AI, and growth strategies.
                 </p>
+                <span className="inline-flex items-center gap-1 text-sm font-medium transition-all duration-300 group-hover:gap-2"
+                      style={{ color: '#00c98d' }}>
+                  View All
+                  <ChevronRight className="w-4 h-4" />
+                </span>
               </div>
             </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Newsletter CTA */}
+      <div className="relative overflow-hidden py-24" style={{ backgroundColor: '#001529' }}>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 240, 160, 0.15) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full pulse-glow"
+               style={{ background: 'radial-gradient(circle, rgba(0, 200, 140, 0.1) 0%, transparent 70%)', animationDelay: '2s' }} />
+        </div>
+        <div className="relative max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-white">
+            Never Miss an Update
+          </h2>
+          <p className="text-lg mb-8" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            Get the latest articles, guides, and product updates delivered to your inbox
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="flex-1 px-6 py-4 rounded-xl text-lg"
+              style={{ border: 'none', outline: 'none' }}
+            />
+            <button
+              className="px-8 py-4 font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg whitespace-nowrap"
+              style={{ backgroundColor: '#00f0a0', color: '#001529' }}
+            >
+              Subscribe
+            </button>
           </div>
         </div>
       </div>
