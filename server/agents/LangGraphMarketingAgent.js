@@ -89,6 +89,321 @@ class LangGraphMarketingAgent {
       console.log('✅ Redis Vector Memory connected successfully');
     }
     console.log('✅ Marketing Agent fully initialized');
+
+    // 🔥 NEW: Start background email generation service
+    this.startBackgroundEmailGeneration();
+  }
+
+  /**
+   * 🔥 BACKGROUND EMAIL GENERATION SERVICE
+   * Continuously checks for prospects without emails and generates them
+   * Runs every 30 seconds regardless of frontend activity
+   */
+  startBackgroundEmailGeneration() {
+    if (this.backgroundEmailIntervalId) {
+      console.log('⚠️ [BackgroundEmailGen] Already running');
+      return;
+    }
+
+    console.log('🔄 [BackgroundEmailGen] Starting background email generation service...');
+
+    // Run every 30 seconds
+    this.backgroundEmailIntervalId = setInterval(async () => {
+      await this.checkAndGeneratePendingEmails();
+    }, 30000);
+
+    // Also run immediately
+    setTimeout(() => this.checkAndGeneratePendingEmails(), 5000);
+
+    // 🔥 ALSO START BACKGROUND PROSPECT SEARCH
+    this.startBackgroundProspectSearch();
+  }
+
+  /**
+   * 🔥 BACKGROUND PROSPECT SEARCH SERVICE
+   * Continuously checks if more prospects are needed and finds them
+   * Runs every 60 seconds regardless of frontend activity
+   */
+  startBackgroundProspectSearch() {
+    if (this.backgroundProspectIntervalId) {
+      console.log('⚠️ [BackgroundProspectSearch] Already running');
+      return;
+    }
+
+    console.log('🔄 [BackgroundProspectSearch] Starting background prospect search service...');
+
+    // Run every 60 seconds
+    this.backgroundProspectIntervalId = setInterval(async () => {
+      await this.checkAndFindMoreProspects();
+    }, 60000);
+
+    // Also run after 10 seconds (give time for initial workflow to start)
+    setTimeout(() => this.checkAndFindMoreProspects(), 10000);
+  }
+
+  /**
+   * Check if more prospects are needed and find them
+   */
+  async checkAndFindMoreProspects() {
+    try {
+      // Only run if we have campaign context
+      if (!this.currentCampaignId || !this.marketingStrategyData) {
+        return; // No active campaign
+      }
+
+      const db = require('../models/database');
+      const userId = this.userId || 'anonymous';
+      const campaignId = this.currentCampaignId;
+
+      // Get current prospect count
+      const contacts = await db.getContacts(userId, { campaignId }, 10000).catch(() => []);
+      const currentCount = contacts.length;
+
+      // Get user's limit (default 50)
+      const userLimit = await db.getUserLimit?.(userId).catch(() => ({ prospectsPerHour: 50 }));
+      const targetCount = userLimit?.isUnlimited ? 500 : (userLimit?.prospectsPerHour || 50);
+
+      // Check if we need more prospects
+      if (currentCount >= targetCount) {
+        return; // Already at limit
+      }
+
+      const needed = targetCount - currentCount;
+      console.log(`\n🔄 [BackgroundProspectSearch] Campaign ${campaignId}: ${currentCount}/${targetCount} prospects (need ${needed} more)`);
+
+      // Try to find more prospects
+      if (this.prospectSearchAgent) {
+        try {
+          // Search for more prospects
+          const newProspects = await this.prospectSearchAgent.searchProspects(
+            this.marketingStrategyData,
+            this.marketingStrategyData?.industry || 'Technology',
+            this.marketingStrategyData?.target_audience?.type || 'all',
+            {
+              userId,
+              campaignId,
+              continuous: true,
+              maxResults: Math.min(needed, 10) // Get up to 10 at a time
+            }
+          );
+
+          if (newProspects && newProspects.length > 0) {
+            console.log(`✅ [BackgroundProspectSearch] Found ${newProspects.length} new prospects`);
+
+            // Save new prospects to database
+            for (const prospect of newProspects) {
+              try {
+                // Check if already exists
+                const existingContacts = await db.getContacts(userId, { campaignId }, 10000).catch(() => []);
+                const exists = existingContacts.some(c => c.email?.toLowerCase() === prospect.email?.toLowerCase());
+
+                if (!exists) {
+                  await db.addContact?.({
+                    email: prospect.email,
+                    name: prospect.name || '',
+                    company: prospect.company || '',
+                    position: prospect.position || '',
+                    industry: prospect.industry || this.marketingStrategyData?.industry || '',
+                    campaignId: campaignId,
+                    userId: userId,
+                    status: 'active'
+                  }, userId);
+                  console.log(`   ✅ Added: ${prospect.email}`);
+                }
+              } catch (saveErr) {
+                // Skip individual save errors
+              }
+            }
+
+            // Broadcast update
+            if (this.wsManager) {
+              this.wsManager.broadcast({
+                type: 'prospects_found_background',
+                data: {
+                  campaignId,
+                  userId,
+                  newCount: newProspects.length,
+                  totalCount: currentCount + newProspects.length,
+                  timestamp: new Date().toISOString()
+                }
+              });
+            }
+          }
+        } catch (searchErr) {
+          // Silent fail - search might timeout
+        }
+      }
+    } catch (error) {
+      // Silent fail
+    }
+  }
+
+  /**
+   * Check for prospects without emails and generate them
+   */
+  async checkAndGeneratePendingEmails() {
+    try {
+      const db = require('../models/database');
+
+      // 🔥 FIX: Only process if we have a valid userTemplate (campaign has been started)
+      if (!this.state.userTemplate) {
+        return; // No template yet, skip background generation
+      }
+
+      // 🔥 FIX: Use the current userId from agent state if available
+      const userId = this.userId || 'anonymous';
+
+      try {
+        await this.generatePendingEmailsForUser(userId, db);
+      } catch (userErr) {
+        // Skip errors
+      }
+    } catch (error) {
+      // Silent fail - don't spam logs
+      if (error.message && !error.message.includes('no such table')) {
+        console.error('❌ [BackgroundEmailGen] Error:', error.message);
+      }
+    }
+  }
+
+  /**
+   * Generate pending emails for a specific user's campaigns
+   */
+  async generatePendingEmailsForUser(userId, db) {
+    // Get all contacts for this user
+    const contacts = await db.getContacts(userId, {}, 10000).catch(() => []);
+    if (contacts.length === 0) return;
+
+    // Group contacts by campaign
+    const campaignGroups = {};
+    for (const contact of contacts) {
+      const campaignId = contact.campaign_id || contact.campaignId || 'default';
+      if (!campaignGroups[campaignId]) {
+        campaignGroups[campaignId] = [];
+      }
+      campaignGroups[campaignId].push(contact);
+    }
+
+    // Process each campaign
+    for (const [campaignId, prospects] of Object.entries(campaignGroups)) {
+      await this.generatePendingEmailsForCampaign(userId, campaignId, prospects, db);
+    }
+  }
+
+  /**
+   * Generate pending emails for a specific campaign
+   */
+  async generatePendingEmailsForCampaign(userId, campaignId, prospects, db) {
+    try {
+      // Get existing email drafts for this campaign
+      const existingDrafts = await db.getEmailDrafts(userId, campaignId).catch(() => []);
+      const existingEmails = new Set(existingDrafts.map(d => d.metadata?.recipient?.toLowerCase()));
+
+      // Find prospects without emails
+      const prospectsNeedingEmails = prospects.filter(p => {
+        return p.email && !existingEmails.has(p.email.toLowerCase());
+      });
+
+      if (prospectsNeedingEmails.length === 0) {
+        return; // All prospects have emails
+      }
+
+      // Only generate if we have template data (already checked in checkAndGeneratePendingEmails)
+      if (!this.state.userTemplate) {
+        return; // No template selected yet, skip
+      }
+
+      console.log(`\n🔄 [BackgroundEmailGen] Campaign ${campaignId}: ${prospectsNeedingEmails.length} prospects need emails`);
+
+      // Generate emails for up to 3 prospects at a time to avoid overload
+      const batch = prospectsNeedingEmails.slice(0, 3);
+
+      for (const prospect of batch) {
+        try {
+          await this.generateSingleEmailInBackground(userId, campaignId, prospect, db);
+          // Add small delay between generations to avoid overwhelming Ollama
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        } catch (err) {
+          console.error(`❌ [BackgroundEmailGen] Failed for ${prospect.email}:`, err.message);
+        }
+      }
+    } catch (error) {
+      // Silent fail for individual campaigns
+    }
+  }
+
+  /**
+   * Generate a single email in background
+   */
+  async generateSingleEmailInBackground(userId, campaignId, prospect, db) {
+    console.log(`📧 [BackgroundEmailGen] Generating email for ${prospect.email}...`);
+
+    try {
+      // Generate persona
+      const userPersona = await this.generateUserPersona(prospect, this.marketingStrategyData, null);
+      prospect.persona = userPersona;
+
+      // Generate email content
+      const emailOptimization = await this.memory.getEmailOptimizationSuggestions(
+        { subject: '', body: `Outreach to ${prospect.company || prospect.name}` },
+        campaignId
+      );
+
+      const emailContent = await this.generateOptimizedEmailContentWithPersona(
+        prospect,
+        userPersona,
+        this.marketingStrategyData || {},
+        emailOptimization,
+        this.businessAnalysisData || {},
+        'user_template',
+        this.state.userTemplate,
+        null,
+        0
+      );
+
+      if (!emailContent || !emailContent.subject) {
+        console.error(`❌ [BackgroundEmailGen] Failed to generate email for ${prospect.email}`);
+        return;
+      }
+
+      // Save to database
+      const emailKey = `email_${campaignId}_${prospect.email}_${Date.now()}`;
+      await db.saveEmailDraft({
+        emailKey: emailKey,
+        subject: emailContent.subject || 'No Subject',
+        preheader: emailContent.preheader || '',
+        components: [],
+        html: emailContent.body || emailContent.html || '',
+        metadata: {
+          recipient: prospect.email,
+          recipientName: prospect.name || '',
+          recipientCompany: prospect.company || '',
+          senderName: this.state.userTemplate?.senderName || '',
+          companyName: this.businessAnalysisData?.companyName || '',
+          template: 'user_template',
+          createdAt: new Date().toISOString(),
+          status: 'awaiting_approval'
+        }
+      }, userId, campaignId);
+
+      console.log(`✅ [BackgroundEmailGen] Email generated and saved for ${prospect.email}`);
+
+      // Broadcast update to frontend
+      if (this.wsManager) {
+        this.wsManager.broadcast({
+          type: 'email_generated_background',
+          data: {
+            campaignId,
+            userId,
+            prospect: prospect.email,
+            subject: emailContent.subject,
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+    } catch (error) {
+      console.error(`❌ [BackgroundEmailGen] Error generating email for ${prospect.email}:`, error.message);
+    }
   }
   
   /**
@@ -2524,6 +2839,23 @@ class LangGraphMarketingAgent {
 
           console.log(`\n✅ ALL NOTIFICATION BROADCASTS COMPLETE`);
           console.log(`${'='.repeat(80)}\n`);
+
+          // 🔥 CRITICAL FIX: Store the first email's template BEFORE waitForUserDecision
+          // This ensures auto-continue has a template to work with
+          const firstEmailTemplate = {
+            subject: emailContent.subject,
+            html: emailContent.body || emailContent.html,
+            body: emailContent.body || emailContent.html,
+            senderName: templateData?.senderName || 'AI Agent',
+            senderEmail: templateData?.senderEmail || smtpConfig?.auth?.user,
+            templateId: emailContent.template || 'professional_partnership',
+            templateType: 'first_email_template',
+            isCustomized: true
+          };
+          this.state.userTemplate = firstEmailTemplate;
+          console.log(`💾 [BACKGROUND FIX] Stored first email template for auto-continue`);
+          console.log(`   📋 Subject: ${firstEmailTemplate.subject}`);
+          console.log(`   📋 HTML Length: ${firstEmailTemplate.html?.length || 0} chars`);
 
           // Wait for user decision
           const userDecisionData = await this.waitForUserDecision({

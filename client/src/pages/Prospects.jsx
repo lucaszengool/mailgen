@@ -76,6 +76,8 @@ export default function Prospects() {
       setWorkflowStatus('finding_prospects')
     }
 
+    // 🔥 FIX: Always fetch prospects on mount, regardless of workflow status
+    console.log('📊 [MOUNT] Fetching prospects on page mount/navigation...');
     fetchProspects()
     connectWebSocket()
 
@@ -92,7 +94,7 @@ export default function Prospects() {
       }
       clearInterval(pollInterval);
     }
-  }, [workflowStatus])
+  }, []) // 🔥 FIX: Empty dependency array - only run on mount/unmount
 
   const connectWebSocket = () => {
     try {
@@ -455,7 +457,7 @@ export default function Prospects() {
     try {
       // 🔥 CRITICAL: Get current campaign ID to filter prospects
       const currentCampaignId = localStorage.getItem('currentCampaignId');
-      console.log(`📊 Fetching prospects for campaign: ${currentCampaignId || 'ALL'}`);
+      console.log(`📊 [FETCH] Fetching prospects for campaign: ${currentCampaignId || 'ALL'}`);
 
       // 🔐 Fetch prospects from database with authentication (persisted data)
       // 🔥 FIX: Pass campaignId to only get prospects for current campaign
@@ -463,8 +465,11 @@ export default function Prospects() {
         ? `/api/contacts?status=active&limit=1000&campaignId=${currentCampaignId}`
         : '/api/contacts?status=active&limit=1000';
 
+      console.log(`📊 [FETCH] Contacts URL: ${contactsUrl}`);
       const dbData = await apiGet(contactsUrl);
       let dbProspects = []
+
+      console.log(`📊 [FETCH] Database response:`, dbData?.success, dbData?.data?.contacts?.length || 0);
 
       if (dbData.success && dbData.data?.contacts) {
         dbProspects = dbData.data.contacts.map(c => ({
@@ -483,7 +488,7 @@ export default function Prospects() {
           companySize: c.companySize || '1-10',
           techStack: c.techStack || []
         }))
-        console.log(`📊 Loaded ${dbProspects.length} prospects from database for campaign: ${currentCampaignId || 'ALL'}`);
+        console.log(`📊 [FETCH] Loaded ${dbProspects.length} prospects from database for campaign: ${currentCampaignId || 'ALL'}`);
       }
 
       // 🔐 Also try to get prospects from workflow results with authentication (in-memory/recent)
@@ -492,12 +497,16 @@ export default function Prospects() {
         ? `/api/workflow/results?campaignId=${currentCampaignId}`
         : '/api/workflow/results';
 
+      console.log(`📊 [FETCH] Workflow URL: ${workflowUrl}`);
       const workflowData = await apiGet(workflowUrl);
       let workflowProspects = []
 
-      if (workflowData.success && workflowData.data.prospects) {
+      console.log(`📊 [FETCH] Workflow response:`, workflowData?.success, workflowData?.data?.prospects?.length || 0);
+
+      if (workflowData.success && workflowData.data?.prospects) {
         workflowProspects = workflowData.data.prospects.map(p => ({
           ...p,
+          id: p.id || `prospect_${p.email}_${Date.now()}`,
           source: 'AI Campaign',
           confidence: p.confidence || Math.floor(Math.random() * 40) + 60,
           created_at: p.created_at || new Date().toISOString(),
@@ -506,7 +515,7 @@ export default function Prospects() {
           companySize: p.companySize || ['1-10', '11-50', '51-200', '201-1000', '1000+'][Math.floor(Math.random() * 5)],
           techStack: p.techStack || ['React', 'Node.js', 'Python', 'AI/ML', 'Cloud'][Math.floor(Math.random() * 5)]
         }))
-        console.log(`📊 Loaded ${workflowProspects.length} prospects from workflow results for current user`);
+        console.log(`📊 [FETCH] Loaded ${workflowProspects.length} prospects from workflow results for current user`);
       }
 
       // Combine all sources and deduplicate by email
@@ -516,11 +525,20 @@ export default function Prospects() {
         index === self.findIndex(p => p.email === prospect.email)
       )
 
-      console.log(`📊 Total unique prospects after deduplication: ${uniqueProspects.length}`)
+      console.log(`📊 [FETCH] Total unique prospects after deduplication: ${uniqueProspects.length}`)
 
       // 🔥 CRITICAL FIX: MERGE with existing state instead of REPLACING
       // This preserves real-time WebSocket prospects that haven't been saved to DB yet
       setProspects(prevProspects => {
+        console.log(`📊 [MERGE] Previous prospects in state: ${prevProspects.length}`);
+
+        // 🔥 FIX: If we got 0 prospects from both sources but had previous state, don't clear
+        // This prevents losing data during navigation/re-render
+        if (uniqueProspects.length === 0 && prevProspects.length > 0) {
+          console.log(`⚠️ [MERGE] Got 0 new prospects but had ${prevProspects.length} in state - keeping existing`);
+          return prevProspects;
+        }
+
         // Get emails from fetched data
         const fetchedEmails = new Set(uniqueProspects.map(p => p.email));
 
@@ -531,7 +549,7 @@ export default function Prospects() {
         // Merge: fetched data + real-time only (that haven't been saved yet)
         const merged = [...uniqueProspects, ...realTimeOnly];
 
-        console.log(`📊 Merged: ${uniqueProspects.length} fetched + ${realTimeOnly.length} real-time only = ${merged.length} total`);
+        console.log(`📊 [MERGE] Result: ${uniqueProspects.length} fetched + ${realTimeOnly.length} real-time only = ${merged.length} total`);
 
         // 🚀 INSTANT: Force re-render if count changed
         if (merged.length !== prevProspects.length) {
