@@ -171,6 +171,9 @@ app.use('/api/test-smtp', require('./routes/test-smtp'));
 // Gmail OAuth endpoints
 app.use('/api/gmail-oauth', require('./routes/gmailOAuth'));
 
+// Agent Learning API - Self-improving AI insights
+app.use('/api/agent-learning', require('./routes/agent-learning'));
+
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   // Serve static assets with cache control

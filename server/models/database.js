@@ -273,6 +273,76 @@ class Database {
       }
     });
 
+    // 🧠 NEW: Agent Learning table - Stores what the agent learns per campaign
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS agent_learnings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        campaign_id TEXT NOT NULL,
+        learning_type TEXT NOT NULL,
+        category TEXT NOT NULL,
+        insight TEXT NOT NULL,
+        evidence TEXT,
+        confidence REAL DEFAULT 0.5,
+        impact_score REAL DEFAULT 0.0,
+        applied_count INTEGER DEFAULT 0,
+        success_rate REAL DEFAULT 0.0,
+        metadata TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `, (err) => {
+      if (err) {
+        console.error('❌ [DATABASE] Failed to create agent_learnings table:', err.message);
+      } else {
+        console.log('✅ [DATABASE] agent_learnings table ready');
+      }
+    });
+
+    // 🧠 NEW: Agent Performance Metrics - Tracks performance over time
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS agent_metrics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        campaign_id TEXT NOT NULL,
+        metric_type TEXT NOT NULL,
+        metric_name TEXT NOT NULL,
+        metric_value REAL NOT NULL,
+        previous_value REAL,
+        improvement_pct REAL,
+        context TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `, (err) => {
+      if (err) {
+        console.error('❌ [DATABASE] Failed to create agent_metrics table:', err.message);
+      } else {
+        console.log('✅ [DATABASE] agent_metrics table ready');
+      }
+    });
+
+    // 🧠 NEW: Agent Decisions Log - Records agent decisions for transparency
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS agent_decisions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        campaign_id TEXT NOT NULL,
+        decision_type TEXT NOT NULL,
+        decision TEXT NOT NULL,
+        reasoning TEXT,
+        alternatives TEXT,
+        outcome TEXT,
+        was_correct INTEGER DEFAULT -1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `, (err) => {
+      if (err) {
+        console.error('❌ [DATABASE] Failed to create agent_decisions table:', err.message);
+      } else {
+        console.log('✅ [DATABASE] agent_decisions table ready');
+      }
+    });
+
     // 迁移现有数据：为旧数据添加 user_id
     this.migrateExistingData();
 
@@ -1529,6 +1599,387 @@ class Database {
           }
         }
       );
+    });
+  }
+
+  // ============================================
+  // 🧠 AGENT LEARNING METHODS - Self-improving AI
+  // ============================================
+
+  /**
+   * Save an agent learning/insight
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   * @param {object} learning - Learning data
+   */
+  saveAgentLearning(userId, campaignId, learning) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `INSERT INTO agent_learnings (user_id, campaign_id, learning_type, category, insight, evidence, confidence, impact_score, metadata)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          userId,
+          campaignId,
+          learning.type || 'observation',
+          learning.category || 'general',
+          learning.insight,
+          JSON.stringify(learning.evidence || {}),
+          learning.confidence || 0.5,
+          learning.impactScore || 0.0,
+          JSON.stringify(learning.metadata || {})
+        ],
+        function(err) {
+          if (err) {
+            console.error('❌ [AGENT LEARNING] Failed to save:', err);
+            reject(err);
+          } else {
+            console.log(`🧠 [AGENT LEARNING] Saved: ${learning.category} - ${learning.insight.substring(0, 50)}...`);
+            resolve({ id: this.lastID, success: true });
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Get agent learnings for a campaign
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID (optional, null for all)
+   * @param {object} options - Filter options
+   */
+  getAgentLearnings(userId, campaignId = null, options = {}) {
+    return new Promise((resolve, reject) => {
+      let query = 'SELECT * FROM agent_learnings WHERE user_id = ?';
+      const params = [userId];
+
+      if (campaignId) {
+        query += ' AND campaign_id = ?';
+        params.push(campaignId);
+      }
+
+      if (options.category) {
+        query += ' AND category = ?';
+        params.push(options.category);
+      }
+
+      if (options.type) {
+        query += ' AND learning_type = ?';
+        params.push(options.type);
+      }
+
+      if (options.minConfidence) {
+        query += ' AND confidence >= ?';
+        params.push(options.minConfidence);
+      }
+
+      query += ' ORDER BY created_at DESC';
+
+      if (options.limit) {
+        query += ' LIMIT ?';
+        params.push(options.limit);
+      }
+
+      this.db.all(query, params, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          const learnings = (rows || []).map(row => ({
+            id: row.id,
+            userId: row.user_id,
+            campaignId: row.campaign_id,
+            type: row.learning_type,
+            category: row.category,
+            insight: row.insight,
+            evidence: JSON.parse(row.evidence || '{}'),
+            confidence: row.confidence,
+            impactScore: row.impact_score,
+            appliedCount: row.applied_count,
+            successRate: row.success_rate,
+            metadata: JSON.parse(row.metadata || '{}'),
+            createdAt: row.created_at,
+            updatedAt: row.updated_at
+          }));
+          resolve(learnings);
+        }
+      });
+    });
+  }
+
+  /**
+   * Update learning when it's applied and track success
+   * @param {number} learningId - Learning ID
+   * @param {boolean} wasSuccessful - Whether the application was successful
+   */
+  updateLearningApplication(learningId, wasSuccessful) {
+    return new Promise((resolve, reject) => {
+      // Get current stats first
+      this.db.get(
+        'SELECT applied_count, success_rate FROM agent_learnings WHERE id = ?',
+        [learningId],
+        (err, row) => {
+          if (err || !row) {
+            reject(err || new Error('Learning not found'));
+            return;
+          }
+
+          const newCount = (row.applied_count || 0) + 1;
+          const successfulApps = (row.success_rate * row.applied_count) + (wasSuccessful ? 1 : 0);
+          const newSuccessRate = successfulApps / newCount;
+
+          this.db.run(
+            `UPDATE agent_learnings SET applied_count = ?, success_rate = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            [newCount, newSuccessRate, learningId],
+            (err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve({ success: true, newCount, newSuccessRate });
+              }
+            }
+          );
+        }
+      );
+    });
+  }
+
+  /**
+   * Save agent metric for tracking improvement
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   * @param {object} metric - Metric data
+   */
+  saveAgentMetric(userId, campaignId, metric) {
+    return new Promise((resolve, reject) => {
+      // Get previous value for comparison
+      this.db.get(
+        `SELECT metric_value FROM agent_metrics
+         WHERE user_id = ? AND campaign_id = ? AND metric_type = ? AND metric_name = ?
+         ORDER BY created_at DESC LIMIT 1`,
+        [userId, campaignId, metric.type, metric.name],
+        (err, prev) => {
+          const previousValue = prev?.metric_value || null;
+          const improvementPct = previousValue ? ((metric.value - previousValue) / previousValue) * 100 : null;
+
+          this.db.run(
+            `INSERT INTO agent_metrics (user_id, campaign_id, metric_type, metric_name, metric_value, previous_value, improvement_pct, context)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              userId,
+              campaignId,
+              metric.type,
+              metric.name,
+              metric.value,
+              previousValue,
+              improvementPct,
+              JSON.stringify(metric.context || {})
+            ],
+            function(err) {
+              if (err) {
+                reject(err);
+              } else {
+                const emoji = improvementPct > 0 ? '📈' : improvementPct < 0 ? '📉' : '➡️';
+                console.log(`${emoji} [AGENT METRIC] ${metric.name}: ${metric.value}${improvementPct ? ` (${improvementPct > 0 ? '+' : ''}${improvementPct.toFixed(1)}%)` : ''}`);
+                resolve({ id: this.lastID, improvement: improvementPct });
+              }
+            }
+          );
+        }
+      );
+    });
+  }
+
+  /**
+   * Get agent metrics history
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   * @param {object} options - Filter options
+   */
+  getAgentMetrics(userId, campaignId = null, options = {}) {
+    return new Promise((resolve, reject) => {
+      let query = 'SELECT * FROM agent_metrics WHERE user_id = ?';
+      const params = [userId];
+
+      if (campaignId) {
+        query += ' AND campaign_id = ?';
+        params.push(campaignId);
+      }
+
+      if (options.type) {
+        query += ' AND metric_type = ?';
+        params.push(options.type);
+      }
+
+      if (options.name) {
+        query += ' AND metric_name = ?';
+        params.push(options.name);
+      }
+
+      query += ' ORDER BY created_at DESC';
+
+      if (options.limit) {
+        query += ' LIMIT ?';
+        params.push(options.limit);
+      }
+
+      this.db.all(query, params, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve((rows || []).map(row => ({
+            id: row.id,
+            type: row.metric_type,
+            name: row.metric_name,
+            value: row.metric_value,
+            previousValue: row.previous_value,
+            improvementPct: row.improvement_pct,
+            context: JSON.parse(row.context || '{}'),
+            createdAt: row.created_at
+          })));
+        }
+      });
+    });
+  }
+
+  /**
+   * Log an agent decision for transparency
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   * @param {object} decision - Decision data
+   */
+  logAgentDecision(userId, campaignId, decision) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `INSERT INTO agent_decisions (user_id, campaign_id, decision_type, decision, reasoning, alternatives, outcome)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          userId,
+          campaignId,
+          decision.type,
+          decision.decision,
+          decision.reasoning || null,
+          JSON.stringify(decision.alternatives || []),
+          decision.outcome || null
+        ],
+        function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            console.log(`🎯 [AGENT DECISION] ${decision.type}: ${decision.decision.substring(0, 50)}...`);
+            resolve({ id: this.lastID });
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Update decision outcome after we know the result
+   * @param {number} decisionId - Decision ID
+   * @param {string} outcome - What happened
+   * @param {boolean} wasCorrect - Whether decision was correct
+   */
+  updateDecisionOutcome(decisionId, outcome, wasCorrect) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `UPDATE agent_decisions SET outcome = ?, was_correct = ? WHERE id = ?`,
+        [outcome, wasCorrect ? 1 : 0, decisionId],
+        (err) => {
+          if (err) reject(err);
+          else resolve({ success: true });
+        }
+      );
+    });
+  }
+
+  /**
+   * Get agent decisions log
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   * @param {number} limit - Max results
+   */
+  getAgentDecisions(userId, campaignId = null, limit = 50) {
+    return new Promise((resolve, reject) => {
+      let query = 'SELECT * FROM agent_decisions WHERE user_id = ?';
+      const params = [userId];
+
+      if (campaignId) {
+        query += ' AND campaign_id = ?';
+        params.push(campaignId);
+      }
+
+      query += ' ORDER BY created_at DESC LIMIT ?';
+      params.push(limit);
+
+      this.db.all(query, params, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve((rows || []).map(row => ({
+            id: row.id,
+            type: row.decision_type,
+            decision: row.decision,
+            reasoning: row.reasoning,
+            alternatives: JSON.parse(row.alternatives || '[]'),
+            outcome: row.outcome,
+            wasCorrect: row.was_correct === 1 ? true : row.was_correct === 0 ? false : null,
+            createdAt: row.created_at
+          })));
+        }
+      });
+    });
+  }
+
+  /**
+   * Get comprehensive agent insights summary for a campaign
+   * @param {string} userId - User ID
+   * @param {string} campaignId - Campaign ID
+   */
+  getAgentInsightsSummary(userId, campaignId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Get learnings grouped by category
+        const learnings = await this.getAgentLearnings(userId, campaignId, { limit: 100 });
+
+        // Get recent metrics
+        const metrics = await this.getAgentMetrics(userId, campaignId, { limit: 50 });
+
+        // Get recent decisions
+        const decisions = await this.getAgentDecisions(userId, campaignId, 20);
+
+        // Calculate summary stats
+        const categoryCounts = {};
+        const avgConfidence = learnings.length > 0
+          ? learnings.reduce((sum, l) => sum + l.confidence, 0) / learnings.length
+          : 0;
+
+        learnings.forEach(l => {
+          categoryCounts[l.category] = (categoryCounts[l.category] || 0) + 1;
+        });
+
+        // Calculate decision accuracy
+        const evaluatedDecisions = decisions.filter(d => d.wasCorrect !== null);
+        const decisionAccuracy = evaluatedDecisions.length > 0
+          ? evaluatedDecisions.filter(d => d.wasCorrect).length / evaluatedDecisions.length
+          : null;
+
+        // Get improvement trends
+        const improvements = metrics
+          .filter(m => m.improvementPct !== null)
+          .map(m => ({ name: m.name, improvement: m.improvementPct }));
+
+        resolve({
+          totalLearnings: learnings.length,
+          learningsByCategory: categoryCounts,
+          averageConfidence: avgConfidence,
+          topLearnings: learnings.slice(0, 5),
+          recentMetrics: metrics.slice(0, 10),
+          improvements,
+          decisionAccuracy,
+          recentDecisions: decisions.slice(0, 5)
+        });
+      } catch (err) {
+        reject(err);
+      }
     });
   }
 }

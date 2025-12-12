@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const trackingService = require('../services/EmailTrackingService');
+const AgentLearningService = require('../services/AgentLearningService');
+const db = require('../models/database');
 
 /**
  * Track email open (1x1 pixel)
@@ -19,6 +21,23 @@ router.get('/open/:trackingId', async (req, res) => {
 
     // Track the open event
     await trackingService.trackOpen(trackingId, metadata);
+
+    // 🧠 AGENT LEARNING: Learn from email open
+    try {
+      // Get email details from tracking ID to find campaign/user
+      const emailLogs = await db.getEmailLogs('anonymous', { trackingId }, 1).catch(() => []);
+      if (emailLogs.length > 0) {
+        const email = emailLogs[0];
+        await AgentLearningService.learnFromEmailResults(
+          email.user_id || 'anonymous',
+          email.campaign_id,
+          email.id,
+          { opened: true, clicked: false, replied: false, bounced: false }
+        );
+      }
+    } catch (learningError) {
+      console.error('⚠️ Agent learning error (non-blocking):', learningError.message);
+    }
 
     // Return a 1x1 transparent GIF
     const pixel = Buffer.from(
@@ -70,6 +89,22 @@ router.get('/click/:trackingId/:linkIndex', async (req, res) => {
 
     // Track the click event
     await trackingService.trackClick(trackingId, parseInt(linkIndex), metadata);
+
+    // 🧠 AGENT LEARNING: Learn from email click
+    try {
+      const emailLogs = await db.getEmailLogs('anonymous', { trackingId }, 1).catch(() => []);
+      if (emailLogs.length > 0) {
+        const email = emailLogs[0];
+        await AgentLearningService.learnFromEmailResults(
+          email.user_id || 'anonymous',
+          email.campaign_id,
+          email.id,
+          { opened: true, clicked: true, replied: false, bounced: false }
+        );
+      }
+    } catch (learningError) {
+      console.error('⚠️ Agent learning error (non-blocking):', learningError.message);
+    }
 
     // Redirect to the original URL
     res.redirect(302, decodeURIComponent(targetUrl));

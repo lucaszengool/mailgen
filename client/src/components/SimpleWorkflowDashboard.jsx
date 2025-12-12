@@ -8,7 +8,7 @@ import {
   FileText, Sparkles, ArrowRight, Clock, Activity,
   Target, Users, BarChart3, Link, Shield, Zap, Edit, Settings,
   Radar, Network, BarChart, PlayCircle, CheckSquare, AlertTriangle,
-  Server, Eye, Cpu, Layers, Workflow, Gauge, Home, RefreshCw, Palette as SwatchIcon
+  Server, Eye, Cpu, Layers, Workflow, Gauge, Home, RefreshCw, Palette as SwatchIcon, Lightbulb
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react';
@@ -32,6 +32,7 @@ import AIAssistantChatbot from './AIAssistantChatbot';
 import QuotaBar from './QuotaBar';
 import EmailThreadPanel from './EmailThreadPanel';
 import AutoLanguageSelector from './AutoLanguageSelector';
+import AgentInsightsPage from './AgentInsightsPage';
 
 
 // Utility function for generating gradient patterns
@@ -3166,6 +3167,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home, isHome: true },
     { id: 'workflow', label: 'AI Agent', icon: Activity },
+    { id: 'agent_insights', label: 'Agent Insights', icon: Lightbulb },
     { id: 'dashboard', label: 'Smart Workflow Platform', icon: Gauge },
     { id: 'prospects', label: 'Prospects', icon: FileText },
     { id: 'emails', label: 'Email Campaign', icon: Mail },
@@ -7679,6 +7681,14 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           {/* Research View */}
           {activeView === 'research' && (
             <MarketResearch />
+          )}
+
+          {/* Agent Insights View - Self-improving AI insights */}
+          {activeView === 'agent_insights' && (
+            <AgentInsightsPage
+              campaignId={effectiveCampaignId}
+              onBack={() => setActiveView('workflow')}
+            />
           )}
 
           {/* Dashboard View - Import Dashboard component */}

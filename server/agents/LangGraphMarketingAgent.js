@@ -14,6 +14,9 @@ const UserStorageService = require('../services/UserStorageService');
 // const SMTPEmailVerifier = require('../services/SMTPEmailVerifier'); // Disabled - use DNS validation only
 const nodemailer = require('nodemailer');
 
+// 🧠 Agent Learning Service - Self-improving AI
+const AgentLearningService = require('../services/AgentLearningService');
+
 class LangGraphMarketingAgent {
   constructor(options = {}) {
     this.memory = new RedisVectorMemory({
@@ -75,10 +78,14 @@ class LangGraphMarketingAgent {
     // WebSocket管理器
     this.wsManager = options.wsManager || null;
 
+    // 🧠 Agent Learning Service - Self-improving AI
+    this.agentLearning = AgentLearningService;
+
     console.log('🤖 LangGraph Marketing Agent initialized');
     console.log(`   📊 Fast Model: ${this.models.fast} (analysis, strategy)`);
     console.log(`   🔧 General Model: ${this.models.general} (general tasks)`);
     console.log(`   📧 Email Model: ${this.models.email} (email generation)`);
+    console.log(`   🧠 Agent Learning: Active (self-improving)`);
   }
 
   async initialize() {
@@ -1642,8 +1649,25 @@ class LangGraphMarketingAgent {
       // Show sample emails if found
       if (prospects.length > 0) {
         console.log(`   样本邮箱: ${prospects.slice(0, 3).map(p => p.email || 'N/A').join(', ')}`);
+
+        // 🧠 AGENT LEARNING: Learn from prospect search results
+        try {
+          await this.agentLearning.learnFromProspectSearch(
+            userId,
+            campaignId,
+            marketingStrategy?.target_audience?.description || 'general prospects',
+            prospects,
+            {
+              audienceType: marketingStrategy?.target_audience?.type,
+              industry: marketingStrategy?.industry,
+              alternativeQueries: []
+            }
+          );
+        } catch (learningError) {
+          console.error('⚠️ Agent learning error (non-blocking):', learningError.message);
+        }
       }
-      
+
       // Send WebSocket updates about search results
       if (this.wsManager) {
         if (prospects.length === 0) {
