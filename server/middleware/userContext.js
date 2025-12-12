@@ -99,15 +99,18 @@ const optionalAuth = (req, res, next) => {
     const bodyUserId = req.body?.userId;
     const effectiveUserId = headerUserId || bodyUserId;
 
-    if (effectiveUserId && effectiveUserId !== 'anonymous' && effectiveUserId !== 'demo') {
+    if (effectiveUserId && effectiveUserId !== 'demo') {
+      // 🔥 FIX: Allow 'anonymous' as a valid userId - it's used for non-logged-in users
+      // but still needs to query the database correctly
       req.userId = effectiveUserId;
-      req.isAuthenticated = true;
+      req.isAuthenticated = effectiveUserId !== 'anonymous';
       console.log(`📧 Using ${headerUserId ? 'x-user-id header' : 'body userId'}: ${effectiveUserId}`);
     } else {
-      // 🔥 NO MORE DEMO FALLBACK - leave as null
-      req.userId = null;
+      // 🔥 FALLBACK: Use 'anonymous' instead of null for backwards compatibility
+      // This ensures database queries work correctly for non-authenticated users
+      req.userId = 'anonymous';
       req.isAuthenticated = false;
-      console.log('⚠️ No authentication - userId is null (no demo fallback)');
+      console.log('⚠️ No authentication - using anonymous userId for backwards compatibility');
     }
   }
   next();

@@ -1958,6 +1958,16 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
     }
   }, [isLoaded, isSignedIn, navigate]);
 
+  // 🔥 CRITICAL: Store Clerk user ID in localStorage for apiClient to access
+  // This ensures API calls include the correct user ID for data isolation
+  useEffect(() => {
+    if (isLoaded && isSignedIn && user?.id) {
+      localStorage.setItem('userId', user.id);
+      localStorage.setItem('dev_user_id', user.id); // Also set dev_user_id for apiClient
+      console.log(`✅ Stored Clerk user ID in localStorage: ${user.id}`);
+    }
+  }, [isLoaded, isSignedIn, user?.id]);
+
   // Show loading state while Clerk loads
   if (!isLoaded) {
     return (

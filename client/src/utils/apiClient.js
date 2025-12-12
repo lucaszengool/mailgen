@@ -14,36 +14,40 @@ const getAuthHeaders = async () => {
     'Content-Type': 'application/json',
   };
 
+  // 🔥 PRIORITY 1: Check localStorage for user ID (set by SimpleWorkflowDashboard when Clerk loads)
+  // This is more reliable than window.Clerk as it persists across page refreshes
+  const storedUserId = localStorage.getItem('userId') || localStorage.getItem('dev_user_id');
+  if (storedUserId && storedUserId !== 'demo' && storedUserId !== 'anonymous') {
+    headers['x-user-id'] = storedUserId;
+    console.log(`✅ Using stored user ID: ${storedUserId}`);
+  }
+
+  // 🔥 PRIORITY 2: Try to get fresh token from Clerk if available
   try {
-    // Check if Clerk is available (production)
     if (window.Clerk && window.Clerk.session) {
       const token = await window.Clerk.session.getToken();
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      // 🔥 CRITICAL: Also include user ID in x-user-id header for backend compatibility
+      // Also update user ID from Clerk if available (most up-to-date)
       if (window.Clerk.user && window.Clerk.user.id) {
         headers['x-user-id'] = window.Clerk.user.id;
+        // Keep localStorage in sync
+        localStorage.setItem('userId', window.Clerk.user.id);
         console.log(`✅ Using Clerk user ID: ${window.Clerk.user.id}`);
-        return headers;
       }
     }
   } catch (error) {
     console.warn('⚠️ Clerk authentication not available:', error.message);
   }
 
-  // Fallback: Check for development user ID in localStorage (for local dev only)
-  const devUserId = localStorage.getItem('dev_user_id');
-  if (devUserId && devUserId !== 'demo' && devUserId !== 'anonymous') {
-    headers['x-user-id'] = devUserId;
-    console.log(`✅ Using development user ID: ${devUserId}`);
-    return headers;
+  // If we still don't have a user ID, log a warning but still return headers
+  // The backend will handle unauthenticated requests appropriately
+  if (!headers['x-user-id']) {
+    console.warn('⚠️ No user ID available - API calls will be anonymous');
   }
 
-  // 🔥 NO MORE ANONYMOUS FALLBACK - throw error if not authenticated
-  console.error('❌ No authentication available - user must be signed in');
-  // Don't set anonymous - let the backend reject it
   return headers;
 };
 
@@ -169,26 +173,29 @@ export const setDevUserId = (userId) => {
 };
 
 /**
- * Get current user ID - returns null if not authenticated
- * 🔥 NO MORE ANONYMOUS FALLBACK
+ * Get current user ID - returns stored ID or null
+ * Checks localStorage first (set by SimpleWorkflowDashboard), then Clerk
  */
 export const getCurrentUserId = async () => {
+  // 🔥 PRIORITY 1: Check localStorage (most reliable, set when Clerk loads in dashboard)
+  const storedUserId = localStorage.getItem('userId') || localStorage.getItem('dev_user_id');
+  if (storedUserId && storedUserId !== 'demo' && storedUserId !== 'anonymous') {
+    return storedUserId;
+  }
+
+  // 🔥 PRIORITY 2: Try Clerk directly
   try {
-    // Try Clerk first
     if (window.Clerk && window.Clerk.user) {
-      return window.Clerk.user.id;
+      const clerkUserId = window.Clerk.user.id;
+      // Store it for future use
+      localStorage.setItem('userId', clerkUserId);
+      return clerkUserId;
     }
   } catch (error) {
     console.warn('Could not get Clerk user ID:', error);
   }
 
-  // Fallback to dev user ID (for local development only)
-  const devUserId = localStorage.getItem('dev_user_id');
-  if (devUserId && devUserId !== 'demo' && devUserId !== 'anonymous') {
-    return devUserId;
-  }
-
-  // 🔥 Return null instead of 'anonymous' - caller must handle auth requirement
+  // Return null if no user ID available
   return null;
 };
 
