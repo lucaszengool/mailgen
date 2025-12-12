@@ -6786,22 +6786,6 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
               <h1 className="text-3xl font-bold text-black">Campaign Workflow</h1>
               <p className="text-black mt-2">AI-powered marketing automation</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={startWorkflow}
-                disabled={workflowStatus === 'running'}
-                className="px-6 py-3 bg-[#00f5a0] hover:bg-[#00e090] text-black font-semibold rounded-xl disabled:opacity-50"
-              >
-                START CAMPAIGN
-              </button>
-
-              <button
-                onClick={resetWorkflow}
-                className="px-6 py-3 border border-gray-300 text-black rounded-xl hover:bg-gray-100"
-              >
-                RESET
-              </button>
-            </div>
           </div>
 
           {/* Workflow Stats Banner - Only show when workflow is running */}
@@ -6909,7 +6893,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
                         <div className="w-6 h-6 text-black">🚀</div>
                       </div>
                       <p className="text-xl font-medium text-black">Ready to Start</p>
-                      <p className="text-sm text-black mt-2">Click "START CAMPAIGN" to begin automation</p>
+                      <p className="text-sm text-black mt-2">Campaign automation is ready</p>
                     </div>
                   </motion.div>
                 )}

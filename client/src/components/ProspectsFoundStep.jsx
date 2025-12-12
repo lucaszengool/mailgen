@@ -166,7 +166,7 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
   }
 
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
       {/* Celebration confetti effect */}
       {showCelebration && (
         <div className="fixed inset-0 pointer-events-none z-50">
@@ -186,115 +186,136 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
         </div>
       )}
 
-      {/* Header - Compact */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
-              <CheckCircle className="w-4 h-4 text-black" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">Found {prospects.length} Perfect Prospects!</h1>
-              <p className="text-xs text-gray-500">High-quality leads matching your ideal customer profile</p>
-            </div>
+      {/* Linktree-style centered content */}
+      <div className="flex-1 flex flex-col items-center px-4 py-8 max-w-md mx-auto w-full">
+
+        {/* Profile Header - Linktree style */}
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #00f5a0 0%, #00d9f5 100%)' }}>
+            <CheckCircle className="w-10 h-10 text-white" />
           </div>
-          {/* Inline Stats */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 rounded-lg">
-              <Users className="w-4 h-4 text-gray-600" />
-              <span className="text-sm font-bold text-gray-900">{prospects.length}</span>
-              <span className="text-xs text-gray-500">Found</span>
-            </div>
-            <div className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 rounded-lg">
-              <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm font-bold text-gray-900">{Math.round(prospects.reduce((acc, p) => acc + (p.score || 75), 0) / Math.max(prospects.length, 1))}%</span>
-              <span className="text-xs text-gray-500">Avg Score</span>
-            </div>
-            <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: '#e8fff5' }}>
-              <CheckCircle className="w-4 h-4" style={{ color: '#00f5a0' }} />
-              <span className="text-xs font-medium text-gray-700">All Verified</span>
-            </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            Found {prospects.length} Perfect Prospects!
+          </h1>
+          <p className="text-gray-500 text-sm">
+            High-quality leads matching your profile
+          </p>
+
+          {/* Stats Pills - Linktree style */}
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <span className="px-3 py-1 bg-gray-100 rounded-full text-xs font-medium text-gray-600">
+              {prospects.length} Found
+            </span>
+            <span className="px-3 py-1 bg-gray-100 rounded-full text-xs font-medium text-gray-600">
+              {Math.round(prospects.reduce((acc, p) => acc + (p.score || 75), 0) / Math.max(prospects.length, 1))}% Avg
+            </span>
+            <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(0, 245, 160, 0.15)', color: '#00c880' }}>
+              ✓ Verified
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Content - Scrollable with centered cards */}
-      <div className="flex-1 overflow-y-auto p-6 flex items-center justify-center">
-        <div className="w-full max-w-2xl mx-auto">
-
-          {/* Prospects Grid - Centered Larger Cards */}
-          <div className="grid grid-cols-2 gap-4">
-            {prospects.map((prospect, index) => (
-              <div
-                key={index}
-                onClick={() => handleProspectClick(prospect)}
-                className="w-full bg-white border-2 border-gray-200 rounded-2xl p-5 hover:border-[#00f5a0] hover:shadow-lg transition-all duration-200 group cursor-pointer"
+        {/* Prospect Cards - Linktree style stacked */}
+        <div className="w-full space-y-3">
+          {prospects.map((prospect, index) => (
+            <div
+              key={index}
+              onClick={() => handleProspectClick(prospect)}
+              className="linktree-card group"
+              style={{
+                animationDelay: `${index * 100}ms`
+              }}
+            >
+              <div className="w-full bg-white rounded-2xl p-4 cursor-pointer transition-all duration-300 ease-out
+                           border border-gray-100 hover:border-transparent
+                           shadow-sm hover:shadow-xl hover:shadow-gray-200/50
+                           hover:-translate-y-1 hover:scale-[1.02]
+                           active:scale-[0.98]"
               >
                 <div className="flex items-center gap-4">
-                  {/* Company Favicon - Larger */}
+                  {/* Avatar/Favicon - Clean circular */}
                   <div className="relative flex-shrink-0">
-                    <div className="w-14 h-14 rounded-xl border border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden">
+                    <div className="w-12 h-12 rounded-full border-2 border-gray-100 flex items-center justify-center bg-gradient-to-br from-gray-50 to-white overflow-hidden shadow-inner">
                       <img
                         src={getFaviconUrl(prospect.email)}
                         alt={prospect.company || 'Company'}
-                        className="w-10 h-10 object-contain"
+                        className="w-7 h-7 object-contain"
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
                         }}
                       />
-                      <div className="hidden w-full h-full items-center justify-center text-gray-400 text-lg font-bold">
-                        {prospect.name?.charAt(0) || 'P'}
+                      <div className="hidden w-full h-full items-center justify-center text-gray-400 text-base font-semibold bg-gradient-to-br from-gray-100 to-gray-50">
+                        {prospect.name?.charAt(0) || prospect.company?.charAt(0) || 'P'}
                       </div>
                     </div>
-                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
-                      <CheckCircle className="w-3 h-3 text-black" />
+                    {/* Online indicator */}
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center" style={{ backgroundColor: '#00f5a0' }}>
+                      <CheckCircle className="w-2.5 h-2.5 text-white" />
                     </div>
                   </div>
 
-                  {/* Info - Larger text */}
+                  {/* Info - Clean typography */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-bold text-gray-900 truncate">
+                    <h3 className="text-base font-semibold text-gray-900 truncate leading-tight">
                       {prospect.name || prospect.company || 'Prospect'}
                     </h3>
-                    <p className="text-sm text-gray-500 truncate mt-0.5">{prospect.role || 'Decision Maker'}</p>
-                    <p className="text-sm text-gray-700 truncate font-medium mt-1">{prospect.email}</p>
+                    <p className="text-sm text-gray-500 truncate leading-tight mt-0.5">
+                      {prospect.role || 'Decision Maker'}
+                    </p>
                   </div>
 
-                  {/* Score - Larger */}
+                  {/* Score Badge - Pill style */}
                   <div className="flex-shrink-0">
-                    <div className="px-3 py-2 rounded-xl text-sm font-bold text-black" style={{ backgroundColor: '#00f5a0' }}>
+                    <div className="px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300
+                                  group-hover:scale-110"
+                         style={{
+                           backgroundColor: 'rgba(0, 245, 160, 0.15)',
+                           color: '#00c880'
+                         }}>
                       {prospect.score || 75}%
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* Footer - Compact */}
-      <div className="bg-white border-t border-gray-200 px-6 py-3 flex-shrink-0">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
+                {/* Email - Subtle, appears on hover feel */}
+                <div className="mt-3 pt-3 border-t border-gray-50">
+                  <p className="text-xs text-gray-400 truncate flex items-center gap-1.5">
+                    <Mail className="w-3 h-3" />
+                    {prospect.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Action Buttons - Linktree style */}
+        <div className="w-full mt-8 space-y-3">
+          <button
+            onClick={handleContinue}
+            className="w-full py-4 text-white font-semibold rounded-full transition-all duration-300
+                     hover:shadow-lg hover:shadow-green-200/50 hover:-translate-y-0.5 hover:scale-[1.02]
+                     active:scale-[0.98] flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg, #00f5a0 0%, #00d9f5 100%)' }}
+          >
+            <span>Continue to SMTP Setup</span>
+            <span className="text-lg">→</span>
+          </button>
+
           <button
             onClick={onBack}
-            className="px-6 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all text-sm"
+            className="w-full py-3 bg-transparent text-gray-500 font-medium rounded-full transition-all duration-300
+                     hover:bg-gray-100 hover:text-gray-700"
           >
             ← Back
           </button>
-          <div className="flex items-center space-x-3">
-            <span className="text-xs text-gray-500">Ready to configure email sending</span>
-            <button
-              onClick={handleContinue}
-              className="px-6 py-2 text-black font-semibold rounded-lg transition-all text-sm flex items-center space-x-2"
-              style={{ backgroundColor: '#00f5a0' }}
-            >
-              <span>Continue to SMTP Setup</span>
-              <span>→</span>
-            </button>
-          </div>
         </div>
+
+        {/* Footer text */}
+        <p className="mt-6 text-xs text-gray-400 text-center">
+          Ready to configure email sending
+        </p>
       </div>
 
       <style jsx>{`
@@ -307,14 +328,14 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
           }
         }
 
-        @keyframes scale-in {
+        @keyframes card-enter {
           from {
             opacity: 0;
-            transform: scale(0.8);
+            transform: translateY(20px) scale(0.95);
           }
           to {
             opacity: 1;
-            transform: scale(1);
+            transform: translateY(0) scale(1);
           }
         }
 
@@ -329,47 +350,27 @@ const ProspectsFoundStep = ({ onNext, onBack, initialData }) => {
           }
         }
 
-        @keyframes slide-in {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
+        @keyframes pulse-glow {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(0, 245, 160, 0.4);
           }
-          to {
-            opacity: 1;
-            transform: translateX(0);
+          50% {
+            box-shadow: 0 0 20px 5px rgba(0, 245, 160, 0.2);
           }
         }
 
-        @keyframes bounce-slow {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
+        .linktree-card {
+          animation: card-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation-fill-mode: both;
         }
 
         .animate-fade-in {
           animation: fade-in 0.6s ease-out forwards;
         }
 
-        .animate-scale-in {
-          animation: scale-in 0.6s ease-out forwards;
-          opacity: 0;
-        }
-
         .animate-slide-up {
           animation: slide-up 0.6s ease-out forwards;
           opacity: 0;
-        }
-
-        .animate-slide-in {
-          animation: slide-in 0.6s ease-out forwards;
-          opacity: 0;
-        }
-
-        .animate-bounce-slow {
-          animation: bounce-slow 2s ease-in-out infinite;
         }
       `}</style>
     </div>
