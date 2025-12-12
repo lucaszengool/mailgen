@@ -6,6 +6,7 @@ const AgentInsightsPage = ({ campaignId, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
     fetchInsights();
@@ -34,6 +35,36 @@ const AgentInsightsPage = ({ campaignId, onBack }) => {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const analyzeExistingData = async () => {
+    setAnalyzing(true);
+    try {
+      const userId = localStorage.getItem('userId') || 'anonymous';
+      const response = await fetch('/api/agent-learning/analyze-existing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': userId
+        },
+        body: JSON.stringify({ campaignId })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze data');
+      }
+
+      const data = await response.json();
+      console.log('Analysis result:', data);
+
+      // Refresh insights after analysis
+      await fetchInsights();
+    } catch (err) {
+      console.error('Failed to analyze existing data:', err);
+      setError(err.message);
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -331,8 +362,26 @@ const AgentInsightsPage = ({ campaignId, onBack }) => {
             </div>
             <h3 className="text-xl font-bold text-black mb-2">No Learnings Yet</h3>
             <p className="text-gray-500 text-sm mb-6">
-              Your AI agent will start learning as you run campaigns. Check back after your first prospect search or email send.
+              Your AI agent will start learning as you run campaigns. Click below to analyze your existing campaign data.
             </p>
+            <button
+              onClick={analyzeExistingData}
+              disabled={analyzing}
+              className="px-6 py-3 text-black font-semibold rounded-xl transition-all flex items-center gap-2 mx-auto mb-6 hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: '#00f5a0' }}
+            >
+              {analyzing ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Analyzing Campaign Data...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5" />
+                  Analyze Existing Data
+                </>
+              )}
+            </button>
             <div className="flex justify-center gap-2">
               <span className="px-3 py-1.5 bg-gray-100 rounded-lg text-xs text-gray-600">Prospect Search</span>
               <span className="px-3 py-1.5 bg-gray-100 rounded-lg text-xs text-gray-600">Email Patterns</span>
