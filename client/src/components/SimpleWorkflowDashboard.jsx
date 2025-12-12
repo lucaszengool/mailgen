@@ -7686,7 +7686,7 @@ const SimpleWorkflowDashboard = ({ agentConfig, onReset, campaign, onBackToCampa
           {/* Agent Insights View - Self-improving AI insights */}
           {activeView === 'agent_insights' && (
             <AgentInsightsPage
-              campaignId={effectiveCampaignId}
+              campaignId={campaign?.id || localStorage.getItem('currentCampaignId') || 'default'}
               onBack={() => setActiveView('workflow')}
             />
           )}
